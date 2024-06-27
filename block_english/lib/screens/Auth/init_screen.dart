@@ -37,7 +37,7 @@ class InitScreen extends StatelessWidget {
               padding: EdgeInsets.all(8.0),
               child: RoundCornerRouteButton(
                 text: "회원가입",
-                routeName: '/login_screen',
+                routeName: '/reg_select_role_screen',
                 width: 700,
                 heigth: 45,
                 type: ButtonType.outlined,

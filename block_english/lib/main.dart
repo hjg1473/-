@@ -1,4 +1,6 @@
-import 'package:block_english/screens/reg_select_role_screen.dart';
+import 'package:block_english/screens/Auth/init_screen.dart';
+import 'package:block_english/screens/Auth/login_screen.dart';
+import 'package:block_english/screens/Auth/reg_select_role_screen.dart';
 import 'package:flutter/material.dart';
 
 void main() {
@@ -8,11 +10,16 @@ void main() {
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(
-      home: RegSelectRoleScreen(),
+    return MaterialApp(
+      title: "Block English",
+      initialRoute: '/init',
+      routes: {
+        '/init': (context) => const InitScreen(),
+        '/login_screen': (context) => const LoginScreen(),
+        '/reg_select_role_screen': (context) => const RegSelectRoleScreen(),
+      },
     );
   }
 }
