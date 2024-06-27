@@ -45,8 +45,8 @@ class _LoginScreenState extends State<LoginScreen> {
               child: RoundCornerRouteButton(
                 text: "로그인",
                 routeName: '/init',
-                width: 700,
-                heigth: 45,
+                width: 313,
+                height: 45,
                 type: ButtonType.filled,
               ),
             ),

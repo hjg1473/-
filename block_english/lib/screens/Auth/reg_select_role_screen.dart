@@ -7,38 +7,26 @@ class RegSelectRoleScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
-      body: Center(
+      appBar: AppBar(),
+      body: const Center(
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            const SizedBox(
-              height: 40,
+            SizedBox(
+              height: 80,
             ),
-            const RegistrationWidget(
+            RegistrationWidget(
               icon: Icons.man,
               text: "교사/학부모",
-              routeName: '/reg_super',
-            ),
-            const SizedBox(
-              height: 30,
-            ),
-            const RegistrationWidget(
-              icon: Icons.child_care,
-              text: "학생",
-              routeName: '/reg_student',
-            ),
-            const SizedBox(
-              height: 45,
+              routeName: '/reg_super_screen',
             ),
             SizedBox(
-              height: 45,
-              width: 150,
-              child: OutlinedButton(
-                onPressed: () {},
-                child: const Text("취소"),
-              ),
+              height: 40,
+            ),
+            RegistrationWidget(
+              icon: Icons.child_care,
+              text: "학생",
+              routeName: '/reg_student_screen',
             ),
           ],
         ),

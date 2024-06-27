@@ -25,8 +25,8 @@ class InitScreen extends StatelessWidget {
               child: RoundCornerRouteButton(
                 text: "로그인",
                 routeName: '/login_screen',
-                width: 700,
-                heigth: 45,
+                width: 313,
+                height: 45,
                 type: ButtonType.filled,
               ),
             ),
@@ -38,8 +38,8 @@ class InitScreen extends StatelessWidget {
               child: RoundCornerRouteButton(
                 text: "회원가입",
                 routeName: '/reg_select_role_screen',
-                width: 700,
-                heigth: 45,
+                width: 313,
+                height: 45,
                 type: ButtonType.outlined,
               ),
             ),

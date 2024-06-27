@@ -24,7 +24,7 @@ class RegistrationWidget extends StatelessWidget {
           ),
         ),
         onPressed: () {
-          // Navigator.of(context).pushNamed(routeName);
+          Navigator.of(context).pushNamed(routeName);
         },
         icon: Icon(
           icon,
