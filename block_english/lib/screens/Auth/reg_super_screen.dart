@@ -124,7 +124,7 @@ class _RegSuperScreenState extends State<RegSuperScreen> {
                   ),
                   RoundCornerRouteButton(
                     text: "회원가입",
-                    routeName: '/reg_select_role_screen',
+                    routeName: '/super_main_screen',
                     width: 150,
                     height: 45,
                     type: ButtonType.filled,
