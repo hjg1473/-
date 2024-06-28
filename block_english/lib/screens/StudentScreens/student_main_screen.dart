@@ -10,7 +10,11 @@ class StudentMainScreen extends StatelessWidget {
       length: 4,
       child: Scaffold(
         appBar: AppBar(
-          actions: const [],
+          leading: IconButton(
+            icon: const Icon(Icons.settings_outlined),
+            onPressed: () {},
+          ),
+          centerTitle: true,
           title: const Text("Block English"),
           bottom: const TabBar(tabs: <Widget>[
             Tab(
@@ -27,18 +31,25 @@ class StudentMainScreen extends StatelessWidget {
             ),
           ]),
         ),
-        body: const TabBarView(
+        body: TabBarView(
           children: <Widget>[
-            Center(
-              child: Text('문제 풀기'),
+            Column(
+              children: [
+                ElevatedButton(
+                  onPressed: () {},
+                  child: const Column(
+                    children: [Text("chapter1")],
+                  ),
+                ),
+              ],
             ),
-            Center(
+            const Center(
               child: Text('실전 문제 풀기'),
             ),
-            Center(
+            const Center(
               child: Text('게임하기'),
             ),
-            Center(
+            const Center(
               child: Text('프로필'),
             ),
           ],
