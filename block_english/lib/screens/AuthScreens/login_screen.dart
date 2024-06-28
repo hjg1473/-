@@ -1,5 +1,3 @@
-import 'package:block_english/utils/constants.dart';
-import 'package:block_english/widgets/round_corner_route_button.dart';
 import 'package:flutter/material.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -14,43 +12,79 @@ class _LoginScreenState extends State<LoginScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(),
-      body: const Center(
-        child: Column(
-          children: [
-            Icon(
-              Icons.abc,
-              size: 300,
-            ),
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: 40.0, vertical: 10.0),
-              child: TextField(
-                decoration: InputDecoration(
-                  border: OutlineInputBorder(),
-                  labelText: '아이디',
+      body: SingleChildScrollView(
+        child: Center(
+          child: Column(
+            children: [
+              const Icon(
+                Icons.abc,
+                size: 300,
+              ),
+              const Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 40.0),
+                    child: TextField(
+                      decoration: InputDecoration(
+                        filled: true,
+                        fillColor: Color.fromRGBO(237, 231, 246, 1),
+                        border: UnderlineInputBorder(),
+                        labelText: '아이디',
+                      ),
+                    ),
+                  ),
+                  Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 40.0),
+                    child: Text(
+                      "영문/숫자 조합, 15자 이내",
+                      style: TextStyle(
+                        color: Colors.black54,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 40.0),
+                    child: TextField(
+                      obscureText: true,
+                      decoration: InputDecoration(
+                        filled: true,
+                        fillColor: Color.fromRGBO(237, 231, 246, 1),
+                        border: UnderlineInputBorder(),
+                        labelText: '비밀번호',
+                      ),
+                    ),
+                  ),
+                  Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 40.0),
+                    child: Text(
+                      "영문/숫자/특수문자 조합, 10자 이상",
+                      style: TextStyle(
+                        color: Colors.black54,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: FilledButton(
+                  onPressed: () {
+                    Navigator.of(context).pushNamedAndRemoveUntil(
+                      '/std_main_screen',
+                      (Route<dynamic> route) => false,
+                    );
+                  },
+                  child: const Text("로그인"),
                 ),
               ),
-            ),
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: 40.0, vertical: 10.0),
-              child: TextField(
-                obscureText: true,
-                decoration: InputDecoration(
-                  border: OutlineInputBorder(),
-                  labelText: '비밀번호',
-                ),
-              ),
-            ),
-            Padding(
-              padding: EdgeInsets.all(8.0),
-              child: RoundCornerRouteButton(
-                text: "로그인",
-                routeName: '/std_main_screen',
-                width: 700,
-                height: 45,
-                type: ButtonType.filled,
-              ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
