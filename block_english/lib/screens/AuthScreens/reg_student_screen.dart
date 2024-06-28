@@ -75,7 +75,7 @@ class _RegStudentScreenState extends State<RegStudentScreen> {
           Padding(
             padding: EdgeInsets.symmetric(horizontal: 40.0),
             child: Text(
-              "영문/숫자 조합, 15자 이내",
+              "영문/숫자 조합, 5~15자",
               style: TextStyle(
                 color: Colors.black54,
               ),
