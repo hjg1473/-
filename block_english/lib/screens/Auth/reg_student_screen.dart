@@ -119,6 +119,7 @@ class _RegStudentScreenState extends State<RegStudentScreen> {
                   width: 150,
                   height: 45,
                   type: ButtonType.outlined,
+                  cancel: true,
                 ),
                 RoundCornerRouteButton(
                   text: "회원가입",
