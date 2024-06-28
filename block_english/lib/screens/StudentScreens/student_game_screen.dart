@@ -46,7 +46,7 @@ class _StudentGameScreenState extends State<StudentGameScreen> {
               ),
               TextFormField(
                 decoration: const InputDecoration(border: OutlineInputBorder()),
-                maxLength: 8,
+                maxLength: 6,
                 keyboardType: TextInputType.number,
                 style: const TextStyle(fontSize: 30),
                 textAlign: TextAlign.center,
@@ -56,7 +56,7 @@ class _StudentGameScreenState extends State<StudentGameScreen> {
                   if (value.isEmpty) {
                     return '입장할 게임 방의 번호를 입력해주세요';
                   }
-                  if (!RegExp(r'^\d{8}$').hasMatch(value)) {
+                  if (!RegExp(r'^\d{6}$').hasMatch(value)) {
                     return '정확한 방 번호를 입력해주세요';
                   }
                   return null;
