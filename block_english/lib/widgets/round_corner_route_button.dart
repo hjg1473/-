@@ -24,22 +24,18 @@ class RoundCornerRouteButton extends StatelessWidget {
     return switch (type) {
       ButtonType.filled => FilledButton(
           onPressed: () {
-            if (cancel) {
-              Navigator.of(context).pop();
-            } else {
-              Navigator.of(context).pushNamed(routeName);
-            }
+            cancel
+                ? Navigator.of(context).pop()
+                : Navigator.of(context).pushNamed(routeName);
           },
           style: FilledButton.styleFrom(minimumSize: Size(width, height)),
           child: (Text(text)),
         ),
       ButtonType.outlined => OutlinedButton(
           onPressed: () {
-            if (cancel) {
-              Navigator.of(context).pop();
-            } else {
-              Navigator.of(context).pushNamed(routeName);
-            }
+            cancel
+                ? Navigator.of(context).pop()
+                : Navigator.of(context).pushNamed(routeName);
           },
           style: OutlinedButton.styleFrom(minimumSize: Size(width, height)),
           child: (Text(text)),
