@@ -1,3 +1,4 @@
+import 'package:block_english/screens/StudentScreens/student_game_screen.dart';
 import 'package:flutter/material.dart';
 
 class StudentMainScreen extends StatelessWidget {
@@ -21,7 +22,7 @@ class StudentMainScreen extends StatelessWidget {
               text: "문제 풀기",
             ),
             Tab(
-              text: "실전 문제 풀기",
+              text: "실전 문제",
             ),
             Tab(
               text: "게임하기",
@@ -32,6 +33,7 @@ class StudentMainScreen extends StatelessWidget {
           ]),
         ),
         body: TabBarView(
+          physics: const NeverScrollableScrollPhysics(),
           children: <Widget>[
             Column(
               children: [
@@ -44,11 +46,9 @@ class StudentMainScreen extends StatelessWidget {
               ],
             ),
             const Center(
-              child: Text('실전 문제 풀기'),
+              child: Text('실전 문제'),
             ),
-            const Center(
-              child: Text('게임하기'),
-            ),
+            const StudentGameScreen(),
             const Center(
               child: Text('프로필'),
             ),
