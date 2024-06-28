@@ -44,7 +44,7 @@ class _LoginScreenState extends State<LoginScreen> {
               padding: EdgeInsets.all(8.0),
               child: RoundCornerRouteButton(
                 text: "로그인",
-                routeName: '/init',
+                routeName: '/std_main_screen',
                 width: 700,
                 heigth: 45,
                 type: ButtonType.filled,

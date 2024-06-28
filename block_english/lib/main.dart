@@ -1,6 +1,7 @@
-import 'package:block_english/screens/Auth/init_screen.dart';
-import 'package:block_english/screens/Auth/login_screen.dart';
-import 'package:block_english/screens/Auth/reg_select_role_screen.dart';
+import 'package:block_english/screens/AuthScreens/init_screen.dart';
+import 'package:block_english/screens/AuthScreens/login_screen.dart';
+import 'package:block_english/screens/AuthScreens/reg_select_role_screen.dart';
+import 'package:block_english/screens/StudentScreens/student_main_screen.dart';
 import 'package:flutter/material.dart';
 
 void main() {
@@ -19,6 +20,7 @@ class MyApp extends StatelessWidget {
         '/init': (context) => const InitScreen(),
         '/login_screen': (context) => const LoginScreen(),
         '/reg_select_role_screen': (context) => const RegSelectRoleScreen(),
+        '/std_main_screen': (context) => const StudentMainScreen(),
       },
     );
   }
