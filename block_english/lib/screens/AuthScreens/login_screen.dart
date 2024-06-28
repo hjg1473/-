@@ -48,6 +48,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 width: 700,
                 heigth: 45,
                 type: ButtonType.filled,
+                remove: true,
               ),
             ),
           ],

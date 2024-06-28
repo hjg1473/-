@@ -28,6 +28,7 @@ class InitScreen extends StatelessWidget {
                 width: 700,
                 heigth: 45,
                 type: ButtonType.filled,
+                remove: false,
               ),
             ),
             SizedBox(
@@ -41,6 +42,7 @@ class InitScreen extends StatelessWidget {
                 width: 700,
                 heigth: 45,
                 type: ButtonType.outlined,
+                remove: false,
               ),
             ),
           ],

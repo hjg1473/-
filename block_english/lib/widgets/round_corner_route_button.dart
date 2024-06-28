@@ -9,6 +9,7 @@ class RoundCornerRouteButton extends StatelessWidget {
     required this.width,
     required this.heigth,
     required this.type,
+    required this.remove,
   });
 
   final String text;
@@ -16,20 +17,27 @@ class RoundCornerRouteButton extends StatelessWidget {
   final double width;
   final double heigth;
   final ButtonType type;
+  final bool remove;
 
   @override
   Widget build(BuildContext context) {
     return switch (type) {
       ButtonType.filled => FilledButton(
           onPressed: () {
-            Navigator.of(context).pushNamed(routeName);
+            remove
+                ? Navigator.of(context).pushNamedAndRemoveUntil(
+                    routeName, (Route<dynamic> route) => false)
+                : Navigator.of(context).pushNamed(routeName);
           },
           style: FilledButton.styleFrom(minimumSize: const Size(313, 45)),
           child: (Text(text)),
         ),
       ButtonType.outlined => OutlinedButton(
           onPressed: () {
-            Navigator.of(context).pushNamed(routeName);
+            remove
+                ? Navigator.of(context).pushNamedAndRemoveUntil(
+                    routeName, (Route<dynamic> route) => false)
+                : Navigator.of(context).pushNamed(routeName);
           },
           style: OutlinedButton.styleFrom(minimumSize: const Size(313, 45)),
           child: (Text(text)),
