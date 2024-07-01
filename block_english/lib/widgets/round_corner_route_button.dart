@@ -9,6 +9,7 @@ class RoundCornerRouteButton extends StatelessWidget {
     required this.width,
     required this.height,
     required this.type,
+    this.radius = 100,
     this.cancel = false,
   });
 
@@ -17,6 +18,7 @@ class RoundCornerRouteButton extends StatelessWidget {
   final double width;
   final double height;
   final ButtonType type;
+  final double radius;
   final bool cancel;
 
   @override
@@ -28,7 +30,12 @@ class RoundCornerRouteButton extends StatelessWidget {
                 ? Navigator.of(context).pop()
                 : Navigator.of(context).pushNamed(routeName);
           },
-          style: FilledButton.styleFrom(minimumSize: Size(width, height)),
+          style: FilledButton.styleFrom(
+            minimumSize: Size(width, height),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(radius),
+            ),
+          ),
           child: (Text(text)),
         ),
       ButtonType.outlined => OutlinedButton(
@@ -37,7 +44,12 @@ class RoundCornerRouteButton extends StatelessWidget {
                 ? Navigator.of(context).pop()
                 : Navigator.of(context).pushNamed(routeName);
           },
-          style: OutlinedButton.styleFrom(minimumSize: Size(width, height)),
+          style: OutlinedButton.styleFrom(
+            minimumSize: Size(width, height),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(radius),
+            ),
+          ),
           child: (Text(text)),
         ),
     };

@@ -4,6 +4,7 @@ import 'package:block_english/screens/AuthScreens/reg_select_role_screen.dart';
 import 'package:block_english/screens/AuthScreens/reg_student_screen.dart';
 import 'package:block_english/screens/AuthScreens/reg_super_screen.dart';
 import 'package:block_english/screens/StudentScreens/student_main_screen.dart';
+import 'package:block_english/screens/Super/super_game_screen.dart';
 import 'package:block_english/screens/Super/super_main_screen.dart';
 import 'package:flutter/material.dart';
 
@@ -27,6 +28,7 @@ class MyApp extends StatelessWidget {
         '/reg_super_screen': (context) => const RegSuperScreen(),
         '/std_main_screen': (context) => const StudentMainScreen(),
         '/super_main_screen': (context) => const SuperMainScreen(),
+        '/super_game_screen': (context) => const SuperGameScreen(),
       },
     );
   }

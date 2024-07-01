@@ -1,6 +1,15 @@
+import 'dart:ui';
+
+import 'package:block_english/utils/colors.dart';
+import 'package:block_english/utils/constants.dart';
+import 'package:block_english/widgets/image_card_button.dart';
+import 'package:block_english/widgets/no_image_card_button.dart';
 import 'package:block_english/widgets/profile_button.dart';
 import 'package:block_english/widgets/profile_card_widget.dart';
+import 'package:block_english/widgets/round_corner_route_button.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 
 class SuperMainScreen extends StatelessWidget {
   const SuperMainScreen({super.key});
@@ -37,16 +46,15 @@ class SuperMainScreen extends StatelessWidget {
         ),
         body: const TabBarView(
           children: [
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                SizedBox(
-                  height: 10,
-                ),
-                Padding(
-                  padding:
-                      EdgeInsets.symmetric(horizontal: 30.0, vertical: 15.0),
-                  child: Text(
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: 30.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  SizedBox(
+                    height: 25,
+                  ),
+                  Text(
                     "프로필",
                     style: TextStyle(
                       color: Colors.black,
@@ -54,50 +62,46 @@ class SuperMainScreen extends StatelessWidget {
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                ),
-                Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 30.0),
-                  child: ProfileCard(
+                  SizedBox(
+                    height: 15,
+                  ),
+                  ProfileCard(
                     name: "드림초 영어쌤",
                     id: "deurimET123",
                   ),
-                ),
-                Padding(
-                    padding:
-                        EdgeInsets.symmetric(horizontal: 35.0, vertical: 5.0),
-                    child: Row(
-                      children: [
-                        Icon(
-                          Icons.circle,
-                          color: Colors.black54,
-                          size: 15,
-                        ),
-                        SizedBox(
-                          width: 5,
-                        ),
-                        Text(
-                          '학생들에게 표시되는 이름이에요',
-                          style: TextStyle(
+                  SizedBox(
+                    height: 5,
+                  ),
+                  Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 5.0),
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.circle,
                             color: Colors.black54,
+                            size: 15,
                           ),
-                        )
-                      ],
-                    )),
-                SizedBox(
-                  height: 5,
-                ),
-                Divider(
-                  thickness: 1,
-                  indent: 30,
-                  endIndent: 30,
-                ),
-                SizedBox(
-                  height: 5,
-                ),
-                Padding(
-                  padding:
-                      EdgeInsets.symmetric(horizontal: 30.0, vertical: 5.0),
-                  child: Text(
+                          SizedBox(
+                            width: 5,
+                          ),
+                          Text(
+                            '학생들에게 표시되는 이름이에요',
+                            style: TextStyle(
+                              color: Colors.black54,
+                            ),
+                          )
+                        ],
+                      )),
+                  SizedBox(
+                    height: 10,
+                  ),
+                  Divider(
+                    thickness: 1,
+                  ),
+                  SizedBox(
+                    height: 10,
+                  ),
+                  Text(
                     "그룹 관리",
                     style: TextStyle(
                       color: Colors.black,
@@ -105,50 +109,125 @@ class SuperMainScreen extends StatelessWidget {
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                ),
-                Expanded(
-                  child: SingleChildScrollView(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Padding(
-                          padding: EdgeInsets.symmetric(
-                              horizontal: 30.0, vertical: 10.0),
-                          child: ProfileButton(
+                  SizedBox(
+                    height: 5,
+                  ),
+                  Expanded(
+                    child: SingleChildScrollView(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          SizedBox(
+                            height: 10,
+                          ),
+                          ProfileButton(
                             name: "3학년 1반",
                           ),
-                        ),
-                        Padding(
-                          padding: EdgeInsets.symmetric(
-                              horizontal: 30.0, vertical: 10.0),
-                          child: ProfileButton(
+                          SizedBox(
+                            height: 20,
+                          ),
+                          ProfileButton(
                             name: "2학년 1반",
                           ),
-                        ),
-                        Padding(
-                          padding: EdgeInsets.symmetric(
-                              horizontal: 30.0, vertical: 10.0),
-                          child: ProfileButton(
+                          SizedBox(
+                            height: 20,
+                          ),
+                          ProfileButton(
                             name: "2학년 2반",
                           ),
-                        ),
-                        Padding(
-                          padding: EdgeInsets.symmetric(
-                              horizontal: 30.0, vertical: 10.0),
-                          child: ProfileButton(
+                          SizedBox(
+                            height: 20,
+                          ),
+                          ProfileButton(
                             name: "그룹 추가",
                           ),
-                        ),
-                      ],
+                          SizedBox(
+                            height: 10,
+                          ),
+                        ],
+                      ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-            Column(
-              children: [
-                Text('게임 생성'),
-              ],
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: 30.0, vertical: 25.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    "게임 방 만들기",
+                    style: TextStyle(
+                      color: Colors.black,
+                      fontSize: 30,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  SizedBox(
+                    height: 20,
+                  ),
+                  RoundCornerRouteButton(
+                    text: "게임 시작",
+                    routeName: '/super_game_screen',
+                    width: 330,
+                    height: 50,
+                    type: ButtonType.filled,
+                    radius: 10,
+                  ),
+                  SizedBox(
+                    height: 15,
+                  ),
+                  Divider(
+                    thickness: 1,
+                  ),
+                  SizedBox(
+                    height: 10,
+                  ),
+                  Text(
+                    "문제 세트 관리",
+                    style: TextStyle(
+                      color: Colors.black,
+                      fontSize: 30,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  SizedBox(
+                    height: 5,
+                  ),
+                  Expanded(
+                    child: SingleChildScrollView(
+                      child: Column(
+                        children: [
+                          SizedBox(
+                            height: 10,
+                          ),
+                          ImageCard(name: "3반 문제 세트"),
+                          SizedBox(
+                            height: 15,
+                          ),
+                          NoImageCard(name: "1반 문제 세트"),
+                          SizedBox(
+                            height: 15,
+                          ),
+                          NoImageCard(name: "2반 문제 세트"),
+                        ],
+                      ),
+                    ),
+                  ),
+                  SizedBox(
+                    height: 15,
+                  ),
+                  RoundCornerRouteButton(
+                    text: "문제 세트 생성",
+                    routeName: '/super_game_screen',
+                    width: 330,
+                    height: 50,
+                    type: ButtonType.outlined,
+                    radius: 10,
+                  ),
+                ],
+              ),
             ),
           ],
         ),
