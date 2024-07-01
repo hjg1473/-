@@ -130,12 +130,12 @@ class _RegSuperScreenState extends State<RegSuperScreen> {
               const SizedBox(
                 height: 250,
               ),
-              const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 40.0),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 40.0),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    RoundCornerRouteButton(
+                    const RoundCornerRouteButton(
                       text: "취소",
                       routeName: '/reg_select_role_screen',
                       width: 150,
@@ -143,12 +143,14 @@ class _RegSuperScreenState extends State<RegSuperScreen> {
                       type: ButtonType.outlined,
                       cancel: true,
                     ),
-                    RoundCornerRouteButton(
-                      text: "회원가입",
-                      routeName: '/reg_select_role_screen',
-                      width: 150,
-                      height: 45,
-                      type: ButtonType.filled,
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: FilledButton(
+                        onPressed: () {},
+                        style: FilledButton.styleFrom(
+                            minimumSize: const Size(150, 45)),
+                        child: const Text("회원가입"),
+                      ),
                     ),
                   ],
                 ),
