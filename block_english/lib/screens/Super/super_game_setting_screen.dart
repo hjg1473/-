@@ -62,7 +62,7 @@ class _SuperGameSettingScreenState extends State<SuperGameSettingScreen> {
               ),
             ),
             const SizedBox(
-              height: 15,
+              height: 20,
             ),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 25.0),
@@ -113,7 +113,7 @@ class _SuperGameSettingScreenState extends State<SuperGameSettingScreen> {
               value: playerSliderValue,
               max: 30,
               divisions: 6,
-              label: '${playerSliderValue.round()}명',
+              label: '${playerSliderValue.round()}',
               onChanged: (value) {
                 setState(
                   () {
@@ -178,7 +178,7 @@ class _SuperGameSettingScreenState extends State<SuperGameSettingScreen> {
               value: timeSliderValue,
               max: 60,
               divisions: 6,
-              label: '${timeSliderValue.round()}초',
+              label: '${timeSliderValue.round()}',
               onChanged: (value) {
                 setState(
                   () {
@@ -192,7 +192,7 @@ class _SuperGameSettingScreenState extends State<SuperGameSettingScreen> {
               thickness: 1,
             ),
             const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 25.0, vertical: 15.0),
+              padding: EdgeInsets.symmetric(horizontal: 25.0, vertical: 20.0),
               child: Text(
                 "문제 세트 선택",
                 style: TextStyle(
@@ -227,12 +227,12 @@ class _SuperGameSettingScreenState extends State<SuperGameSettingScreen> {
             ),
             const Spacer(),
             const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 15.0, vertical: 40.0),
+              padding: EdgeInsets.symmetric(horizontal: 0.0, vertical: 40.0),
               child: RoundCornerRouteButton(
-                text: "게임 시작",
+                text: "게임 방 개설",
                 routeName: '/super_game_screen',
-                width: 320,
-                height: 50,
+                width: 330,
+                height: 55,
                 type: ButtonType.outlined,
                 radius: 10,
                 bold: true,

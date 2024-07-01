@@ -29,9 +29,9 @@ class MyApp extends StatelessWidget {
         '/reg_super_screen': (context) => const RegSuperScreen(),
         '/std_main_screen': (context) => const StudentMainScreen(),
         '/super_main_screen': (context) => const SuperMainScreen(),
-        '/super_game_screen': (context) => const SuperGameScreen(),
         '/super_game_setting_screen': (context) =>
             const SuperGameSettingScreen(),
+        '/super_game_screen': (context) => const SuperGameScreen(),
       },
     );
   }
