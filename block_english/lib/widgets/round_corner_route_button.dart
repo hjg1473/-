@@ -10,6 +10,7 @@ class RoundCornerRouteButton extends StatelessWidget {
     required this.height,
     required this.type,
     this.radius = 100,
+    this.bold = false,
     this.cancel = false,
   });
 
@@ -19,6 +20,7 @@ class RoundCornerRouteButton extends StatelessWidget {
   final double height;
   final ButtonType type;
   final double radius;
+  final bool bold;
   final bool cancel;
 
   @override
@@ -36,7 +38,12 @@ class RoundCornerRouteButton extends StatelessWidget {
               borderRadius: BorderRadius.circular(radius),
             ),
           ),
-          child: (Text(text)),
+          child: bold
+              ? Text(
+                  text,
+                  style: const TextStyle(fontWeight: FontWeight.bold),
+                )
+              : Text(text),
         ),
       ButtonType.outlined => OutlinedButton(
           onPressed: () {
@@ -50,7 +57,12 @@ class RoundCornerRouteButton extends StatelessWidget {
               borderRadius: BorderRadius.circular(radius),
             ),
           ),
-          child: (Text(text)),
+          child: bold
+              ? Text(
+                  text,
+                  style: const TextStyle(fontWeight: FontWeight.bold),
+                )
+              : Text(text),
         ),
     };
   }

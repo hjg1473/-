@@ -1,6 +1,4 @@
 import 'dart:ui';
-
-import 'package:block_english/utils/colors.dart';
 import 'package:block_english/utils/constants.dart';
 import 'package:block_english/widgets/image_card_button.dart';
 import 'package:block_english/widgets/no_image_card_button.dart';
@@ -165,18 +163,19 @@ class SuperMainScreen extends StatelessWidget {
                     ),
                   ),
                   SizedBox(
-                    height: 20,
+                    height: 15,
                   ),
                   RoundCornerRouteButton(
-                    text: "게임 시작",
-                    routeName: '/super_game_screen',
+                    text: "게임 생성",
+                    routeName: '/super_game_setting_screen',
                     width: 330,
                     height: 50,
                     type: ButtonType.filled,
                     radius: 10,
+                    bold: true,
                   ),
                   SizedBox(
-                    height: 15,
+                    height: 10,
                   ),
                   Divider(
                     thickness: 1,
@@ -219,12 +218,13 @@ class SuperMainScreen extends StatelessWidget {
                     height: 15,
                   ),
                   RoundCornerRouteButton(
-                    text: "문제 세트 생성",
+                    text: "문제 세트 추가",
                     routeName: '/super_game_screen',
                     width: 330,
                     height: 50,
                     type: ButtonType.outlined,
                     radius: 10,
+                    bold: true,
                   ),
                 ],
               ),
