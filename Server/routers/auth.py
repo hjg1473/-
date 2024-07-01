@@ -48,6 +48,7 @@ router = APIRouter(
 class Token(BaseModel):
     access_token: str
     token_type: str
+    role: str
 
 # 비밀번호(string) -> 해시값(FMEL$#@LMDSFS)
 def get_password_hash(password):
@@ -58,18 +59,18 @@ def verify_password(plain_password, hashed_password):
     return bcrypt_context.verify(plain_password, hashed_password)
 
 # 로그인 판단
-def authenticate_user(username: str, password: str, db): 
+def authenticate_user(username: str, password: str, db, status_code=status.HTTP_200_OK): 
     user = db.query(Users).filter(Users.username == username).first()
     if not user:  # username does not exist
-        return None  # Changed from False to None
+        raise HTTPException(status_code=404, detail='아이디가 존재하지 않습니다.')
 
     if not bcrypt_context.verify(password, user.hashed_password):  # Password verification
-        return None  # Changed from False to None
+        raise HTTPException(status_code=404, detail='비밀번호가 틀렸습니다.')
     return user  # Return the user object
 
 # 토큰 생성
-def create_access_token(username: str, user_id: int, expires_delta: timedelta):
-    encode = {'sub' : username, 'id' : user_id} # id 와 sub 로 생성.
+def create_access_token(username: str, user_id: int, role: str, expires_delta: timedelta):
+    encode = {'sub' : username, 'id' : user_id, 'role': role} # id 와 sub 로 생성.
     expires = datetime.utcnow() + expires_delta
     encode.update({'exp' : expires})
     return jwt.encode(encode, SECRET_KEY, algorithm=ALGORITHM)
@@ -81,20 +82,24 @@ async def get_current_user(token: Annotated[str, Depends(oauth2_bearer)]):
         # token+key+algorithms 넘겨줌.
         username: str = payload.get('sub') # 생성한 값을 가져옴
         user_id: int = payload.get('id')
+        user_role: str = payload.get('role')
         if username is None or user_id is None: # 둘 중에 하나라도 값이 없으면
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
-                                detail='Could not validate user1.')
-        return {'username' : username, 'id' : user_id}
+                                detail='Could not validate user.')
+        return {'username' : username, 'id' : user_id, 'user_role': user_role}
     except JWTError:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
-                            detail='Could not validate user2.')
-
+                            detail='Could not validate user.')
 
 # 회원가입
-@router.post("/register")
+@router.post("/register", status_code=status.HTTP_200_OK)
 async def create_new_user(db: db_dependency, # 사용자 요청보다 앞에 와야함.
                           create_user: CreateUser):
-
+    
+    user_username = db.query(Users).filter(Users.username == create_user.username).first()
+    if user_username:
+        raise HTTPException(status_code=409, detail='중복된 아이디입니다.')
+    
     create_user_model = models.Users()
     create_user_model.username = create_user.username# 아이디
     create_user_model.name = create_user.name# 실명 
@@ -109,6 +114,8 @@ async def create_new_user(db: db_dependency, # 사용자 요청보다 앞에 와
     db.add(create_user_model)# DB에 저장
     db.commit() # 커밋
 
+    return {'message': '성공적으로 회원가입되었습니다.'}
+
 
 # 로그인 (토큰 요청)
 @router.post("/token", response_model=Token)
@@ -118,8 +125,8 @@ async def login_for_access_token(form_data: Annotated[OAuth2PasswordRequestForm,
     #검증 단계
     if not user:
         return 'Failed Authentication'
-    token = create_access_token(user.username, user.id, timedelta(minutes=20))
-    return {'access_token' : token, 'token_type' : 'bearer'}
+    token = create_access_token(user.username, user.id, user.role, timedelta(minutes=20))
+    return {'access_token' : token, 'token_type' : 'bearer', 'role': user.role}
 
 # Exceptions
 def get_user_exception():

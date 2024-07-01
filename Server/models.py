@@ -8,56 +8,55 @@ from sqlalchemy.orm import relationship, sessionmaker
 class Users(Base):
     __tablename__ = "users"
 
-    id = Column(Integer, primary_key=True, index=True)# PK, 사용자가 입력 안해도 값 생성(1,2,3...)
-    username = Column(String, unique=True, index=True)# 아이디
-    hashed_password = Column(String)# 해시된 비밀번호
-    email = Column(String, unique=True, index=True)# 이메일 (교사만 해당)
-    name = Column(String)# 실명
-    age = Column(Integer)# 나이
-    role = Column(String, index=True)# 역할 구분 (teacher or student)
-    group = Column(Integer)# 분반(학생만)
-    idToken = Column(String)# 고유 토큰(선생님만) 서버에서 설정
-#     # 관계 설정
-#     students = relationship("Users", back_populates="teacher", foreign_keys="User.teacher_id")
-#     teacher_id = Column(Integer, ForeignKey("users.id"), nullable=True)# 교사 ID (학생만 해당) , 교사는 Null
-#     teacher = relationship("Users", back_populates="students", remote_side=[id])
-    
-#     studyInfo = relationship("StudyInfo", back_populates="owner")# 학생일 경우 studyInfo와 관계 설정
+    id = Column(Integer, primary_key=True, index=True)  # PK, auto-increment
+    username = Column(String, unique=True, index=True)  # Unique username
+    hashed_password = Column(String)  # Hashed password
+    email = Column(String, unique=True, index=True)  # Email (teachers only)
+    name = Column(String)  # Real name
+    age = Column(Integer)  # Age
+    role = Column(String, index=True)  # Role (super or student)
+    group = Column(Integer)  # Group (students only)
+    phone_number = Column(String) # phone_number (teachers only)
+    idToken = Column(String)  # Unique token (teachers only)
+    # Relationship with studyInfo
+    studyInfos = relationship("StudyInfo", back_populates="owner")
+    teacher_id = Column(Integer, ForeignKey("users.id"), nullable=True)  # Teacher ID (students only, teachers have NULL)
 
+class StudyInfo(Base):  # Study information
+    __tablename__ = "studyInfo"
 
-# class StudyInfo(Base):# 학습 정보 
-#     __tablename__ = "studyInfo"
-#     __table_args__ = {'extend_existing': True}
+    id = Column(Integer, primary_key=True, index=True)  # PK
+    stdLevel = Column(Integer)  # Student level
+    owner_id = Column(Integer, ForeignKey("users.id"))  # FK to users
 
-#     id = Column(Integer, primary_key=True, index=True)# PK
-#     stdLevel = Column(Integer)# 학생 수준
-#     student_id = Column(Integer, ForeignKey("studyInfo.id"))# FK, 학습 정보 테이블 :: 한 명의 학생은 하나의 학습 정보 테이블을 가진다.
+    # Relationships
+    owner = relationship("Users", back_populates="studyInfos")
+    correct_problems = relationship("Problems", foreign_keys='Problems.TStudyInfo_id', back_populates="correct_study_info")
+    incorrect_problems = relationship("Problems", foreign_keys='Problems.FStudyInfo_id', back_populates="incorrect_study_info")
 
-#     problem_owner = relationship("Problems", back_populates="problem")
-#     owner = relationship("Students", back_populates="studyInfo")
+class Problems(Base):  # Problems
+    __tablename__ = "problems"
 
-# class Problems(Base):# 문제
-#     __tablename__ = "problems"
-#     __table_args__ = {'extend_existing': True}
+    id = Column(Integer, primary_key=True, index=True)  # PK
+    season = Column(String)  # Season
+    type = Column(String)  # Type
+    problemLevel = Column(Integer)  # Problem level (1-3)
+    koreaProblem = Column(String)  # Korean sentence
+    englishProblem = Column(String)  # English sentence
+    img_path = Column(String)  # Problem image (optional)
+    TStudyInfo_id = Column(Integer, ForeignKey("studyInfo.id"))  # FK to correct study info
+    FStudyInfo_id = Column(Integer, ForeignKey("studyInfo.id"))  # FK to incorrect study info
+    cproblem_id = Column(Integer, ForeignKey("customProblemSet.id"))  # FK to custom problem set
 
-#     id = Column(Integer, primary_key=True, index=True) # PK
-#     season = Column(String)# 시즌(1,2,custom,...,AI)
-#     type = Column(String)# 유형(문버, 단어 등등)
-#     problemLevel = Column(Integer)# 문제 난이도(1~3)
-#     koreaProblem = Column(String)# 한글 문장
-#     englishProblem = Column(String)# 영어 문장
-#     img_path = Column(String)#문제 이미지(optional)
-#     TStudyInfo_id = Column(Integer, ForeignKey("studyInfo.id"))# 맞은 문제 FK :: 하나의 학습 정보는 여러 개의 맞은 문제를 가진다. 
-#     FStudyInfo_id = Column(Integer, ForeignKey("studyInfo.id"))# 틀린 문제 FK :: 하나의 학습 정보는 여러 개의 틀린 문제를 가진다.
-#     cproblem_id = Column(Integer, ForeignKey("customProblemSet.id")) # 문제 테이블 id.FK :: 하나의 커스텀 문제 세트는 여러 개의 문제를 가진다.
+    # Relationships
+    correct_study_info = relationship("StudyInfo", foreign_keys=[TStudyInfo_id], back_populates="correct_problems")
+    incorrect_study_info = relationship("StudyInfo", foreign_keys=[FStudyInfo_id], back_populates="incorrect_problems")
+    custom_problem_set = relationship("CustomProblemSet", foreign_keys=[cproblem_id], back_populates="problems")
 
-#     problem = relationship("StudyInfo", back_populates="problem_owner")
-#     cproblem = relationship("CustomProblemSet", back_populates="cp_owner")
+class CustomProblemSet(Base):  # Custom problem set
+    __tablename__ = "customProblemSet"
 
-# class CustomProblemSet(Base):# 커스텀 문제 세트
-#     __tablename__ = "customProblemSet"
-#     __table_args__ = {'extend_existing': True}
+    id = Column(Integer, primary_key=True, index=True)  # PK
 
-#     id = Column(Integer, primary_key=True, index=True) # PK
-
-#     cp_owner = relationship("Problems", back_populates="cproblem")
+    # Relationship
+    problems = relationship("Problems", back_populates="custom_problem_set")
