@@ -62,7 +62,7 @@ async def read_dashboard(class_number: int,
 def successful_response(status_code: int):
     return {
         'status': status_code,
-        'transaction': 'Successful'
+        'detail': 'Successful'
     }
 
 def http_exception():
