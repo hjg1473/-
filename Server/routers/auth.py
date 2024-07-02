@@ -142,7 +142,6 @@ async def create_new_user(db: db_dependency, # 사용자 요청보다 앞에 와
 
     return {'detail': '성공적으로 회원가입되었습니다.'}
 
-
 # 첫 로그인 (엑세스 토큰 + 리프레시 토큰 한번에 요청)
 @router.post("/token", response_model=Token)
 async def login_for_access_token(form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
@@ -167,6 +166,22 @@ async def login_for_access_token(form_data: Annotated[OAuth2PasswordRequestForm,
     redis_client.set(f"{user.username}_access", access_token)
 
     return {'access_token' : access_token, 'token_type' : 'bearer', 'role': user.role, 'refresh_token' : refresh_token}
+
+# '엑세스 토큰' 유효성 검사.
+@router.post("/access", status_code=status.HTTP_200_OK)
+async def login_for_access_token(access_token: str):
+    try:
+        payload = jwt.decode(access_token, SECRET_KEY, algorithms=[ALGORITHM])
+        username: str = payload.get('sub')
+        user_id: int = payload.get('id')
+        user_role: str = payload.get('role')
+        if username is None or user_id is None:
+            raise HTTPException(status_code=status.HTTP_200_OK, detail="Token Invaild")    
+        return {'detail' : 'Token Vaild', 'role': user_role}
+    except JWTError:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Token Invaild")
+    
+
 
 # 기존 리프레시 토큰을 가지고 토큰 재발급.
 @router.post("/refresh", response_model=Token)
