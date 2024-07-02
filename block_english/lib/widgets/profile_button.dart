@@ -50,7 +50,7 @@ class ProfileButton extends StatelessWidget {
             ),
             child: Center(
               child: Text(
-                name[0],
+                name == "그룹 추가" || name == "학생 추가" ? '+' : name[0],
                 style: const TextStyle(
                   color: lightSurface,
                   fontSize: 17,
