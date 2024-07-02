@@ -73,7 +73,7 @@ async def read_user_studyInfo_all(user: user_dependency, db: db_dependency, user
 def successful_response(status_code: int):
     return {
         'status': status_code,
-        'transaction': 'Successful'
+        'detail': 'Successful'
     }
 
 def http_exception():

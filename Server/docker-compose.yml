@@ -7,7 +7,7 @@ services:
     ports:
       - "8000:8000"
     environment:
-      DATABASE_URL: mysql+pymysql://root:mysql1234@127.0.0.1:3306/test_login
+      DATABASE_URL: mysql+pymysql://root:mysql1234@127.0.0.1:3306/test2
     depends_on:
       - cloudsql-proxy
 
@@ -46,6 +46,15 @@ services:
       options:
         max-size: "100k"
         max-file: "1"
+        
+  redis:
+    image: redis:latest
+    container_name: redis-server
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
 
 volumes:
   db-data:
+  redis-data:

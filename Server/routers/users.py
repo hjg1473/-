@@ -56,7 +56,7 @@ async def change_password(user: user_dependency, db: db_dependency,
     db.add(user_model)
     db.commit()
 
-    return {'message': '비밀번호가 변경되었습니다.'}
+    return {'detail': '비밀번호가 변경되었습니다.'}
 
 @router.put("/update", status_code=status.HTTP_200_OK)
 async def update_user_info(user_info: User_info,
@@ -100,12 +100,12 @@ async def delete_user(user: user_dependency, db: db_dependency, user_verificatio
     db.query(Users).filter(Users.id == user.get('id')).delete()
     db.commit()
 
-    return {"message": '성공적으로 탈퇴되었습니다.'}
+    return {'detail': '성공적으로 탈퇴되었습니다.'}
 
 def successful_response(status_code: int):
     return {
         'status': status_code,
-        'transaction': 'Successful'
+        'detail': 'Successful'
     }
 
 
