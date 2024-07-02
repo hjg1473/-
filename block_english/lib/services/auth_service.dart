@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:block_english/models/login_response_model.dart';
 import 'package:http/http.dart' as http;
 
 class AuthService {
@@ -34,5 +35,27 @@ class AuthService {
       body: body,
     );
     return response.statusCode;
+  }
+
+  static Future<LoginResponseModel> postAuthToken(
+    String username,
+    String password,
+  ) async {
+    final url = Uri.parse("$baseUrl/$auth/$token");
+    final response = await http.post(
+      url,
+      headers: {
+        "accept": "application/json",
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+      encoding: Encoding.getByName('utf-8'),
+      body: {'username': username, 'password': password},
+    );
+    if (response.statusCode == 200) {
+      return LoginResponseModel.fromJson(jsonDecode(response.body));
+    } else {
+      var detail = jsonDecode(response.body)['detail'];
+      throw Exception(detail);
+    }
   }
 }
