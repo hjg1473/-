@@ -94,7 +94,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           if (value == null || value.isEmpty) {
                             return '아이디를 입력해주세요';
                           }
-                          if (value.length < 8) {
+                          if (value.length < 6) {
                             return '아이디가 너무 짧습니다';
                           }
                           return null;
@@ -105,13 +105,16 @@ class _LoginScreenState extends State<LoginScreen> {
                     const Padding(
                       padding: EdgeInsets.symmetric(horizontal: 40.0),
                       child: Text(
-                        "영문/숫자 조합, 8자 이상",
+                        "영문/숫자 조합, 6자 이상",
                         style: TextStyle(
                           color: Colors.black54,
                         ),
                       ),
                     ),
                   ],
+                ),
+                const SizedBox(
+                  height: 10,
                 ),
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -156,10 +159,22 @@ class _LoginScreenState extends State<LoginScreen> {
                   ],
                 ),
                 Padding(
-                  padding: const EdgeInsets.all(8.0),
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 40.0, vertical: 15.0),
                   child: FilledButton(
                     onPressed: onLoginPressed,
-                    child: const Text("로그인"),
+                    style: FilledButton.styleFrom(
+                      minimumSize: const Size(313, 50),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                    ),
+                    child: const Text(
+                      "로그인",
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                   ),
                 ),
               ],
