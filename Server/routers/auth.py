@@ -1,4 +1,4 @@
-from fastapi import Depends, HTTPException, status, APIRouter
+from fastapi import Depends, HTTPException, Header, status, APIRouter
 from pydantic import BaseModel
 from typing import Optional, Annotated
 import models
@@ -154,8 +154,8 @@ async def login_for_access_token(form_data: Annotated[OAuth2PasswordRequestForm,
     # Redis에서 유저의 기존 액세스 토큰을 가져옴
     existing_token = redis_client.get(f"{user.username}_access")
     
-    if existing_token and await get_valid_user(existing_token): # 토큰이 유효하다면
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="이미 로그인한 유저가 있습니다.")
+    # if existing_token and await get_valid_user(existing_token): # 토큰이 유효하다면
+    #     raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="이미 로그인한 유저가 있습니다.")
 
     # 엑세스 + 리프레시 토큰 생성
     access_token = create_access_token(user.username, user.id, user.role, timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES))
@@ -169,7 +169,7 @@ async def login_for_access_token(form_data: Annotated[OAuth2PasswordRequestForm,
 
 # '엑세스 토큰' 유효성 검사.
 @router.post("/access", status_code=status.HTTP_200_OK)
-async def login_for_access_token(access_token: str):
+async def login_for_access_token(access_token: str = Header(default=None)):
     try:
         payload = jwt.decode(access_token, SECRET_KEY, algorithms=[ALGORITHM])
         username: str = payload.get('sub')
@@ -185,7 +185,7 @@ async def login_for_access_token(access_token: str):
 
 # 기존 리프레시 토큰을 가지고 토큰 재발급.
 @router.post("/refresh", response_model=Token)
-async def refresh_access_token(db: db_dependency, refresh_token: str):
+async def refresh_access_token(db: db_dependency, refresh_token: str = Header(default=None)):
     try:
         payload = jwt.decode(refresh_token, SECRET_KEY, algorithms=[ALGORITHM]) # 리프레시 토큰 디코딩
         username: str = payload.get('sub') # 생성한 값을 가져옴, 리프레시 토큰은 username만 저장.
@@ -202,7 +202,7 @@ async def refresh_access_token(db: db_dependency, refresh_token: str):
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid refresh token") # 에러
 
         user_id = db.query(Users.id).filter(Users.username == username).first()[0]
-        user_role = db.query(Users.id).filter(Users.username == username).first()[0]
+        user_role = db.query(Users.role).filter(Users.username == username).first()[0]
 
         if user_id is None or user_role is None: #검색된 값이 없으면 에러
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
