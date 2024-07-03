@@ -32,8 +32,7 @@ class _RegStudentScreenState extends State<RegStudentScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content:
-                Text('회원가입이 실패했습니다. 잠시후에 시도해주세요. statusCode : $statusCode'),
+            content: Text('회원가입에 실패했습니다. 다시 시도해 주세요. statusCode : $statusCode'),
           ),
         );
       }
@@ -82,6 +81,11 @@ class _RegStudentScreenState extends State<RegStudentScreen> {
                 padding: const EdgeInsets.symmetric(horizontal: 40.0),
                 child: TextFormField(
                   maxLength: 10,
+                  inputFormatters: [
+                    FilteringTextInputFormatter.allow(
+                      RegExp(r'[a-zA-Zㄱ-ㅎ가-힣]'),
+                    ),
+                  ],
                   decoration: const InputDecoration(
                     counterText: '',
                     filled: true,
@@ -130,7 +134,7 @@ class _RegStudentScreenState extends State<RegStudentScreen> {
                     if (value == null || value.isEmpty) {
                       return '아이디를 입력해주세요';
                     }
-                    if (value.length < 8) {
+                    if (value.length < 6) {
                       return '아이디가 너무 짧습니다';
                     }
                     return null;
@@ -141,7 +145,7 @@ class _RegStudentScreenState extends State<RegStudentScreen> {
               const Padding(
                 padding: EdgeInsets.symmetric(horizontal: 40.0),
                 child: Text(
-                  "영문/숫자 조합, 8자 이상",
+                  "영문/숫자 조합, 6자 이상",
                   style: TextStyle(
                     color: Colors.black54,
                   ),
@@ -219,14 +223,12 @@ class _RegStudentScreenState extends State<RegStudentScreen> {
                       type: ButtonType.outlined,
                       cancel: true,
                     ),
-                    Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: FilledButton(
-                        onPressed: onRegisterPressed,
-                        style: FilledButton.styleFrom(
-                            minimumSize: const Size(150, 45)),
-                        child: const Text("회원가입"),
-                      ),
+                    const Spacer(),
+                    FilledButton(
+                      onPressed: onRegisterPressed,
+                      style: FilledButton.styleFrom(
+                          minimumSize: const Size(150, 45)),
+                      child: const Text("회원가입"),
                     ),
                   ],
                 ),

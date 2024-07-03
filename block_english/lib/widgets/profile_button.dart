@@ -1,5 +1,5 @@
-import 'package:block_english/screens/Super/super_group_screen.dart';
-import 'package:block_english/screens/Super/super_profile_screen.dart';
+import 'package:block_english/screens/SuperScreens/super_group_screen.dart';
+import 'package:block_english/screens/SuperScreens/super_profile_screen.dart';
 import 'package:block_english/utils/colors.dart';
 import 'package:flutter/material.dart';
 

@@ -1,3 +1,4 @@
+import 'package:block_english/services/auth_service.dart';
 import 'package:block_english/utils/constants.dart';
 import 'package:block_english/widgets/round_corner_route_button.dart';
 import 'package:flutter/material.dart';
@@ -11,13 +12,44 @@ class RegSuperScreen extends StatefulWidget {
 }
 
 class _RegSuperScreenState extends State<RegSuperScreen> {
-  final _formkey = GlobalKey<FormState>();
+  final formkey = GlobalKey<FormState>();
+
+  String name = '';
+  String username = '';
+  String password = '';
+
+  onRegisterPressed() async {
+    if (!formkey.currentState!.validate()) {
+      return;
+    }
+
+    int statusCode = await AuthService.postAuthRegister(
+        name, username, password, 0, "super");
+
+    if (statusCode != 200) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('회원가입에 실패했습니다. 다시 시도해 주세요. statusCode : $statusCode'),
+          ),
+        );
+      }
+      return;
+    }
+    if (mounted) {
+      Navigator.of(context).pushNamedAndRemoveUntil(
+        '/init',
+        (Route<dynamic> route) => false,
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: SingleChildScrollView(
         child: Form(
+          key: formkey,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -59,6 +91,14 @@ class _RegSuperScreenState extends State<RegSuperScreen> {
                     border: UnderlineInputBorder(),
                     labelText: '이름',
                   ),
+                  onChanged: (value) => setState(() => name = value),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return '이름을 입력해주세요';
+                    }
+                    return null;
+                  },
+                  autovalidateMode: AutovalidateMode.onUserInteraction,
                 ),
               ),
               const Padding(
@@ -87,12 +127,23 @@ class _RegSuperScreenState extends State<RegSuperScreen> {
                     border: UnderlineInputBorder(),
                     labelText: '아이디',
                   ),
+                  onChanged: (value) => setState(() => username = value),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return '아이디를 입력해주세요';
+                    }
+                    if (value.length < 6) {
+                      return '아이디가 너무 짧습니다';
+                    }
+                    return null;
+                  },
+                  autovalidateMode: AutovalidateMode.onUserInteraction,
                 ),
               ),
               const Padding(
                 padding: EdgeInsets.symmetric(horizontal: 40.0),
                 child: Text(
-                  "영문/숫자 조합, 8자 이상",
+                  "영문/숫자 조합, 6자 이상",
                   style: TextStyle(
                     color: Colors.black54,
                   ),
@@ -116,6 +167,17 @@ class _RegSuperScreenState extends State<RegSuperScreen> {
                     border: UnderlineInputBorder(),
                     labelText: '비밀번호',
                   ),
+                  onChanged: (value) => setState(() => password = value),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return '비밀번호를 입력해주세요';
+                    }
+                    if (value.length < 8) {
+                      return '비밀번호가 너무 짧습니다';
+                    }
+                    return null;
+                  },
+                  autovalidateMode: AutovalidateMode.onUserInteraction,
                 ),
               ),
               const Padding(
@@ -143,14 +205,12 @@ class _RegSuperScreenState extends State<RegSuperScreen> {
                       type: ButtonType.outlined,
                       cancel: true,
                     ),
-                    Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: FilledButton(
-                        onPressed: () {},
-                        style: FilledButton.styleFrom(
-                            minimumSize: const Size(150, 45)),
-                        child: const Text("회원가입"),
-                      ),
+                    const Spacer(),
+                    FilledButton(
+                      onPressed: onRegisterPressed,
+                      style: FilledButton.styleFrom(
+                          minimumSize: const Size(150, 45)),
+                      child: const Text("회원가입"),
                     ),
                   ],
                 ),

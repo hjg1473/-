@@ -4,9 +4,9 @@ import 'package:block_english/screens/AuthScreens/reg_select_role_screen.dart';
 import 'package:block_english/screens/AuthScreens/reg_student_screen.dart';
 import 'package:block_english/screens/AuthScreens/reg_super_screen.dart';
 import 'package:block_english/screens/StudentScreens/student_main_screen.dart';
-import 'package:block_english/screens/Super/super_game_screen.dart';
-import 'package:block_english/screens/Super/super_game_setting_screen.dart';
-import 'package:block_english/screens/Super/super_main_screen.dart';
+import 'package:block_english/screens/SuperScreens/super_game_screen.dart';
+import 'package:block_english/screens/SuperScreens/super_game_setting_screen.dart';
+import 'package:block_english/screens/SuperScreens/super_main_screen.dart';
 import 'package:flutter/material.dart';
 
 void main() {
