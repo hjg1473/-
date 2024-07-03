@@ -193,7 +193,8 @@ class _RegSuperScreenState extends State<RegSuperScreen> {
                 height: 250,
               ),
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 40.0),
+                padding: const EdgeInsets.symmetric(
+                    horizontal: 40.0, vertical: 30.0),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
