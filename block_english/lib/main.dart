@@ -8,6 +8,7 @@ import 'package:block_english/screens/SuperScreens/super_game_screen.dart';
 import 'package:block_english/screens/SuperScreens/super_game_setting_screen.dart';
 import 'package:block_english/screens/SuperScreens/super_main_screen.dart';
 import 'package:block_english/screens/loading_screen.dart';
+import 'package:block_english/screens/setting_screen.dart';
 import 'package:flutter/material.dart';
 
 void main() {
@@ -40,6 +41,7 @@ class MyApp extends StatelessWidget {
         '/super_game_setting_screen': (context) =>
             const SuperGameSettingScreen(),
         '/super_game_screen': (context) => const SuperGameScreen(),
+        '/setting_screen': (context) => const SettingScreen(),
       },
     );
   }
