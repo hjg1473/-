@@ -40,7 +40,7 @@ class _RegStudentScreenState extends State<RegStudentScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('회원가입이 실패했습니다. 다시 시도해주세요.\n$e'),
+            content: Text('회원가입에 실패했습니다. 다시 시도해주세요.\n$e'),
           ),
         );
       }
