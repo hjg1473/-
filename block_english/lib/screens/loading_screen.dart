@@ -68,21 +68,21 @@ class _LoadingScreenState extends State<LoadingScreen> {
                         '/std_main_screen',
                         (Route<dynamic> route) => false,
                       ));
-              return Text(snapshot.data.toString());
+              return const CircularProgressIndicator();
             } else if (snapshot.data.toString() == "super") {
               WidgetsBinding.instance.addPostFrameCallback(
                   (_) => Navigator.of(context).pushNamedAndRemoveUntil(
                         '/super_main_screen',
                         (Route<dynamic> route) => false,
                       ));
-              return Text(snapshot.data.toString());
+              return const CircularProgressIndicator();
             } else {
               WidgetsBinding.instance.addPostFrameCallback(
                   (_) => Navigator.of(context).pushNamedAndRemoveUntil(
                         '/init',
                         (Route<dynamic> route) => false,
                       ));
-              return Text(snapshot.data.toString());
+              return const CircularProgressIndicator();
             }
           },
         ),
