@@ -26,12 +26,14 @@ class SuperMainScreen extends StatelessWidget {
             ),
           ),
           centerTitle: true,
-          leading: const IconButton(
-            icon: Icon(
+          leading: IconButton(
+            icon: const Icon(
               Icons.settings,
               color: Colors.black87,
             ),
-            onPressed: null,
+            onPressed: () {
+              Navigator.of(context).pushNamed('/setting_screen');
+            },
           ),
           bottom: const TabBar(tabs: [
             Tab(
