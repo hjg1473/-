@@ -3,7 +3,7 @@ from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session, joinedload
 from fastapi import APIRouter, Depends, HTTPException, Path
 from starlette import status
-from models import Users, StudyInfo
+from models import Users, StudyInfo, Groups
 import models
 from database import engine, SessionLocal
 from sqlalchemy.orm import Session
@@ -33,6 +33,152 @@ templates = Jinja2Templates(directory="templates")
 db_dependency = Annotated[Session, Depends(get_db)]
 user_dependency = Annotated[dict, Depends(get_current_user)]    
 
+
+# 해당 선생님이 관리하는 반 조회
+@router.get("/group", status_code = status.HTTP_200_OK)
+async def read_group_info(user: user_dependency,
+                    db: db_dependency):
+    
+    if user is None:
+        raise get_user_exception()
+
+    if user.get('user_role') != 'super': # super 인 경우만 
+        raise HTTPException(status_code=401, detail='Authentication Failed')
+
+    user_group = db.query(Groups)\
+        .filter(Groups.admin_id == user.get("id"))\
+        .all()
+    
+    if not user_group: # if user_group is None -> return []
+        raise HTTPException(status_code=401, detail='Not found.')
+    
+    result = [{'id': u.id, 'name': u.name} for u in user_group]
+    
+    return result
+
+class AddGroup(BaseModel):
+    name: str
+
+# 해당 선생님이 관리하는 반 추가
+@router.post("/create/group", status_code = status.HTTP_200_OK)
+async def user_solve_problem(addgroup: AddGroup, 
+                            user: user_dependency, db: db_dependency):
+    
+    if user is None:
+        raise get_user_exception()
+
+    if user.get('user_role') != 'super': # super 인 경우만 
+        raise HTTPException(status_code=401, detail='Authentication Failed')
+    
+    # 기존에 중복된 반 이름이 존재한다? # A선생님 1반, B선생님 1반 은 상관 없음.
+    group_name = db.query(Groups)\
+        .filter(Groups.name == addgroup.name)\
+        .filter(Groups.admin_id == user.get("id"))\
+        .first()
+    
+    if group_name is not None:
+        raise HTTPException(status_code=404, detail='같은 이름의 방이 존재합니다.')
+    
+    group_model = models.Groups()
+    group_model.name = addgroup.name
+    group_model.admin_id = user.get("id")
+
+    
+    db.add(group_model)
+    db.commit()
+
+    return {'detail':'Success'}
+
+# 특정 반에 속한 학생들의 정보 조회
+@router.get("/student_in_group/{group_id}", status_code = status.HTTP_200_OK)
+async def read_group_info(group_id: int,
+                    user: user_dependency,
+                    db: db_dependency):
+    if user is None:
+        raise get_user_exception()
+
+    if user.get('user_role') != 'super': # super 인 경우만 
+        raise HTTPException(status_code=401, detail='Authentication Failed')
+    
+    # 팀 아이디가 그룹 아이디랑 같다
+    user_group = db.query(Users)\
+        .filter(Users.team_id == group_id)\
+        .all()
+    
+    if not user_group: # if user_group is None -> return []
+        raise HTTPException(status_code=401, detail='Not found.')
+    
+    result = [{'id': u.id, 'name': u.name} for u in user_group]
+    
+    return result
+
+# 선생님이 관리하는 반에 학생 추가 : 학생의 외래키 업데이트. 어떤 반에?, 누구를?
+@router.put("/group/{group_id}/update/{user_id}", status_code = status.HTTP_200_OK)
+async def user_solve_problem(group_id: int,
+                            user_id: int,
+                            user: user_dependency, db: db_dependency):
+    
+    if user is None:
+        raise get_user_exception()
+    
+    if user.get('user_role') != 'super': # super 인 경우만 
+        raise HTTPException(status_code=401, detail='Authentication Failed')
+    
+    # 쿼리 변수로 해당 학생 db 검색
+    student_model = db.query(models.Users)\
+        .filter(models.Users.id == user_id)\
+        .first()
+    
+    # 학생이 없으면 예외 처리
+    if student_model is None:
+        raise HTTPException(status_code=404, detail='해당 학생을 찾을 수 없습니다.')
+    
+    # 입력한 group_id 에 해당하는 반을 검색
+    group_model = db.query(models.Groups)\
+        .filter(models.Groups.id == group_id)\
+        .first()    
+    
+    # 반이 없으면 예외 처리
+    if group_model is None:
+        raise HTTPException(status_code=404, detail='해당 반을 찾을 수 없습니다.')
+    
+    if student_model.team_id is not None:
+        raise HTTPException(status_code=404, detail='해당 학생은 이미 소속된 반이 존재합니다.')
+
+    # 학생 team_id 에 해당 group_id 를 할당
+    student_model.team_id = group_id
+
+    db.add(student_model)
+    db.commit()
+
+    return {'detail' : 'Success'}
+
+# 해당 학생의 소속된 '반' 없앰
+@router.put("/group/remove/{user_id}", status_code = status.HTTP_200_OK)
+async def user_solve_problem(user_id: int,
+                            user: user_dependency, db: db_dependency):
+    
+    if user.get('user_role') != 'super': # super 인 경우만 
+        raise HTTPException(status_code=401, detail='Authentication Failed')
+    
+    # 쿼리 변수로 해당 학생 db 검색
+    student_model = db.query(models.Users)\
+        .filter(models.Users.id == user_id)\
+        .first()
+    
+    # 학생이 없으면 예외 처리
+    if student_model is None:
+        raise HTTPException(status_code=404, detail='해당 학생을 찾을 수 없습니다.')
+    
+    # 학생 team_id 에 해당 Null값을 할당
+    student_model.team_id = None
+
+    db.add(student_model)
+    db.commit()
+
+    return {'detail' : 'Success'}
+
+# 선생님의 정보 반환, self
 @router.get("/info", status_code = status.HTTP_200_OK)
 async def read_info(user: user_dependency, db: db_dependency):
     if user is None:
@@ -44,6 +190,7 @@ async def read_info(user: user_dependency, db: db_dependency):
     # 필터 사용. 학습 정보의 owner_id 와 '유저'의 id가 같으면, 해당 학습 정보 반환.
     # 사용자의 id, username, email, phone_number 반환
 
+# '각 반'을 기준으로 필터링한 결과 반환 (선생님 id 로 필터링 추가 필요)
 @router.get("/group/{class_number}", status_code = status.HTTP_200_OK)
 async def read_group_info(class_number: int,
                     user: user_dependency,
@@ -51,12 +198,15 @@ async def read_group_info(class_number: int,
     if user is None:
         raise get_user_exception()
     
-    if user is None or user.get('user_role') != 'super': # super 인 경우만 
+    if user.get('user_role') != 'super': # super 인 경우만 
         raise HTTPException(status_code=401, detail='Authentication Failed')
 
     user_group = db.query(Users)\
         .filter(Users.group == class_number)\
         .all()
+    
+    if not user_group: # if user_group is None -> return []
+        raise HTTPException(status_code=401, detail='Not found.')
     
     result = [{'id': u.id, 'name': u.name,'age': u.age} for u in user_group]
     
@@ -122,7 +272,7 @@ async def read_user_studyInfo_all(user: user_dependency, db: db_dependency, user
     if user is None:
         raise get_user_exception()
     
-    if user is None or user.get('user_role') != 'super': # super 인 경우만 
+    if user.get('user_role') != 'super': # super 인 경우만 
         raise HTTPException(status_code=401, detail='Authentication Failed')
 
 
@@ -135,6 +285,14 @@ async def read_user_studyInfo_all(user: user_dependency, db: db_dependency, user
         joinedload(StudyInfo.correct_problems),
         joinedload(StudyInfo.incorrect_problems)
     ).filter(StudyInfo.id == user_id).first()
+
+    # 초기화
+    correct_problems_type1_count = 0
+    correct_problems_type2_count = 0
+    correct_problems_type3_count = 0
+    incorrect_problems_type1_count = 0
+    incorrect_problems_type2_count = 0
+    incorrect_problems_type3_count = 0
 
     if study_info:
         correct_problems_type1_count = sum(1 for problem in study_info.correct_problems if problem.type == '부정문')
