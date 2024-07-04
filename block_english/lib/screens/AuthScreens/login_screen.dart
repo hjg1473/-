@@ -17,7 +17,7 @@ class _LoginScreenState extends State<LoginScreen> {
   String username = '';
   String password = '';
 
-  final stroage = const FlutterSecureStorage();
+  final storage = const FlutterSecureStorage();
 
   onLoginPressed() async {
     if (!formkey.currentState!.validate()) {
@@ -29,7 +29,10 @@ class _LoginScreenState extends State<LoginScreen> {
           await AuthService.postAuthToken(username, password);
 
       var role = loginResponseModel.role;
-      await stroage.write(key: "token", value: loginResponseModel.accessToken);
+      await storage.write(
+          key: "accessToken", value: loginResponseModel.accessToken);
+      await storage.write(
+          key: "refreshToken", value: loginResponseModel.refreshToken);
       if (mounted) {
         if (role == 'student') {
           Navigator.of(context).pushNamedAndRemoveUntil(
@@ -49,7 +52,7 @@ class _LoginScreenState extends State<LoginScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text("로그인이 실패했습니다. $e"),
+            content: Text("로그인이 실패했습니다.\n$e"),
           ),
         );
       }
