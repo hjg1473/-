@@ -13,7 +13,9 @@ class StudentMainScreen extends StatelessWidget {
         appBar: AppBar(
           leading: IconButton(
             icon: const Icon(Icons.settings_outlined),
-            onPressed: () {},
+            onPressed: () {
+              Navigator.of(context).pushNamed('/setting_screen');
+            },
           ),
           centerTitle: true,
           title: const Text("Block English"),

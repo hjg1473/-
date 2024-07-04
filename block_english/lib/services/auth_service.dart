@@ -14,6 +14,7 @@ class AuthService {
   static const String token = "token";
   static const String access = "access";
   static const String refresh = "refresh";
+  static const String logout = "logout";
 
   static Future<RegResponseModel> postAuthRegister(
     String name,
@@ -104,5 +105,17 @@ class AuthService {
       final detail = jsonDecode(utf8.decode(response.bodyBytes))['detail'];
       throw HttpException(detail);
     }
+  }
+
+  static Future<int> postAuthLogout(String refreshToken) async {
+    final url = Uri.parse("$baseUrl/$auth/$logout");
+    final response = await http.post(
+      url,
+      headers: {
+        "accept": "application/json",
+        "refresh-token": refreshToken,
+      },
+    );
+    return response.statusCode;
   }
 }
