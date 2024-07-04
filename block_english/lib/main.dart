@@ -7,6 +7,7 @@ import 'package:block_english/screens/StudentScreens/student_main_screen.dart';
 import 'package:block_english/screens/SuperScreens/super_game_screen.dart';
 import 'package:block_english/screens/SuperScreens/super_game_setting_screen.dart';
 import 'package:block_english/screens/SuperScreens/super_main_screen.dart';
+import 'package:block_english/screens/loading_screen.dart';
 import 'package:flutter/material.dart';
 
 void main() {
@@ -26,8 +27,9 @@ class MyApp extends StatelessWidget {
         ),
       ),
       title: "Block English",
-      initialRoute: '/init',
+      initialRoute: '/loading_screen',
       routes: {
+        '/loading_screen': (context) => const LoadingScreen(),
         '/init': (context) => const InitScreen(),
         '/login_screen': (context) => const LoginScreen(),
         '/reg_select_role_screen': (context) => const RegSelectRoleScreen(),

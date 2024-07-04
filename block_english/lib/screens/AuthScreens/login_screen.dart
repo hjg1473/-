@@ -52,7 +52,7 @@ class _LoginScreenState extends State<LoginScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text("로그인이 실패했습니다.\n$e"),
+            content: Text("로그인에 실패했습니다.\n$e"),
           ),
         );
       }
