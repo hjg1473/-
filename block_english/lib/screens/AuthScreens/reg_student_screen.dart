@@ -1,4 +1,5 @@
 import 'package:animated_custom_dropdown/custom_dropdown.dart';
+import 'package:block_english/models/reg_response_model.dart';
 import 'package:block_english/utils/constants.dart';
 import 'package:block_english/widgets/round_corner_route_button.dart';
 import 'package:flutter/material.dart';
@@ -25,24 +26,24 @@ class _RegStudentScreenState extends State<RegStudentScreen> {
       return;
     }
 
-    int statusCode = await AuthService.postAuthRegister(
-        name, username, password, grade, "student");
+    try {
+      RegResponseModel regResponseModel = await AuthService.postAuthRegister(
+          name, username, password, grade, "student");
 
-    if (statusCode != 200) {
+      if (mounted) {
+        Navigator.of(context).pushNamedAndRemoveUntil(
+          '/init',
+          (Route<dynamic> route) => false,
+        );
+      }
+    } on Exception catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('회원가입에 실패했습니다. 다시 시도해 주세요. statusCode : $statusCode'),
+            content: Text('회원가입에 실패했습니다. 다시 시도해주세요.\n$e'),
           ),
         );
       }
-      return;
-    }
-    if (mounted) {
-      Navigator.of(context).pushNamedAndRemoveUntil(
-        '/init',
-        (Route<dynamic> route) => false,
-      );
     }
   }
 
