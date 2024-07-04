@@ -66,7 +66,7 @@ class Groups(Base):
     __tablename__ = "groups"
 
     id = Column(Integer, primary_key=True, index=True)
-    name = Column(String(255))
+    name = Column(String)
     admin_id = Column(Integer, ForeignKey("users.id")) # FK, teacher_id
 
     owner = relationship("Users", foreign_keys=[admin_id], back_populates="managed_groups")

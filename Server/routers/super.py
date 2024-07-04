@@ -158,6 +158,9 @@ async def user_solve_problem(group_id: int,
 async def user_solve_problem(user_id: int,
                             user: user_dependency, db: db_dependency):
     
+    if user is None:
+        raise get_user_exception()
+    
     if user.get('user_role') != 'super': # super 인 경우만 
         raise HTTPException(status_code=401, detail='Authentication Failed')
     
@@ -294,13 +297,22 @@ async def read_user_studyInfo_all(user: user_dependency, db: db_dependency, user
     incorrect_problems_type2_count = 0
     incorrect_problems_type3_count = 0
 
-    if study_info:
-        correct_problems_type1_count = sum(1 for problem in study_info.correct_problems if problem.type == '부정문')
-        correct_problems_type2_count = sum(1 for problem in study_info.correct_problems if problem.type == '의문문')
-        correct_problems_type3_count = sum(1 for problem in study_info.correct_problems if problem.type == '단어와품사')
-        incorrect_problems_type1_count = sum(1 for problem in study_info.correct_problems if problem.type == '부정문')
-        incorrect_problems_type2_count = sum(1 for problem in study_info.correct_problems if problem.type == '의문문')
-        incorrect_problems_type3_count = sum(1 for problem in study_info.correct_problems if problem.type == '단어와품사')
+    # 조금 수정을 원해, 매번 확인한다? 조금 그렇긴 해
+    for problem in study_info.correct_problems:
+        if problem.type == '부정문':
+            correct_problems_type1_count += 1
+        elif problem.type == '의문문':
+            correct_problems_type2_count += 1
+        elif problem.type == '단어와품사':
+            correct_problems_type3_count += 1
+
+    for problem in study_info.incorrect_problems:
+        if problem.type == '부정문':
+            incorrect_problems_type1_count += 1
+        elif problem.type == '의문문':
+            incorrect_problems_type2_count += 1
+        elif problem.type == '단어와품사':
+            incorrect_problems_type3_count += 1
 
     return {
         'user_id': user_model[0],

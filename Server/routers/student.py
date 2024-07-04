@@ -43,6 +43,9 @@ async def connect_teacher(
 
     if user is None:
         raise get_user_exception()
+    
+    if user.get('user_role') != 'student': # student 인 경우만 
+        raise HTTPException(status_code=401, detail='Authentication Failed')
 
     # 학생 정보 가져오기
     student = db.query(Users).filter(Users.id == user.get("id")).first()
@@ -72,8 +75,12 @@ async def connect_teacher(
 # 학생(self)과 연결된 선생님 아이디 반환
 @router.get("/connect_teacher", status_code = status.HTTP_200_OK)
 async def read_user_all(user: user_dependency, db: db_dependency):
+
     if user is None:
         raise get_user_exception()
+    
+    if user.get('user_role') != 'student': # student 인 경우만 
+        raise HTTPException(status_code=401, detail='Authentication Failed')
     
     # 쿼리 검색
     teacher = db.query(Users).options( 
@@ -87,19 +94,18 @@ async def read_user_all(user: user_dependency, db: db_dependency):
 
     return {"teachers": [{"id": teacher.id} for teacher in teacher.student_teachers]}
 
-@router.get("/", status_code = status.HTTP_200_OK)
-async def read_user_all(user: user_dependency, db: db_dependency):
-    if user is None:
-        raise get_user_exception()
-    
-    return db.query(Users).all()
-
+# 학생 정보 반환
 @router.get("/info", status_code = status.HTTP_200_OK)
 async def read_user_all(user: user_dependency, db: db_dependency):
+
     if user is None:
         raise get_user_exception()
     
-    return db.query(Users).filter(Users.id == user.get('id')).first()
+    if user.get('user_role') != 'student': # student 인 경우만 
+        raise HTTPException(status_code=401, detail='Authentication Failed')
+    
+    user_model = db.query(Users).filter(Users.id == user.get('id')).first()
+    return {'name': user_model.username, 'age': user_model.age, 'team_id': user_model.team_id}
     # 필터 사용. 학습 정보의 owner_id 와 '유저'의 id가 같으면,
     # 사용자의 모든 정보 반환.
 
@@ -108,8 +114,12 @@ async def read_user_all(user: user_dependency, db: db_dependency):
 # 사용자의 id 반환, self
 @router.get("/id", status_code = status.HTTP_200_OK)
 async def read_user_id(user: user_dependency, db: db_dependency):
+
     if user is None:
         raise get_user_exception()
+    
+    if user.get('user_role') != 'student': # student 인 경우만 
+        raise HTTPException(status_code=401, detail='Authentication Failed')
     
     return  {"id": user.get('id')}
     # 사용자의 id 반환.
@@ -117,8 +127,12 @@ async def read_user_id(user: user_dependency, db: db_dependency):
 # 학생의 self 학습 정보 반환.
 @router.get("/studyinfo", status_code = status.HTTP_200_OK)
 async def read_studyinfo_all(user: user_dependency, db: db_dependency):
+
     if user is None:
         raise get_user_exception()
+    
+    if user.get('user_role') != 'student': # student 인 경우만 
+        raise HTTPException(status_code=401, detail='Authentication Failed')
 
     user_model = db.query(Users.id, Users.username, Users.age, Users.group).filter(Users.id == user.get('id')).first()
 
@@ -135,14 +149,22 @@ async def read_studyinfo_all(user: user_dependency, db: db_dependency):
     incorrect_problems_type2_count = 0
     incorrect_problems_type3_count = 0
     
-    # 조금 수정을 원해
-    if study_info:
-        correct_problems_type1_count = sum(1 for problem in study_info.correct_problems if problem.type == '부정문')
-        correct_problems_type2_count = sum(1 for problem in study_info.correct_problems if problem.type == '의문문')
-        correct_problems_type3_count = sum(1 for problem in study_info.correct_problems if problem.type == '단어와품사')
-        incorrect_problems_type1_count = sum(1 for problem in study_info.correct_problems if problem.type == '부정문')
-        incorrect_problems_type2_count = sum(1 for problem in study_info.correct_problems if problem.type == '의문문')
-        incorrect_problems_type3_count = sum(1 for problem in study_info.correct_problems if problem.type == '단어와품사')
+    # 조금 수정을 원해, 매번 확인한다? 조금 그렇긴 해
+    for problem in study_info.correct_problems:
+        if problem.type == '부정문':
+            correct_problems_type1_count += 1
+        elif problem.type == '의문문':
+            correct_problems_type2_count += 1
+        elif problem.type == '단어와품사':
+            correct_problems_type3_count += 1
+
+    for problem in study_info.incorrect_problems:
+        if problem.type == '부정문':
+            incorrect_problems_type1_count += 1
+        elif problem.type == '의문문':
+            incorrect_problems_type2_count += 1
+        elif problem.type == '단어와품사':
+            incorrect_problems_type3_count += 1
 
     return {
         'user_id': user_model[0],
@@ -158,8 +180,12 @@ async def read_studyinfo_all(user: user_dependency, db: db_dependency):
 
 @router.get("/{user_id}", status_code = status.HTTP_200_OK)
 async def read_user_studyInfo_all(user: user_dependency, db: db_dependency, user_id : int):
+    
     if user is None:
         raise get_user_exception()
+    
+    if user.get('user_role') != 'student': # student 인 경우만 
+        raise HTTPException(status_code=401, detail='Authentication Failed')
     
     studyinfo_model = db.query(StudyInfo)\
         .filter(StudyInfo.owner_id == user_id)\

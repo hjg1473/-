@@ -88,7 +88,7 @@ def create_refresh_token(username: str, user_id: int, role: str, expires_delta: 
     encode.update({'exp' : expires})
     return jwt.encode(encode, SECRET_KEY, algorithm=ALGORITHM)
 
-# JWT 디코딩
+# JWT 엑세스 토큰 디코딩
 async def get_current_user(token: Annotated[str, Depends(oauth2_bearer)]):
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
@@ -104,6 +104,23 @@ async def get_current_user(token: Annotated[str, Depends(oauth2_bearer)]):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
                             detail='Could not validate user.')
 
+# # JWT 리프레쉬 토큰 디코딩
+# async def get_current_user_refresh(token: Annotated[str, Depends(oauth2_bearer)]):
+#     try:
+#         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+#         # token+key+algorithms 넘겨줌.
+#         username: str = payload.get('sub') # 생성한 값을 가져옴
+#         # user_id: int = payload.get('id')
+#         # user_role: str = payload.get('role')
+#         if username is None: # 둘 중에 하나라도 값이 없으면
+#             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
+#                                 detail='Could not validate user.')
+#         return {'username' : username}
+#     except JWTError:
+#         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
+#                             detail='Could not validate user.')
+
+# 유저 유효한지 검사
 async def get_valid_user(token: str) -> bool:
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
@@ -152,7 +169,7 @@ async def login_for_access_token(form_data: Annotated[OAuth2PasswordRequestForm,
         return 'Failed Authentication'
     
     # Redis에서 유저의 기존 액세스 토큰을 가져옴
-    existing_token = redis_client.get(f"{user.username}_access")
+    # existing_token = redis_client.get(f"{user.username}_access")
     
     # if existing_token and await get_valid_user(existing_token): # 토큰이 유효하다면
     #     raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="이미 로그인한 유저가 있습니다.")
@@ -219,7 +236,7 @@ async def refresh_access_token(db: db_dependency, refresh_token: str = Header(de
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid refresh token")
 
 user_dependency = Annotated[dict, Depends(get_current_user)]    
-
+# user_dependency_refresh = Annotated[dict, Depends(get_current_user_refresh)]    
 # class User(BaseModel):
 #     username: str
     
@@ -228,10 +245,22 @@ user_dependency = Annotated[dict, Depends(get_current_user)]
 #     return current_user
 
 @router.post("/logout")
-async def logout(user: user_dependency):
-    redis_client.delete(f"{user.username}_access") 
-    redis_client.delete(f"{user.username}_refresh")
-    return {'detail' : '성공적으로 로그아웃 되었습니다!'}
+async def logout(refresh_token: str = Header(default=None)):
+    try:
+        payload = jwt.decode(refresh_token, SECRET_KEY, algorithms=[ALGORITHM]) # 리프레시 토큰 디코딩
+        username: str = payload.get('sub') # 생성한 값을 가져옴, 리프레시 토큰은 username만 저장.
+        # user_id: int = payload.get('id')
+        # user_role: str = payload.get('role')
+
+        if username is None: # username 값이 없으면
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
+                                detail='Could not validate user.')
+        redis_client.delete(f"{username}_access") 
+        redis_client.delete(f"{username}_refresh")
+        return {'detail' : '성공적으로 로그아웃 되었습니다!'}
+    except JWTError:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid refresh token")
+
 
 
 # Exceptions
