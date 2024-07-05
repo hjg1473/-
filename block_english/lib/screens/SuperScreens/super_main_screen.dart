@@ -184,6 +184,7 @@ class _SuperMainScreenState extends State<SuperMainScreen> {
                               var group = snapshot.data![index];
                               return ProfileButton(
                                 name: group.name,
+                                groupId: group.id,
                               );
                             },
                             separatorBuilder: (context, index) =>
@@ -198,7 +199,16 @@ class _SuperMainScreenState extends State<SuperMainScreen> {
                       },
                     ),
                   ),
-                  const ProfileButton(name: "그룹 추가"),
+                  const Center(
+                    child: RoundCornerRouteButton(
+                      text: "그룹 추가",
+                      routeName: '/super_add_group_screen',
+                      width: 320,
+                      height: 50,
+                      type: ButtonType.filled,
+                      bold: true,
+                    ),
+                  ),
                   const SizedBox(
                     height: 15,
                   ),

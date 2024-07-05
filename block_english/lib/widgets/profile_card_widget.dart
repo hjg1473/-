@@ -5,7 +5,7 @@ class ProfileCard extends StatelessWidget {
   const ProfileCard({
     super.key,
     required this.name,
-    this.age = "null",
+    this.age = '',
     this.isStudent = false,
   });
 
@@ -60,7 +60,7 @@ class ProfileCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    age == "null" ? name : "$name / $age",
+                    age == '' ? name : "$name / $age",
                     style: const TextStyle(
                       fontSize: 15,
                     ),
