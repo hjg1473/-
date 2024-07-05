@@ -1,4 +1,5 @@
 import 'package:block_english/utils/colors.dart';
+import 'package:block_english/utils/constants.dart';
 import 'package:flutter/material.dart';
 
 class ProfileCard extends StatelessWidget {
@@ -7,17 +8,18 @@ class ProfileCard extends StatelessWidget {
     required this.name,
     this.age = "null",
     this.isStudent = false,
+    this.teamName,
   });
 
   final String name;
   final String age;
+  final String? teamName;
   final bool isStudent;
 
   @override
   Widget build(BuildContext context) {
     return Container(
       height: 80,
-      //width: 330,
       decoration: BoxDecoration(
         color: lightSurface,
         borderRadius: BorderRadius.circular(10),
@@ -60,7 +62,9 @@ class ProfileCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    age == "null" ? name : "$name / $age",
+                    age == "null"
+                        ? name
+                        : "$name / ${gradelist[int.parse(age)]}",
                     style: const TextStyle(
                       fontSize: 15,
                     ),
@@ -78,10 +82,10 @@ class ProfileCard extends StatelessWidget {
                           topRight: Radius.circular(8),
                           bottomRight: Radius.circular(8),
                         )),
-                    child: const Center(
+                    child: Center(
                       child: Text(
-                        "3학년 1반",
-                        style: TextStyle(
+                        teamName ?? "반 등록하기",
+                        style: const TextStyle(
                           color: lightSurface,
                           fontSize: 20,
                           fontWeight: FontWeight.bold,

@@ -1,4 +1,5 @@
 import 'package:block_english/screens/StudentScreens/student_game_screen.dart';
+import 'package:block_english/screens/StudentScreens/student_profile_screen.dart';
 import 'package:flutter/material.dart';
 
 class StudentMainScreen extends StatelessWidget {
@@ -52,7 +53,7 @@ class StudentMainScreen extends StatelessWidget {
             ),
             const StudentGameScreen(),
             const Center(
-              child: Text('프로필'),
+              child: StudentProfileScreen(),
             ),
           ],
         ),
