@@ -1,5 +1,6 @@
 import 'dart:ui';
-import 'package:block_english/models/super_info_response_model.dart';
+import 'package:block_english/models/Super/super_group_model.dart';
+import 'package:block_english/models/Super/super_info_response_model.dart';
 import 'package:block_english/services/super_service.dart';
 import 'package:block_english/utils/colors.dart';
 import 'package:block_english/utils/constants.dart';
@@ -23,7 +24,9 @@ class SuperMainScreen extends StatefulWidget {
 class _SuperMainScreenState extends State<SuperMainScreen> {
   final storage = const FlutterSecureStorage();
   String name = '';
-  getProfileInfo() async {
+  List<SuperGroupModel> groups = [];
+
+  waitForProfile() async {
     try {
       final accesstoken = await storage.read(key: "accessToken") ?? "";
       SuperInfoResponseModel superInfoResponseModel =
@@ -41,9 +44,21 @@ class _SuperMainScreenState extends State<SuperMainScreen> {
     }
   }
 
+  Future<List<SuperGroupModel>> waitForGroups() async {
+    final accesstoken = await storage.read(key: "accessToken") ?? "";
+    groups = await SuperService.getGroupList(accesstoken);
+    return groups;
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    waitForProfile();
+    waitForGroups();
+  }
+
   @override
   Widget build(BuildContext context) {
-    getProfileInfo();
     return DefaultTabController(
       length: 2,
       child: Scaffold(
@@ -67,23 +82,21 @@ class _SuperMainScreenState extends State<SuperMainScreen> {
           ),
           bottom: const TabBar(tabs: [
             Tab(
-              text: '학생 관리',
+              text: '대시보드',
             ),
             Tab(
-              text: '게임 생성',
+              text: '게임',
             ),
           ]),
         ),
         body: TabBarView(
           children: [
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 30.0),
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 30.0, vertical: 25.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const SizedBox(
-                    height: 25,
-                  ),
                   const Text(
                     "프로필",
                     style: TextStyle(
@@ -98,7 +111,6 @@ class _SuperMainScreenState extends State<SuperMainScreen> {
                   name == ''
                       ? Container(
                           height: 80,
-                          //width: 330,
                           decoration: BoxDecoration(
                             color: lightSurface,
                             borderRadius: BorderRadius.circular(10),
@@ -108,8 +120,12 @@ class _SuperMainScreenState extends State<SuperMainScreen> {
                             ),
                           ),
                           child: const Center(
-                            child: LinearProgressIndicator(),
-                          ))
+                            child: Padding(
+                              padding: EdgeInsets.all(15.0),
+                              child: LinearProgressIndicator(),
+                            ),
+                          ),
+                        )
                       : ProfileCard(
                           name: name,
                         ),
@@ -154,43 +170,37 @@ class _SuperMainScreenState extends State<SuperMainScreen> {
                     ),
                   ),
                   const SizedBox(
-                    height: 5,
+                    height: 15,
                   ),
-                  const Expanded(
-                    child: SingleChildScrollView(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          SizedBox(
-                            height: 10,
-                          ),
-                          ProfileButton(
-                            name: "3학년 1반",
-                          ),
-                          SizedBox(
-                            height: 20,
-                          ),
-                          ProfileButton(
-                            name: "2학년 1반",
-                          ),
-                          SizedBox(
-                            height: 20,
-                          ),
-                          ProfileButton(
-                            name: "2학년 2반",
-                          ),
-                          SizedBox(
-                            height: 20,
-                          ),
-                          ProfileButton(
-                            name: "그룹 추가",
-                          ),
-                          SizedBox(
-                            height: 10,
-                          ),
-                        ],
-                      ),
+                  Expanded(
+                    child: FutureBuilder(
+                      future: waitForGroups(),
+                      builder: (BuildContext context, AsyncSnapshot snapshot) {
+                        if (snapshot.hasData) {
+                          return ListView.separated(
+                            scrollDirection: Axis.vertical,
+                            itemCount: snapshot.data!.length,
+                            itemBuilder: (BuildContext context, int index) {
+                              var group = snapshot.data![index];
+                              return ProfileButton(
+                                name: group.name,
+                              );
+                            },
+                            separatorBuilder: (context, index) =>
+                                const SizedBox(height: 20),
+                          );
+                        } else if (snapshot.hasError) {
+                          return Text(snapshot.error.toString());
+                        } else {
+                          return const Center(
+                              child: CircularProgressIndicator());
+                        }
+                      },
                     ),
+                  ),
+                  const ProfileButton(name: "그룹 추가"),
+                  const SizedBox(
+                    height: 15,
                   ),
                 ],
               ),
