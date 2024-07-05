@@ -5,9 +5,11 @@ class GroupScreen extends StatelessWidget {
   const GroupScreen({
     super.key,
     required this.groupName,
+    required this.groupId,
   });
 
   final String groupName;
+  final int groupId;
 
   @override
   Widget build(BuildContext context) {

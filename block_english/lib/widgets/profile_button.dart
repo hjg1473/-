@@ -7,10 +7,12 @@ class ProfileButton extends StatelessWidget {
   const ProfileButton({
     super.key,
     required this.name,
+    this.groupId = -1,
     this.isStudent = false,
   });
 
   final String name;
+  final int groupId;
   final bool isStudent;
 
   @override
@@ -26,7 +28,10 @@ class ProfileButton extends StatelessWidget {
           Navigator.push(
               context,
               MaterialPageRoute(
-                  builder: (context) => GroupScreen(groupName: name)));
+                  builder: (context) => GroupScreen(
+                        groupName: name,
+                        groupId: groupId,
+                      )));
         }
       },
       style: OutlinedButton.styleFrom(

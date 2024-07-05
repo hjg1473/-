@@ -6,7 +6,7 @@ class ProfileCard extends StatelessWidget {
   const ProfileCard({
     super.key,
     required this.name,
-    this.age = "null",
+    this.age = '',
     this.isStudent = false,
     this.teamName,
   });
