@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:block_english/models/access_reponse_model.dart';
+import 'package:block_english/models/access_response_model.dart';
 import 'package:block_english/models/login_response_model.dart';
 import 'package:block_english/models/refresh_response_model.dart';
 import 'package:block_english/models/reg_response_model.dart';

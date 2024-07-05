@@ -191,6 +191,37 @@ class _RegSuperScreenState extends State<RegSuperScreen> {
                 ),
               ),
               const SizedBox(
+                height: 10,
+              ),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 40.0),
+                child: TextFormField(
+                  inputFormatters: [
+                    FilteringTextInputFormatter.allow(
+                      RegExp(r'[a-zA-Z0-9]'),
+                    ),
+                  ],
+                  obscureText: true,
+                  decoration: const InputDecoration(
+                    filled: true,
+                    fillColor: Color.fromRGBO(237, 231, 246, 1),
+                    border: UnderlineInputBorder(),
+                    labelText: '비밀번호 확인',
+                  ),
+                  onChanged: null,
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return '비밀번호를 다시 입력해주세요';
+                    }
+                    if (value != password) {
+                      return '비밀번호가 일치하지 않습니다';
+                    }
+                    return null;
+                  },
+                  autovalidateMode: AutovalidateMode.onUserInteraction,
+                ),
+              ),
+              const SizedBox(
                 height: 250,
               ),
               Padding(

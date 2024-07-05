@@ -1,4 +1,4 @@
-import 'package:block_english/models/access_reponse_model.dart';
+import 'package:block_english/models/access_response_model.dart';
 import 'package:block_english/models/refresh_response_model.dart';
 import 'package:block_english/services/auth_service.dart';
 import 'package:flutter/material.dart';
@@ -41,7 +41,6 @@ class _LoadingScreenState extends State<LoadingScreen> {
 
         await storage.write(
             key: "accessToken", value: refreshResponseModel.accessToken);
-
         AccessReponseModel accessReponseModel =
             await AuthService.postAuthAccess(refreshResponseModel.accessToken);
 
