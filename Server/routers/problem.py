@@ -119,7 +119,7 @@ async def read_problem_all(season_name:str, type_name:str, user: user_dependency
         'type': type_name,
         'coorect_problems': correct_problems }
     
-    requests.post("http://URL/server/calculate_student_level", json=send_data_to_gpu)
+    # requests.post("http://URL/server/calculate_student_level", json=send_data_to_gpu)
     
     if study_info is None:
         raise http_exception()
