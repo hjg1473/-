@@ -118,6 +118,7 @@ class CustomProblemSet(Base):  # Custom problem set
     __tablename__ = "customProblemSet"
 
     id = Column(Integer, primary_key=True, index=True)  # PK
+    name = Column(String)
 
     # Relationship
     problems = relationship("Problems", back_populates="custom_problem_set")
