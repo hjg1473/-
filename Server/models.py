@@ -31,9 +31,9 @@ class Users(Base):
     name = Column(String)  # Real name
     age = Column(Integer)  # Age
     role = Column(String, index=True)  # Role (super or student)
-    group = Column(Integer)  # Group (students only)
+    group = Column(Integer)  # Group (students only) # delete
     phone_number = Column(String) # phone_number (teachers only)
-    idToken = Column(String)  # Unique token (teachers only)   
+    idToken = Column(String)  # Unique token (teachers only)
 
     # Relationship with Groups
     team_id = Column(Integer, ForeignKey("groups.id"), nullable=True) # FK, team (student only)
@@ -79,7 +79,9 @@ class StudyInfo(Base):  # Study information
     __tablename__ = "studyInfo"
 
     id = Column(Integer, primary_key=True, index=True)  # PK
-    stdLevel = Column(Integer)  # Student level
+    type1Level = Column(Integer)  # Student Type1 level
+    type2Level = Column(Integer)  # Student Type2 level
+    type3Level = Column(Integer)  # Student Type3 level
     owner_id = Column(Integer, ForeignKey("users.id"))  # FK to users
 
     # Relationships

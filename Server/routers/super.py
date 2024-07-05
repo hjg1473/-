@@ -49,10 +49,7 @@ async def read_group_info(user: user_dependency,
         .filter(Groups.admin_id == user.get("id"))\
         .all()
     
-    if not user_group: # if user_group is None -> return []
-        raise HTTPException(status_code=401, detail='Not found.')
-    
-    result = [{'id': u.id, 'name': u.name} for u in user_group]
+    result = { 'groups': [{'id': u.id, 'name': u.name} for u in user_group] }
     
     return result
 
@@ -61,7 +58,7 @@ class AddGroup(BaseModel):
 
 # 해당 선생님이 관리하는 반 추가
 @router.post("/create/group", status_code = status.HTTP_200_OK)
-async def user_solve_problem(addgroup: AddGroup, 
+async def create_solve_problem(addgroup: AddGroup, 
                             user: user_dependency, db: db_dependency):
     
     if user is None:
@@ -108,7 +105,7 @@ async def read_group_info(group_id: int,
     if not user_group: # if user_group is None -> return []
         raise HTTPException(status_code=401, detail='Not found.')
     
-    result = [{'id': u.id, 'name': u.name} for u in user_group]
+    result = { 'groups': [{'id': u.id, 'name': u.name} for u in user_group] }
     
     return result
 
@@ -155,7 +152,7 @@ async def user_solve_problem(group_id: int,
 
 # 해당 학생의 소속된 '반' 없앰
 @router.put("/group/remove/{user_id}", status_code = status.HTTP_200_OK)
-async def user_solve_problem(user_id: int,
+async def update_user_team(user_id: int,
                             user: user_dependency, db: db_dependency):
     
     if user is None:
@@ -187,33 +184,36 @@ async def read_info(user: user_dependency, db: db_dependency):
     if user is None:
         raise get_user_exception()
 
-    user_model = db.query(Users.id, Users.username, Users.email, Users.phone_number).filter(Users.id == user.get('id')).first()
-    user_model_json = { "id": user_model[0], "username": user_model[1], "email": user_model[2], "phone_number": user_model[3] }
+    # 추후 이메일, 폰넘버 추가
+    # user_model = db.query(Users.name, Users.email, Users.phone_number).filter(Users.id == user.get('id')).first()
+    # user_model_json = { "name": user_model[0], "email": user_model[1], "phone_number": user_model[2] }
+    user_model = db.query(Users.name).filter(Users.id == user.get('id')).first()
+    user_model_json = { "name": user_model[0] }
     return user_model_json
     # 필터 사용. 학습 정보의 owner_id 와 '유저'의 id가 같으면, 해당 학습 정보 반환.
     # 사용자의 id, username, email, phone_number 반환
 
-# '각 반'을 기준으로 필터링한 결과 반환 (선생님 id 로 필터링 추가 필요)
-@router.get("/group/{class_number}", status_code = status.HTTP_200_OK)
-async def read_group_info(class_number: int,
-                    user: user_dependency,
-                    db: db_dependency):
-    if user is None:
-        raise get_user_exception()
+# # '각 반'을 기준으로 필터링한 결과 반환 (선생님 id 로 필터링 추가 필요)
+# @router.get("/group/{class_number}", status_code = status.HTTP_200_OK)
+# async def read_group_info(class_number: int,
+#                     user: user_dependency,
+#                     db: db_dependency):
+#     if user is None:
+#         raise get_user_exception()
     
-    if user.get('user_role') != 'super': # super 인 경우만 
-        raise HTTPException(status_code=401, detail='Authentication Failed')
+#     if user.get('user_role') != 'super': # super 인 경우만 
+#         raise HTTPException(status_code=401, detail='Authentication Failed')
 
-    user_group = db.query(Users)\
-        .filter(Users.group == class_number)\
-        .all()
+#     user_group = db.query(Users)\
+#         .filter(Users.group == class_number)\
+#         .all()
     
-    if not user_group: # if user_group is None -> return []
-        raise HTTPException(status_code=401, detail='Not found.')
+#     if not user_group: # if user_group is None -> return []
+#         raise HTTPException(status_code=401, detail='Not found.')
     
-    result = [{'id': u.id, 'name': u.name,'age': u.age} for u in user_group]
+#     result = [{'id': u.id, 'name': u.name,'age': u.age} for u in user_group]
     
-    return result
+#     return result
 
 # class dashboardOutput(BaseModel):
 #     id: int
@@ -271,7 +271,7 @@ async def read_group_info(class_number: int,
 
 # 선생님이 학생 개인의 정보를 살펴볼 때
 @router.get("/searchStudyinfo/{user_id}", status_code = status.HTTP_200_OK)
-async def read_user_studyInfo_all(user: user_dependency, db: db_dependency, user_id : int):
+async def read_select_user_studyInfo(user: user_dependency, db: db_dependency, user_id : int):
     if user is None:
         raise get_user_exception()
     
