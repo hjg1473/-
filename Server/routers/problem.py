@@ -1,5 +1,6 @@
 from typing import Annotated, Optional
 from pydantic import BaseModel, Field
+import requests # or fastapi request?
 from sqlalchemy.orm import Session, joinedload
 from fastapi import APIRouter, Depends, HTTPException, Path
 from starlette import status
@@ -73,6 +74,7 @@ async def read_problem_all(user: user_dependency, db: db_dependency):
     return db.query(Problems).all()
     # 모든 문제 정보 반환 (일단)
 
+
 # 연습 문제 반환 (10개)
 @router.get("/season/{season_name}/type/{type_name}/practice_set", status_code = status.HTTP_200_OK)
 async def read_problem_all(season_name:str, type_name:str, user: user_dependency, db: db_dependency):
@@ -93,7 +95,39 @@ async def read_problem_all(season_name:str, type_name:str, user: user_dependency
     if season_type_problem is None:
         raise HTTPException(status_code=404, detail='문제 데이터가 존재하지 않습니다.')
 
-    # 필터링 된 문제에서 10개 추출 (추천 모델 사용)
+
+    # 모든 학습 정보 반환
+    study_info = db.query(StudyInfo).options(
+        joinedload(StudyInfo.correct_problems),
+        joinedload(StudyInfo.incorrect_problems)
+    ).filter(StudyInfo.owner_id == user.get("id")).first()
+
+    # 시즌, 유형 제외, 이미지 정보 제외, cproblem_id 제외, / 시즌, 유형은 따로 한번에 / 선택한 유형의 학생 수준을 전달 / await 사용
+    correct_problems = []
+    for problem in study_info.correct_problems:
+        correct_problems.append({
+            'id': problem.id
+        })
+
+    # season_name, type_name, 
+    send_data_to_gpu = {
+        'owner_id': study_info.id,
+        'type1Level': study_info.type1Level,
+        'type2Level': study_info.type2Level,
+        'type3Level': study_info.type3Level,
+        'season': season_name,
+        'type': type_name,
+        'coorect_problems': correct_problems }
+    
+    requests.post("http://URL/server/calculate_student_level", json=send_data_to_gpu)
+    
+    if study_info is None:
+        raise http_exception()
+    # 받을 때, 업데이트된 유형별 학생 수준만. 
+    # study_info.type1Level
+
+    # 수준을 받았음. 이제 문제는 어떻게 선별?
+
 
     # 임의로 앞에서부터 10개 사용
     select_problem = []
@@ -115,7 +149,7 @@ async def user_solve_problem(answer: Answer,
 
     study_info = db.query(StudyInfo).filter(StudyInfo.owner_id == user.get("id")).first()
     if study_info is None:
-        study_info = StudyInfo(stdLevel=1, owner=user_instance) # 없으면 학습 정보 추가.
+        raise http_exception()
 
     # 학생이 제시받은 문제 id와 문제 id 비교해서 문제 찾아냄.
     problem = db.query(Problems)\

@@ -36,10 +36,9 @@ user_dependency = Annotated[dict, Depends(get_current_user)]
 
 # 학생과 선생님 연결 요청, 학생 -> 선생님(student_teachers) / 선생님 -> 학생(teachers_students) ?
 @router.get("/connecting", status_code = status.HTTP_200_OK)
-async def connect_teacher(
-    teacher_id: int,
-    user: dict = Depends(get_current_user),
-    db: Session = Depends(get_db)):
+async def connect_teacher(teacher_id: int,
+            user: dict = Depends(get_current_user),
+            db: Session = Depends(get_db)):
 
     if user is None:
         raise get_user_exception()
@@ -74,7 +73,7 @@ async def connect_teacher(
 
 # 학생(self)과 연결된 선생님 아이디 반환
 @router.get("/connect_teacher", status_code = status.HTTP_200_OK)
-async def read_user_all(user: user_dependency, db: db_dependency):
+async def read_connect_teacher(user: user_dependency, db: db_dependency):
 
     if user is None:
         raise get_user_exception()
@@ -96,7 +95,7 @@ async def read_user_all(user: user_dependency, db: db_dependency):
 
 # 학생 정보 반환
 @router.get("/info", status_code = status.HTTP_200_OK)
-async def read_user_all(user: user_dependency, db: db_dependency):
+async def read_user_info(user: user_dependency, db: db_dependency):
 
     if user is None:
         raise get_user_exception()
@@ -126,7 +125,7 @@ async def read_user_id(user: user_dependency, db: db_dependency):
 
 # 학생의 self 학습 정보 반환.
 @router.get("/studyinfo", status_code = status.HTTP_200_OK)
-async def read_studyinfo_all(user: user_dependency, db: db_dependency):
+async def read_user_studyinfo(user: user_dependency, db: db_dependency):
 
     if user is None:
         raise get_user_exception()
@@ -177,25 +176,6 @@ async def read_studyinfo_all(user: user_dependency, db: db_dependency):
         'type1_False_cnt' : incorrect_problems_type1_count,
         'type2_False_cnt' : incorrect_problems_type2_count,
         'type3_False_cnt' : incorrect_problems_type3_count }
-
-@router.get("/{user_id}", status_code = status.HTTP_200_OK)
-async def read_user_studyInfo_all(user: user_dependency, db: db_dependency, user_id : int):
-    
-    if user is None:
-        raise get_user_exception()
-    
-    if user.get('user_role') != 'student': # student 인 경우만 
-        raise HTTPException(status_code=401, detail='Authentication Failed')
-    
-    studyinfo_model = db.query(StudyInfo)\
-        .filter(StudyInfo.owner_id == user_id)\
-        .first()
-    if studyinfo_model is not None:
-        return studyinfo_model
-    raise http_exception()
-    # 학습 정보의 owner_id 와 요청한 '유저'의 id가 같으면, 해당 학습 정보 반환.
-    # 아직 문제 id만 갖는 상태(Join 안됨)
-    # 자신의 학습 기록을 요청하는 API
 
 def successful_response(status_code: int):
     return {

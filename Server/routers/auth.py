@@ -2,7 +2,7 @@ from fastapi import Depends, HTTPException, Header, status, APIRouter
 from pydantic import BaseModel
 from typing import Optional, Annotated
 import models
-from models import Users
+from models import Users, StudyInfo
 from passlib.context import CryptContext
 from sqlalchemy.orm import Session
 from database import SessionLocal, engine
@@ -156,12 +156,20 @@ async def create_new_user(db: db_dependency, # 사용자 요청보다 앞에 와
 
     db.add(create_user_model)# DB에 저장
     db.commit() # 커밋
+    db.refresh(create_user_model)
+    study_info = models.StudyInfo()
+    study_info.owner_id = create_user_model.id
+    study_info.type1Level = 0
+    study_info.type2Level = 0
+    study_info.type3Level = 0
+    db.add(study_info)
+    db.commit()
 
     return {'detail': '성공적으로 회원가입되었습니다.'}
 
 # 첫 로그인 (엑세스 토큰 + 리프레시 토큰 한번에 요청)
 @router.post("/token", response_model=Token)
-async def login_for_access_token(form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
+async def first_login_for_access_token(form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
                                  db: db_dependency):
     user = authenticate_user(form_data.username, form_data.password, db)
     #검증 단계

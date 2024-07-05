@@ -30,3 +30,4 @@ watchfiles==0.18.1
 websockets==10.4
 Jinja2==3.1.4
 redis==5.0.7
+requests==2.32.3
