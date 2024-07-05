@@ -103,10 +103,18 @@ async def read_problem_all(season_name:str, type_name:str, user: user_dependency
     ).filter(StudyInfo.owner_id == user.get("id")).first()
 
     # 시즌, 유형 제외, 이미지 정보 제외, cproblem_id 제외, / 시즌, 유형은 따로 한번에 / 선택한 유형의 학생 수준을 전달 / await 사용
-    correct_problems = []
+    solved_problems = []
     for problem in study_info.correct_problems:
-        correct_problems.append({
-            'id': problem.id
+        if problem.season == season_name and problem.type == type_name:
+            solved_problems.append({
+                'id': problem.id,
+                'isCorrect': 1
+            })
+
+    for problem in study_info.incorrect_problems:
+        solved_problems.append({
+            'id': problem.id,
+            'isCorrect': 0
         })
 
     # season_name, type_name, 
@@ -117,9 +125,9 @@ async def read_problem_all(season_name:str, type_name:str, user: user_dependency
         'type3Level': study_info.type3Level,
         'season': season_name,
         'type': type_name,
-        'coorect_problems': correct_problems }
+        'solved_problems': solved_problems }
     
-    requests.post("http://URL/server/calculate_student_level", json=send_data_to_gpu)
+    # requests.post("http://URL/server/calculate_student_level", json=send_data_to_gpu)
     
     if study_info is None:
         raise http_exception()

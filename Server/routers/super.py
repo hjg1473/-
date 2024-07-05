@@ -3,7 +3,7 @@ from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session, joinedload
 from fastapi import APIRouter, Depends, HTTPException, Path
 from starlette import status
-from models import Users, StudyInfo, Groups
+from models import Users, StudyInfo, Groups, Problems, CustomProblemSet
 import models
 from database import engine, SessionLocal
 from sqlalchemy.orm import Session
@@ -33,6 +33,67 @@ templates = Jinja2Templates(directory="templates")
 db_dependency = Annotated[Session, Depends(get_db)]
 user_dependency = Annotated[dict, Depends(get_current_user)]    
 
+
+
+class CustomProblem(BaseModel):
+    koreaProblem: str
+    englishProblem: str
+    img_path: str
+
+class ProblemSet(BaseModel):
+    name: str
+    customProblems: List[CustomProblem]
+
+# 선생님이 커스텀 문제 생성
+@router.post("/create/custom_problems")
+async def create_problem(problemset: ProblemSet,
+                      user: user_dependency,
+                      db: db_dependency):
+    if user is None:
+        raise get_user_exception()
+    
+    if user.get('user_role') != 'super': # super 인 경우만 
+        raise HTTPException(status_code=401, detail='Authentication Failed')
+    
+    custom_problem_set = db.query(CustomProblemSet).filter(CustomProblemSet.name == problemset.name).first()
+    if custom_problem_set is not None: # 중복이면
+        raise HTTPException(status_code=404, detail='같은 이름의 문제 세트가 존재합니다.')
+
+    custom_model = models.CustomProblemSet()
+    custom_model.name = problemset.name
+
+
+    db.add(custom_model)# DB에 저장
+    db.commit() # 커밋
+    db.refresh(custom_model)
+
+    # 문제 테이블에 저장
+    for problem in problemset.customProblems:
+        problem_model = models.Problems()
+        problem_model.koreaProblem = problem.koreaProblem
+        problem_model.englishProblem = problem.englishProblem
+        problem_model.img_path = problem.img_path
+        problem_model.cproblem_id = custom_model.id
+        db.add(problem_model)
+        db.commit()
+
+    return {'detail': '성공적으로 생성되었습니다!'}
+
+# 만들어진 커스텀 문제 세트 조회
+@router.get("/custom_problem_set/info", status_code = status.HTTP_200_OK)
+async def read_group_info(user: user_dependency,
+                    db: db_dependency):
+    if user is None:
+        raise get_user_exception()
+    
+    if user.get('user_role') != 'super': # super 인 경우만 
+        raise HTTPException(status_code=401, detail='Authentication Failed')
+
+    custom_problem_set = db.query(CustomProblemSet).all()
+    
+    result = {'custom_problem_set':[{'name': u.name} for u in custom_problem_set]}
+    
+    return result
 
 # 해당 선생님이 관리하는 반 조회
 @router.get("/group", status_code = status.HTTP_200_OK)
