@@ -5,13 +5,11 @@ class ProfileCard extends StatelessWidget {
   const ProfileCard({
     super.key,
     required this.name,
-    required this.id,
     this.age = "null",
     this.isStudent = false,
   });
 
   final String name;
-  final String id;
   final String age;
   final bool isStudent;
 
@@ -19,7 +17,7 @@ class ProfileCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       height: 80,
-      width: 330,
+      //width: 330,
       decoration: BoxDecoration(
         color: lightSurface,
         borderRadius: BorderRadius.circular(10),
@@ -45,7 +43,7 @@ class ProfileCard extends StatelessWidget {
               ),
               child: Center(
                 child: Text(
-                  name[0],
+                  name != '' ? name[0] : " ",
                   style: const TextStyle(
                     color: lightSurface,
                     fontSize: 17,
@@ -67,15 +65,6 @@ class ProfileCard extends StatelessWidget {
                       fontSize: 15,
                     ),
                   ),
-                  id != "null"
-                      ? Text(
-                          id,
-                          style: const TextStyle(
-                            color: Colors.black54,
-                            fontSize: 13,
-                          ),
-                        )
-                      : const SizedBox(),
                 ],
               ),
             ),
