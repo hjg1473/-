@@ -5,10 +5,10 @@ import 'package:block_english/models/access_reponse_model.dart';
 import 'package:block_english/models/login_response_model.dart';
 import 'package:block_english/models/refresh_response_model.dart';
 import 'package:block_english/models/reg_response_model.dart';
+import 'package:block_english/utils/constants.dart';
 import 'package:http/http.dart' as http;
 
 class AuthService {
-  static String baseUrl = "http://35.208.231.160";
   static const String auth = "auth";
   static const String register = "register";
   static const String token = "token";

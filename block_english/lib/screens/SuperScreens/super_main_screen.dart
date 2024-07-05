@@ -67,7 +67,6 @@ class SuperMainScreen extends StatelessWidget {
                   ),
                   ProfileCard(
                     name: "드림초 영어쌤",
-                    id: "deurimET123",
                   ),
                   SizedBox(
                     height: 5,

@@ -34,7 +34,6 @@ class ProfileScreen extends StatelessWidget {
             child: ProfileCard(
               name: studentName,
               age: "10세",
-              id: "kimcheolsoo",
               isStudent: true,
             ),
           ),
