@@ -1,6 +1,5 @@
 from typing import Annotated, Optional
 from pydantic import BaseModel, Field
-import requests # or fastapi request?
 from sqlalchemy.orm import Session, joinedload
 from fastapi import APIRouter, Depends, HTTPException, Path
 from starlette import status
@@ -13,6 +12,8 @@ from routers.auth import get_current_user, get_user_exception
 
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
+from fastapi import requests, UploadFile, File, Form
+import requests
 
 router = APIRouter(
     prefix="/problem",
@@ -103,18 +104,10 @@ async def read_problem_all(season_name:str, type_name:str, user: user_dependency
     ).filter(StudyInfo.owner_id == user.get("id")).first()
 
     # 시즌, 유형 제외, 이미지 정보 제외, cproblem_id 제외, / 시즌, 유형은 따로 한번에 / 선택한 유형의 학생 수준을 전달 / await 사용
-    solved_problems = []
+    correct_problems = []
     for problem in study_info.correct_problems:
-        if problem.season == season_name and problem.type == type_name:
-            solved_problems.append({
-                'id': problem.id,
-                'isCorrect': 1
-            })
-
-    for problem in study_info.incorrect_problems:
-        solved_problems.append({
-            'id': problem.id,
-            'isCorrect': 0
+        correct_problems.append({
+            'id': problem.id
         })
 
     # season_name, type_name, 
@@ -125,7 +118,7 @@ async def read_problem_all(season_name:str, type_name:str, user: user_dependency
         'type3Level': study_info.type3Level,
         'season': season_name,
         'type': type_name,
-        'solved_problems': solved_problems }
+        'coorect_problems': correct_problems }
     
     # requests.post("http://URL/server/calculate_student_level", json=send_data_to_gpu)
     
@@ -151,8 +144,7 @@ async def read_problem_all(season_name:str, type_name:str, user: user_dependency
 
 # 학생이 문제를 풀었을 때, 일단 임시로 맞았다고 처리 
 @router.post("/solve", status_code = status.HTTP_200_OK)
-async def user_solve_problem(answer: Answer, 
-                            user: user_dependency, db: db_dependency):
+async def user_solve_problem(user: user_dependency, db: db_dependency, problem_id: int = Form(...), file: UploadFile = File(...)):
     user_instance = db.query(Users).filter(Users.id == user.get("id")).first()
 
     study_info = db.query(StudyInfo).filter(StudyInfo.owner_id == user.get("id")).first()
@@ -161,24 +153,33 @@ async def user_solve_problem(answer: Answer,
 
     # 학생이 제시받은 문제 id와 문제 id 비교해서 문제 찾아냄.
     problem = db.query(Problems)\
-        .filter(Problems.id == answer.problem_id)\
+        .filter(Problems.id == problem_id)\
         .first()
 
-    # 학생이 제출한 답변을 OCR을 돌리고 있는 GPU 환경으로 전송.
+    # 학생이 제출한 답변을 OCR을 돌리고 있는 GPU 환경으로 전송 및 단어를 순서대로 배열로 받음.
+    GPU_SERVER_URL = "http://146.148.75.252:8000/ocr/" 
     
-    # answer.picture 사용
+    img_binary = await file.read()
+    file.filename = "img.png"
+    files = {"file": (file.filename, img_binary)}
+    user_word_list = requests.post(GPU_SERVER_URL, files=files)
+    
+    user_string = " ".join(user_word_list.json())
 
-    # 문제 정답 알고리즘 추가
-
+    #answer = problem.englishProblem
+    answer = "I am pretty"
     
     # 문제를 맞춘 경우, correct_problems에 추가. id 만 추가. > 하고 싶은데 안되서 일단 problem 전체 저장함.
-    study_info.correct_problems.append(problem)
-    db.add(study_info)
-    db.commit()
+    # 일단 정답인 경우만 구현, 문장이 다르면 오답처리
+    if(user_string==answer):
+        study_info.correct_problems.append(problem)
+        db.add(study_info)
+        db.commit()
 
-    return {'isAnswer' : problem.englishProblem, 'user_answer': 'OCR 결과', 'false_location': '정답 알고리즘 결과'}
+        return {'isAnswer' : problem.englishProblem, 'user_answer': user_string, 'false_location': '정답 알고리즘 결과'}
+    else:
+        return 
 
-    # 문제가 정답인지 아닌지 반환.
 
 def successful_response(status_code: int):
     return {
