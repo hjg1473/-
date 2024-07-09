@@ -3,7 +3,6 @@ import 'dart:io';
 
 import 'package:block_english/models/student_info_model.dart';
 import 'package:block_english/utils/constants.dart';
-import 'package:http/http.dart' as http;
 
 class StudentService {
   static String student = 'student';
