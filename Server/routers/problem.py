@@ -13,10 +13,7 @@ from routers.auth import get_current_user, get_user_exception
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 from fastapi import requests, UploadFile, File, Form
-<<<<<<< HEAD
-=======
 import requests
->>>>>>> c757e17cfffc4e8769f8f63e7f4db6543ae91744
 
 router = APIRouter(
     prefix="/problem",
@@ -161,13 +158,11 @@ async def user_solve_problem(user: user_dependency, db: db_dependency, problem_i
 
     # 학생이 제출한 답변을 OCR을 돌리고 있는 GPU 환경으로 전송 및 단어를 순서대로 배열로 받음.
     GPU_SERVER_URL = "http://146.148.75.252:8000/ocr/" 
-<<<<<<< HEAD
 
     img_binary = await file.read()
     file.filename = "img.png"
     files = {"file": (file.filename, img_binary)}
     user_word_list = requests.post(GPU_SERVER_URL, files=files)
-=======
     
     # 단어리스트를 문장으로 변환
     user_string = " ".join(user_word_list.json())
