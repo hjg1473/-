@@ -3,14 +3,21 @@ import 'dart:io';
 import 'package:block_english/models/super_info_response_model.dart';
 import 'package:block_english/utils/dio.dart';
 import 'package:dio/dio.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
+
+part 'super_service.g.dart';
 
 class SuperService {
-  static String baseUrl = "http://35.208.231.160";
   static const String _super = "super";
-  static const String group = "group";
-  static const String info = "info";
+  static const String _group = "group";
+  static const String _info = "info";
+  static late final SuperServiceRef _ref;
 
-  static Future<SuperInfoResponseModel> getInfo(String accesstoken) async {
+  SuperService(SuperServiceRef ref) {
+    _ref = ref;
+  }
+
+  static Future<SuperInfoResponseModel> getInfo() async {
     // final url = Uri.parse("$baseUrl/$_super/$info");
     // final response = await http.get(url, headers: {
     //   "accept": "application/json",
@@ -23,6 +30,13 @@ class SuperService {
     //   final detail = jsonDecode(utf8.decode(response.bodyBytes))['detail'];
     //   throw HttpException(detail);
     // }
-    final dio = ref.watch(dioProvider);
+    final dio = _ref.watch(dioProvider);
+    final response = await dio.get('/$_super/$_info');
+    return SuperInfoResponseModel.fromJson(response.data);
   }
+}
+
+@Riverpod(keepAlive: true)
+SuperService superService(SuperServiceRef ref) {
+  return SuperService(ref);
 }

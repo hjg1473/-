@@ -2,8 +2,12 @@ import 'package:block_english/utils/constants.dart';
 import 'package:block_english/utils/storage.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 
-final dioProvider = Provider((ref) {
+part 'dio.g.dart';
+
+@Riverpod(keepAlive: true)
+Dio dio(DioRef ref) {
   final dio = Dio(
     BaseOptions(
       connectTimeout: const Duration(seconds: 3),
@@ -65,6 +69,4 @@ final dioProvider = Provider((ref) {
   ));
 
   return dio;
-});
-
-class TokenInterceptor extends Interceptor {}
+}
