@@ -13,6 +13,7 @@ from routers.auth import get_current_user, get_user_exception
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 from fastapi import requests, UploadFile, File, Form
+import requests
 
 router = APIRouter(
     prefix="/problem",
