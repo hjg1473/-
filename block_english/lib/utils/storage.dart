@@ -1,6 +1,5 @@
 import 'package:block_english/utils/constants.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
@@ -25,8 +24,8 @@ class SecureStorage {
 
   Future<void> saveRefreshToken(String refreshToken) async {
     try {
-      debugPrint('[SECURE_STORAGE] saveRefreshToken: $refreshToken');
       await storage.write(key: REFRESH_TOKEN, value: refreshToken);
+      debugPrint('[SECURE_STORAGE] saveRefreshToken: $refreshToken');
     } catch (e) {
       debugPrint("[ERR] RefreshToken 저장 실패: $e");
     }
@@ -45,8 +44,8 @@ class SecureStorage {
 
   Future<void> saveAccessToken(String accessToken) async {
     try {
-      debugPrint('[SECURE_STORAGE] saveAccessToken: $accessToken');
       await storage.write(key: ACCESS_TOKEN, value: accessToken);
+      debugPrint('[SECURE_STORAGE] saveAccessToken: $accessToken');
     } catch (e) {
       debugPrint("[ERR] AccessToken 저장 실패: $e");
     }
@@ -56,12 +55,17 @@ class SecureStorage {
     try {
       final accessToken = await storage.read(key: ACCESS_TOKEN);
       debugPrint('[SECURE_STORAGE] readAccessToken: $accessToken');
-      final refreshToken = await storage.read(key: REFRESH_TOKEN);
-      debugPrint('[SECURE_STORAGE] readRefreshToken: $refreshToken');
       return accessToken;
     } catch (e) {
       debugPrint("[ERR] AccessToken 불러오기 실패: $e");
       return null;
     }
+  }
+
+  removeTokens() async {
+    await storage.delete(key: ACCESS_TOKEN);
+    debugPrint('[SECURE_STORAGE] removeTokens: removed access token');
+    await storage.delete(key: REFRESH_TOKEN);
+    debugPrint('[SECURE_STORAGE] removeTokens: removed refresh token');
   }
 }
