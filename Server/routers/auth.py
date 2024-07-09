@@ -233,12 +233,19 @@ async def refresh_access_token(db: db_dependency, refresh_token: str = Header(de
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
                                 detail='Could not validate user.')
         
-        # 엑세스 토큰 발급
+        # # 엑세스 토큰 발급
+        # access_token = create_access_token(username, user_id, user_role, timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES))
+        
+        # redis_client.set(f"{username}_access", access_token) # redis에 엑세스 토큰 저장? 안해도 되지 않을까. 
+        # # 저장해야 중복 로그인을 막을 수 있음.
+        # 엑세스 + 리프레시 토큰 생성
         access_token = create_access_token(username, user_id, user_role, timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES))
+        refresh_token = create_access_token(username, '', '', timedelta(minutes=REFRESH_TOKEN_EXPIRE_DAYS))
 
-        redis_client.set(f"{username}_access", access_token) # redis에 엑세스 토큰 저장? 안해도 되지 않을까. 
-        # 저장해야 중복 로그인을 막을 수 있음.
-
+        # Redis 에 리프레시 토큰 저장
+        redis_client.set(f"{username}_refresh", refresh_token)
+        redis_client.set(f"{username}_access", access_token)
+        
         return {'access_token' : access_token, 'token_type' : 'bearer', 'role' : '', 'refresh_token': refresh_token}
     except JWTError:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid refresh token")

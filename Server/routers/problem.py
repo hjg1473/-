@@ -158,18 +158,17 @@ async def user_solve_problem(user: user_dependency, db: db_dependency, problem_i
 
     # 학생이 제출한 답변을 OCR을 돌리고 있는 GPU 환경으로 전송 및 단어를 순서대로 배열로 받음.
     GPU_SERVER_URL = "http://146.148.75.252:8000/ocr/" 
-
+    
     img_binary = await file.read()
     file.filename = "img.png"
     files = {"file": (file.filename, img_binary)}
     user_word_list = requests.post(GPU_SERVER_URL, files=files)
     
-    # 단어리스트를 문장으로 변환
     user_string = " ".join(user_word_list.json())
 
     #answer = problem.englishProblem
     answer = "I am pretty"
-
+    
     # 문제를 맞춘 경우, correct_problems에 추가. id 만 추가. > 하고 싶은데 안되서 일단 problem 전체 저장함.
     # 일단 정답인 경우만 구현, 문장이 다르면 오답처리
     if(user_string==answer):
