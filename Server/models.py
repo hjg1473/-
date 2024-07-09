@@ -31,7 +31,7 @@ class Users(Base):
     name = Column(String)  # Real name
     age = Column(Integer)  # Age
     role = Column(String, index=True)  # Role (super or student)
-    group = Column(Integer)  # Group (students only) # delete
+    #group = Column(Integer)  # Group (students only) # delete
     phone_number = Column(String) # phone_number (teachers only)
     idToken = Column(String)  # Unique token (teachers only)
 

@@ -95,6 +95,50 @@ async def read_group_info(user: user_dependency,
     
     return result
 
+
+# 만들어진 커스텀 문제 세트 조회
+@router.get("/custom_problem_info/{set_name}", status_code = status.HTTP_200_OK)
+async def read_group_info(set_name: str,
+                    user: user_dependency,
+                    db: db_dependency):
+    if user is None:
+        raise get_user_exception()
+
+    custom_problem_set = db.query(CustomProblemSet)\
+    .filter(CustomProblemSet.name == set_name)\
+    .first()
+
+    custom_problem_sets = db.query(Problems)\
+    .filter(custom_problem_set.id == Problems.cproblem_id)\
+    .all()  
+
+    result = custom_problem_sets
+    
+    return result
+
+# 커스텀 문제 세트 삭제
+@router.delete("/custom_problem_set_delete/{set_name}", status_code=status.HTTP_200_OK)
+async def delete_user(set_name: str, user: user_dependency, db: db_dependency):
+
+    if user is None:
+        raise HTTPException(status_code=401, detail='Authentication Failed')
+    
+    custom_problem_set = db.query(CustomProblemSet)\
+    .filter(CustomProblemSet.name == set_name)\
+    .first()
+
+    custom_problem_set_delete = db.query(CustomProblemSet)\
+    .filter(CustomProblemSet.name == set_name)\
+    .delete()
+
+    custom_problem_sets = db.query(Problems)\
+    .filter(custom_problem_set.id == Problems.cproblem_id)\
+    .delete()  
+
+    db.commit()
+
+    return {"detail": '성공적으로 삭제되었습니다.'}
+
 # 해당 선생님이 관리하는 반 조회
 @router.get("/group", status_code = status.HTTP_200_OK)
 async def read_group_info(user: user_dependency,
