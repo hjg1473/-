@@ -6,8 +6,21 @@ import 'package:block_english/models/login_response_model.dart';
 import 'package:block_english/models/refresh_response_model.dart';
 import 'package:block_english/models/reg_response_model.dart';
 import 'package:block_english/utils/constants.dart';
+import 'package:block_english/utils/dio.dart';
+import 'package:dio/dio.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:http/http.dart' as http;
+
+part 'auth_service.g.dart';
 
 class AuthService {
+  final String _auth = "auth";
+  final String _register = "register";
+  final String _token = "token";
+  final String _access = "access";
+  final String _refresh = "refresh";
+  final String _logout = "logout";
+
   static const String auth = "auth";
   static const String register = "register";
   static const String token = "token";
@@ -15,45 +28,39 @@ class AuthService {
   static const String refresh = "refresh";
   static const String logout = "logout";
 
-  static Future<RegResponseModel> postAuthRegister(
+  late final AuthServiceRef _ref;
+
+  AuthService(AuthServiceRef ref) {
+    _ref = ref;
+  }
+
+  Future<RegResponseModel> postAuthRegister(
     String name,
     String username,
     String password,
     int age,
     String role,
   ) async {
-    final url = Uri.parse("$baseUrl/$auth/$register");
-    var data = {
-      'name': name,
-      'username': username,
-      'password': password,
-      'age': "$age",
-      'role': role,
-    };
-    var body = jsonEncode(data);
-
-    final response = await http.post(
-      url,
-      headers: {
-        "accept": "application/json",
-        "Content-Type": "application/json",
+    final dio = _ref.watch(dioProvider);
+    final response = await dio.post(
+      '/$_auth/$_register',
+      options: Options(contentType: Headers.jsonContentType),
+      data: {
+        'name': name,
+        'username': username,
+        'password': password,
+        'age': age,
+        'role': role,
       },
-      body: body,
     );
-
-    if (response.statusCode == 200) {
-      return RegResponseModel.fromJson(jsonDecode(response.body));
-    } else {
-      final detail = jsonDecode(utf8.decode(response.bodyBytes))['detail'];
-      throw HttpException(detail);
-    }
+    return RegResponseModel.fromJson(response.data);
   }
 
   static Future<LoginResponseModel> postAuthToken(
     String username,
     String password,
   ) async {
-    final url = Uri.parse("$baseUrl/$auth/$token");
+    final url = Uri.parse("$BASE_URL/$auth/$token");
     final response = await http.post(
       url,
       headers: {
@@ -72,7 +79,7 @@ class AuthService {
   }
 
   static Future<AccessReponseModel> postAuthAccess(String accessToken) async {
-    final url = Uri.parse("$baseUrl/$auth/$access");
+    final url = Uri.parse("$BASE_URL/$auth/$access");
     final response = await http.post(
       url,
       headers: {
@@ -90,7 +97,7 @@ class AuthService {
 
   static Future<RefreshResponseModel> postAuthRefresh(
       String refreshToken) async {
-    final url = Uri.parse("$baseUrl/$auth/$refresh");
+    final url = Uri.parse("$BASE_URL/$auth/$refresh");
     final response = await http.post(
       url,
       headers: {
@@ -107,7 +114,7 @@ class AuthService {
   }
 
   static Future<int> postAuthLogout(String refreshToken) async {
-    final url = Uri.parse("$baseUrl/$auth/$logout");
+    final url = Uri.parse("$BASE_URL/$auth/$logout");
     final response = await http.post(
       url,
       headers: {
@@ -117,4 +124,9 @@ class AuthService {
     );
     return response.statusCode;
   }
+}
+
+@Riverpod(keepAlive: true)
+AuthService authService(AuthServiceRef ref) {
+  return AuthService(ref);
 }

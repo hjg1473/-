@@ -1,7 +1,6 @@
 import 'package:block_english/utils/constants.dart';
 import 'package:block_english/utils/storage.dart';
 import 'package:dio/dio.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'dio.g.dart';
@@ -24,7 +23,10 @@ Dio dio(DioRef ref) {
   dio.interceptors.add(InterceptorsWrapper(
     onRequest: (options, handler) async {
       final accessToken = await storage.readAccessToken();
-      options.headers['Authorization'] = 'Bearer $accessToken';
+      if (options.headers[TOKEN_VALIDATE] == 'true') {
+        options.headers.remove(TOKEN_VALIDATE);
+        options.headers['Authorization'] = 'Bearer $accessToken';
+      }
       return handler.next(options);
     },
     onError: (error, handler) async {
@@ -50,6 +52,8 @@ Dio dio(DioRef ref) {
           },
         ));
 
+        // add retries count
+
         final refreshToken = await storage.readRefreshToken();
 
         authDio.options.headers['accept'] = 'application/json';
@@ -63,7 +67,17 @@ Dio dio(DioRef ref) {
         await storage.saveAccessToken(newAccessToken);
         await storage.saveRefreshToken(newRefreshToken);
 
-        //TODO: retry failed request again.
+        final response = await dio.request(
+          error.requestOptions.path,
+          data: error.requestOptions.data,
+          queryParameters: error.requestOptions.queryParameters,
+          cancelToken: error.requestOptions.cancelToken,
+          options: Options(
+            extra: error.requestOptions.extra,
+            method: error.requestOptions.method,
+          ),
+        );
+        return handler.resolve(response);
       }
     },
   ));

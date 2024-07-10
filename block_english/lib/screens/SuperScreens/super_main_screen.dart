@@ -1,7 +1,5 @@
 import 'dart:ui';
-import 'package:block_english/models/super_info_response_model.dart';
 import 'package:block_english/services/super_service.dart';
-import 'package:block_english/utils/colors.dart';
 import 'package:block_english/utils/constants.dart';
 import 'package:block_english/widgets/image_card_button.dart';
 import 'package:block_english/widgets/no_image_card_button.dart';
@@ -11,39 +9,13 @@ import 'package:block_english/widgets/round_corner_route_button.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class SuperMainScreen extends StatefulWidget {
+class SuperMainScreen extends StatelessWidget {
   const SuperMainScreen({super.key});
 
   @override
-  State<SuperMainScreen> createState() => _SuperMainScreenState();
-}
-
-class _SuperMainScreenState extends State<SuperMainScreen> {
-  final storage = const FlutterSecureStorage();
-  String name = '';
-  getProfileInfo() async {
-    try {
-      final accesstoken = await storage.read(key: "accessToken") ?? "";
-      SuperInfoResponseModel superInfoResponseModel =
-          await SuperService.getInfo(accesstoken);
-
-      await storage.write(key: "name", value: superInfoResponseModel.name);
-      setState(() {
-        name = superInfoResponseModel.name;
-      });
-    } on Exception catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text("계정 정보를 불러올 수 없습니다.\n$e")));
-      }
-    }
-  }
-
-  @override
   Widget build(BuildContext context) {
-    getProfileInfo();
     return DefaultTabController(
       length: 2,
       child: Scaffold(
@@ -95,24 +67,19 @@ class _SuperMainScreenState extends State<SuperMainScreen> {
                   const SizedBox(
                     height: 15,
                   ),
-                  name == ''
-                      ? Container(
-                          height: 80,
-                          //width: 330,
-                          decoration: BoxDecoration(
-                            color: lightSurface,
-                            borderRadius: BorderRadius.circular(10),
-                            border: Border.all(
-                              color: Colors.black54,
-                              width: 1,
-                            ),
-                          ),
-                          child: const Center(
-                            child: LinearProgressIndicator(),
-                          ))
-                      : ProfileCard(
-                          name: name,
-                        ),
+                  Consumer(
+                    builder: (context, ref, child) {
+                      return FutureBuilder(
+                        future: ref.watch(superServiceProvider).getSuperInfo(),
+                        builder: (context, snapshot) {
+                          if (!snapshot.hasData) {
+                            return const CircularProgressIndicator();
+                          }
+                          return ProfileCard(name: snapshot.data!.name);
+                        },
+                      );
+                    },
+                  ),
                   const SizedBox(
                     height: 5,
                   ),
