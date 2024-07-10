@@ -22,20 +22,6 @@ class StudentService {
   }
 
   static Future<StudentInfoModel> getStudentInfo() async {
-    // final url = Uri.parse('$baseUrl/$student/$info');
-    // final response = await http.get(
-    //   url,
-    //   headers: {
-    //     "accept": "application/json",
-    //     "Authorization": "Bearer $accessToken",
-    //   },
-    // );
-    // if (response.statusCode == 200) {
-    //   return StudentInfoModel.fromJson(jsonDecode(response.body));
-    // } else {
-    //   final detail = jsonDecode(utf8.decode(response.bodyBytes))['detail'];
-    //   throw HttpException(detail);
-    // }
     final dio = _ref.watch(dioProvider);
     final response = await dio.get('/$_student/$_info');
     return StudentInfoModel.fromJson(response.data);

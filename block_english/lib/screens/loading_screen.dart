@@ -1,83 +1,48 @@
-import 'package:block_english/models/access_response_model.dart';
-import 'package:block_english/models/refresh_response_model.dart';
 import 'package:block_english/services/auth_service.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class LoadingScreen extends StatelessWidget {
+class LoadingScreen extends ConsumerWidget {
   const LoadingScreen({super.key});
 
-  final storage = const FlutterSecureStorage();
-
-  Future<String> checkToken() async {
-    await storage.delete(key: "accessToken");
-
-    final accessToken = await storage.read(key: "accessToken");
-    try {
-      if (accessToken == null) {
-        throw Exception();
-      }
-      AccessReponseModel accessReponseModel =
-          await AuthService.postAuthAccess(accessToken);
-
-      return accessReponseModel.role;
-    } on Exception catch (e) {
-      debugPrint("Access Token Validation error: $e");
-      // grant access token with refresh token and retry
-      final refreshToken = await storage.read(key: "refreshToken");
-
-      try {
-        if (refreshToken == null) {
-          return "";
-        }
-
-        RefreshResponseModel refreshResponseModel =
-            await AuthService.postAuthRefresh(refreshToken);
-
-        await storage.write(
-            key: "accessToken", value: refreshResponseModel.accessToken);
-        AccessReponseModel accessReponseModel =
-            await AuthService.postAuthAccess(refreshResponseModel.accessToken);
-
-        return accessReponseModel.role;
-      } on Exception catch (e) {
-        debugPrint("RefreshToken Validation Error: $e");
-        return "";
-      }
-    }
-  }
-
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
       body: Center(
-        child: FutureBuilder(
-          future: checkToken(),
-          builder: (BuildContext context, AsyncSnapshot snapshot) {
-            if (snapshot.hasData == false) {
-              return const CircularProgressIndicator();
-            } else if (snapshot.data.toString() == "student") {
-              WidgetsBinding.instance.addPostFrameCallback(
-                  (_) => Navigator.of(context).pushNamedAndRemoveUntil(
-                        '/std_main_screen',
-                        (Route<dynamic> route) => false,
-                      ));
-              return const CircularProgressIndicator();
-            } else if (snapshot.data.toString() == "super") {
-              WidgetsBinding.instance.addPostFrameCallback(
-                  (_) => Navigator.of(context).pushNamedAndRemoveUntil(
-                        '/super_main_screen',
-                        (Route<dynamic> route) => false,
-                      ));
-              return const CircularProgressIndicator();
-            } else {
-              WidgetsBinding.instance.addPostFrameCallback(
-                  (_) => Navigator.of(context).pushNamedAndRemoveUntil(
-                        '/init',
-                        (Route<dynamic> route) => false,
-                      ));
-              return const CircularProgressIndicator();
-            }
+        child: Consumer(
+          builder: (context, ref, child) {
+            return FutureBuilder(
+              future: ref.watch(authServiceProvider).postAuthAccess(),
+              builder: (context, snapshot) {
+                if (!snapshot.hasData) {
+                  return const CircularProgressIndicator();
+                }
+
+                switch (snapshot.data!.role) {
+                  case 'student':
+                    WidgetsBinding.instance.addPostFrameCallback(
+                        (_) => Navigator.of(context).pushNamedAndRemoveUntil(
+                              '/std_main_screen',
+                              (Route<dynamic> route) => false,
+                            ));
+                    return const CircularProgressIndicator();
+                  case 'super':
+                    WidgetsBinding.instance.addPostFrameCallback(
+                        (_) => Navigator.of(context).pushNamedAndRemoveUntil(
+                              '/super_main_screen',
+                              (Route<dynamic> route) => false,
+                            ));
+                    return const CircularProgressIndicator();
+                  default:
+                    WidgetsBinding.instance.addPostFrameCallback(
+                        (_) => Navigator.of(context).pushNamedAndRemoveUntil(
+                              '/init',
+                              (Route<dynamic> route) => false,
+                            ));
+                    return const CircularProgressIndicator();
+                }
+              },
+            );
           },
         ),
       ),

@@ -229,7 +229,7 @@ class _RegStudentScreenState extends ConsumerState<RegStudentScreen> {
                     ),
                     const Spacer(),
                     FilledButton(
-                      onPressed: onRegisterPressed(),
+                      onPressed: onRegisterPressed,
                       style: FilledButton.styleFrom(
                           minimumSize: const Size(150, 45)),
                       child: const Text("회원가입"),

@@ -1,62 +1,63 @@
 import 'package:block_english/models/login_response_model.dart';
 import 'package:block_english/services/auth_service.dart';
+import 'package:block_english/utils/storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class LoginScreen extends StatefulWidget {
+class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
 
   @override
-  State<LoginScreen> createState() => _LoginScreenState();
+  ConsumerState<LoginScreen> createState() => _LoginScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
+class _LoginScreenState extends ConsumerState<LoginScreen> {
   final formkey = GlobalKey<FormState>();
 
   String username = '';
   String password = '';
-
-  final storage = const FlutterSecureStorage();
 
   onLoginPressed() async {
     if (!formkey.currentState!.validate()) {
       return;
     }
 
-    try {
-      LoginResponseModel loginResponseModel =
-          await AuthService.postAuthToken(username, password);
+    LoginResponseModel loginResponseModel =
+        await ref.watch(authServiceProvider).postAuthToken(username, password);
 
-      var role = loginResponseModel.role;
-      await storage.write(
-          key: "accessToken", value: loginResponseModel.accessToken);
-      await storage.write(
-          key: "refreshToken", value: loginResponseModel.refreshToken);
-      if (mounted) {
-        if (role == 'student') {
-          Navigator.of(context).pushNamedAndRemoveUntil(
-            '/std_main_screen',
-            (Route<dynamic> route) => false,
-          );
-        } else if (role == 'super') {
-          Navigator.of(context).pushNamedAndRemoveUntil(
-            '/super_main_screen',
-            (Route<dynamic> route) => false,
-          );
-        } else {
-          throw Exception("Invalid role");
-        }
-      }
-    } on Exception catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text("로그인에 실패했습니다.\n$e"),
-          ),
+    var role = loginResponseModel.role;
+    await ref
+        .watch(secureStorageProvider)
+        .saveAccessToken(loginResponseModel.accessToken);
+    await ref
+        .watch(secureStorageProvider)
+        .saveRefreshToken(loginResponseModel.refreshToken);
+
+    if (mounted) {
+      if (role == 'student') {
+        Navigator.of(context).pushNamedAndRemoveUntil(
+          '/std_main_screen',
+          (Route<dynamic> route) => false,
         );
+      } else if (role == 'super') {
+        Navigator.of(context).pushNamedAndRemoveUntil(
+          '/super_main_screen',
+          (Route<dynamic> route) => false,
+        );
+      } else {
+        throw Exception("Invalid role");
       }
     }
+    //  on Exception catch (e) {
+    //   if (mounted) {
+    //     ScaffoldMessenger.of(context).showSnackBar(
+    //       SnackBar(
+    //         content: Text("로그인에 실패했습니다.\n$e"),
+    //       ),
+    //     );
+    //   }
+    // }
   }
 
   @override

@@ -1,9 +1,5 @@
-import 'dart:convert';
-import 'dart:io';
-
 import 'package:block_english/models/access_response_model.dart';
 import 'package:block_english/models/login_response_model.dart';
-import 'package:block_english/models/refresh_response_model.dart';
 import 'package:block_english/models/reg_response_model.dart';
 import 'package:block_english/utils/constants.dart';
 import 'package:block_english/utils/dio.dart';
@@ -18,7 +14,6 @@ class AuthService {
   final String _register = "register";
   final String _token = "token";
   final String _access = "access";
-  final String _refresh = "refresh";
   final String _logout = "logout";
 
   static const String auth = "auth";
@@ -44,7 +39,9 @@ class AuthService {
     final dio = _ref.watch(dioProvider);
     final response = await dio.post(
       '/$_auth/$_register',
-      options: Options(contentType: Headers.jsonContentType),
+      options: Options(
+        contentType: Headers.jsonContentType,
+      ),
       data: {
         'name': name,
         'username': username,
@@ -56,61 +53,33 @@ class AuthService {
     return RegResponseModel.fromJson(response.data);
   }
 
-  static Future<LoginResponseModel> postAuthToken(
+  Future<LoginResponseModel> postAuthToken(
     String username,
     String password,
   ) async {
-    final url = Uri.parse("$BASE_URL/$auth/$token");
-    final response = await http.post(
-      url,
-      headers: {
-        "accept": "application/json",
-        "Content-Type": "application/x-www-form-urlencoded",
+    final dio = _ref.watch(dioProvider);
+    final response = await dio.post(
+      '/$_auth/$_token',
+      options: Options(
+        contentType: Headers.formUrlEncodedContentType,
+        headers: {'accept': 'application/json'},
+      ),
+      data: {
+        'username': username,
+        'password': password,
       },
-      encoding: Encoding.getByName('utf-8'),
-      body: {'username': username, 'password': password},
     );
-    if (response.statusCode == 200) {
-      return LoginResponseModel.fromJson(jsonDecode(response.body));
-    } else {
-      final detail = jsonDecode(utf8.decode(response.bodyBytes))['detail'];
-      throw HttpException(detail);
-    }
+    return LoginResponseModel.fromJson(response.data);
   }
 
-  static Future<AccessReponseModel> postAuthAccess(String accessToken) async {
-    final url = Uri.parse("$BASE_URL/$auth/$access");
-    final response = await http.post(
-      url,
-      headers: {
-        "Content-Type": "application/json",
-        "access-token": accessToken,
-      },
-    );
-    if (response.statusCode == 200) {
-      return AccessReponseModel.fromJson(jsonDecode(response.body));
-    } else {
-      final detail = jsonDecode(utf8.decode(response.bodyBytes))['detail'];
-      throw HttpException(detail);
-    }
-  }
-
-  static Future<RefreshResponseModel> postAuthRefresh(
-      String refreshToken) async {
-    final url = Uri.parse("$BASE_URL/$auth/$refresh");
-    final response = await http.post(
-      url,
-      headers: {
-        "accept": "application/json",
-        "refresh-token": refreshToken,
-      },
-    );
-    if (response.statusCode == 200) {
-      return RefreshResponseModel.fromJson(jsonDecode(response.body));
-    } else {
-      final detail = jsonDecode(utf8.decode(response.bodyBytes))['detail'];
-      throw HttpException(detail);
-    }
+  Future<AccessReponseModel> postAuthAccess() async {
+    final dio = _ref.watch(dioProvider);
+    final response = await dio.post('/$_auth/$_access',
+        options: Options(
+          contentType: Headers.jsonContentType,
+          headers: {TOKEN_VALIDATE: 'true'},
+        ));
+    return AccessReponseModel.fromJson(response.data);
   }
 
   static Future<int> postAuthLogout(String refreshToken) async {
