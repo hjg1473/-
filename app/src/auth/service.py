@@ -10,7 +10,7 @@ def create_access_token(username: str, user_id: int, role: str, expires_delta: t
     encode = {'sub' : username, 'id' : user_id, 'role': role} 
     expires = datetime.utcnow() + expires_delta
     encode.update({'exp' : expires})
-    return jwt.encode(encode, SECRET_KEY, asynclgorithm=ALGORITHM)
+    return jwt.encode(encode, SECRET_KEY, algorithm=ALGORITHM)
 
 # 리프레시 토큰 생성
 def create_refresh_token(username: str, user_id: int, role: str, expires_delta: timedelta):
