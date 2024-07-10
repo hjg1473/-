@@ -1,15 +1,16 @@
 import 'package:block_english/services/auth_service.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
-class SettingScreen extends StatefulWidget {
+class SettingScreen extends ConsumerStatefulWidget {
   const SettingScreen({super.key});
 
   @override
-  State<SettingScreen> createState() => _SettingScreenState();
+  ConsumerState<SettingScreen> createState() => _SettingScreenState();
 }
 
-class _SettingScreenState extends State<SettingScreen> {
+class _SettingScreenState extends ConsumerState<SettingScreen> {
   final storage = const FlutterSecureStorage();
 
   late String refreshToken;
@@ -17,9 +18,10 @@ class _SettingScreenState extends State<SettingScreen> {
   onLogoutPressed() async {
     refreshToken = await storage.read(key: 'refreshToken') ?? "";
     debugPrint('refreshToken : $refreshToken');
-    int status = await AuthService.postAuthLogout(refreshToken);
+    var response =
+        await ref.watch(authServiceProvider).postAuthLogout(refreshToken);
 
-    if (status == 200) {
+    if (response.statusCode == 200) {
       storage.delete(key: 'refreshToken');
       storage.delete(key: 'accessToken');
       if (mounted) {

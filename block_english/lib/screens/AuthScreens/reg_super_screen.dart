@@ -4,15 +4,16 @@ import 'package:block_english/utils/constants.dart';
 import 'package:block_english/widgets/round_corner_route_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class RegSuperScreen extends StatefulWidget {
+class RegSuperScreen extends ConsumerStatefulWidget {
   const RegSuperScreen({super.key});
 
   @override
-  State<RegSuperScreen> createState() => _RegSuperScreenState();
+  ConsumerState<RegSuperScreen> createState() => _RegSuperScreenState();
 }
 
-class _RegSuperScreenState extends State<RegSuperScreen> {
+class _RegSuperScreenState extends ConsumerState<RegSuperScreen> {
   final formkey = GlobalKey<FormState>();
 
   String name = '';
@@ -24,25 +25,26 @@ class _RegSuperScreenState extends State<RegSuperScreen> {
       return;
     }
 
-    try {
-      RegResponseModel regResponseModel = await AuthService.postAuthRegister(
-          name, username, password, 0, "super");
+    RegResponseModel regResponseModel = await ref
+        .watch(authServiceProvider)
+        .postAuthRegister(name, username, password, 0, 'super');
 
-      if (mounted) {
-        Navigator.of(context).pushNamedAndRemoveUntil(
-          '/init',
-          (Route<dynamic> route) => false,
-        );
-      }
-    } on Exception catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('회원가입에 실패했습니다. 다시 시도해주세요.\n$e'),
-          ),
-        );
-      }
+    if (mounted) {
+      Navigator.of(context).pushNamedAndRemoveUntil(
+        '/init',
+        (Route<dynamic> route) => false,
+      );
     }
+
+    //  on Exception catch (e) {
+    //   if (mounted) {
+    //     ScaffoldMessenger.of(context).showSnackBar(
+    //       SnackBar(
+    //         content: Text('회원가입에 실패했습니다. 다시 시도해주세요.\n$e'),
+    //       ),
+    //     );
+    //   }
+    // }
   }
 
   @override
