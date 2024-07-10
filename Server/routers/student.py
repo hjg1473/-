@@ -104,7 +104,7 @@ async def read_user_info(user: user_dependency, db: db_dependency):
         raise HTTPException(status_code=401, detail='Authentication Failed')
     
     user_model = db.query(Users).filter(Users.id == user.get('id')).first()
-    return {'name': user_model.username, 'age': user_model.age, 'team_id': user_model.team_id}
+    return {'name': user_model.name, 'age': user_model.age, 'team_id': user_model.team_id}
     # 필터 사용. 학습 정보의 owner_id 와 '유저'의 id가 같으면,
     # 사용자의 모든 정보 반환.
 
