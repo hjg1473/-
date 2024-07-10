@@ -4,14 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
-class StudentProfileScreen extends StatefulWidget {
+class StudentProfileScreen extends StatelessWidget {
   const StudentProfileScreen({super.key});
 
-  @override
-  State<StudentProfileScreen> createState() => _StudentProfileScreenState();
-}
-
-class _StudentProfileScreenState extends State<StudentProfileScreen> {
   final FlutterSecureStorage storage = const FlutterSecureStorage();
 
   @override
