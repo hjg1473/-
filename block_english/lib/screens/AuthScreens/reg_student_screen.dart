@@ -5,15 +5,16 @@ import 'package:block_english/widgets/round_corner_route_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:block_english/services/auth_service.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class RegStudentScreen extends StatefulWidget {
+class RegStudentScreen extends ConsumerStatefulWidget {
   const RegStudentScreen({super.key});
 
   @override
-  State<RegStudentScreen> createState() => _RegStudentScreenState();
+  ConsumerState<RegStudentScreen> createState() => _RegStudentScreenState();
 }
 
-class _RegStudentScreenState extends State<RegStudentScreen> {
+class _RegStudentScreenState extends ConsumerState<RegStudentScreen> {
   final formkey = GlobalKey<FormState>();
 
   String name = '';
@@ -26,25 +27,26 @@ class _RegStudentScreenState extends State<RegStudentScreen> {
       return;
     }
 
-    try {
-      RegResponseModel regResponseModel = await AuthService.postAuthRegister(
-          name, username, password, grade, "student");
+    RegResponseModel regResponseModel = await ref
+        .watch(authServiceProvider)
+        .postAuthRegister(name, username, password, grade, 'student');
 
-      if (mounted) {
-        Navigator.of(context).pushNamedAndRemoveUntil(
-          '/init',
-          (Route<dynamic> route) => false,
-        );
-      }
-    } on Exception catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('회원가입에 실패했습니다. 다시 시도해주세요.\n$e'),
-          ),
-        );
-      }
+    if (mounted) {
+      Navigator.of(context).pushNamedAndRemoveUntil(
+        '/init',
+        (Route<dynamic> route) => false,
+      );
     }
+
+    //  on Exception catch (e) {
+    //   if (mounted) {
+    //     ScaffoldMessenger.of(context).showSnackBar(
+    //       SnackBar(
+    //         content: Text('회원가입에 실패했습니다. 다시 시도해주세요.\n$e'),
+    //       ),
+    //     );
+    //   }
+    // }
   }
 
   @override
@@ -227,7 +229,7 @@ class _RegStudentScreenState extends State<RegStudentScreen> {
                     ),
                     const Spacer(),
                     FilledButton(
-                      onPressed: onRegisterPressed,
+                      onPressed: onRegisterPressed(),
                       style: FilledButton.styleFrom(
                           minimumSize: const Size(150, 45)),
                       child: const Text("회원가입"),
