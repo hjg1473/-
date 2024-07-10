@@ -25,9 +25,8 @@ class _SuperMainScreenState extends State<SuperMainScreen> {
   String name = '';
   getProfileInfo() async {
     try {
-      final accesstoken = await storage.read(key: "accessToken") ?? "";
       SuperInfoResponseModel superInfoResponseModel =
-          await SuperService.getInfo(accesstoken);
+          await SuperService.getInfo();
 
       await storage.write(key: "name", value: superInfoResponseModel.name);
       setState(() {

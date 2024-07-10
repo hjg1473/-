@@ -29,8 +29,8 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
       if (accessToken == null) {
         throw Exception();
       }
-      studentInfoModel = await StudentService.getStudentInfo(accessToken);
-    } on Exception catch (e) {
+      studentInfoModel = await StudentService.getStudentInfo();
+    } on Exception {
       final refreshToken = await storage.read(key: REFRESH_TOKEN);
 
       try {
@@ -44,8 +44,7 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
         await storage.write(
             key: "accessToken", value: refreshResponseModel.accessToken);
 
-        studentInfoModel = await StudentService.getStudentInfo(
-            refreshResponseModel.accessToken);
+        studentInfoModel = await StudentService.getStudentInfo();
       } on Exception catch (e) {
         debugPrint("RefreshToken Validation Error: $e");
         return Error();
