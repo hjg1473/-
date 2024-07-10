@@ -20,11 +20,7 @@ class StudentService {
     _ref = ref;
   }
 
-<<<<<<< HEAD
-  static Future<StudentInfoModel> getStudentInfo() async {
-=======
   Future<StudentInfoModel> getStudentInfo() async {
->>>>>>> d8f4f7e61ab06530328d91c6c628ac6cc203ee71
     final dio = _ref.watch(dioProvider);
     final response = await dio.get(
       '/$_student/$_info',

@@ -3,6 +3,7 @@ import 'package:block_english/models/login_response_model.dart';
 import 'package:block_english/models/reg_response_model.dart';
 import 'package:block_english/utils/constants.dart';
 import 'package:block_english/utils/dio.dart';
+import 'package:block_english/utils/storage.dart';
 import 'package:dio/dio.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:http/http.dart' as http;
@@ -10,18 +11,11 @@ import 'package:http/http.dart' as http;
 part 'auth_service.g.dart';
 
 class AuthService {
-  final String _auth = "auth";
-  final String _register = "register";
-  final String _token = "token";
-  final String _access = "access";
-  final String _logout = "logout";
-
-  static const String auth = "auth";
-  static const String register = "register";
-  static const String token = "token";
-  static const String access = "access";
-  static const String refresh = "refresh";
-  static const String logout = "logout";
+  static const String _auth = "auth";
+  static const String _register = "register";
+  static const String _token = "token";
+  static const String _access = "access";
+  static const String _logout = "logout";
 
   late final AuthServiceRef _ref;
 
@@ -82,16 +76,26 @@ class AuthService {
     return AccessReponseModel.fromJson(response.data);
   }
 
-  static Future<int> postAuthLogout(String refreshToken) async {
-    final url = Uri.parse("$BASE_URL/$auth/$logout");
-    final response = await http.post(
-      url,
-      headers: {
-        "accept": "application/json",
-        "refresh-token": refreshToken,
-      },
+  Future<Response> postAuthLogout(String refreshToken) async {
+    final dio = _ref.watch(dioProvider);
+    final response = await dio.post(
+      '/$_auth/$_logout',
+      options: Options(
+        headers: {
+          'accept': 'application/json',
+          'refresh-token': _ref.watch(secureStorageProvider).readRefreshToken(),
+        },
+      ),
     );
-    return response.statusCode;
+    // final url = Uri.parse("$BASE_URL/$_auth/$_logout");
+    // final response = await http.post(
+    //   url,
+    //   headers: {
+    //     "accept": "application/json",
+    //     "refresh-token": refreshToken,
+    //   },
+    // );
+    return response;
   }
 }
 
