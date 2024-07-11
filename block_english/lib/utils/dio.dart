@@ -59,7 +59,7 @@ Dio dio(DioRef ref) {
         authDio.options.headers['accept'] = 'application/json';
         authDio.options.headers['refresh-token'] = '$refreshToken';
 
-        final refreshTokenResponse = await authDio.get('/auth/refresh');
+        final refreshTokenResponse = await authDio.post('/auth/refresh');
 
         final newAccessToken = refreshTokenResponse.data['access-token'];
         final newRefreshToken = refreshTokenResponse.data['refresh-token'];
