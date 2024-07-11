@@ -57,8 +57,16 @@ async def create_new_user(db: db_dependency, create_user: CreateUser):
     hash_password = get_password_hash(create_user.password)
     create_user_model.hashed_password = hash_password
 
-    db.add(create_user_model)
-    db.commit() 
+    db.add(create_user_model)# DB에 저장
+    db.commit() # 커밋
+    db.refresh(create_user_model)
+    study_info = Refactor.app.src.models.StudyInfo()
+    study_info.owner_id = create_user_model.id
+    study_info.type1Level = 0
+    study_info.type2Level = 0
+    study_info.type3Level = 0
+    db.add(study_info)
+    db.commit()
 
     return {'detail': '성공적으로 회원가입되었습니다.'}
 
