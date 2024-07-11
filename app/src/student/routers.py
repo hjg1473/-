@@ -1,17 +1,17 @@
-from typing import Annotated
-from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session, joinedload
-from fastapi import APIRouter, Depends, HTTPException, Path
+from fastapi import APIRouter, Depends, HTTPException
 from starlette import status
-from models import Users, StudyInfo
-import models
-from database import engine, SessionLocal
+from database import engine
 from sqlalchemy.orm import Session
-from pydantic import BaseModel, Field
-from routers.auth import get_current_user, get_user_exception
-
-from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
+
+import sys, os
+sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))
+
+from Server.routers.auth import get_current_user, get_user_exception
+from src.models import Users, StudyInfo
+import src.models as models
+from student.dependencies import user_dependency, db_dependency, get_db
 
 router = APIRouter( 
     prefix="/student",
@@ -19,19 +19,9 @@ router = APIRouter(
     responses={404: {"description": "Not found"}}
 )
 
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
 
 models.Base.metadata.create_all(bind=engine)
-
 templates = Jinja2Templates(directory="templates")
-
-db_dependency = Annotated[Session, Depends(get_db)]
-user_dependency = Annotated[dict, Depends(get_current_user)]
 
 
 # 학생과 선생님 연결 요청, 학생 -> 선생님(student_teachers) / 선생님 -> 학생(teachers_students) ?
@@ -71,6 +61,7 @@ async def connect_teacher(teacher_id: int,
     db.commit()
     return {"message": "Connected successfully", "teacher_id": teacher.id, "teacher_username": teacher.username}
 
+
 # 학생(self)과 연결된 선생님 아이디 반환
 @router.get("/connect_teacher", status_code = status.HTTP_200_OK)
 async def read_connect_teacher(user: user_dependency, db: db_dependency):
@@ -93,6 +84,7 @@ async def read_connect_teacher(user: user_dependency, db: db_dependency):
 
     return {"teachers": [{"id": teacher.id} for teacher in teacher.student_teachers]}
 
+
 # 학생 정보 반환
 @router.get("/info", status_code = status.HTTP_200_OK)
 async def read_user_info(user: user_dependency, db: db_dependency):
@@ -110,6 +102,7 @@ async def read_user_info(user: user_dependency, db: db_dependency):
 
     # Join 해서 학습 정보를 반환해야됨. + 노출되는 정보 필터링
 
+
 # 사용자의 id 반환, self
 @router.get("/id", status_code = status.HTTP_200_OK)
 async def read_user_id(user: user_dependency, db: db_dependency):
@@ -122,6 +115,7 @@ async def read_user_id(user: user_dependency, db: db_dependency):
     
     return  {"id": user.get('id')}
     # 사용자의 id 반환.
+
 
 # 학생의 self 학습 정보 반환.
 @router.get("/studyinfo", status_code = status.HTTP_200_OK)
@@ -176,12 +170,3 @@ async def read_user_studyinfo(user: user_dependency, db: db_dependency):
         'type1_False_cnt' : incorrect_problems_type1_count,
         'type2_False_cnt' : incorrect_problems_type2_count,
         'type3_False_cnt' : incorrect_problems_type3_count }
-
-def successful_response(status_code: int):
-    return {
-        'status': status_code,
-        'detail': 'Successful'
-    }
-
-def http_exception():
-    return HTTPException(status_code=404, detail="Not found")

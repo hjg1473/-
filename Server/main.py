@@ -1,7 +1,9 @@
 from fastapi import FastAPI
+from app.src.student import student
+from app.src.user import users
 import models
 from database import engine
-from routers import auth, users, super, student, problem, server, game
+from routers import auth, super, problem, server, game
 
 app = FastAPI()
 

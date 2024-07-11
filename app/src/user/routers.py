@@ -1,43 +1,21 @@
-from typing import Annotated
-from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 from fastapi import APIRouter, Depends, HTTPException, Path
 from starlette import status
 from models import Users
-import models
-from database import SessionLocal
-from routers.auth import get_current_user
-from passlib.context import CryptContext
+
+import sys, os
+sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))
+from Server.routers.auth import get_current_user
+
+from dependencies import user_dependency, db_dependency, get_db
+from schemas import UserQuitVerification, UserVerification, User_info
+from utils import bcrypt_context, successful_response
+from exceptions import http_exception
 
 router = APIRouter(
     prefix='/users', 
     tags=['users']
 )
-
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
-
-
-db_dependency = Annotated[Session, Depends(get_db)]
-user_dependency = Annotated[dict, Depends(get_current_user)]
-bcrypt_context = CryptContext(schemes=['bcrypt'], deprecated='auto')
-
-class UserVerification(BaseModel):
-    password: str
-    new_password: str = Field(min_length=6)
-
-class UserQuitVerification(BaseModel):
-    password: str
-
-class User_info(BaseModel):
-    name: str
-    username: str
-    phone_number: str
-    email: str
 
 @router.put("/password", status_code=status.HTTP_200_OK)
 async def change_password(user: user_dependency, db: db_dependency,
@@ -101,14 +79,3 @@ async def delete_user(user: user_dependency, db: db_dependency, user_verificatio
     db.commit()
 
     return {'detail': '성공적으로 탈퇴되었습니다.'}
-
-def successful_response(status_code: int):
-    return {
-        'status': status_code,
-        'detail': 'Successful'
-    }
-
-
-def http_exception():
-    return HTTPException(status_code=404, detail="Not Found")
-
