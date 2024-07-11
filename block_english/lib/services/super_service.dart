@@ -1,8 +1,11 @@
+import 'dart:convert';
+
 import 'package:block_english/models/Super/super_group_model.dart';
 import 'package:block_english/models/Super/super_info_response_model.dart';
 import 'package:block_english/utils/constants.dart';
 import 'package:block_english/utils/dio.dart';
 import 'package:dio/dio.dart';
+import 'package:flutter/material.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'super_service.g.dart';
@@ -28,29 +31,20 @@ class SuperService {
     return SuperInfoResponseModel.fromJson(response.data);
   }
 
-  // static Future<List<SuperGroupModel>> getGroupList(String accesstoken) async {
-  //   List<SuperGroupModel> groupList = [];
-  //   final url = Uri.parse("$baseUrl/$_super/$_group");
-  //   final response = await http.get(
-  //     url,
-  //     headers: {
-  //       "accept": "application/json",
-  //       "Authorization": "Bearer $accesstoken",
-  //     },
-  //   );
+  Future<List<SuperGroupModel>> getGroupList() async {
+    List<SuperGroupModel> groupList = [];
+    final dio = _ref.watch(dioProvider);
+    final response = await dio.get(
+      '/$_super/$_group',
+      options: Options(
+        headers: {TOKEN_VALIDATE: 'true'},
+      ),
+    );
 
-  //   if (response.statusCode == 200) {
-  //     final List<dynamic> groups =
-  //         jsonDecode(utf8.decode(response.bodyBytes))['groups'];
-  //     for (var group in groups) {
-  //       groupList.add(SuperGroupModel.fromJson(group));
-  //     }
-  //     return groupList;
-  //   } else {
-  //     final detail = jsonDecode(utf8.decode(response.bodyBytes))['detail'];
-  //     throw HttpException(detail);
-  //   }
-  // }
+    return (response.data as List)
+        .map((x) => SuperGroupModel.fromJson(x))
+        .toList();
+  }
 }
 
 @Riverpod(keepAlive: true)

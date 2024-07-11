@@ -6,7 +6,6 @@ import 'package:block_english/utils/dio.dart';
 import 'package:block_english/utils/storage.dart';
 import 'package:dio/dio.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:http/http.dart' as http;
 
 part 'auth_service.g.dart';
 
@@ -87,14 +86,6 @@ class AuthService {
         },
       ),
     );
-    // final url = Uri.parse("$BASE_URL/$_auth/$_logout");
-    // final response = await http.post(
-    //   url,
-    //   headers: {
-    //     "accept": "application/json",
-    //     "refresh-token": refreshToken,
-    //   },
-    // );
     return response;
   }
 }

@@ -121,33 +121,37 @@ class SuperMainScreen extends StatelessWidget {
                   const SizedBox(
                     height: 15,
                   ),
-                  const Expanded(
-                    child: Placeholder(),
-                    // FutureBuilder(
-                    //   future: waitForGroups(),
-                    //   builder: (BuildContext context, AsyncSnapshot snapshot) {
-                    //     if (snapshot.hasData) {
-                    //       return ListView.separated(
-                    //         scrollDirection: Axis.vertical,
-                    //         itemCount: snapshot.data!.length,
-                    //         itemBuilder: (BuildContext context, int index) {
-                    //           var group = snapshot.data![index];
-                    //           return ProfileButton(
-                    //             name: group.name,
-                    //             groupId: group.id,
-                    //           );
-                    //         },
-                    //         separatorBuilder: (context, index) =>
-                    //             const SizedBox(height: 20),
-                    //       );
-                    //     } else if (snapshot.hasError) {
-                    //       return Text(snapshot.error.toString());
-                    //     } else {
-                    //       return const Center(
-                    //           child: CircularProgressIndicator());
-                    //     }
-                    //   },
-                    // ),
+                  Consumer(
+                    builder: (context, ref, child) {
+                      return Expanded(
+                        child: FutureBuilder(
+                          future:
+                              ref.watch(superServiceProvider).getGroupList(),
+                          builder: (context, snapshot) {
+                            if (snapshot.hasData) {
+                              return ListView.separated(
+                                scrollDirection: Axis.vertical,
+                                itemCount: snapshot.data!.length,
+                                itemBuilder: (BuildContext context, int index) {
+                                  var group = snapshot.data![index];
+                                  return ProfileButton(
+                                    name: group.name,
+                                    groupId: group.id,
+                                  );
+                                },
+                                separatorBuilder: (context, index) =>
+                                    const SizedBox(height: 20),
+                              );
+                            } else if (snapshot.hasError) {
+                              return Text(snapshot.error.toString());
+                            } else {
+                              return const Center(
+                                  child: CircularProgressIndicator());
+                            }
+                          },
+                        ),
+                      );
+                    },
                   ),
                   const Center(
                     child: RoundCornerRouteButton(
