@@ -10,7 +10,7 @@ from auth.schemas import CreateUser, Token
 from auth.utils import get_password_hash, authenticate_user
 from auth.service import create_access_token, redis_client
 from auth.dependencies import db_dependency
-from auth.exceptions import token_exception, get_user_exception, refresh_token_exception
+from auth.exceptions import token_exception, get_user_exception, refresh_token_exception, get_valid_user_exception
 from auth.constants import SECRET_KEY, ALGORITHM, REFRESH_TOKEN_EXPIRE_DAYS, ACCESS_TOKEN_EXPIRE_MINUTES
 
 router = APIRouter(
@@ -20,6 +20,21 @@ router = APIRouter(
 )
 
 oauth2_bearer = OAuth2PasswordBearer(tokenUrl="auth/token")
+
+
+# JWT 엑세스 토큰 디코딩
+async def get_current_user(token: Annotated[str, Depends(oauth2_bearer)]):
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        # token+key+algorithms 넘겨줌.
+        username: str = payload.get('sub') # 생성한 값을 가져옴
+        user_id: int = payload.get('id')
+        user_role: str = payload.get('role')
+        if username is None or user_id is None: # 둘 중에 하나라도 값이 없으면
+            raise get_valid_user_exception()
+        return {'username' : username, 'id' : user_id, 'user_role': user_role}
+    except JWTError:
+        raise get_valid_user_exception()
 
 # 회원가입
 @router.post("/register", status_code=status.HTTP_200_OK)
