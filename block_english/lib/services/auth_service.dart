@@ -6,7 +6,6 @@ import 'package:block_english/utils/dio.dart';
 import 'package:block_english/utils/storage.dart';
 import 'package:dio/dio.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:http/http.dart' as http;
 
 part 'auth_service.g.dart';
 

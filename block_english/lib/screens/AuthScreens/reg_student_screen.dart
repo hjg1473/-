@@ -37,16 +37,6 @@ class _RegStudentScreenState extends ConsumerState<RegStudentScreen> {
         (Route<dynamic> route) => false,
       );
     }
-
-    //  on Exception catch (e) {
-    //   if (mounted) {
-    //     ScaffoldMessenger.of(context).showSnackBar(
-    //       SnackBar(
-    //         content: Text('회원가입에 실패했습니다. 다시 시도해주세요.\n$e'),
-    //       ),
-    //     );
-    //   }
-    // }
   }
 
   @override
