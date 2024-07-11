@@ -1,5 +1,7 @@
 import enum
 from sqlalchemy import Boolean, Column, Integer, String, ForeignKey, Table
+import enum
+from sqlalchemy import Boolean, Column, Integer, String, ForeignKey, Table
 from sqlalchemy.orm import relationship
 from database import Base
 from sqlalchemy.ext.declarative import declarative_base

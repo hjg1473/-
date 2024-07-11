@@ -1,4 +1,4 @@
-from auth.models import Users
+from Refactor.app.src.models import Users
 from passlib.context import CryptContext
 
 bcrypt_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
