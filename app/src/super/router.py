@@ -1,15 +1,13 @@
 from fastapi import APIRouter, HTTPException
+from sqlalchemy.orm import joinedload
 import sys, os
 sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))
-from models import Users, StudyInfo, Groups, Problems, CustomProblemSet
-from auth.exceptions import get_current_user, get_user_exception
+from Refactor.app.src.models import Users, StudyInfo, Groups, Problems, CustomProblemSet
+from Refactor.app.src.auth.router import get_current_user
 from starlette import status
-from dependencies import db_dependency, user_dependency
-from super.schemas import CustomProblem, ProblemSet
-from super.schemas import BaseModel
-from sqlalchemy.orm import joinedload
-from exceptions import http_exception
-
+from super.dependencies import db_dependency, user_dependency
+from super.schemas import CustomProblem, ProblemSet, AddGroup
+from super.exceptions import http_exception
 
 router = APIRouter(
     prefix="/super",
@@ -130,9 +128,6 @@ async def read_group_info(user: user_dependency,
     result = { 'groups': [{'id': u.id, 'name': u.name} for u in user_group] }
     
     return result
-
-class AddGroup(BaseModel):
-    name: str
 
 # 해당 선생님이 관리하는 반 추가
 @router.post("/create/group", status_code = status.HTTP_200_OK)
@@ -357,7 +352,7 @@ async def read_select_user_studyInfo(user: user_dependency, db: db_dependency, u
         raise HTTPException(status_code=401, detail='Authentication Failed')
 
 
-    user_model = db.query(Users.id, Users.username, Users.age, Users.group).filter(Users.id == user_id).first()
+    user_model = db.query(Users.id, Users.username, Users.age).filter(Users.id == user_id).first()
     
     if user_model is None:
         raise http_exception()
@@ -396,7 +391,6 @@ async def read_select_user_studyInfo(user: user_dependency, db: db_dependency, u
         'user_id': user_model[0],
         'name': user_model[1],
         'age': user_model[2],
-        'class': user_model[3],
         'type1_True_cnt' : correct_problems_type1_count,
         'type2_True_cnt' : correct_problems_type2_count,
         'type3_True_cnt' : correct_problems_type3_count,

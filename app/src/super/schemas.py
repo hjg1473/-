@@ -9,3 +9,6 @@ class CustomProblem(BaseModel):
 class ProblemSet(BaseModel):
     name: str
     customProblems: List[CustomProblem]
+
+class AddGroup(BaseModel):
+    name: str
