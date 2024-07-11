@@ -1,16 +1,16 @@
 from sqlalchemy.orm import Session
 from fastapi import APIRouter, Depends, HTTPException, Path
 from starlette import status
-from models import Users
 
 import sys, os
 sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))
-from Server.routers.auth import get_current_user
 
-from dependencies import user_dependency, db_dependency, get_db
-from schemas import UserQuitVerification, UserVerification, User_info
-from utils import bcrypt_context, successful_response
-from exceptions import http_exception
+from Server.routers.auth import get_current_user
+from src.models import Users
+from user.dependencies import user_dependency, db_dependency, get_db
+from user.schemas import UserQuitVerification, UserVerification, User_info
+from user.utils import bcrypt_context, successful_response
+from user.exceptions import http_exception
 
 router = APIRouter(
     prefix='/users', 
