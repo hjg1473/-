@@ -8,9 +8,9 @@ from fastapi.templating import Jinja2Templates
 import sys, os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))))
 
-from auth.router import get_current_user, get_user_exception
-from src.models import Users, StudyInfo
-import src.models as models
+from Refactor.app.src.auth.router import get_current_user, get_user_exception
+from Refactor.app.src.models import Users, StudyInfo
+import Refactor.app.src.models as models
 from student.dependencies import user_dependency, db_dependency, get_db
 
 router = APIRouter( 
@@ -127,7 +127,7 @@ async def read_user_studyinfo(user: user_dependency, db: db_dependency):
     if user.get('user_role') != 'student': # student 인 경우만 
         raise HTTPException(status_code=401, detail='Authentication Failed')
 
-    user_model = db.query(Users.id, Users.username, Users.age, Users.group).filter(Users.id == user.get('id')).first()
+    user_model = db.query(Users.id, Users.username, Users.age).filter(Users.id == user.get('id')).first()
 
     study_info = db.query(StudyInfo).options(
         joinedload(StudyInfo.correct_problems),
@@ -163,7 +163,6 @@ async def read_user_studyinfo(user: user_dependency, db: db_dependency):
         'user_id': user_model[0],
         'name': user_model[1],
         'age': user_model[2],
-        'class': user_model[3],
         'type1_True_cnt' : correct_problems_type1_count,
         'type2_True_cnt' : correct_problems_type2_count,
         'type3_True_cnt' : correct_problems_type3_count,
