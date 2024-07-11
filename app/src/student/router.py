@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session
 from fastapi.templating import Jinja2Templates
 
 import sys, os
-sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))
+sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))))
 
 from auth.router import get_current_user, get_user_exception
 from src.models import Users, StudyInfo
