@@ -6,7 +6,7 @@ import sys, os
 sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))
 
 from auth.router import get_current_user
-from src.models import Users
+from Refactor.app.src.models import Users
 from user.dependencies import user_dependency, db_dependency, get_db
 from user.schemas import UserQuitVerification, UserVerification, User_info
 from user.utils import bcrypt_context, successful_response

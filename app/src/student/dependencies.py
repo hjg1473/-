@@ -2,12 +2,9 @@ from typing import Annotated
 from sqlalchemy.orm import Session
 from fastapi import Depends
 from database import SessionLocal
-from sqlalchemy.orm import Session
-
 import sys, os
 sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))
-from Server.routers.auth import get_current_user
-
+from Refactor.app.src.auth.router import get_current_user
 
 def get_db():
     db = SessionLocal()

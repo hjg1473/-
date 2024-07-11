@@ -1,11 +1,10 @@
 import enum
 from sqlalchemy import Boolean, Column, Integer, String, ForeignKey, Table
-import enum
-from sqlalchemy import Boolean, Column, Integer, String, ForeignKey, Table
 from sqlalchemy.orm import relationship
 from database import Base
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import relationship, sessionmaker
+
+Base = declarative_base()
 
 # 중간 테이블 정의
 correct_problem_table = Table('correct_problem', Base.metadata,
