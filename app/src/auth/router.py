@@ -72,7 +72,7 @@ async def login_for_access_token(access_token: Annotated[str, Depends(oauth2_bea
     payload = decode_token(access_token)
     if payload is None:
         raise access_token_exception()
-    username, user_id, user_role = validate_token_payload(payload)
+    user_role = validate_token_payload(payload)
     return {'detail': 'Token Valid', 'role': user_role}
 
 @router.post("/refresh", response_model=Token)

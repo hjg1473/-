@@ -34,4 +34,4 @@ def validate_token_payload(payload: dict):
     user_role = payload.get('role')
     if not username or not user_id:
         raise get_user_exception()
-    return username, user_id, user_role
+    return user_role
