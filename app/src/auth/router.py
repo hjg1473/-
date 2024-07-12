@@ -4,9 +4,11 @@ from typing import Annotated
 from fastapi.security import OAuth2PasswordRequestForm, OAuth2PasswordBearer
 from datetime import timedelta
 import sys, os
+
+from sqlalchemy import select
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))))
 from app.src.models import Users
-from auth.schemas import CreateUser, Token
+from auth.schemas import CreateUser, Token, Message
 from auth.utils import authenticate_user, decode_token, validate_token_payload
 from auth.service import create_access_token, create_user_in_db, create_study_info
 from auth.dependencies import db_dependency
@@ -29,9 +31,10 @@ async def get_current_user(token: Annotated[str, Depends(oauth2_bearer)]):
     return {'username' : username, 'id' : user_id, 'user_role': user_role}
 
 # 회원가입
-@router.post("/register", status_code=status.HTTP_200_OK)
+@router.post("/register", status_code=status.HTTP_200_OK, response_model=CreateUser, responses={409: {"model": Message}})
 async def create_new_user(db: db_dependency, create_user: CreateUser):
     user_username = db.query(Users).filter(Users.username == create_user.username).first()
+    # user_username = await db.execute(select(Users).filter_by(Users.username == create_user.username)).scalars().all()
     if user_username:
         raise user_exception()
     user = create_user_in_db(db, create_user)
@@ -39,7 +42,7 @@ async def create_new_user(db: db_dependency, create_user: CreateUser):
     return {'detail': '성공적으로 회원가입되었습니다.'}
 
 # 로그인 (엑세스 토큰 + 리프레시 토큰 한번에 요청)
-@router.post("/token", response_model=Token)
+@router.post("/token", response_model=Message, responses={401: {"model": Message}})
 async def first_login_for_access_token(form_data: Annotated[OAuth2PasswordRequestForm, Depends()], db: db_dependency):
     user = authenticate_user(form_data.username, form_data.password, db)    
     if not user:
@@ -59,7 +62,7 @@ async def first_login_for_access_token(form_data: Annotated[OAuth2PasswordReques
     return {'access_token' : access_token, 'token_type' : 'bearer', 'role': user.role, 'refresh_token' : refresh_token}
 
 # Access Token 유효성 검사
-@router.post("/access", status_code=status.HTTP_200_OK)
+@router.post("/access", status_code=status.HTTP_200_OK, response_model=Message, responses={401: {"model": Message}})
 async def login_for_access_token(access_token: Annotated[str, Depends(oauth2_bearer)]):
     payload = decode_token(access_token)
     if payload is None:
@@ -68,7 +71,7 @@ async def login_for_access_token(access_token: Annotated[str, Depends(oauth2_bea
     return {'detail': 'Token Valid', 'role': user_role}
 
 # Refresh Token 유효성 검사
-@router.post("/refresh", response_model=Token)
+@router.post("/refresh", response_model=Message, responses={401: {"model": Message}})
 async def refresh_access_token(db: db_dependency, refresh_token: str = Header(default=None)):
     payload = decode_token(refresh_token)
     if payload is None:
@@ -94,7 +97,7 @@ async def refresh_access_token(db: db_dependency, refresh_token: str = Header(de
     return {'access_token': access_token, 'token_type': 'bearer', 'role': user.role, 'refresh_token': new_refresh_token}
 
 # 로그아웃
-@router.post("/logout", status_code=status.HTTP_200_OK)
+@router.post("/logout", status_code=status.HTTP_200_OK, response_model=Message, responses={401: {"model": Message}})
 async def logout(refresh_token: str = Header(default=None)):
     payload = decode_token(refresh_token)
     if payload is None:
