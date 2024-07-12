@@ -7,6 +7,7 @@ import 'package:block_english/utils/dio.dart';
 import 'package:block_english/utils/storage.dart';
 import 'package:dartz/dartz.dart';
 import 'package:dio/dio.dart';
+import 'package:flutter/material.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'auth_service.g.dart';
@@ -90,7 +91,7 @@ class AuthService {
       options: Options(
         headers: {
           'accept': 'application/json',
-          'refresh-token': _ref.watch(secureStorageProvider).readRefreshToken(),
+          'refresh-token': refreshToken,
         },
       ),
     );
