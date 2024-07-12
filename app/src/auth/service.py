@@ -7,9 +7,6 @@ from app.src.models import Users, StudyInfo
 from auth.schemas import CreateUser
 from auth.utils import get_password_hash
 from auth.dependencies import db_dependency
-import redis 
-
-redis_client = redis.Redis(host='localhost', port=6379, db=0)
 
 # 토큰 생성
 def create_access_token(username: str, user_id: int, role: str, expires_delta: timedelta):
