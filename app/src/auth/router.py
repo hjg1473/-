@@ -21,18 +21,12 @@ router = APIRouter(
 
 oauth2_bearer = OAuth2PasswordBearer(tokenUrl="auth/token")
 
-# JWT 엑세스 토큰 디코딩
 async def get_current_user(token: Annotated[str, Depends(oauth2_bearer)]):
-    try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        username: str = payload.get('sub')
-        user_id: int = payload.get('id')
-        user_role: str = payload.get('role')
-        if username is None or user_id is None:
-            raise get_valid_user_exception()
-        return {'username' : username, 'id' : user_id, 'user_role': user_role}
-    except JWTError:
-        raise get_valid_user_exception()
+    payload = decode_token(token)
+    if payload is None:
+        raise access_token_exception()
+    username, user_id, user_role = validate_token_payload(payload)
+    return {'username' : username, 'id' : user_id, 'user_role': user_role}
 
 # 회원가입
 @router.post("/register", status_code=status.HTTP_200_OK)
@@ -46,7 +40,6 @@ async def create_new_user(db: db_dependency, create_user: CreateUser):
     create_study_info(db, user.id)
 
     return {'detail': '성공적으로 회원가입되었습니다.'}
-
 
 # 로그인 (엑세스 토큰 + 리프레시 토큰 한번에 요청)
 @router.post("/token", response_model=Token)
@@ -72,7 +65,7 @@ async def login_for_access_token(access_token: Annotated[str, Depends(oauth2_bea
     payload = decode_token(access_token)
     if payload is None:
         raise access_token_exception()
-    user_role = validate_token_payload(payload)
+    username, user_id, user_role = validate_token_payload(payload)
     return {'detail': 'Token Valid', 'role': user_role}
 
 @router.post("/refresh", response_model=Token)
