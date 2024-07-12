@@ -36,9 +36,8 @@ class SuperService {
         headers: {TOKENVALIDATE: 'true'},
       ),
     );
-
-    return (response.data as List)
-        .map((x) => SuperGroupModel.fromJson(x))
+    return (response.data['groups'] as List)
+        .map((e) => SuperGroupModel.fromJson(e))
         .toList();
   }
 }
