@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Session, joinedload
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends
 from starlette import status
 from database import engine
 from sqlalchemy.orm import Session
@@ -8,10 +8,11 @@ from fastapi.templating import Jinja2Templates
 import sys, os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))))
 
-from app.src.auth.router import get_current_user, get_user_exception
+from app.src.auth.router import get_current_user
 from app.src.models import Users, StudyInfo
 import app.src.models as models
 from student.dependencies import user_dependency, db_dependency, get_db
+import exceptions as ex
 
 router = APIRouter( 
     prefix="/student",
@@ -31,25 +32,25 @@ async def connect_teacher(teacher_id: int,
             db: Session = Depends(get_db)):
 
     if user is None:
-        raise get_user_exception()
+        raise ex.get_user_exception()
     
     if user.get('user_role') != 'student': # student 인 경우만 
-        raise HTTPException(status_code=401, detail='Authentication Failed')
+        raise ex.auth_failed()
 
     # 학생 정보 가져오기
     student = db.query(Users).filter(Users.id == user.get("id")).first()
     
     if not student:
-        raise get_user_exception()
+        raise ex.get_user_exception()
 
     if teacher_id == user.get("id"):
-        raise HTTPException(status_code=404, detail='자기 자신은 지정할 수 없습니다.')
+        raise ex.not_found_self()
     
     # 쿼리 파라미터로 받은 teacher_id 또는 teacher_username을 사용해 선생님 검색
     teacher = db.query(Users).filter(Users.id == teacher_id).first()
 
     if not teacher:
-        raise HTTPException(status_code=404, detail='선생님을 찾을 수 없습니다.')
+        raise ex.not_found_teacher()
 
     # 학생과 선생님이 이미 연결되어 있는지 확인
     if teacher in student.student_teachers:
@@ -67,10 +68,10 @@ async def connect_teacher(teacher_id: int,
 async def read_connect_teacher(user: user_dependency, db: db_dependency):
 
     if user is None:
-        raise get_user_exception()
+        raise ex.get_user_exception()
     
     if user.get('user_role') != 'student': # student 인 경우만 
-        raise HTTPException(status_code=401, detail='Authentication Failed')
+        raise ex.auth_failed()
     
     # 쿼리 검색
     teacher = db.query(Users).options( 
@@ -90,10 +91,10 @@ async def read_connect_teacher(user: user_dependency, db: db_dependency):
 async def read_user_info(user: user_dependency, db: db_dependency):
 
     if user is None:
-        raise get_user_exception()
+        raise ex.get_user_exception()
     
     if user.get('user_role') != 'student': # student 인 경우만 
-        raise HTTPException(status_code=401, detail='Authentication Failed')
+        raise ex.auth_failed()
     
     user_model = db.query(Users).filter(Users.id == user.get('id')).first()
     return {'name': user_model.name, 'age': user_model.age, 'team_id': user_model.team_id}
@@ -108,10 +109,10 @@ async def read_user_info(user: user_dependency, db: db_dependency):
 async def read_user_id(user: user_dependency, db: db_dependency):
 
     if user is None:
-        raise get_user_exception()
+        raise ex.get_user_exception()
     
     if user.get('user_role') != 'student': # student 인 경우만 
-        raise HTTPException(status_code=401, detail='Authentication Failed')
+        raise ex.auth_failed()
     
     return  {"id": user.get('id')}
     # 사용자의 id 반환.
@@ -122,10 +123,10 @@ async def read_user_id(user: user_dependency, db: db_dependency):
 async def read_user_studyinfo(user: user_dependency, db: db_dependency):
 
     if user is None:
-        raise get_user_exception()
+        raise ex.get_user_exception()
     
     if user.get('user_role') != 'student': # student 인 경우만 
-        raise HTTPException(status_code=401, detail='Authentication Failed')
+        raise ex.auth_failed()
 
     user_model = db.query(Users.id, Users.username, Users.age).filter(Users.id == user.get('id')).first()
 

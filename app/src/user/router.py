@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Session
-from fastapi import APIRouter, Depends, HTTPException, Path
+from fastapi import APIRouter, Depends
 from starlette import status
 import sys, os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))))
@@ -9,7 +9,7 @@ from app.src.models import Users
 from user.dependencies import user_dependency, db_dependency, get_db
 from user.schemas import UserQuitVerification, UserVerification, User_info
 from user.utils import bcrypt_context, successful_response
-from user.exceptions import http_exception
+import exceptions as excep
 
 router = APIRouter(
     prefix='/users', 
@@ -20,13 +20,13 @@ router = APIRouter(
 async def change_password(user: user_dependency, db: db_dependency,
                           user_verification: UserVerification):
     if user is None:
-        raise HTTPException(status_code=401, detail='Authentication Failed')
+        raise excep.wrong_password()
     
     user_model = db.query(Users).filter(Users.id == user.get('id')).first()
     
     if not bcrypt_context.verify(user_verification.password, user_model.hashed_password):
     # 비밀번호 인증.
-        raise HTTPException(status_code=401, detail='기존 비밀번호가 틀렸습니다.')
+        raise excep.wrong_password()
     
     user_model.hashed_password = bcrypt_context.hash(user_verification.new_password)
     # 해시값을 새로운 해시값으로 교체.
@@ -40,12 +40,12 @@ async def update_user_info(user_info: User_info,
                       user: dict = Depends(get_current_user),
                       db: Session = Depends(get_db)):
     if user is None:
-        raise HTTPException(status_code=401, detail='Authentication Failed')
+        raise excep.auth_failed()
 
     user_model = db.query(Users).filter(Users.id == user.get('id')).first()
 
     if user_model is None:
-        raise http_exception()
+        raise excep.auth_failed()
 
     user_model.name = user_info.name
     user_model.username = user_info.username
@@ -62,17 +62,17 @@ async def update_user_info(user_info: User_info,
 async def delete_user(user: user_dependency, db: db_dependency, user_verification: UserQuitVerification):
 
     if user is None:
-        raise HTTPException(status_code=401, detail='Authentication Failed')
+        raise excep.auth_failed()
     
     user_model = db.query(Users).filter(Users.id == user.get('id')).first()
     
     # 비밀번호 인증.
     if not bcrypt_context.verify(user_verification.password, user_model.hashed_password):
-        raise HTTPException(status_code=401, detail='비밀번호가 틀렸습니다.')
+        raise excep.wrong_password()
     
     user_model = db.query(Users).filter(Users.id == user.get('id')).first()
     if user_model is None:
-        raise HTTPException(status_code=404, detail='Not found.')
+        raise excep.not_found_default()
     
     db.query(Users).filter(Users.id == user.get('id')).delete()
     db.commit()
