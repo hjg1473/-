@@ -31,22 +31,17 @@ async def get_current_user(token: Annotated[str, Depends(oauth2_bearer)]):
 # 회원가입
 @router.post("/register", status_code=status.HTTP_200_OK)
 async def create_new_user(db: db_dependency, create_user: CreateUser):
-    
     user_username = db.query(Users).filter(Users.username == create_user.username).first()
     if user_username:
         raise user_exception()
-    
     user = create_user_in_db(db, create_user)
     create_study_info(db, user.id)
-
     return {'detail': '성공적으로 회원가입되었습니다.'}
 
 # 로그인 (엑세스 토큰 + 리프레시 토큰 한번에 요청)
 @router.post("/token", response_model=Token)
 async def first_login_for_access_token(form_data: Annotated[OAuth2PasswordRequestForm, Depends()], db: db_dependency):
-    
     user = authenticate_user(form_data.username, form_data.password, db)    
-
     if not user:
         raise token_exception()
     
@@ -57,9 +52,9 @@ async def first_login_for_access_token(form_data: Annotated[OAuth2PasswordReques
     refresh_token = create_access_token(user.username, '', '', timedelta(minutes=REFRESH_TOKEN_EXPIRE_DAYS))
     redis_client.set(f"{user.username}_refresh", refresh_token)
     redis_client.set(f"{user.username}_access", access_token)
-
     return {'access_token' : access_token, 'token_type' : 'bearer', 'role': user.role, 'refresh_token' : refresh_token}
 
+# Access Token 유효성 검사
 @router.post("/access", status_code=status.HTTP_200_OK)
 async def login_for_access_token(access_token: Annotated[str, Depends(oauth2_bearer)]):
     payload = decode_token(access_token)
@@ -68,13 +63,14 @@ async def login_for_access_token(access_token: Annotated[str, Depends(oauth2_bea
     username, user_id, user_role = validate_token_payload(payload)
     return {'detail': 'Token Valid', 'role': user_role}
 
+# Refresh Token 유효성 검사
 @router.post("/refresh", response_model=Token)
 async def refresh_access_token(db: db_dependency, refresh_token: str = Header(default=None)):
     payload = decode_token(refresh_token)
     if payload is None:
         raise refresh_token_exception()
+    
     username = payload.get('sub')
-
     if username is None:
         raise get_user_exception()
 
@@ -85,26 +81,22 @@ async def refresh_access_token(db: db_dependency, refresh_token: str = Header(de
     user = db.query(Users).filter(Users.username == username).first()
     if user is None:
         raise get_user_exception()
-
+    
     access_token = create_access_token(user.username, user.id, user.role, timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES))
     new_refresh_token = create_access_token(user.username, '', '', timedelta(days=REFRESH_TOKEN_EXPIRE_DAYS))
-
     redis_client.set(f"{user.username}_refresh", new_refresh_token)
     redis_client.set(f"{user.username}_access", access_token)
-
     return {'access_token': access_token, 'token_type': 'bearer', 'role': user.role, 'refresh_token': new_refresh_token}
 
-@router.post("/logout")
+# 로그아웃
+@router.post("/logout", status_code=status.HTTP_200_OK)
 async def logout(refresh_token: str = Header(default=None)):
     payload = decode_token(refresh_token)
     if payload is None:
         raise refresh_token_exception()
     username = payload.get('sub')
-
     if username is None:
         raise get_user_exception()
-
     redis_client.delete(f"{username}_access")
     redis_client.delete(f"{username}_refresh")
-
     return {'detail': '성공적으로 로그아웃 되었습니다!'}
