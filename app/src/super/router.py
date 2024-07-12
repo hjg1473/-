@@ -1,9 +1,9 @@
 from fastapi import APIRouter, HTTPException
 from sqlalchemy.orm import joinedload
 import sys, os
-sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))
-from Refactor.app.src.models import Users, StudyInfo, Groups, Problems, CustomProblemSet
-from Refactor.app.src.auth.router import get_current_user
+sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))))
+from app.src.models import Users, StudyInfo, Groups, Problems, CustomProblemSet
+from app.src.auth.router import get_current_user
 from starlette import status
 from super.dependencies import db_dependency, user_dependency
 from super.schemas import CustomProblem, ProblemSet, AddGroup
