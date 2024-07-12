@@ -1,5 +1,13 @@
 from fastapi import  HTTPException, status
 
+def user_exception():
+    credentials_exception = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="중복된 아이디입니다.",
+        headers={"WWW-Authenticate": "Bearer"},
+    )
+    return credentials_exception
+
 def get_user_exception():
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
