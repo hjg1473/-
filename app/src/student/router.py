@@ -8,9 +8,9 @@ from fastapi.templating import Jinja2Templates
 import sys, os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))))
 
-from Refactor.app.src.auth.router import get_current_user, get_user_exception
-from Refactor.app.src.models import Users, StudyInfo
-import Refactor.app.src.models as models
+from app.src.auth.router import get_current_user, get_user_exception
+from app.src.models import Users, StudyInfo
+import app.src.models as models
 from student.dependencies import user_dependency, db_dependency, get_db
 
 router = APIRouter( 

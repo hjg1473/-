@@ -1,12 +1,11 @@
 from sqlalchemy.orm import Session
 from fastapi import APIRouter, Depends, HTTPException, Path
 from starlette import status
-
 import sys, os
-sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))
+sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))))
 
 from auth.router import get_current_user
-from Refactor.app.src.models import Users
+from app.src.models import Users
 from user.dependencies import user_dependency, db_dependency, get_db
 from user.schemas import UserQuitVerification, UserVerification, User_info
 from user.utils import bcrypt_context, successful_response

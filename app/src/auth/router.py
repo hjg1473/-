@@ -4,11 +4,10 @@ from database import engine
 from fastapi.security import OAuth2PasswordRequestForm, OAuth2PasswordBearer
 from datetime import datetime, timedelta
 from jose import jwt, JWTError
-import os
-import sys
-sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))
-import Refactor.app.src.models
-from Refactor.app.src.models import Users
+import sys, os
+sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))))
+import app.src.models
+from app.src.models import Users
 from auth.schemas import CreateUser, Token
 from auth.utils import get_password_hash, authenticate_user
 from auth.service import create_access_token, redis_client
@@ -47,7 +46,7 @@ async def create_new_user(db: db_dependency, create_user: CreateUser):
     if user_username:
         raise HTTPException(status_code=409, detail='중복된 아이디입니다.')
     
-    create_user_model = Refactor.app.src.models.Users()
+    create_user_model = app.src.models.Users()
     create_user_model.username = create_user.username
     create_user_model.name = create_user.name 
     create_user_model.age = create_user.age
@@ -60,7 +59,7 @@ async def create_new_user(db: db_dependency, create_user: CreateUser):
     db.add(create_user_model)# DB에 저장
     db.commit() # 커밋
     db.refresh(create_user_model)
-    study_info = Refactor.app.src.models.StudyInfo()
+    study_info = app.src.models.StudyInfo()
     study_info.owner_id = create_user_model.id
     study_info.type1Level = 0
     study_info.type2Level = 0

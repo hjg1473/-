@@ -2,9 +2,9 @@ from fastapi import APIRouter, HTTPException
 from starlette import status
 import os
 import sys
-sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))
-from Refactor.app.src.models import Users, StudyInfo, Groups, Problems, CustomProblemSet
-import Refactor.app.src.models
+sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))))
+from app.src.models import Users, StudyInfo, Groups, Problems, CustomProblemSet
+import app.src.models
 from fastapi import FastAPI, File, Form, UploadFile, WebSocket, WebSocketDisconnect
 import json
 from game.schemas import Room, CreateRoomRequest, JoinRoomRequest, GetStudentScoreRequest, ParticipantSolveRequest, ConnectionManager, rooms

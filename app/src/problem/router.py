@@ -1,11 +1,11 @@
 from sqlalchemy.orm import joinedload
 from fastapi import APIRouter, HTTPException
 from starlette import status
-import os
-import sys
-sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))
-import Refactor.app.src.models
-from Refactor.app.src.models import Users, StudyInfo, Problems
+import sys, os
+sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))))
+
+import app.src.models
+from app.src.models import Users, StudyInfo, Problems
 from fastapi import requests, UploadFile, File, Form
 import requests
 from problem.dependencies import user_dependency, db_dependency
@@ -24,7 +24,7 @@ async def create_problem(problem: Problem,
                       db: db_dependency):
     if user is None:
         raise get_user_exception()
-    problem_model = Refactor.app.src.models.Problems()
+    problem_model = app.src.models.Problems()
     problem_model.season = problem.season
     problem_model.type = problem.type
     problem_model.problemLevel = problem.problemLevel
