@@ -28,7 +28,7 @@ class Users(Base):
     id = Column(Integer, primary_key=True, index=True)  # PK, auto-increment
     username = Column(String, unique=True, index=True)  # Unique username
     hashed_password = Column(String)  # Hashed password
-    email = Column(String, unique=True, index=True)  # Email (teachers only)
+    email = Column(String)  # Email (teachers only)
     name = Column(String)  # Real name
     age = Column(Integer)  # Age
     role = Column(String, index=True)  # Role (super or student)
