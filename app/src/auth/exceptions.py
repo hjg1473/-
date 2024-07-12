@@ -32,6 +32,14 @@ def token_exception():
     )
     return token_exception_response
 
+def access_token_exception():
+    refresh_token_exception_response = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Invalid access token",
+        headers={"WWW-Authenticate": "Bearer"},
+    )
+    return refresh_token_exception_response
+
 def refresh_token_exception():
     refresh_token_exception_response = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
