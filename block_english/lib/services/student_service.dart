@@ -1,4 +1,4 @@
-import 'package:block_english/models/student_info_model.dart';
+import 'package:block_english/models/StudentModel/student_info_model.dart';
 import 'package:block_english/utils/constants.dart';
 import 'package:block_english/utils/dio.dart';
 import 'package:dio/dio.dart';
@@ -25,7 +25,7 @@ class StudentService {
     final response = await dio.get(
       '/$_student/$_info',
       options: Options(
-        headers: {TOKEN_VALIDATE: 'true'},
+        headers: {TOKENVALIDATE: 'true'},
       ),
     );
     return StudentInfoModel.fromJson(response.data);

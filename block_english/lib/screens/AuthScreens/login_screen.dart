@@ -1,4 +1,4 @@
-import 'package:block_english/models/login_response_model.dart';
+import 'package:block_english/models/AuthModel/login_response_model.dart';
 import 'package:block_english/services/auth_service.dart';
 import 'package:block_english/utils/storage.dart';
 import 'package:flutter/material.dart';

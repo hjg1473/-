@@ -1,6 +1,6 @@
-import 'package:block_english/models/access_response_model.dart';
-import 'package:block_english/models/login_response_model.dart';
-import 'package:block_english/models/reg_response_model.dart';
+import 'package:block_english/models/AuthModel/access_response_model.dart';
+import 'package:block_english/models/AuthModel/login_response_model.dart';
+import 'package:block_english/models/AuthModel/reg_response_model.dart';
 import 'package:block_english/utils/constants.dart';
 import 'package:block_english/utils/dio.dart';
 import 'package:block_english/utils/storage.dart';
@@ -70,7 +70,7 @@ class AuthService {
     final response = await dio.post('/$_auth/$_access',
         options: Options(
           contentType: Headers.jsonContentType,
-          headers: {TOKEN_VALIDATE: 'true'},
+          headers: {TOKENVALIDATE: 'true'},
         ));
     return AccessReponseModel.fromJson(response.data);
   }

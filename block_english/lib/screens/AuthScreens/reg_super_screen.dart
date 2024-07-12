@@ -1,4 +1,4 @@
-import 'package:block_english/models/reg_response_model.dart';
+import 'package:block_english/models/AuthModel/reg_response_model.dart';
 import 'package:block_english/services/auth_service.dart';
 import 'package:block_english/utils/constants.dart';
 import 'package:block_english/widgets/round_corner_route_button.dart';

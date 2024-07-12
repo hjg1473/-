@@ -1,3 +1,4 @@
+import 'package:block_english/models/FailureModel/failure_model.dart';
 import 'package:block_english/utils/constants.dart';
 import 'package:block_english/utils/storage.dart';
 import 'package:dio/dio.dart';
@@ -11,7 +12,7 @@ Dio dio(DioRef ref) {
     BaseOptions(
       connectTimeout: const Duration(seconds: 3),
       receiveTimeout: const Duration(seconds: 5),
-      baseUrl: BASE_URL,
+      baseUrl: BASEURL,
       validateStatus: (status) => (status == 200 || status == 201),
     ),
   );
@@ -23,8 +24,8 @@ Dio dio(DioRef ref) {
   dio.interceptors.add(InterceptorsWrapper(
     onRequest: (options, handler) async {
       final accessToken = await storage.readAccessToken();
-      if (options.headers[TOKEN_VALIDATE] == 'true') {
-        options.headers.remove(TOKEN_VALIDATE);
+      if (options.headers[TOKENVALIDATE] == 'true') {
+        options.headers.remove(TOKENVALIDATE);
         options.headers['Authorization'] = 'Bearer $accessToken';
       }
       return handler.next(options);
@@ -35,7 +36,7 @@ Dio dio(DioRef ref) {
           BaseOptions(
             connectTimeout: const Duration(seconds: 3),
             receiveTimeout: const Duration(seconds: 5),
-            baseUrl: BASE_URL,
+            baseUrl: BASEURL,
           ),
         );
 
@@ -47,8 +48,7 @@ Dio dio(DioRef ref) {
               await storage.removeTokens();
             }
 
-            //TODO: 로그인 만료 표시 후 처음 화면으로 돌아가기
-            handler.reject(error);
+            handler.next(error);
           },
         ));
 
@@ -59,13 +59,17 @@ Dio dio(DioRef ref) {
         authDio.options.headers['accept'] = 'application/json';
         authDio.options.headers['refresh-token'] = '$refreshToken';
 
-        final refreshTokenResponse = await authDio.post('/auth/refresh');
+        try {
+          final refreshTokenResponse = await authDio.post('/auth/refresh');
 
-        final newAccessToken = refreshTokenResponse.data['access-token'];
-        final newRefreshToken = refreshTokenResponse.data['refresh-token'];
+          final newAccessToken = refreshTokenResponse.data['access-token'];
+          final newRefreshToken = refreshTokenResponse.data['refresh-token'];
 
-        await storage.saveAccessToken(newAccessToken);
-        await storage.saveRefreshToken(newRefreshToken);
+          await storage.saveAccessToken(newAccessToken);
+          await storage.saveRefreshToken(newRefreshToken);
+        } on DioException catch (e) {
+          throw DioException(requestOptions: e.requestOptions);
+        }
 
         final response = await dio.request(
           error.requestOptions.path,

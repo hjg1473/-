@@ -1,11 +1,8 @@
-import 'dart:convert';
-
-import 'package:block_english/models/Super/super_group_model.dart';
-import 'package:block_english/models/Super/super_info_response_model.dart';
+import 'package:block_english/models/SuperModel/super_group_model.dart';
+import 'package:block_english/models/SuperModel/super_info_response_model.dart';
 import 'package:block_english/utils/constants.dart';
 import 'package:block_english/utils/dio.dart';
 import 'package:dio/dio.dart';
-import 'package:flutter/material.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'super_service.g.dart';
@@ -25,19 +22,18 @@ class SuperService {
     final response = await dio.get(
       '/$_super/$_info',
       options: Options(
-        headers: {TOKEN_VALIDATE: 'true'},
+        headers: {TOKENVALIDATE: 'true'},
       ),
     );
     return SuperInfoResponseModel.fromJson(response.data);
   }
 
   Future<List<SuperGroupModel>> getGroupList() async {
-    List<SuperGroupModel> groupList = [];
     final dio = _ref.watch(dioProvider);
     final response = await dio.get(
       '/$_super/$_group',
       options: Options(
-        headers: {TOKEN_VALIDATE: 'true'},
+        headers: {TOKENVALIDATE: 'true'},
       ),
     );
 
