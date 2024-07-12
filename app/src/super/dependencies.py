@@ -3,8 +3,8 @@ from typing import Annotated
 from sqlalchemy.orm import Session
 from database import SessionLocal
 import sys, os
-sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))))
-from app.src.auth.router import get_current_user
+sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))
+from Refactor.app.src.auth.router import get_current_user
 
 def get_db():
     try:
