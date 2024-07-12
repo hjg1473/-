@@ -25,7 +25,10 @@ class StudentService {
     final response = await dio.get(
       '/$_student/$_info',
       options: Options(
-        headers: {TOKENVALIDATE: 'true'},
+        headers: {
+          'accept': 'application/json',
+          TOKENVALIDATE: 'true',
+        },
       ),
     );
     return StudentInfoModel.fromJson(response.data);

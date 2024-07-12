@@ -61,8 +61,8 @@ Dio dio(DioRef ref) {
         try {
           final refreshTokenResponse = await authDio.post('/auth/refresh');
 
-          final newAccessToken = refreshTokenResponse.data['access-token'];
-          final newRefreshToken = refreshTokenResponse.data['refresh-token'];
+          final newAccessToken = refreshTokenResponse.data['access_token'];
+          final newRefreshToken = refreshTokenResponse.data['refresh_token'];
 
           await storage.saveAccessToken(newAccessToken);
           await storage.saveRefreshToken(newRefreshToken);
