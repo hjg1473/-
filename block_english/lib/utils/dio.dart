@@ -1,7 +1,7 @@
-import 'package:block_english/models/FailureModel/failure_model.dart';
 import 'package:block_english/utils/constants.dart';
 import 'package:block_english/utils/storage.dart';
 import 'package:dio/dio.dart';
+import 'package:flutter/material.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'dio.g.dart';
@@ -48,7 +48,7 @@ Dio dio(DioRef ref) {
               await storage.removeTokens();
             }
 
-            handler.next(error);
+            handler.reject(error);
           },
         ));
 
@@ -68,6 +68,7 @@ Dio dio(DioRef ref) {
           await storage.saveAccessToken(newAccessToken);
           await storage.saveRefreshToken(newRefreshToken);
         } on DioException catch (e) {
+          debugPrint(e.toString());
           throw DioException(requestOptions: e.requestOptions);
         }
 
