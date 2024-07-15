@@ -24,12 +24,19 @@ class StudentProfileScreen extends StatelessWidget {
                     builder: (context, snapshot) {
                       if (!snapshot.hasData) {
                         return const CircularProgressIndicator();
+                      } else {
+                        snapshot.data!.fold((failure) {
+                          // TODO: show popup and exit the app
+                          return const Placeholder();
+                        }, (studentInfoModel) {
+                          return ProfileCard(
+                            name: studentInfoModel.name,
+                            age: studentInfoModel.age,
+                            isStudent: true,
+                          );
+                        });
                       }
-                      return ProfileCard(
-                        name: snapshot.data!.name,
-                        age: snapshot.data!.age,
-                        isStudent: true,
-                      );
+                      return const CircularProgressIndicator();
                     },
                   );
                 },
