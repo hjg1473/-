@@ -1,4 +1,5 @@
 import 'dart:ui';
+import 'package:block_english/models/SuperModel/super_group_model.dart';
 import 'package:block_english/services/super_service.dart';
 import 'package:block_english/utils/constants.dart';
 import 'package:block_english/widgets/image_card_button.dart';
@@ -70,10 +71,19 @@ class SuperMainScreen extends StatelessWidget {
                       return FutureBuilder(
                         future: ref.watch(superServiceProvider).getSuperInfo(),
                         builder: (context, snapshot) {
+                          String text = '';
                           if (!snapshot.hasData) {
-                            return const CircularProgressIndicator();
+                            return const Text('Loading...');
                           }
-                          return ProfileCard(name: snapshot.data!.name);
+                          snapshot.data!.fold(
+                            (failure) {
+                              text = failure.detail;
+                            },
+                            (superinfo) {
+                              text = superinfo.name;
+                            },
+                          );
+                          return ProfileCard(name: text);
                         },
                       );
                     },
@@ -128,26 +138,35 @@ class SuperMainScreen extends StatelessWidget {
                           future:
                               ref.watch(superServiceProvider).getGroupList(),
                           builder: (context, snapshot) {
-                            if (snapshot.hasData) {
-                              return ListView.separated(
-                                scrollDirection: Axis.vertical,
-                                itemCount: snapshot.data!.length,
-                                itemBuilder: (BuildContext context, int index) {
-                                  var group = snapshot.data![index];
-                                  return ProfileButton(
-                                    name: group.name,
-                                    groupId: group.id,
-                                  );
-                                },
-                                separatorBuilder: (context, index) =>
-                                    const SizedBox(height: 20),
-                              );
-                            } else if (snapshot.hasError) {
-                              return Text(snapshot.error.toString());
-                            } else {
-                              return const Center(
-                                  child: CircularProgressIndicator());
+                            List<SuperGroupModel> groups = [];
+                            String error = '';
+                            if (!snapshot.hasData) {
+                              return const Text('Loading...');
                             }
+                            snapshot.data!.fold(
+                              (failure) {
+                                return Text(failure.detail);
+                              },
+                              (groupList) {
+                                groups = groupList;
+                              },
+                            );
+                            return groups == []
+                                ? ProfileButton(name: error)
+                                : ListView.separated(
+                                    scrollDirection: Axis.vertical,
+                                    itemCount: groups.length,
+                                    itemBuilder:
+                                        (BuildContext context, int index) {
+                                      var group = groups[index];
+                                      return ProfileButton(
+                                        name: group.name,
+                                        groupId: group.id,
+                                      );
+                                    },
+                                    separatorBuilder: (context, index) =>
+                                        const SizedBox(height: 20),
+                                  );
                           },
                         ),
                       );
