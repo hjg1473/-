@@ -1,15 +1,3 @@
-<<<<<<< HEAD
-from fastapi import APIRouter
-from starlette import status
-from dependencies import user_dependency
-from service import *
-from schemas import *
-from exceptions import *
-
-import sys, os
-sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))))
-
-=======
 from fastapi import APIRouter, HTTPException
 from sqlalchemy.orm import joinedload
 from sqlalchemy import select
@@ -23,7 +11,6 @@ from super.dependencies import db_dependency, user_dependency
 from super.schemas import CustomProblem, ProblemSet, AddGroup
 from app.src.models import Users, StudyInfo, Groups, Problems, CustomProblemSet
 from starlette import status
->>>>>>> ed8b104e7030b3dcf0a560d466645ff37fe8011e
 
 
 router = APIRouter(
