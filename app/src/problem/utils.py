@@ -33,14 +33,14 @@ def combine_sentence(sentence:list):
     print(combined)
     return combined
 
-def check(problem:str, response:str):
+def check_answer(problem:str, response:str):
     isAnswer = False
     if problem == response:
         isAnswer = True
 
     problem = parse_sentence(problem)
     response = parse_sentence(response)
-    
+
     pLen = len(problem)
     rLen = len(response)
 

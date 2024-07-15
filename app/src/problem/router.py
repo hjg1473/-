@@ -12,6 +12,7 @@ from problem.dependencies import user_dependency, db_dependency
 from problem.schemas import Problem
 from problem.exceptions import http_exception, successful_response, get_user_exception
 from problem.service import create_problem_in_db
+from problem.utils import check_answer
 
 router = APIRouter(
     prefix="/problem",
@@ -128,11 +129,13 @@ async def user_solve_problem(user: user_dependency, db: db_dependency, problem_i
     
     # 문제를 맞춘 경우, correct_problems에 추가. id 만 추가. > 하고 싶은데 안되서 일단 problem 전체 저장함.
     # 일단 정답인 경우만 구현, 문장이 다르면 오답처리
-    if(user_string==answer):
+    isAnswer, false_location = check_answer(answer, user_string)
+    if isAnswer:
         study_info.correct_problems.append(problem)
-        db.add(study_info)
-        db.commit()
 
-        return {'isAnswer' : problem.englishProblem, 'user_answer': user_string, 'false_location': '정답 알고리즘 결과'}
     else:
-        return 
+        study_info.incorrect_problems.append(problem)
+    db.add(study_info)
+    db.commit()
+
+    return {'isAnswer' : problem.englishProblem, 'user_answer': user_string, 'false_location': false_location}
