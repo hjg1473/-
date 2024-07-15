@@ -1,17 +1,11 @@
-from fastapi import APIRouter, HTTPException
-from sqlalchemy.orm import joinedload
-from sqlalchemy import select
-from super.dependencies import db_dependency, user_dependency
-from super.service import *
-from super.schemas import CustomProblem, ProblemSet, AddGroup
-from super.exceptions import *
+from fastapi import APIRouter
 import sys, os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))))
 from super.dependencies import db_dependency, user_dependency
-from super.schemas import CustomProblem, ProblemSet, AddGroup
-from app.src.models import Users, StudyInfo, Groups, Problems, CustomProblemSet
+from super.service import *
+from super.schemas import ProblemSet, AddGroup
+from super.exceptions import *
 from starlette import status
-
 
 router = APIRouter(
     prefix="/super",
@@ -24,6 +18,7 @@ router = APIRouter(
 async def create_problem(user: user_dependency, db:db_dependency, problemset: ProblemSet):
     
     super_authenticate_exception(user)
+
     problem_exists_exception(problemset, db)
 
     await update_cproblem(problemset, db)
@@ -45,21 +40,19 @@ async def read_group_info(user: user_dependency, db: db_dependency):
 
 # 만들어진 커스텀 문제 세트 조회
 @router.get("/custom_problem_info/{set_name}", status_code = status.HTTP_200_OK)
-async def read_group_info(set_name: str,
-                    user: user_dependency, db: db_dependency):
-    
+async def read_group_info(set_name: str, user: user_dependency, db: db_dependency):
+
     user_authenticate_exception(user)
 
     custom_problems = await get_cproblems(set_name, db)
-    
-    return custom_problems
 
+    return custom_problems
 
 @router.delete("/custom_problem_set_delete/{set_name}", status_code=status.HTTP_200_OK)
 async def delete_user(set_name: str, user: user_dependency, db: db_dependency):
 
     user_authenticate_exception(user)
-
+    
     await delete_cproblem(set_name, db)
 
     return {"detail": '성공적으로 삭제되었습니다.'}
@@ -101,7 +94,6 @@ async def read_group_info(group_id: int,
     
     return result
 
-
 @router.put("/group/{group_id}/update/{user_id}", status_code = status.HTTP_200_OK)
 async def user_solve_problem(group_id: int,
                             user_id: int,
@@ -134,8 +126,6 @@ async def read_info(user: user_dependency, db: db_dependency):
     user_model_json = await get_super_info(user, db)
 
     return user_model_json
-
-
 
 
 # # 선생님이 학생 개인의 정보를 살펴볼 때

@@ -5,12 +5,11 @@ from starlette import status
 import sys, os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))))
 
-import app.src.models
 from app.src.models import Users, StudyInfo, Problems
 from fastapi import requests, UploadFile, File, Form
 import requests
 from problem.dependencies import user_dependency, db_dependency
-from problem.schemas import Problem, Answer
+from problem.schemas import Problem
 from problem.exceptions import http_exception, successful_response, get_user_exception
 from problem.service import create_problem_in_db
 

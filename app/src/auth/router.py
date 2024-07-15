@@ -7,11 +7,11 @@ import sys, os
 from sqlalchemy import select
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))))
 from app.src.models import Users
-from auth.schemas import CreateUser, Token, Message
+from auth.schemas import CreateUser, Message
 from auth.utils import authenticate_user, decode_token, validate_token_payload
 from auth.service import create_access_token, create_user_in_db, create_study_info
 from auth.dependencies import db_dependency
-from auth.exceptions import login_exception, get_user_exception, token_exception1, token_exception2, get_valid_user_exception, username_exception
+from auth.exceptions import login_exception, get_user_exception, token_exception1, token_exception2, username_exception
 from auth.constants import REFRESH_TOKEN_EXPIRE_DAYS, ACCESS_TOKEN_EXPIRE_MINUTES
 
 router = APIRouter(
@@ -32,8 +32,6 @@ def get_current_user(token: Annotated[str, Depends(oauth2_bearer)]):
 # 회원가입
 @router.post("/register", status_code=status.HTTP_200_OK, responses={409: {"model": Message}})
 async def create_new_user(db: db_dependency, create_user: CreateUser):
-    # result = await db.execute(select(Users).filter(Users.username == create_user.username))
-    # existing_user = result.scalars().first()
     await username_exception(create_user.username, db)
     user = await create_user_in_db(db, create_user)
     await create_study_info(db, user.id)
@@ -100,13 +98,11 @@ async def refresh_access_token(db: db_dependency, refresh_token: str = Header(de
 # 로그아웃 (리프레시 토큰을 삭제는 했지만, 안에 담긴 정보 자체는 남아있음. )
 @router.post("/logout", responses={401: {"model": Message}})
 async def logout(refresh_token: str = Header(default=None)):
-    # 리프레시 토큰이 유효하다. 
     payload = decode_token(refresh_token)
     token_exception1(payload)
     
     username = payload.get('sub')
     get_user_exception(username)
-    # 저장된 리프레시 토큰하고, 제출한 리프레시 토큰이 같다. (존재한다.)
     redis_client = await aioredis.create_redis_pool('redis://localhost')
     stored_refresh_token = await redis_client.get(f"{username}_refresh")
     token_exception2(stored_refresh_token, refresh_token)
