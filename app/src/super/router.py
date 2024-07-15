@@ -42,7 +42,7 @@ async def read_group_info(user: user_dependency, db: db_dependency):
 @router.get("/custom_problem_info/{set_name}", status_code = status.HTTP_200_OK)
 async def read_group_info(set_name: str, user: user_dependency, db: db_dependency):
 
-    user_authenticate_exception(user)
+    super_authenticate_exception(user)
 
     custom_problems = await get_cproblems(set_name, db)
 
@@ -51,7 +51,7 @@ async def read_group_info(set_name: str, user: user_dependency, db: db_dependenc
 @router.delete("/custom_problem_set_delete/{set_name}", status_code=status.HTTP_200_OK)
 async def delete_user(set_name: str, user: user_dependency, db: db_dependency):
 
-    user_authenticate_exception(user)
+    super_authenticate_exception(user)
     
     await delete_cproblem(set_name, db)
 
@@ -65,7 +65,7 @@ async def read_group_info(user: user_dependency, db: db_dependency):
     
     group_list = await get_group_list(user.get("id"), db)
     
-    result = { 'groups': [{'id': u.id, 'name': u.name} for u in group_list] }
+    result = {'groups': [{'id': u.id, 'name': u.name} for u in group_list]}
     
     return result
 
@@ -94,13 +94,15 @@ async def read_group_info(group_id: int,
     
     return result
 
+# 선생님이 관리하는 반에 학생 추가
 @router.put("/group/{group_id}/update/{user_id}", status_code = status.HTTP_200_OK)
 async def user_solve_problem(group_id: int,
                             user_id: int,
                             user: user_dependency,
                             db: db_dependency):
     super_authenticate_exception(user)
-    
+    await find_student_exception(user_id, db)
+    await find_group_exception(group_id, db)
     await update_std_group(group_id, user_id, db)
 
     return {'detail' : 'Success'}
@@ -121,7 +123,7 @@ async def update_user_team(user_id: int,
 @router.get("/info", status_code = status.HTTP_200_OK)
 async def read_info(user: user_dependency, db: db_dependency):
     
-    user_authenticate_exception(user)
+    super_authenticate_exception(user)
 
     user_model_json = await get_super_info(user, db)
 

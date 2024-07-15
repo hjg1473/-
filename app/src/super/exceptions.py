@@ -37,4 +37,14 @@ async def existing_name_exception(addgroup, admin_id, db: db_dependency):
     if group_name is not None:
         raise HTTPException(status_code=404, detail='같은 이름의 방이 존재합니다.')
     
+async def find_student_exception(user_id, db):
+    from super.service import get_user_to_userid
+    user = await get_user_to_userid(user_id, db)
+    if not user:
+        raise HTTPException(status_code=404, detail="해당 학생을 찾을 수 없습니다.")
 
+async def find_group_exception(group_id, db):
+    from super.service import get_group_to_groupid
+    group = await get_group_to_groupid(group_id, db)
+    if not group:
+        raise HTTPException(status_code=404, detail="해당 반을 찾을 수 없습니다.")

@@ -82,3 +82,11 @@ async def get_super_info(user, db: db_dependency):
     result = await db.execute(select(Users).filter(Users.id == user.get('id')))
     user_model = result.scalars().first()
     return { "name": user_model.name }
+
+async def get_user_to_userid(user_id, db: db_dependency):
+    result = await db.execute(select(Users).filter(Users.id == user_id))
+    return result.scalars().first()
+
+async def get_group_to_groupid(group_id, db: db_dependency):
+    result = await db.execute(select(Groups).filter(Groups.id == group_id))
+    return result.scalars().first()
