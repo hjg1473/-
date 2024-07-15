@@ -102,7 +102,7 @@ async def read_user_studyinfo(user: user_dependency, db: db_dependency):
             correct_problems_type1_count += 1
         elif problem.type == '의문문':
             correct_problems_type2_count += 1
-        elif problem.type == '단어와품사':
+        elif problem.type == '어순과격':
             correct_problems_type3_count += 1
 
     for problem in study_info.incorrect_problems:
@@ -110,7 +110,7 @@ async def read_user_studyinfo(user: user_dependency, db: db_dependency):
             incorrect_problems_type1_count += 1
         elif problem.type == '의문문':
             incorrect_problems_type2_count += 1
-        elif problem.type == '단어와품사':
+        elif problem.type == '어순과격':
             incorrect_problems_type3_count += 1
 
     return {
