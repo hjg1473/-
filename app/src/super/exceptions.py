@@ -1,6 +1,6 @@
 from fastapi import HTTPException
-from service import get_problemset
-from dependencies import db_dependency, user_dependency
+from super.service import get_problemset
+from super.dependencies import db_dependency, user_dependency
 import sys, os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))))
 from app.src.auth.exceptions import get_user_exception

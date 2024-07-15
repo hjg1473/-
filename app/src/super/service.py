@@ -1,5 +1,5 @@
-from dependencies import db_dependency, user_dependency
-from schemas import CustomProblem, ProblemSet, AddGroup
+from super.dependencies import db_dependency, user_dependency
+from super.schemas import CustomProblem, ProblemSet, AddGroup
 from app.src.models import Users, StudyInfo, Groups, Problems, CustomProblemSet
 from sqlalchemy import select, delete
 
