@@ -1,8 +1,9 @@
 from fastapi import APIRouter, HTTPException
 from sqlalchemy.orm import joinedload
+from sqlalchemy import select
 from dependencies import db_dependency, user_dependency
 from schemas import CustomProblem, ProblemSet, AddGroup
-from exceptions import http_exception, authenticate_user_exception, authenticate_super_excetpion
+from exceptions import http_exception, user_authenticate_exception, super_authenticate_excetpion, already_exists_exception
 import sys, os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))))
 from app.src.models import Users, StudyInfo, Groups, Problems, CustomProblemSet
@@ -20,19 +21,19 @@ async def create_problem(problemset: ProblemSet,
                       user: user_dependency,
                       db: db_dependency):
     
-    authenticate_super_excetpion(user)
+    super_authenticate_excetpion(user)
 
-    custom_problem_set = db.query(CustomProblemSet).filter(CustomProblemSet.name == problemset.name).first()
-    if custom_problem_set is not None: # 중복이면
-        raise HTTPException(status_code=404, detail='같은 이름의 문제 세트가 존재합니다.')
+    # custom_problem_set = db.query(CustomProblemSet).filter(CustomProblemSet.name == problemset.name).first()
+    custom_problem_set = await db.execute(select(CustomProblemSet).filter(CustomProblemSet.name == problemset.name)).scalar_one
+    already_exists_exception(custom_problem_set)
 
     custom_model = CustomProblemSet()
     custom_model.name = problemset.name
 
 
-    db.add(custom_model)# DB에 저장
-    db.commit() # 커밋
-    db.refresh(custom_model)
+    db.add(custom_model)
+    await db.commit()
+    await db.refresh(custom_model)
 
     # 문제 테이블에 저장
     for problem in problemset.customProblems:
@@ -42,20 +43,22 @@ async def create_problem(problemset: ProblemSet,
         problem_model.img_path = problem.img_path
         problem_model.cproblem_id = custom_model.id
         db.add(problem_model)
-        db.commit()
+        await db.commit()
 
     return {'detail': '성공적으로 생성되었습니다!'}
 
-# 만들어진 커스텀 문제 세트 조회
+# 만들어진 커스텀 문제 세트의 목록 조회
 @router.get("/custom_problem_set/info", status_code = status.HTTP_200_OK)
 async def read_group_info(user: user_dependency,
                     db: db_dependency):
     
-    authenticate_super_excetpion(user)
+    super_authenticate_excetpion(user)
     
-    custom_problem_set = db.query(CustomProblemSet).all()
+    # custom_problem_set = db.query(CustomProblemSet).all()
+    custom_problem_set = await db.execute(select(CustomProblemSet.name))
+    custom_problem_set_list = custom_problem_set.scalars().all
     
-    result = {'custom_problem_set':[{'name': u.name} for u in custom_problem_set]}
+    result = {'custom_problem_set':[{'name': name} for name in custom_problem_set_list]}
     
     return result
 
@@ -66,17 +69,21 @@ async def read_group_info(set_name: str,
                     user: user_dependency,
                     db: db_dependency):
     
-    authenticate_user_exception(user)
+    user_authenticate_exception(user)
 
-    custom_problem_set = db.query(CustomProblemSet)\
-    .filter(CustomProblemSet.name == set_name)\
-    .first()
+    custom_problem_set = await db.execute(select(CustomProblemSet.name == set_name)).scalar_one()
+    custom_problems = await db.execute(select(custom_problem_set.id == Problems.cproblem_id)).all()
 
-    custom_problem_sets = db.query(Problems)\
-    .filter(custom_problem_set.id == Problems.cproblem_id)\
-    .all()  
+    # # 클라이언트에서 받은 set name으로 costomproblemset의 row를 불러온다
+    # custom_problem_set = db.query(CustomProblemSet)\
+    # .filter(CustomProblemSet.name == set_name)\
+    # .first()
 
-    result = custom_problem_sets
+    # custom_problem_sets = db.query(Problems)\
+    # .filter(custom_problem_set.id == Problems.cproblem_id)\
+    # .all()  
+
+    result = custom_problems
     
     return result
 
@@ -84,19 +91,25 @@ async def read_group_info(set_name: str,
 @router.delete("/custom_problem_set_delete/{set_name}", status_code=status.HTTP_200_OK)
 async def delete_user(set_name: str, user: user_dependency, db: db_dependency):
 
-    authenticate_user_exception(user)
+    user_authenticate_exception(user)
 
-    custom_problem_set = db.query(CustomProblemSet)\
-    .filter(CustomProblemSet.name == set_name)\
-    .first()
+    custom_problem_set = await db.execute(select(CustomProblemSet.name == set_name))\
+                        .scalar_one()
+    
+    
 
-    custom_problem_set_delete = db.query(CustomProblemSet)\
-    .filter(CustomProblemSet.name == set_name)\
-    .delete()
 
-    custom_problem_sets = db.query(Problems)\
-    .filter(custom_problem_set.id == Problems.cproblem_id)\
-    .delete()  
+    # custom_problem_set = db.query(CustomProblemSet)\
+    # .filter(CustomProblemSet.name == set_name)\
+    # .first()
+
+    # custom_problem_set_delete = db.query(CustomProblemSet)\
+    # .filter(CustomProblemSet.name == set_name)\
+    # .delete()
+
+    # custom_problem_sets = db.query(Problems)\
+    # .filter(custom_problem_set.id == Problems.cproblem_id)\
+    # .delete()  
 
     db.commit()
 
@@ -107,7 +120,7 @@ async def delete_user(set_name: str, user: user_dependency, db: db_dependency):
 async def read_group_info(user: user_dependency,
                     db: db_dependency):
     
-    authenticate_super_excetpion(user)
+    super_authenticate_excetpion(user)
     
     user_group = db.query(Groups)\
         .filter(Groups.admin_id == user.get("id"))\
@@ -122,7 +135,7 @@ async def read_group_info(user: user_dependency,
 async def create_solve_problem(addgroup: AddGroup, 
                             user: user_dependency, db: db_dependency):
     
-    authenticate_super_excetpion(user)
+    super_authenticate_excetpion(user)
 
     # 기존에 중복된 반 이름이 존재한다? # A선생님 1반, B선생님 1반 은 상관 없음.
     group_name = db.query(Groups)\
@@ -149,7 +162,7 @@ async def read_group_info(group_id: int,
                     user: user_dependency,
                     db: db_dependency):
     
-    authenticate_super_excetpion(user)
+    super_authenticate_excetpion(user)
     
     # 팀 아이디가 그룹 아이디랑 같다
     user_group = db.query(Users)\
@@ -169,7 +182,7 @@ async def user_solve_problem(group_id: int,
                             user_id: int,
                             user: user_dependency, db: db_dependency):
     
-    authenticate_super_excetpion(user)
+    super_authenticate_excetpion(user)
     
     # 쿼리 변수로 해당 학생 db 검색
     student_model = db.query(Users)\
@@ -205,7 +218,7 @@ async def user_solve_problem(group_id: int,
 async def update_user_team(user_id: int,
                             user: user_dependency, db: db_dependency):
     
-    authenticate_super_excetpion(user)
+    super_authenticate_excetpion(user)
    
     # 쿼리 변수로 해당 학생 db 검색
     student_model = db.query(Users)\
@@ -228,7 +241,7 @@ async def update_user_team(user_id: int,
 @router.get("/info", status_code = status.HTTP_200_OK)
 async def read_info(user: user_dependency, db: db_dependency):
     
-    authenticate_user_exception(user)
+    user_authenticate_exception(user)
 
     # 추후 이메일, 폰넘버 추가
     # user_model = db.query(Users.name, Users.email, Users.phone_number).filter(Users.id == user.get('id')).first()
@@ -319,7 +332,7 @@ async def read_info(user: user_dependency, db: db_dependency):
 @router.get("/searchStudyinfo/{user_id}", status_code = status.HTTP_200_OK)
 async def read_select_user_studyInfo(user: user_dependency, db: db_dependency, user_id : int):
     
-    authenticate_super_excetpion(user)
+    super_authenticate_excetpion(user)
 
     user_model = db.query(Users.id, Users.username, Users.age).filter(Users.id == user_id).first()
     
