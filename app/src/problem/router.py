@@ -43,8 +43,8 @@ async def read_problem_all(season_name:str, type_name:str, user: user_dependency
     if season_name != ('시즌1' or '시즌2'):
         raise HTTPException(status_code=404, detail='일치하는 시즌이 없습니다. (시즌명 : 시즌1, 시즌2)')
     
-    if type_name != ('부정문' or '의문문' or '단어와품사'):
-        raise HTTPException(status_code=404, detail='일치하는 유형이 없습니다. (유형 : 부정문, 의문문, 단어와품사)')
+    if type_name != ('부정문' or '의문문' or '어순과격'):
+        raise HTTPException(status_code=404, detail='일치하는 유형이 없습니다. (유형 : 부정문, 의문문, 어순과격)')
 
     # 시즌과 타입이 같은 모든 문제 반환. 
     season_type_problem = db.query(Problems).filter(Problems.season == season_name)\

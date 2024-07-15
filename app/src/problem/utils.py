@@ -1,5 +1,6 @@
+punctuations = ['.', ',', '?', '!']
+
 def parse_sentence(sentence:str):
-    punctuations = ['.', ',', '?', '!']
     sentnece_split = sentence.split(' ')
     print(sentnece_split)
     parsed = []
@@ -21,7 +22,6 @@ def parse_sentence(sentence:str):
 
 
 def combine_sentence(sentence:list):
-    punctuations = ['.', ',', '?', '!']
     combined = sentence[0]
     sentence.pop(0)
     for word in sentence:
@@ -69,5 +69,5 @@ def check_answer(problem:str, response:str):
     
     print(response)
     print(false_check)
-    return false_check
+    return isAnswer, false_check
     
