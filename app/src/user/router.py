@@ -1,5 +1,5 @@
 from sqlalchemy import delete, select
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter
 from starlette import status
 import sys, os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))))
@@ -8,7 +8,7 @@ from app.src.models import Users
 from user.dependencies import user_dependency, db_dependency
 from user.schemas import UserQuitVerification, UserVerification, User_info
 from user.utils import bcrypt_context
-from user.exceptions import successful_response, http_exception, email_exception, password_exception
+from user.exceptions import successful_response, http_exception, email_exception, password_exception, auth_user_exception
 
 router = APIRouter(
     prefix='/users', 
@@ -18,9 +18,7 @@ router = APIRouter(
 @router.put("/password", status_code=status.HTTP_200_OK)
 async def change_password(user: user_dependency, db: db_dependency,
                           user_verification: UserVerification):
-    if user is None:
-        raise excep.wrong_password()
-    
+    auth_user_exception(user)
     result = await db.execute(select(Users).filter(Users.id == user.get('id')))
     user_model = result.scalars().first()
     if not bcrypt_context.verify(user_verification.password, user_model.hashed_password):
@@ -34,8 +32,7 @@ async def change_password(user: user_dependency, db: db_dependency,
 
 @router.put("/update", status_code=status.HTTP_200_OK)
 async def update_user_info(user_info: User_info, user: user_dependency, db: db_dependency):
-    if user is None:
-        raise excep.auth_failed()
+    auth_user_exception(user)
 
     result = await db.execute(select(Users).filter(Users.id == user.get('id')))
     user_model = result.scalars().first()
@@ -45,8 +42,7 @@ async def update_user_info(user_info: User_info, user: user_dependency, db: db_d
     
     email = await db.execute(select(Users).filter(Users.email == user_info.email))
     user_email = email.scalars().first()
-    if user_email:
-        raise email_exception()
+    email_exception(user_email)
 
     user_model.name=user_info.name
     user_model.email=user_info.email
@@ -59,9 +55,8 @@ async def update_user_info(user_info: User_info, user: user_dependency, db: db_d
 @router.delete("/quit/", status_code=status.HTTP_200_OK)
 async def delete_user(user: user_dependency, db: db_dependency, user_verification: UserQuitVerification):
 
-    if user is None:
-        raise excep.auth_failed()
-    
+    auth_user_exception(user)
+
     result = await db.execute(select(Users).filter(Users.id == user.get('id')))
     user_model = result.scalars().first()
 
