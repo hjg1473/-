@@ -7,6 +7,9 @@ from schemas import CustomProblem, ProblemSet, AddGroup
 from exceptions import *
 import sys, os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))))
+from super.dependencies import db_dependency, user_dependency
+from super.schemas import CustomProblem, ProblemSet, AddGroup
+from super.exceptions import http_exception, authenticate_user_exception, authenticate_super_excetpion
 from app.src.models import Users, StudyInfo, Groups, Problems, CustomProblemSet
 from starlette import status
 

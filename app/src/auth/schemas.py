@@ -14,3 +14,6 @@ class Token(BaseModel):
     token_type: str
     role: str
     refresh_token: str
+
+class Message(BaseModel):
+    message: str
