@@ -8,7 +8,7 @@ from app.src.models import Users
 from user.dependencies import user_dependency, db_dependency
 from user.schemas import UserQuitVerification, UserVerification, User_info
 from user.utils import bcrypt_context
-from user.exceptions import successful_response, http_exception, email_exception, password_exception
+from user.exceptions import successful_response, http_exception, email_exception, password_exception, user_exception
 
 router = APIRouter(
     prefix='/users', 
@@ -18,13 +18,11 @@ router = APIRouter(
 @router.put("/password", status_code=status.HTTP_200_OK)
 async def change_password(user: user_dependency, db: db_dependency,
                           user_verification: UserVerification):
-    if user is None:
-        raise HTTPException(status_code=401, detail='Authentication Failed')
+    user_exception(user)
     
     result = await db.execute(select(Users).filter(Users.id == user.get('id')))
     user_model = result.scalars().first()
-    if not bcrypt_context.verify(user_verification.password, user_model.hashed_password):
-        raise password_exception()
+    password_exception(user_verification.password, user_model.hashed_password)
     
     user_model.hashed_password = bcrypt_context.hash(user_verification.new_password)
     db.add(user_model)
@@ -33,20 +31,17 @@ async def change_password(user: user_dependency, db: db_dependency,
     return {'detail': '비밀번호가 변경되었습니다.'}
 
 @router.put("/update", status_code=status.HTTP_200_OK)
-async def update_user_info(user_info: User_info, user: user_dependency, db: db_dependency):
-    if user is None:
-        raise HTTPException(status_code=401, detail='Authentication Failed')
+async def update_user_info(user: user_dependency, db: db_dependency, user_info: User_info):
+    user_exception(user)
 
     result = await db.execute(select(Users).filter(Users.id == user.get('id')))
     user_model = result.scalars().first()
 
-    if user_model is None:
-        raise http_exception()
+    http_exception(user_model)
     
-    email = await db.execute(select(Users).filter(Users.email == user_info.email))
-    user_email = email.scalars().first()
-    if user_email:
-        raise email_exception()
+    # email = await db.execute(select(Users).filter(Users.email == user_info.email))
+    # user_email = email.scalars().first()
+    await email_exception(user_info.email, db)
 
     user_model.name=user_info.name
     user_model.email=user_info.email
@@ -59,17 +54,13 @@ async def update_user_info(user_info: User_info, user: user_dependency, db: db_d
 @router.delete("/quit/", status_code=status.HTTP_200_OK)
 async def delete_user(user: user_dependency, db: db_dependency, user_verification: UserQuitVerification):
 
-    if user is None:
-        raise HTTPException(status_code=401, detail='Authentication Failed')
+    user_exception(user)
     
     result = await db.execute(select(Users).filter(Users.id == user.get('id')))
     user_model = result.scalars().first()
-
-    if user_model is None:
-        raise http_exception()
-    # 비밀번호 인증.
-    if not bcrypt_context.verify(user_verification.password, user_model.hashed_password):
-        raise password_exception()
+    http_exception(user_model)
+    
+    password_exception(user_verification.password, user_model.hashed_password)
     
     # db.query(Users).filter(Users.id == user.get('id')).delete()
     result = await db.execute(delete(Users).filter(Users.id == user.get('id')))
