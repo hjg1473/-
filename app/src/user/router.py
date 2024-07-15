@@ -39,8 +39,6 @@ async def update_user_info(user: user_dependency, db: db_dependency, user_info: 
 
     http_exception(user_model)
     
-    # email = await db.execute(select(Users).filter(Users.email == user_info.email))
-    # user_email = email.scalars().first()
     await email_exception(user_info.email, db)
 
     user_model.name=user_info.name
@@ -62,7 +60,6 @@ async def delete_user(user: user_dependency, db: db_dependency, user_verificatio
     
     password_exception(user_verification.password, user_model.hashed_password)
     
-    # db.query(Users).filter(Users.id == user.get('id')).delete()
     result = await db.execute(delete(Users).filter(Users.id == user.get('id')))
     await db.commit()
 
