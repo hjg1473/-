@@ -1,5 +1,5 @@
 from sqlalchemy import delete, select
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter
 from starlette import status
 import sys, os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))))
