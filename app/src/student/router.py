@@ -1,18 +1,14 @@
-from sqlalchemy.orm import Session, joinedload
-from fastapi import APIRouter, Depends
+from sqlalchemy import select
+from sqlalchemy.orm import joinedload
+from fastapi import APIRouter, HTTPException
 from starlette import status
-from database import engine
-from sqlalchemy.orm import Session
-from fastapi.templating import Jinja2Templates
 
 import sys, os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))))
 
-from app.src.auth.router import get_current_user
 from app.src.models import Users, StudyInfo
-import app.src.models as models
-from student.dependencies import user_dependency, db_dependency, get_db
-from exceptions import auth_user_exception, auth_student_exception, teacher_exception
+from student.dependencies import user_dependency, db_dependency
+from student.exceptions import get_user_exception, auth_exception, http_exception, select_exception1, select_exception2, select_exception3
 
 router = APIRouter( 
     prefix="/student",
@@ -20,31 +16,43 @@ router = APIRouter(
     responses={404: {"description": "Not found"}}
 )
 
-
 # 학생과 선생님 연결 요청, 학생 -> 선생님(student_teachers) / 선생님 -> 학생(teachers_students) ?
 @router.get("/connecting", status_code = status.HTTP_200_OK)
-async def connect_teacher(teacher_id: int,
-            user: dict = Depends(get_current_user),
-            db: Session = Depends(get_db)):
+async def connect_teacher(teacher_id: int, user: user_dependency, db: db_dependency):
 
-    auth_user_exception(user)
+    if user is None:
+        raise get_user_exception()
+    
+    if user.get('user_role') != 'student': 
+        raise auth_exception()
 
     # 학생 정보 가져오기
-    student = db.query(Users).filter(Users.id == user.get("id")).first()
-    auth_student_exception(student)
+    # student = db.query(Users).filter(Users.id == user.get("id")).first()
+    result = await db.execute(select(Users).filter(Users.id == user.get('id')))
+    student = result.scalars().first()
+    
+    if not student:
+        raise get_user_exception()
 
+    if teacher_id == user.get("id"):
+        raise select_exception1
+    
     # 쿼리 파라미터로 받은 teacher_id 또는 teacher_username을 사용해 선생님 검색
-    teacher = db.query(Users).filter(Users.id == teacher_id).first()
-    teacher_exception(teacher, user)
+    # teacher = db.query(Users).filter(Users.id == teacher_id).first()
+    result2 = await db.execute(select(Users).filter(Users.id == teacher_id))
+    teacher = result2.scalars().first()
+
+    if not teacher:
+        raise select_exception2
 
     # 학생과 선생님이 이미 연결되어 있는지 확인
     if teacher in student.student_teachers:
-        return {"message": "Already connected"}
+        return select_exception3
 
     # 새로운 연결 생성
     student.student_teachers.append(teacher)
     # db.add(student) # ORM 방식은 append 할 때 자동으로 해줌
-    db.commit()
+    await db.commit()
     return {"message": "Connected successfully", "teacher_id": teacher.id, "teacher_username": teacher.username}
 
 

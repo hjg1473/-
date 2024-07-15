@@ -28,7 +28,7 @@ async def on_startup():
 app.include_router(auth_router.router)
 # app.include_router(problem_router.router)
 # app.include_router(game_router.router)
-# app.include_router(student_router.router)
+app.include_router(student_router.router)
 app.include_router(user_router.router)
 # app.include_router(super_router.router)
 
