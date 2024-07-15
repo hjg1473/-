@@ -24,7 +24,7 @@ def get_valid_user_exception():
     )
     return credentials_exception
 
-def token_exception():
+def login_exception():
     token_exception_response = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Incorrect username or password",
