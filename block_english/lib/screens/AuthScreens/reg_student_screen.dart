@@ -34,7 +34,7 @@ class _RegStudentScreenState extends ConsumerState<RegStudentScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('다시해'),
+            content: Text('가입 다시해'),
           ),
         );
       }

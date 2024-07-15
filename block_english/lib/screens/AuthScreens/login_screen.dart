@@ -29,18 +29,18 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('다시해'),
+            content: Text('로그인 다시해'),
           ),
         );
       }
     }, (loginResponseModel) async {
       var role = loginResponseModel.role;
 
-      if (role != 'student' || role != 'super') {
+      if (role != 'student' && role != 'super') {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
-              content: Text('다시해'),
+              content: Text('로그인 다시해'),
             ),
           );
         }
