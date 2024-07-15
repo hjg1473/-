@@ -7,9 +7,7 @@ import 'package:block_english/widgets/no_image_card_button.dart';
 import 'package:block_english/widgets/profile_card_widget.dart';
 import 'package:block_english/widgets/round_corner_route_button.dart';
 import 'package:block_english/widgets/profile_button.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class SuperMainScreen extends StatelessWidget {
@@ -145,15 +143,15 @@ class SuperMainScreen extends StatelessWidget {
                             }
                             snapshot.data!.fold(
                               (failure) {
-                                return Text(failure.detail);
+                                error = failure.detail;
                               },
                               (groupList) {
                                 groups = groupList;
                               },
                             );
-                            return groups == []
-                                ? ProfileButton(name: error)
-                                : ListView.separated(
+
+                            return error.isEmpty
+                                ? ListView.separated(
                                     scrollDirection: Axis.vertical,
                                     itemCount: groups.length,
                                     itemBuilder:
@@ -166,7 +164,9 @@ class SuperMainScreen extends StatelessWidget {
                                     },
                                     separatorBuilder: (context, index) =>
                                         const SizedBox(height: 20),
-                                  );
+                                  )
+                                : // TODO: handle error
+                                ProfileButton(name: error);
                           },
                         ),
                       );

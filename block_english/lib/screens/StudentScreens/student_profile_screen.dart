@@ -42,7 +42,8 @@ class StudentProfileScreen extends StatelessWidget {
                               age: studentInfo.age,
                               isStudent: true,
                             )
-                          : Text(error);
+                          : // TODO: Error handling
+                          Text(error);
                     },
                   );
                 },
