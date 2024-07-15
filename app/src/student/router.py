@@ -12,7 +12,7 @@ from app.src.auth.router import get_current_user
 from app.src.models import Users, StudyInfo
 import app.src.models as models
 from student.dependencies import user_dependency, db_dependency, get_db
-from exceptions import auth_student_exception, teacher_exception
+from exceptions import auth_user_exception, auth_student_exception, teacher_exception
 
 router = APIRouter( 
     prefix="/student",
@@ -27,15 +27,14 @@ async def connect_teacher(teacher_id: int,
             user: dict = Depends(get_current_user),
             db: Session = Depends(get_db)):
 
-    auth_student_exception(user)
+    auth_user_exception(user)
 
     # 학생 정보 가져오기
     student = db.query(Users).filter(Users.id == user.get("id")).first()
-    
     auth_student_exception(student)
+
     # 쿼리 파라미터로 받은 teacher_id 또는 teacher_username을 사용해 선생님 검색
     teacher = db.query(Users).filter(Users.id == teacher_id).first()
-
     teacher_exception(teacher, user)
 
     # 학생과 선생님이 이미 연결되어 있는지 확인
@@ -53,7 +52,7 @@ async def connect_teacher(teacher_id: int,
 @router.get("/connect_teacher", status_code = status.HTTP_200_OK)
 async def read_connect_teacher(user: user_dependency, db: db_dependency):
 
-    auth_student_exception(user)
+    auth_user_exception(user)
     # 쿼리 검색
     teacher = db.query(Users).options( 
         joinedload(Users.student_teachers)
