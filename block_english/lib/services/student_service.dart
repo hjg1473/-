@@ -38,7 +38,7 @@ class StudentService {
     } on DioException catch (e) {
       return Left(FailureModel(
         statusCode: e.response?.statusCode ?? 0,
-        detail: e.response?.data['detail'] ?? "",
+        detail: e.response?.data['detail'] ?? '',
       ));
     }
   }

@@ -22,7 +22,7 @@ class _SettingScreenState extends ConsumerState<SettingScreen> {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
-              content: Text('다시해'),
+              content: Text('애플리케이션을 재시작해 주세요'),
             ),
           );
         }

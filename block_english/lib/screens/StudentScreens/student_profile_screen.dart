@@ -1,3 +1,4 @@
+import 'package:block_english/models/StudentModel/student_info_model.dart';
 import 'package:block_english/services/student_service.dart';
 import 'package:block_english/widgets/profile_card_widget.dart';
 import 'package:flutter/material.dart';
@@ -22,21 +23,26 @@ class StudentProfileScreen extends StatelessWidget {
                   return FutureBuilder(
                     future: ref.watch(studentServiceProvider).getStudentInfo(),
                     builder: (context, snapshot) {
+                      late StudentInfoModel studentInfo;
+                      String error = '';
                       if (!snapshot.hasData) {
                         return const CircularProgressIndicator();
-                      } else {
-                        snapshot.data!.fold((failure) {
-                          // TODO: show popup and exit the app
-                          return const Placeholder();
-                        }, (studentInfoModel) {
-                          return ProfileCard(
-                            name: studentInfoModel.name,
-                            age: studentInfoModel.age,
-                            isStudent: true,
-                          );
-                        });
                       }
-                      return const CircularProgressIndicator();
+                      snapshot.data!.fold(
+                        (failure) {
+                          error = failure.detail;
+                        },
+                        (studentinfo) {
+                          studentInfo = studentinfo;
+                        },
+                      );
+                      return error.isEmpty
+                          ? ProfileCard(
+                              name: studentInfo.name,
+                              age: studentInfo.age,
+                              isStudent: true,
+                            )
+                          : Text(error);
                     },
                   );
                 },

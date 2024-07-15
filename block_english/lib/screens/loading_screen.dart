@@ -34,14 +34,12 @@ class LoadingScreen extends ConsumerWidget {
                               '/std_main_screen',
                               (Route<dynamic> route) => false,
                             ));
-                        return const CircularProgressIndicator();
                       case 'super':
                         WidgetsBinding.instance.addPostFrameCallback((_) =>
                             Navigator.of(context).pushNamedAndRemoveUntil(
                               '/super_main_screen',
                               (Route<dynamic> route) => false,
                             ));
-                        return const CircularProgressIndicator();
                     }
                   },
                 );
