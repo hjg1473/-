@@ -1,11 +1,16 @@
 from fastapi import HTTPException
 
+def successful_response(status_code: int):
+    return {
+        'status': status_code,
+        'detail': 'Successful'
+    }
 
-def not_found_default():
-    return HTTPException(status_code=404, detail='Not found.')
+def http_exception():
+    return HTTPException(status_code=404, detail="Not Found")
 
-def wrong_password(detail:str):
-    return HTTPException(status_code=401, detail='비밀번호가 틀렸습니다.')
+def email_exception():
+    return HTTPException(status_code=409, detail="중복된 이메일입니다.")
 
-def auth_failed(detail:str):
-    return HTTPException(status_code=401, detail='Authentication Failed')
+def password_exception():
+    return HTTPException(status_code=409, detail="비밀번호가 틀렸습니다.")
