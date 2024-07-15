@@ -2,7 +2,7 @@ from fastapi import  HTTPException, status
 
 def user_exception():
     credentials_exception = HTTPException(
-        status_code=status.HTTP_401_UNAUTHORIZED,
+        status_code=status.HTTP_409_CONFLICT,
         detail="중복된 아이디입니다.",
         headers={"WWW-Authenticate": "Bearer"},
     )

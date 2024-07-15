@@ -2,12 +2,11 @@ from fastapi import APIRouter, HTTPException
 from sqlalchemy.orm import joinedload
 import sys, os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))))
-from app.src.models import Users, StudyInfo, Groups, Problems, CustomProblemSet
-from app.src.auth.router import get_current_user
-from starlette import status
 from super.dependencies import db_dependency, user_dependency
 from super.schemas import CustomProblem, ProblemSet, AddGroup
-from super.exceptions import http_exception
+from super.exceptions import http_exception, authenticate_user_exception, authenticate_super_excetpion
+from app.src.models import Users, StudyInfo, Groups, Problems, CustomProblemSet
+from starlette import status
 
 router = APIRouter(
     prefix="/super",
@@ -20,12 +19,9 @@ router = APIRouter(
 async def create_problem(problemset: ProblemSet,
                       user: user_dependency,
                       db: db_dependency):
-    if user is None:
-        raise get_user_exception()
     
-    if user.get('user_role') != 'super': # super 인 경우만 
-        raise HTTPException(status_code=401, detail='Authentication Failed')
-    
+    authenticate_super_excetpion(user)
+
     custom_problem_set = db.query(CustomProblemSet).filter(CustomProblemSet.name == problemset.name).first()
     if custom_problem_set is not None: # 중복이면
         raise HTTPException(status_code=404, detail='같은 이름의 문제 세트가 존재합니다.')
@@ -54,12 +50,9 @@ async def create_problem(problemset: ProblemSet,
 @router.get("/custom_problem_set/info", status_code = status.HTTP_200_OK)
 async def read_group_info(user: user_dependency,
                     db: db_dependency):
-    if user is None:
-        raise get_user_exception()
     
-    if user.get('user_role') != 'super': # super 인 경우만 
-        raise HTTPException(status_code=401, detail='Authentication Failed')
-
+    authenticate_super_excetpion(user)
+    
     custom_problem_set = db.query(CustomProblemSet).all()
     
     result = {'custom_problem_set':[{'name': u.name} for u in custom_problem_set]}
@@ -72,8 +65,8 @@ async def read_group_info(user: user_dependency,
 async def read_group_info(set_name: str,
                     user: user_dependency,
                     db: db_dependency):
-    if user is None:
-        raise get_user_exception()
+    
+    authenticate_user_exception(user)
 
     custom_problem_set = db.query(CustomProblemSet)\
     .filter(CustomProblemSet.name == set_name)\
@@ -91,9 +84,8 @@ async def read_group_info(set_name: str,
 @router.delete("/custom_problem_set_delete/{set_name}", status_code=status.HTTP_200_OK)
 async def delete_user(set_name: str, user: user_dependency, db: db_dependency):
 
-    if user is None:
-        raise HTTPException(status_code=401, detail='Authentication Failed')
-    
+    authenticate_user_exception(user)
+
     custom_problem_set = db.query(CustomProblemSet)\
     .filter(CustomProblemSet.name == set_name)\
     .first()
@@ -115,12 +107,8 @@ async def delete_user(set_name: str, user: user_dependency, db: db_dependency):
 async def read_group_info(user: user_dependency,
                     db: db_dependency):
     
-    if user is None:
-        raise get_user_exception()
-
-    if user.get('user_role') != 'super': # super 인 경우만 
-        raise HTTPException(status_code=401, detail='Authentication Failed')
-
+    authenticate_super_excetpion(user)
+    
     user_group = db.query(Groups)\
         .filter(Groups.admin_id == user.get("id"))\
         .all()
@@ -134,12 +122,8 @@ async def read_group_info(user: user_dependency,
 async def create_solve_problem(addgroup: AddGroup, 
                             user: user_dependency, db: db_dependency):
     
-    if user is None:
-        raise get_user_exception()
+    authenticate_super_excetpion(user)
 
-    if user.get('user_role') != 'super': # super 인 경우만 
-        raise HTTPException(status_code=401, detail='Authentication Failed')
-    
     # 기존에 중복된 반 이름이 존재한다? # A선생님 1반, B선생님 1반 은 상관 없음.
     group_name = db.query(Groups)\
         .filter(Groups.name == addgroup.name)\
@@ -164,11 +148,8 @@ async def create_solve_problem(addgroup: AddGroup,
 async def read_group_info(group_id: int,
                     user: user_dependency,
                     db: db_dependency):
-    if user is None:
-        raise get_user_exception()
-
-    if user.get('user_role') != 'super': # super 인 경우만 
-        raise HTTPException(status_code=401, detail='Authentication Failed')
+    
+    authenticate_super_excetpion(user)
     
     # 팀 아이디가 그룹 아이디랑 같다
     user_group = db.query(Users)\
@@ -188,11 +169,7 @@ async def user_solve_problem(group_id: int,
                             user_id: int,
                             user: user_dependency, db: db_dependency):
     
-    if user is None:
-        raise get_user_exception()
-    
-    if user.get('user_role') != 'super': # super 인 경우만 
-        raise HTTPException(status_code=401, detail='Authentication Failed')
+    authenticate_super_excetpion(user)
     
     # 쿼리 변수로 해당 학생 db 검색
     student_model = db.query(Users)\
@@ -228,12 +205,8 @@ async def user_solve_problem(group_id: int,
 async def update_user_team(user_id: int,
                             user: user_dependency, db: db_dependency):
     
-    if user is None:
-        raise get_user_exception()
-    
-    if user.get('user_role') != 'super': # super 인 경우만 
-        raise HTTPException(status_code=401, detail='Authentication Failed')
-    
+    authenticate_super_excetpion(user)
+   
     # 쿼리 변수로 해당 학생 db 검색
     student_model = db.query(Users)\
         .filter(Users.id == user_id)\
@@ -254,8 +227,8 @@ async def update_user_team(user_id: int,
 # 선생님의 정보 반환, self
 @router.get("/info", status_code = status.HTTP_200_OK)
 async def read_info(user: user_dependency, db: db_dependency):
-    if user is None:
-        raise get_user_exception()
+    
+    authenticate_user_exception(user)
 
     # 추후 이메일, 폰넘버 추가
     # user_model = db.query(Users.name, Users.email, Users.phone_number).filter(Users.id == user.get('id')).first()
@@ -345,12 +318,8 @@ async def read_info(user: user_dependency, db: db_dependency):
 # 선생님이 학생 개인의 정보를 살펴볼 때
 @router.get("/searchStudyinfo/{user_id}", status_code = status.HTTP_200_OK)
 async def read_select_user_studyInfo(user: user_dependency, db: db_dependency, user_id : int):
-    if user is None:
-        raise get_user_exception()
     
-    if user.get('user_role') != 'super': # super 인 경우만 
-        raise HTTPException(status_code=401, detail='Authentication Failed')
-
+    authenticate_super_excetpion(user)
 
     user_model = db.query(Users.id, Users.username, Users.age).filter(Users.id == user_id).first()
     

@@ -21,10 +21,6 @@ router = APIRouter(
 )
 
 
-models.Base.metadata.create_all(bind=engine)
-templates = Jinja2Templates(directory="templates")
-
-
 # 학생과 선생님 연결 요청, 학생 -> 선생님(student_teachers) / 선생님 -> 학생(teachers_students) ?
 @router.get("/connecting", status_code = status.HTTP_200_OK)
 async def connect_teacher(teacher_id: int,
