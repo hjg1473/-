@@ -8,7 +8,7 @@ from auth.schemas import CreateUser
 from auth.utils import get_password_hash
 from auth.dependencies import db_dependency
 
-# 토큰 생성
+# 토큰 생성 (비동기로 작업할 필요x)
 def create_access_token(username: str, user_id: int, role: str, expires_delta: timedelta):
     encode = {'sub' : username, 'id' : user_id, 'role': role} 
     expires = datetime.utcnow() + expires_delta
@@ -23,7 +23,7 @@ def create_refresh_token(username: str, user_id: int, role: str, expires_delta: 
     return jwt.encode(encode, SECRET_KEY, algorithm=ALGORITHM)
 
 
-def create_user_in_db(db: db_dependency, create_user: CreateUser) -> Users:
+async def create_user_in_db(db: db_dependency, create_user: CreateUser) -> Users:
     hashed_password = get_password_hash(create_user.password)
     new_user = Users(
         username=create_user.username,
@@ -34,11 +34,11 @@ def create_user_in_db(db: db_dependency, create_user: CreateUser) -> Users:
         hashed_password=hashed_password
     )
     db.add(new_user)
-    db.commit()
-    db.refresh(new_user)
+    await db.commit()
+    await db.refresh(new_user)
     return new_user
     
-def create_study_info(db: db_dependency, user_id: int):
+async def create_study_info(db: db_dependency, user_id: int):
     study_info = StudyInfo(
         owner_id=user_id,
         type1Level=0,
@@ -46,4 +46,4 @@ def create_study_info(db: db_dependency, user_id: int):
         type3Level=0
     )
     db.add(study_info)
-    db.commit()
+    await db.commit()
