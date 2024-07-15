@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta
 from jose import jwt
+from sqlalchemy import select
 from auth.constants import ALGORITHM, SECRET_KEY
 import sys, os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))))
@@ -47,3 +48,7 @@ async def create_study_info(db: db_dependency, user_id: int):
     )
     db.add(study_info)
     await db.commit()
+
+async def get_user_to_username(create_user: str, db: db_dependency):
+    result = await db.execute(select(Users).filter(Users.username == create_user))
+    return result.scalars().first()
