@@ -12,7 +12,7 @@ from app.src.auth.router import get_current_user
 from app.src.models import Users, StudyInfo
 import app.src.models as models
 from student.dependencies import user_dependency, db_dependency, get_db
-import exceptions as ex
+from exceptions import auth_student_exception, teacher_exception
 
 router = APIRouter( 
     prefix="/student",
@@ -27,26 +27,16 @@ async def connect_teacher(teacher_id: int,
             user: dict = Depends(get_current_user),
             db: Session = Depends(get_db)):
 
-    if user is None:
-        raise ex.get_user_exception()
-    
-    if user.get('user_role') != 'student': # student 인 경우만 
-        raise ex.auth_failed()
+    auth_student_exception(user)
 
     # 학생 정보 가져오기
     student = db.query(Users).filter(Users.id == user.get("id")).first()
     
-    if not student:
-        raise ex.get_user_exception()
-
-    if teacher_id == user.get("id"):
-        raise ex.not_found_self()
-    
+    auth_student_exception(student)
     # 쿼리 파라미터로 받은 teacher_id 또는 teacher_username을 사용해 선생님 검색
     teacher = db.query(Users).filter(Users.id == teacher_id).first()
 
-    if not teacher:
-        raise ex.not_found_teacher()
+    teacher_exception(teacher, user)
 
     # 학생과 선생님이 이미 연결되어 있는지 확인
     if teacher in student.student_teachers:
@@ -63,12 +53,7 @@ async def connect_teacher(teacher_id: int,
 @router.get("/connect_teacher", status_code = status.HTTP_200_OK)
 async def read_connect_teacher(user: user_dependency, db: db_dependency):
 
-    if user is None:
-        raise ex.get_user_exception()
-    
-    if user.get('user_role') != 'student': # student 인 경우만 
-        raise ex.auth_failed()
-    
+    auth_student_exception(user)
     # 쿼리 검색
     teacher = db.query(Users).options( 
         joinedload(Users.student_teachers)
@@ -86,12 +71,7 @@ async def read_connect_teacher(user: user_dependency, db: db_dependency):
 @router.get("/info", status_code = status.HTTP_200_OK)
 async def read_user_info(user: user_dependency, db: db_dependency):
 
-    if user is None:
-        raise ex.get_user_exception()
-    
-    if user.get('user_role') != 'student': # student 인 경우만 
-        raise ex.auth_failed()
-    
+    auth_student_exception(user)
     user_model = db.query(Users).filter(Users.id == user.get('id')).first()
     return {'name': user_model.name, 'age': user_model.age, 'team_id': user_model.team_id}
     # 필터 사용. 학습 정보의 owner_id 와 '유저'의 id가 같으면,
@@ -104,12 +84,7 @@ async def read_user_info(user: user_dependency, db: db_dependency):
 @router.get("/id", status_code = status.HTTP_200_OK)
 async def read_user_id(user: user_dependency, db: db_dependency):
 
-    if user is None:
-        raise ex.get_user_exception()
-    
-    if user.get('user_role') != 'student': # student 인 경우만 
-        raise ex.auth_failed()
-    
+    auth_student_exception(user)
     return  {"id": user.get('id')}
     # 사용자의 id 반환.
 
@@ -118,12 +93,7 @@ async def read_user_id(user: user_dependency, db: db_dependency):
 @router.get("/studyinfo", status_code = status.HTTP_200_OK)
 async def read_user_studyinfo(user: user_dependency, db: db_dependency):
 
-    if user is None:
-        raise ex.get_user_exception()
-    
-    if user.get('user_role') != 'student': # student 인 경우만 
-        raise ex.auth_failed()
-
+    auth_student_exception(user)
     user_model = db.query(Users.id, Users.username, Users.age).filter(Users.id == user.get('id')).first()
 
     study_info = db.query(StudyInfo).options(
