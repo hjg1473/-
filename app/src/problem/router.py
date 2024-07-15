@@ -1,3 +1,4 @@
+from sqlalchemy import select
 from sqlalchemy.orm import joinedload
 from fastapi import APIRouter, HTTPException
 from starlette import status
@@ -11,6 +12,7 @@ import requests
 from problem.dependencies import user_dependency, db_dependency
 from problem.schemas import Problem, Answer
 from problem.exceptions import http_exception, successful_response, get_user_exception
+from problem.service import create_problem_in_db
 
 router = APIRouter(
     prefix="/problem",
@@ -19,39 +21,24 @@ router = APIRouter(
 )
 
 @router.post("/create")
-async def create_problem(problem: Problem,
-                      user: user_dependency,
-                      db: db_dependency):
-    if user is None:
-        raise get_user_exception()
-    problem_model = app.src.models.Problems()
-    problem_model.season = problem.season
-    problem_model.type = problem.type
-    problem_model.problemLevel = problem.problemLevel
-    problem_model.koreaProblem = problem.koreaProblem
-    problem_model.englishProblem = problem.englishProblem
-    problem_model.img_path = problem.img_path
-    # problem_model.owner_id = user.get("id")
-
-    db.add(problem_model)
-    db.commit()
-
+async def create_problem(problem: Problem, user: user_dependency, db: db_dependency):
+    get_user_exception(user)
+    await create_problem_in_db(db, problem)
     return successful_response(201)
 
 @router.get("/info", status_code = status.HTTP_200_OK)
 async def read_problem_all(user: user_dependency, db: db_dependency):
-    if user is None:
-        raise get_user_exception()
-    
-    return db.query(Problems).all()
+    get_user_exception(user)
+    result = await db.execute(select(Users))
+    problem_model = result.scalars().all()
+    return problem_model
     # 모든 문제 정보 반환 (일단)
 
 
 # 연습 문제 반환 (10개)
 @router.get("/season/{season_name}/type/{type_name}/practice_set", status_code = status.HTTP_200_OK)
 async def read_problem_all(season_name:str, type_name:str, user: user_dependency, db: db_dependency):
-    if user is None:
-        raise get_user_exception()
+    get_user_exception(user)
     
     if season_name != ('시즌1' or '시즌2'):
         raise HTTPException(status_code=404, detail='일치하는 시즌이 없습니다. (시즌명 : 시즌1, 시즌2)')
@@ -115,6 +102,7 @@ async def read_problem_all(season_name:str, type_name:str, user: user_dependency
 # 학생이 문제를 풀었을 때, 일단 임시로 맞았다고 처리 
 @router.post("/solve", status_code = status.HTTP_200_OK)
 async def user_solve_problem(user: user_dependency, db: db_dependency, problem_id: int = Form(...), file: UploadFile = File(...)):
+    get_user_exception(user)
     user_instance = db.query(Users).filter(Users.id == user.get("id")).first()
 
     study_info = db.query(StudyInfo).filter(StudyInfo.owner_id == user.get("id")).first()
