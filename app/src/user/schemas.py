@@ -10,7 +10,6 @@ class UserQuitVerification(BaseModel):
 
 class User_info(BaseModel):
     name: str
-    username: str
     phone_number: str
     email: str
 

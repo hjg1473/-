@@ -1,15 +1,14 @@
-from sqlalchemy.orm import Session
-from fastapi import APIRouter, Depends, HTTPException, Path
+from sqlalchemy import delete, select
+from fastapi import APIRouter, HTTPException
 from starlette import status
 import sys, os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))))
 
-from auth.router import get_current_user
 from app.src.models import Users
-from user.dependencies import user_dependency, db_dependency, get_db
+from user.dependencies import user_dependency, db_dependency
 from user.schemas import UserQuitVerification, UserVerification, User_info
-from user.utils import bcrypt_context, successful_response
-from user.exceptions import http_exception
+from user.utils import bcrypt_context
+from user.exceptions import successful_response, http_exception, email_exception, password_exception
 
 router = APIRouter(
     prefix='/users', 
@@ -22,41 +21,40 @@ async def change_password(user: user_dependency, db: db_dependency,
     if user is None:
         raise HTTPException(status_code=401, detail='Authentication Failed')
     
-    user_model = db.query(Users).filter(Users.id == user.get('id')).first()
-    
+    result = await db.execute(select(Users).filter(Users.id == user.get('id')))
+    user_model = result.scalars().first()
     if not bcrypt_context.verify(user_verification.password, user_model.hashed_password):
-    # 비밀번호 인증.
-        raise HTTPException(status_code=401, detail='기존 비밀번호가 틀렸습니다.')
+        raise password_exception()
     
     user_model.hashed_password = bcrypt_context.hash(user_verification.new_password)
-    # 해시값을 새로운 해시값으로 교체.
     db.add(user_model)
-    db.commit()
+    await db.commit()
 
     return {'detail': '비밀번호가 변경되었습니다.'}
 
 @router.put("/update", status_code=status.HTTP_200_OK)
-async def update_user_info(user_info: User_info,
-                      user: dict = Depends(get_current_user),
-                      db: Session = Depends(get_db)):
+async def update_user_info(user_info: User_info, user: user_dependency, db: db_dependency):
     if user is None:
         raise HTTPException(status_code=401, detail='Authentication Failed')
 
-    user_model = db.query(Users).filter(Users.id == user.get('id')).first()
+    result = await db.execute(select(Users).filter(Users.id == user.get('id')))
+    user_model = result.scalars().first()
 
     if user_model is None:
         raise http_exception()
+    
+    email = await db.execute(select(Users).filter(Users.email == user_info.email))
+    user_email = email.scalars().first()
+    if user_email:
+        raise email_exception()
 
-    user_model.name = user_info.name
-    user_model.username = user_info.username
-    user_model.phone_number = user_info.phone_number
-    user_model.email = user_info.email
+    user_model.name=user_info.name
+    user_model.email=user_info.email
+    user_model.phone_number=user_info.phone_number
 
     db.add(user_model)
-    db.commit()
-
+    await db.commit()
     return successful_response(200)
-
 
 @router.delete("/quit/", status_code=status.HTTP_200_OK)
 async def delete_user(user: user_dependency, db: db_dependency, user_verification: UserQuitVerification):
@@ -64,17 +62,17 @@ async def delete_user(user: user_dependency, db: db_dependency, user_verificatio
     if user is None:
         raise HTTPException(status_code=401, detail='Authentication Failed')
     
-    user_model = db.query(Users).filter(Users.id == user.get('id')).first()
-    
+    result = await db.execute(select(Users).filter(Users.id == user.get('id')))
+    user_model = result.scalars().first()
+
+    if user_model is None:
+        raise http_exception()
     # 비밀번호 인증.
     if not bcrypt_context.verify(user_verification.password, user_model.hashed_password):
-        raise HTTPException(status_code=401, detail='비밀번호가 틀렸습니다.')
+        raise password_exception()
     
-    user_model = db.query(Users).filter(Users.id == user.get('id')).first()
-    if user_model is None:
-        raise HTTPException(status_code=404, detail='Not found.')
-    
-    db.query(Users).filter(Users.id == user.get('id')).delete()
-    db.commit()
+    # db.query(Users).filter(Users.id == user.get('id')).delete()
+    result = await db.execute(delete(Users).filter(Users.id == user.get('id')))
+    await db.commit()
 
     return {'detail': '성공적으로 탈퇴되었습니다.'}

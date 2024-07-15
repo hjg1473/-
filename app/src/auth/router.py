@@ -22,7 +22,8 @@ router = APIRouter(
 
 oauth2_bearer = OAuth2PasswordBearer(tokenUrl="auth/token")
 
-async def get_current_user(token: Annotated[str, Depends(oauth2_bearer)]):
+# 비동기 -> 동기
+def get_current_user(token: Annotated[str, Depends(oauth2_bearer)]):
     payload = decode_token(token)
     if payload is None:
         raise access_token_exception()
