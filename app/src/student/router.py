@@ -1,6 +1,6 @@
 from sqlalchemy import select
 from sqlalchemy.orm import joinedload
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter
 from starlette import status
 
 import sys, os
