@@ -60,7 +60,11 @@ async def connect_teacher(teacher_id: int, user: user_dependency, db: db_depende
 @router.get("/connect_teacher", status_code = status.HTTP_200_OK)
 async def read_connect_teacher(user: user_dependency, db: db_dependency):
 
-    auth_user_exception(user)
+    if user is None:
+        raise get_user_exception()
+    
+    if user.get('user_role') != 'student': 
+        raise auth_exception()
     # 쿼리 검색
     teacher = db.query(Users).options( 
         joinedload(Users.student_teachers)
@@ -78,7 +82,11 @@ async def read_connect_teacher(user: user_dependency, db: db_dependency):
 @router.get("/info", status_code = status.HTTP_200_OK)
 async def read_user_info(user: user_dependency, db: db_dependency):
 
-    auth_student_exception(user)
+    if user is None:
+        raise get_user_exception()
+    
+    if user.get('user_role') != 'student': 
+        raise auth_exception()
     user_model = db.query(Users).filter(Users.id == user.get('id')).first()
     return {'name': user_model.name, 'age': user_model.age, 'team_id': user_model.team_id}
     # 필터 사용. 학습 정보의 owner_id 와 '유저'의 id가 같으면,
@@ -91,7 +99,11 @@ async def read_user_info(user: user_dependency, db: db_dependency):
 @router.get("/id", status_code = status.HTTP_200_OK)
 async def read_user_id(user: user_dependency, db: db_dependency):
 
-    auth_student_exception(user)
+    if user is None:
+        raise get_user_exception()
+    
+    if user.get('user_role') != 'student': 
+        raise auth_exception()
     return  {"id": user.get('id')}
     # 사용자의 id 반환.
 
@@ -100,7 +112,11 @@ async def read_user_id(user: user_dependency, db: db_dependency):
 @router.get("/studyinfo", status_code = status.HTTP_200_OK)
 async def read_user_studyinfo(user: user_dependency, db: db_dependency):
 
-    auth_student_exception(user)
+    if user is None:
+        raise get_user_exception()
+    
+    if user.get('user_role') != 'student': 
+        raise auth_exception()
     user_model = db.query(Users.id, Users.username, Users.age).filter(Users.id == user.get('id')).first()
 
     study_info = db.query(StudyInfo).options(
