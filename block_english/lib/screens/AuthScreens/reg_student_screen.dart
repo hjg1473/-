@@ -1,5 +1,4 @@
 import 'package:animated_custom_dropdown/custom_dropdown.dart';
-import 'package:block_english/models/AuthModel/reg_response_model.dart';
 import 'package:block_english/utils/constants.dart';
 import 'package:block_english/widgets/round_corner_route_button.dart';
 import 'package:flutter/material.dart';
@@ -27,16 +26,26 @@ class _RegStudentScreenState extends ConsumerState<RegStudentScreen> {
       return;
     }
 
-    RegResponseModel regResponseModel = await ref
+    final result = await ref
         .watch(authServiceProvider)
         .postAuthRegister(name, username, password, grade, 'student');
 
-    if (mounted) {
-      Navigator.of(context).pushNamedAndRemoveUntil(
-        '/init',
-        (Route<dynamic> route) => false,
-      );
-    }
+    result.fold((failure) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('다시해'),
+          ),
+        );
+      }
+    }, (regResponseModel) {
+      if (mounted) {
+        Navigator.of(context).pushNamedAndRemoveUntil(
+          '/init',
+          (Route<dynamic> route) => false,
+        );
+      }
+    });
   }
 
   @override

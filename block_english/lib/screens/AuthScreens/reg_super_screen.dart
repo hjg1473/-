@@ -1,4 +1,3 @@
-import 'package:block_english/models/AuthModel/reg_response_model.dart';
 import 'package:block_english/services/auth_service.dart';
 import 'package:block_english/utils/constants.dart';
 import 'package:block_english/widgets/round_corner_route_button.dart';
@@ -25,16 +24,26 @@ class _RegSuperScreenState extends ConsumerState<RegSuperScreen> {
       return;
     }
 
-    RegResponseModel regResponseModel = await ref
+    final result = await ref
         .watch(authServiceProvider)
         .postAuthRegister(name, username, password, 0, 'super');
 
-    if (mounted) {
-      Navigator.of(context).pushNamedAndRemoveUntil(
-        '/init',
-        (Route<dynamic> route) => false,
-      );
-    }
+    result.fold((failure) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('다시해'),
+          ),
+        );
+      }
+    }, (regResponseModel) {
+      if (mounted) {
+        Navigator.of(context).pushNamedAndRemoveUntil(
+          '/init',
+          (Route<dynamic> route) => false,
+        );
+      }
+    });
   }
 
   @override

@@ -1,4 +1,3 @@
-import 'package:block_english/models/AuthModel/login_response_model.dart';
 import 'package:block_english/services/auth_service.dart';
 import 'package:block_english/utils/storage.dart';
 import 'package:flutter/material.dart';
@@ -23,41 +22,51 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       return;
     }
 
-    LoginResponseModel loginResponseModel =
+    final result =
         await ref.watch(authServiceProvider).postAuthToken(username, password);
 
-    var role = loginResponseModel.role;
-    await ref
-        .watch(secureStorageProvider)
-        .saveAccessToken(loginResponseModel.accessToken);
-    await ref
-        .watch(secureStorageProvider)
-        .saveRefreshToken(loginResponseModel.refreshToken);
-
-    if (mounted) {
-      if (role == 'student') {
-        Navigator.of(context).pushNamedAndRemoveUntil(
-          '/std_main_screen',
-          (Route<dynamic> route) => false,
+    result.fold((failure) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('다시해'),
+          ),
         );
-      } else if (role == 'super') {
-        Navigator.of(context).pushNamedAndRemoveUntil(
-          '/super_main_screen',
-          (Route<dynamic> route) => false,
-        );
-      } else {
-        throw Exception("Invalid role");
       }
-    }
-    //  on Exception catch (e) {
-    //   if (mounted) {
-    //     ScaffoldMessenger.of(context).showSnackBar(
-    //       SnackBar(
-    //         content: Text("로그인에 실패했습니다.\n$e"),
-    //       ),
-    //     );
-    //   }
-    // }
+    }, (loginResponseModel) async {
+      var role = loginResponseModel.role;
+
+      if (role != 'student' || role != 'super') {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('다시해'),
+            ),
+          );
+        }
+      }
+
+      await ref
+          .watch(secureStorageProvider)
+          .saveAccessToken(loginResponseModel.accessToken);
+      await ref
+          .watch(secureStorageProvider)
+          .saveRefreshToken(loginResponseModel.refreshToken);
+
+      if (mounted) {
+        if (role == 'student') {
+          Navigator.of(context).pushNamedAndRemoveUntil(
+            '/std_main_screen',
+            (Route<dynamic> route) => false,
+          );
+        } else if (role == 'super') {
+          Navigator.of(context).pushNamedAndRemoveUntil(
+            '/super_main_screen',
+            (Route<dynamic> route) => false,
+          );
+        }
+      }
+    });
   }
 
   @override

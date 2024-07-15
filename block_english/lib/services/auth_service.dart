@@ -4,10 +4,8 @@ import 'package:block_english/models/AuthModel/reg_response_model.dart';
 import 'package:block_english/models/FailureModel/failure_model.dart';
 import 'package:block_english/utils/constants.dart';
 import 'package:block_english/utils/dio.dart';
-import 'package:block_english/utils/storage.dart';
 import 'package:dartz/dartz.dart';
 import 'package:dio/dio.dart';
-import 'package:flutter/material.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'auth_service.g.dart';
@@ -25,7 +23,7 @@ class AuthService {
     _ref = ref;
   }
 
-  Future<RegResponseModel> postAuthRegister(
+  Future<Either<FailureModel, RegResponseModel>> postAuthRegister(
     String name,
     String username,
     String password,
@@ -33,39 +31,53 @@ class AuthService {
     String role,
   ) async {
     final dio = _ref.watch(dioProvider);
-    final response = await dio.post(
-      '/$_auth/$_register',
-      options: Options(
-        contentType: Headers.jsonContentType,
-      ),
-      data: {
-        'name': name,
-        'username': username,
-        'password': password,
-        'age': age,
-        'role': role,
-      },
-    );
-    return RegResponseModel.fromJson(response.data);
+    try {
+      final response = await dio.post(
+        '/$_auth/$_register',
+        options: Options(
+          contentType: Headers.jsonContentType,
+        ),
+        data: {
+          'name': name,
+          'username': username,
+          'password': password,
+          'age': age,
+          'role': role,
+        },
+      );
+      return Right(RegResponseModel.fromJson(response.data));
+    } on DioException catch (e) {
+      return Left(FailureModel(
+        statusCode: e.response?.statusCode ?? 0,
+        detail: e.response?.data['detail'] ?? "",
+      ));
+    }
   }
 
-  Future<LoginResponseModel> postAuthToken(
+  Future<Either<FailureModel, LoginResponseModel>> postAuthToken(
     String username,
     String password,
   ) async {
     final dio = _ref.watch(dioProvider);
-    final response = await dio.post(
-      '/$_auth/$_token',
-      options: Options(
-        contentType: Headers.formUrlEncodedContentType,
-        headers: {'accept': 'application/json'},
-      ),
-      data: {
-        'username': username,
-        'password': password,
-      },
-    );
-    return LoginResponseModel.fromJson(response.data);
+    try {
+      final response = await dio.post(
+        '/$_auth/$_token',
+        options: Options(
+          contentType: Headers.formUrlEncodedContentType,
+          headers: {'accept': 'application/json'},
+        ),
+        data: {
+          'username': username,
+          'password': password,
+        },
+      );
+      return Right(LoginResponseModel.fromJson(response.data));
+    } on DioException catch (e) {
+      return Left(FailureModel(
+        statusCode: e.response?.statusCode ?? 0,
+        detail: e.response?.data['detail'] ?? '',
+      ));
+    }
   }
 
   Future<Either<FailureModel, AccessReponseModel>> postAuthAccess() async {
@@ -79,23 +91,33 @@ class AuthService {
       return Right(AccessReponseModel.fromJson(response.data));
     } on DioException catch (e) {
       return Left(FailureModel(
-          statusCode: e.response?.statusCode ?? 0,
-          detail: e.response?.statusMessage ?? ''));
+        statusCode: e.response?.statusCode ?? 0,
+        detail: e.response?.data['detail'] ?? '',
+      ));
     }
   }
 
-  Future<Response> postAuthLogout(String refreshToken) async {
+  Future<Either<FailureModel, Response>> postAuthLogout(
+      String refreshToken) async {
     final dio = _ref.watch(dioProvider);
-    final response = await dio.post(
-      '/$_auth/$_logout',
-      options: Options(
-        headers: {
-          'accept': 'application/json',
-          'refresh-token': refreshToken,
-        },
-      ),
-    );
-    return response;
+
+    try {
+      final response = await dio.post(
+        '/$_auth/$_logout',
+        options: Options(
+          headers: {
+            'accept': 'application/json',
+            'refresh-token': refreshToken,
+          },
+        ),
+      );
+      return Right(response);
+    } on DioException catch (e) {
+      return Left(FailureModel(
+        statusCode: e.response?.statusCode ?? 0,
+        detail: e.response?.data['detail'] ?? '',
+      ));
+    }
   }
 }
 

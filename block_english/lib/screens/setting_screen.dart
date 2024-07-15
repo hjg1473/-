@@ -13,27 +13,40 @@ class SettingScreen extends ConsumerStatefulWidget {
 class _SettingScreenState extends ConsumerState<SettingScreen> {
   onLogoutPressed() async {
     final storage = ref.watch(secureStorageProvider);
-    var response = await ref
+    final result = await ref
         .watch(authServiceProvider)
         .postAuthLogout(await storage.readRefreshToken() ?? "");
 
-    if (response.statusCode == 200) {
-      storage.removeTokens();
-      if (mounted) {
-        Navigator.of(context).pushNamedAndRemoveUntil(
-          '/init',
-          (Route<dynamic> route) => false,
-        );
-      }
-    } else {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('다시해'),
-          ),
-        );
-      }
-    }
+    result.fold(
+      (failure) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('다시해'),
+            ),
+          );
+        }
+      },
+      (response) {
+        if (response.statusCode == 200) {
+          storage.removeTokens();
+          if (mounted) {
+            Navigator.of(context).pushNamedAndRemoveUntil(
+              '/init',
+              (Route<dynamic> route) => false,
+            );
+          }
+        } else {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('다시해'),
+              ),
+            );
+          }
+        }
+      },
+    );
   }
 
   @override
