@@ -11,7 +11,7 @@ import requests
 from problem.dependencies import user_dependency, db_dependency
 from problem.schemas import Problem
 from problem.exceptions import http_exception, successful_response, get_user_exception
-from problem.service import create_problem_in_db
+from problem.service import *
 from problem.utils import check_answer
 
 router = APIRouter(
@@ -29,8 +29,7 @@ async def create_problem(problem: Problem, user: user_dependency, db: db_depende
 @router.get("/info", status_code = status.HTTP_200_OK)
 async def read_problem_all(user: user_dependency, db: db_dependency):
     get_user_exception(user)
-    result = await db.execute(select(Users))
-    problem_model = result.scalars().all()
+    problem_model = await get_problem_info(db)
     return problem_model
     # 모든 문제 정보 반환 (일단)
 
