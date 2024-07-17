@@ -28,4 +28,4 @@ def token_exception1(payload):
     
 def token_exception2(stored_token, token):
     if stored_token is None or stored_token.decode('utf-8') != token:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Not Match Token")
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="No Matched Token")

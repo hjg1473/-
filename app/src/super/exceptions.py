@@ -32,7 +32,7 @@ async def problem_exists_exception(problemset, db):
         raise HTTPException(status_code=404, detail='같은 이름의 문제 세트가 존재합니다.')
 
 
-async def existing_name_exception(addgroup, admin_id, db=db_dependency):
+async def existing_name_exception(addgroup, admin_id, db: db_dependency):
     group_name = await get_group_name(addgroup, admin_id, db)
     if group_name is not None:
         raise HTTPException(status_code=404, detail='같은 이름의 방이 존재합니다.')

@@ -1,0 +1,8 @@
+# kibana/config/kibana.yml
+server.name: kibana
+server.host: "0.0.0.0"
+elasticsearch.hosts: ["http://172.31.3.173:9200"]
+
+server.basePath: "/kibana"
+server.rewriteBasePath: true
+

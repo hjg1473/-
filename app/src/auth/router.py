@@ -13,6 +13,12 @@ from auth.service import create_access_token, create_user_in_db, create_study_in
 from auth.dependencies import db_dependency
 from auth.exceptions import login_exception, get_user_exception, token_exception1, token_exception2, username_exception
 from auth.constants import REFRESH_TOKEN_EXPIRE_DAYS, ACCESS_TOKEN_EXPIRE_MINUTES
+import logging
+from app.src.logging_setup import LoggerSetup
+
+# Get logger for module
+LOGGER = logging.getLogger(__name__)
+logger_setup = LoggerSetup()
 
 router = APIRouter(
     prefix="/auth",
@@ -35,6 +41,8 @@ async def create_new_user(db: db_dependency, create_user: CreateUser):
     await username_exception(create_user.username, db)
     user = await create_user_in_db(db, create_user)
     await create_study_info(db, user.id)
+    logger = logger_setup.get_logger(user.id)
+    logger.info("--- Register ---")
     return {'detail': '성공적으로 회원가입되었습니다.'}
 
 # 로그인 
@@ -64,7 +72,7 @@ async def login_for_access_token(access_token: Annotated[str, Depends(oauth2_bea
     username, user_id, user_role = validate_token_payload(payload)
 
     redis_client = await aioredis.create_redis_pool('redis://localhost')
-    stored_access_token = await redis_client.get(f"{username}_refresh")
+    stored_access_token = await redis_client.get(f"{username}_access")
     token_exception2(stored_access_token, access_token)
     
     return {'detail': 'Token Valid', 'role': user_role}
