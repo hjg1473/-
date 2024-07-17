@@ -6,7 +6,6 @@ import 'package:block_english/screens/AuthScreens/reg_super_screen.dart';
 import 'package:block_english/screens/StudentScreens/student_main_screen.dart';
 import 'package:block_english/screens/SuperScreens/super_add_group_screen.dart';
 import 'package:block_english/screens/SuperScreens/super_game_screen.dart';
-import 'package:block_english/screens/SuperScreens/super_game_setting_screen.dart';
 import 'package:block_english/screens/SuperScreens/super_main_screen.dart';
 import 'package:block_english/screens/loading_screen.dart';
 import 'package:block_english/screens/setting_screen.dart';
@@ -25,9 +24,9 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       theme: ThemeData(
         scaffoldBackgroundColor: Colors.white,
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color(0xFF6750A4),
-        ),
+        // colorScheme: ColorScheme.fromSeed(
+        //   seedColor: const Color(0xFF6750A4),
+        // ),
       ),
       title: "Block English",
       initialRoute: '/loading_screen',
@@ -41,8 +40,6 @@ class MyApp extends StatelessWidget {
         '/std_main_screen': (context) => const StudentMainScreen(),
         '/super_main_screen': (context) => const SuperMainScreen(),
         '/super_add_group_screen': (context) => const SuperAddGroupScreen(),
-        '/super_game_setting_screen': (context) =>
-            const SuperGameSettingScreen(),
         '/super_game_screen': (context) => const SuperGameScreen(),
         '/setting_screen': (context) => const SettingScreen(),
       },

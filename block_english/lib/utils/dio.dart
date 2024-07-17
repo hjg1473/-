@@ -66,21 +66,21 @@ Dio dio(DioRef ref) {
 
           await storage.saveAccessToken(newAccessToken);
           await storage.saveRefreshToken(newRefreshToken);
+
+          final response = await authDio.request(
+            error.requestOptions.path,
+            data: error.requestOptions.data,
+            queryParameters: error.requestOptions.queryParameters,
+            options: Options(
+              extra: error.requestOptions.extra,
+              method: error.requestOptions.method,
+              headers: {'Authorization': 'Bearer $newAccessToken'},
+            ),
+          );
+          return handler.resolve(response);
         } on DioException catch (e) {
           return handler.next(DioException(requestOptions: e.requestOptions));
         }
-
-        final response = await dio.request(
-          error.requestOptions.path,
-          data: error.requestOptions.data,
-          queryParameters: error.requestOptions.queryParameters,
-          cancelToken: error.requestOptions.cancelToken,
-          options: Options(
-            extra: error.requestOptions.extra,
-            method: error.requestOptions.method,
-          ),
-        );
-        return handler.resolve(response);
       }
     },
   ));

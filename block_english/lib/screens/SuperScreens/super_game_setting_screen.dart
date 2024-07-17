@@ -1,8 +1,9 @@
-import 'package:block_english/utils/colors.dart';
-import 'package:animated_custom_dropdown/custom_dropdown.dart';
+import 'dart:ui';
+
 import 'package:block_english/utils/constants.dart';
 import 'package:block_english/widgets/round_corner_route_button.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 
 class SuperGameSettingScreen extends StatefulWidget {
   const SuperGameSettingScreen({super.key});
@@ -12,10 +13,8 @@ class SuperGameSettingScreen extends StatefulWidget {
 }
 
 class _SuperGameSettingScreenState extends State<SuperGameSettingScreen> {
-  late double playerSliderValue;
-  late int playerSliderCurrent;
-  late double timeSliderValue;
-  late int timeSliderCurrent;
+  late int problemNumber;
+  late int timeMinutes;
   final List<String> problemSetList = [
     '3반 문제 세트',
     '1반 시험 문제',
@@ -27,10 +26,8 @@ class _SuperGameSettingScreenState extends State<SuperGameSettingScreen> {
   @override
   void initState() {
     super.initState();
-    playerSliderValue = 0.0;
-    playerSliderCurrent = 0;
-    timeSliderValue = 0.0;
-    timeSliderCurrent = 0;
+    problemNumber = 14;
+    timeMinutes = 7;
   }
 
   @override
@@ -38,201 +35,172 @@ class _SuperGameSettingScreenState extends State<SuperGameSettingScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text(
-          'Block English',
-          style: TextStyle(
-            fontSize: 25,
-            fontWeight: FontWeight.bold,
-          ),
+          '게임',
         ),
         centerTitle: true,
-        elevation: 10,
+        backgroundColor: Colors.white,
       ),
       body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 30.0, vertical: 25.0),
+        padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Text(
-              "게임 설정",
+              "문장 퀴즈",
               style: TextStyle(
-                color: Colors.black,
-                fontSize: 30,
-                fontWeight: FontWeight.bold,
+                color: Color(0xFF313131),
+                fontSize: 22,
+                fontWeight: FontWeight.w600,
               ),
             ),
-            const SizedBox(
-              height: 20,
-            ),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 25.0),
-              child: Row(
-                children: [
-                  const Text(
-                    "게임에 참여할 학생 수",
-                    style: TextStyle(
-                      color: Colors.black,
-                      fontSize: 18,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  const Spacer(),
-                  Container(
-                    width: 40,
-                    height: 40,
-                    decoration: BoxDecoration(
-                      color: lightPrimary,
-                      borderRadius: BorderRadius.circular(100),
-                    ),
-                    child: Center(
-                      child: Text(
-                        '$playerSliderCurrent',
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 15,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(
-                    width: 5,
-                  ),
-                  const Text(
-                    "명",
-                    style: TextStyle(
-                      color: lightPrimary,
-                      fontSize: 15,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ],
+            const Text(
+              '블록을 이용해 시간 안에 영어 문장 맞히기',
+              style: TextStyle(
+                color: Color(0xFF313131),
               ),
-            ),
-            Slider(
-              value: playerSliderValue,
-              max: 30,
-              divisions: 6,
-              label: '${playerSliderValue.round()}',
-              onChanged: (value) {
-                setState(
-                  () {
-                    playerSliderValue = value;
-                    playerSliderCurrent = value.toInt();
-                  },
-                );
-              },
-            ),
-            const Divider(
-              thickness: 1,
             ),
             const SizedBox(
               height: 10,
             ),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 25.0),
-              child: Row(
-                children: [
-                  const Text(
-                    "문제 별 제한 시간",
-                    style: TextStyle(
-                      color: Colors.black,
-                      fontSize: 18,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  const Spacer(),
-                  Container(
-                    width: 40,
-                    height: 40,
-                    decoration: BoxDecoration(
-                      color: lightPrimary,
-                      borderRadius: BorderRadius.circular(100),
-                    ),
-                    child: Center(
-                      child: Text(
-                        '$timeSliderCurrent',
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 15,
-                          fontWeight: FontWeight.bold,
-                        ),
+            Expanded(
+              child: Container(
+                width: double.infinity,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFDBDBDB),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Column(
+                  children: [
+                    const Spacer(),
+                    const Text(
+                      '문제 수',
+                      style: TextStyle(
+                        color: Color(0xFF313131),
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
-                  ),
-                  const SizedBox(
-                    width: 5,
-                  ),
-                  const Text(
-                    "초",
-                    style: TextStyle(
-                      color: lightPrimary,
-                      fontSize: 15,
-                      fontWeight: FontWeight.bold,
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 10),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          IconButton(
+                            onPressed: () {
+                              setState(() {
+                                problemNumber--;
+                              });
+                            },
+                            style: IconButton.styleFrom(
+                              backgroundColor: Colors.white,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(5),
+                              ),
+                            ),
+                            icon: const Icon(Icons.remove),
+                          ),
+                          SizedBox(
+                            width: 100,
+                            child: Center(
+                              child: Text(
+                                '$problemNumber',
+                                style: const TextStyle(
+                                  fontSize: 44,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
+                          ),
+                          IconButton(
+                            onPressed: () {
+                              setState(() {
+                                problemNumber++;
+                              });
+                            },
+                            style: IconButton.styleFrom(
+                              backgroundColor: Colors.white,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(5),
+                              ),
+                            ),
+                            icon: const Icon(Icons.add),
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
-                ],
-              ),
-            ),
-            Slider(
-              value: timeSliderValue,
-              max: 60,
-              divisions: 6,
-              label: '${timeSliderValue.round()}',
-              onChanged: (value) {
-                setState(
-                  () {
-                    timeSliderValue = value;
-                    timeSliderCurrent = value.toInt();
-                  },
-                );
-              },
-            ),
-            const Divider(
-              thickness: 1,
-            ),
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 25.0, vertical: 20.0),
-              child: Text(
-                "문제 세트 선택",
-                style: TextStyle(
-                  color: Colors.black,
-                  fontSize: 18,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20.0),
-              child: CustomDropdown<String>(
-                hintText: '문제 세트를 선택하세요',
-                items: problemSetList,
-                onChanged: (value) {},
-                decoration: const CustomDropdownDecoration(
-                  hintStyle: TextStyle(
-                    color: Colors.black87,
-                    fontSize: 15,
-                  ),
-                  closedFillColor: lightSurface,
-                  expandedFillColor: lightSurface,
-                  closedShadow: [
-                    BoxShadow(
-                      color: Colors.black38,
-                      blurRadius: 5,
-                      offset: Offset(0, 5),
+                    const Spacer(),
+                    const Text(
+                      '게임 시간 (분)',
+                      style: TextStyle(
+                        color: Color(0xFF313131),
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 10.0),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          IconButton(
+                            onPressed: () {
+                              setState(() {
+                                timeMinutes--;
+                              });
+                            },
+                            style: IconButton.styleFrom(
+                              backgroundColor: Colors.white,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(5),
+                              ),
+                            ),
+                            icon: const Icon(Icons.remove),
+                          ),
+                          SizedBox(
+                            width: 100,
+                            child: Center(
+                              child: Text(
+                                '$timeMinutes',
+                                style: const TextStyle(
+                                  fontSize: 44,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
+                          ),
+                          IconButton(
+                            onPressed: () {
+                              setState(() {
+                                timeMinutes++;
+                              });
+                            },
+                            style: IconButton.styleFrom(
+                              backgroundColor: Colors.white,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(5),
+                              ),
+                            ),
+                            icon: const Icon(Icons.add),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const Spacer(),
                   ],
                 ),
               ),
             ),
-            const Spacer(),
+            const SizedBox(
+              height: 10,
+            ),
             const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 0.0, vertical: 40.0),
+              padding: EdgeInsets.symmetric(horizontal: 0.0, vertical: 10.0),
               child: RoundCornerRouteButton(
-                text: "게임 방 개설",
+                text: "방 생성하기",
                 routeName: '/super_game_screen',
                 width: 330,
-                height: 55,
-                type: ButtonType.outlined,
+                height: 60,
+                type: ButtonType.filled,
                 radius: 10,
                 bold: true,
               ),
