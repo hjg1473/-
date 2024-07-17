@@ -24,8 +24,8 @@ class SecureStorage {
 
   Future<void> saveRefreshToken(String refreshToken) async {
     try {
-      await storage.write(key: REFRESH_TOKEN, value: refreshToken);
-      debugPrint('[SECURE_STORAGE] saveRefreshToken: $refreshToken');
+      await storage.write(key: REFRESHTOKEN, value: refreshToken);
+      // debugPrint('[SECURE_STORAGE] saveRefreshToken: $refreshToken');
     } catch (e) {
       debugPrint("[ERR] RefreshToken 저장 실패: $e");
     }
@@ -33,8 +33,8 @@ class SecureStorage {
 
   Future<String?> readRefreshToken() async {
     try {
-      final refreshToken = await storage.read(key: REFRESH_TOKEN);
-      debugPrint('[SECURE_STORAGE] readRefreshToken: $refreshToken');
+      final refreshToken = await storage.read(key: REFRESHTOKEN);
+      // debugPrint('[SECURE_STORAGE] readRefreshToken: $refreshToken');
       return refreshToken;
     } catch (e) {
       debugPrint("[ERR] RefreshToken 불러오기 실패: $e");
@@ -44,8 +44,8 @@ class SecureStorage {
 
   Future<void> saveAccessToken(String accessToken) async {
     try {
-      await storage.write(key: ACCESS_TOKEN, value: accessToken);
-      debugPrint('[SECURE_STORAGE] saveAccessToken: $accessToken');
+      await storage.write(key: ACCESSTOKEN, value: accessToken);
+      // debugPrint('[SECURE_STORAGE] saveAccessToken: $accessToken');
     } catch (e) {
       debugPrint("[ERR] AccessToken 저장 실패: $e");
     }
@@ -53,8 +53,8 @@ class SecureStorage {
 
   Future<String?> readAccessToken() async {
     try {
-      final accessToken = await storage.read(key: ACCESS_TOKEN);
-      debugPrint('[SECURE_STORAGE] readAccessToken: $accessToken');
+      final accessToken = await storage.read(key: ACCESSTOKEN);
+      // debugPrint('[SECURE_STORAGE] readAccessToken: $accessToken');
       return accessToken;
     } catch (e) {
       debugPrint("[ERR] AccessToken 불러오기 실패: $e");
@@ -63,9 +63,9 @@ class SecureStorage {
   }
 
   removeTokens() async {
-    await storage.delete(key: ACCESS_TOKEN);
+    await storage.delete(key: ACCESSTOKEN);
     debugPrint('[SECURE_STORAGE] removeTokens: removed access token');
-    await storage.delete(key: REFRESH_TOKEN);
+    await storage.delete(key: REFRESHTOKEN);
     debugPrint('[SECURE_STORAGE] removeTokens: removed refresh token');
   }
 }

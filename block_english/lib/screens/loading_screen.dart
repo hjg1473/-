@@ -17,30 +17,33 @@ class LoadingScreen extends ConsumerWidget {
                 if (!snapshot.hasData) {
                   return const CircularProgressIndicator();
                 }
-
-                switch (snapshot.data!.role) {
-                  case 'student':
-                    WidgetsBinding.instance.addPostFrameCallback(
-                        (_) => Navigator.of(context).pushNamedAndRemoveUntil(
-                              '/std_main_screen',
-                              (Route<dynamic> route) => false,
-                            ));
-                    return const CircularProgressIndicator();
-                  case 'super':
-                    WidgetsBinding.instance.addPostFrameCallback(
-                        (_) => Navigator.of(context).pushNamedAndRemoveUntil(
-                              '/super_main_screen',
-                              (Route<dynamic> route) => false,
-                            ));
-                    return const CircularProgressIndicator();
-                  default:
+                snapshot.data!.fold(
+                  (failure) {
                     WidgetsBinding.instance.addPostFrameCallback(
                         (_) => Navigator.of(context).pushNamedAndRemoveUntil(
                               '/init',
                               (Route<dynamic> route) => false,
                             ));
                     return const CircularProgressIndicator();
-                }
+                  },
+                  (accessresponse) {
+                    switch (accessresponse.role) {
+                      case 'student':
+                        WidgetsBinding.instance.addPostFrameCallback((_) =>
+                            Navigator.of(context).pushNamedAndRemoveUntil(
+                              '/std_main_screen',
+                              (Route<dynamic> route) => false,
+                            ));
+                      case 'super':
+                        WidgetsBinding.instance.addPostFrameCallback((_) =>
+                            Navigator.of(context).pushNamedAndRemoveUntil(
+                              '/super_main_screen',
+                              (Route<dynamic> route) => false,
+                            ));
+                    }
+                  },
+                );
+                return const CircularProgressIndicator();
               },
             );
           },

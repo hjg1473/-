@@ -1,11 +1,10 @@
-import 'dart:convert';
-
-import 'package:block_english/models/Super/super_group_model.dart';
-import 'package:block_english/models/Super/super_info_response_model.dart';
+import 'package:block_english/models/FailureModel/failure_model.dart';
+import 'package:block_english/models/SuperModel/super_group_model.dart';
+import 'package:block_english/models/SuperModel/super_info_response_model.dart';
 import 'package:block_english/utils/constants.dart';
 import 'package:block_english/utils/dio.dart';
+import 'package:dartz/dartz.dart';
 import 'package:dio/dio.dart';
-import 'package:flutter/material.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'super_service.g.dart';
@@ -20,30 +19,42 @@ class SuperService {
     _ref = ref;
   }
 
-  Future<SuperInfoResponseModel> getSuperInfo() async {
+  Future<Either<FailureModel, SuperInfoResponseModel>> getSuperInfo() async {
     final dio = _ref.watch(dioProvider);
-    final response = await dio.get(
-      '/$_super/$_info',
-      options: Options(
-        headers: {TOKEN_VALIDATE: 'true'},
-      ),
-    );
-    return SuperInfoResponseModel.fromJson(response.data);
+    try {
+      final response = await dio.get(
+        '/$_super/$_info',
+        options: Options(
+          headers: {TOKENVALIDATE: 'true'},
+        ),
+      );
+      return Right(SuperInfoResponseModel.fromJson(response.data));
+    } on DioException catch (e) {
+      return Left(FailureModel(
+        statusCode: e.response?.statusCode ?? 0,
+        detail: e.response?.data['detail'] ?? "",
+      ));
+    }
   }
 
-  Future<List<SuperGroupModel>> getGroupList() async {
-    List<SuperGroupModel> groupList = [];
+  Future<Either<FailureModel, List<SuperGroupModel>>> getGroupList() async {
     final dio = _ref.watch(dioProvider);
-    final response = await dio.get(
-      '/$_super/$_group',
-      options: Options(
-        headers: {TOKEN_VALIDATE: 'true'},
-      ),
-    );
-
-    return (response.data as List)
-        .map((x) => SuperGroupModel.fromJson(x))
-        .toList();
+    try {
+      final response = await dio.get(
+        '/$_super/$_group',
+        options: Options(
+          headers: {TOKENVALIDATE: 'true'},
+        ),
+      );
+      return Right((response.data['groups'] as List)
+          .map((e) => SuperGroupModel.fromJson(e))
+          .toList());
+    } on DioException catch (e) {
+      return Left(FailureModel(
+        statusCode: e.response?.statusCode ?? 0,
+        detail: e.response?.data['detail'] ?? "",
+      ));
+    }
   }
 }
 

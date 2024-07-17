@@ -12,7 +12,7 @@ const List<String> gradelist = [
   "6학년",
 ];
 
-const String BASE_URL = 'http://35.208.231.160';
-const String ACCESS_TOKEN = 'accessToken';
-const String REFRESH_TOKEN = 'refreshToken';
-const String TOKEN_VALIDATE = 'tokenValidate';
+const String BASEURL = 'http://3.34.138.13';
+const String ACCESSTOKEN = 'accessToken';
+const String REFRESHTOKEN = 'refreshToken';
+const String TOKENVALIDATE = 'tokenValidate';
