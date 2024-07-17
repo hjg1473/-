@@ -164,7 +164,7 @@ async def read_problem_all(season_name:str, type_name:str, user: user_dependency
 
 # 학생이 문제를 풀었을 때, 일단 임시로 맞았다고 처리 
 @router.post("/solve_test", status_code = status.HTTP_200_OK)
-async def user_solve_problem(file: UploadFile = File(...)):
+async def user_solve_problem(problemID:int=Form(...), file: UploadFile = File(...)):
     
     img_binary = await file.read()
 
@@ -190,9 +190,11 @@ async def user_solve_problem(file: UploadFile = File(...)):
     # 3. 남은 단어들을 x축 오름차순으로 정렬해서 단어 리스트 만들기
     sorted_data = sorted(filtered_data, key=lambda item: min(point[0] for point in item[0]))
     words = [item[1] for item in sorted_data]
+    
+    correct_answer = db_dependency.query(Problems).filter(Problems.id==problemID).first().englishProblem
 
     user_word_list = words
-    
+    # anwser_list = 
     user_string = " ".join(user_word_list)
 
     #answer = problem.englishProblem
