@@ -156,10 +156,15 @@ async def user_solve_problem(file: UploadFile = File(...)):
     # 3. 남은 단어들을 x축 오름차순으로 정렬해서 단어 리스트 만들기
     sorted_data = sorted(filtered_data, key=lambda item: min(point[0] for point in item[0]))
     words = [item[1] for item in sorted_data]
-
-    user_word_list = words
     
-    user_string = " ".join(user_word_list)
+    # correct_answer = db_dependency.query(Problems).filter(Problems.id==problemID).first().englishProblem
+    
+    
+    correct_answer = ['Dogs', 'hate', 'their', 'people']
+    
+    # anwser_list = 
+    user_string = ' '.join(words)
+    isAnswer, false_location = check_answer(correct_answer, words)
 
     #answer = problem.englishProblem
     answer = "I am pretty"
