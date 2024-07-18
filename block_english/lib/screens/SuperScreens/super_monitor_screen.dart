@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:block_english/models/SuperModel/super_group_model.dart';
 import 'package:block_english/services/super_service.dart';
 import 'package:block_english/utils/constants.dart';
@@ -14,28 +16,27 @@ class SuperMonitorScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
-          '모니터링',
-        ),
-        centerTitle: true,
-        backgroundColor: Colors.white,
-      ),
-      body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 30.0, vertical: 25.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              "프로필",
-              style: TextStyle(
+          title: const Text(
+            '모니터링',
+          ),
+          centerTitle: true,
+          backgroundColor: Colors.white,
+          actions: [
+            IconButton(
+              icon: const Icon(
+                Icons.person_add,
                 color: Colors.black,
-                fontSize: 30,
-                fontWeight: FontWeight.bold,
               ),
+              onPressed: () {
+                Navigator.pushNamed(context, '/setting_screen');
+              },
             ),
-            const SizedBox(
-              height: 15,
-            ),
+          ]),
+      body: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
             Consumer(
               builder: (context, ref, child) {
                 return FutureBuilder(

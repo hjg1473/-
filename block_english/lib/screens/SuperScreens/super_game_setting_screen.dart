@@ -54,7 +54,7 @@ class _SuperGameSettingScreenState extends State<SuperGameSettingScreen> {
               ),
             ),
             const Text(
-              '블록을 이용해 시간 안에 영어 문장 맞히기',
+              '블록을 이용해 시간 안에 영어 문장 맞추기',
               style: TextStyle(
                 color: Color(0xFF313131),
               ),
@@ -197,7 +197,7 @@ class _SuperGameSettingScreenState extends State<SuperGameSettingScreen> {
               padding: EdgeInsets.symmetric(horizontal: 0.0, vertical: 10.0),
               child: RoundCornerRouteButton(
                 text: "방 생성하기",
-                routeName: '/super_game_screen',
+                routeName: '/super_game_code_screen',
                 width: 330,
                 height: 60,
                 type: ButtonType.filled,

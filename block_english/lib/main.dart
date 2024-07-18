@@ -5,6 +5,7 @@ import 'package:block_english/screens/AuthScreens/reg_student_screen.dart';
 import 'package:block_english/screens/AuthScreens/reg_super_screen.dart';
 import 'package:block_english/screens/StudentScreens/student_main_screen.dart';
 import 'package:block_english/screens/SuperScreens/super_add_group_screen.dart';
+import 'package:block_english/screens/SuperScreens/super_game_code_screen.dart';
 import 'package:block_english/screens/SuperScreens/super_game_screen.dart';
 import 'package:block_english/screens/SuperScreens/super_main_screen.dart';
 import 'package:block_english/screens/loading_screen.dart';
@@ -29,7 +30,7 @@ class MyApp extends StatelessWidget {
         // ),
       ),
       title: "Block English",
-      initialRoute: '/loading_screen',
+      initialRoute: '/super_main_screen',
       routes: {
         '/loading_screen': (context) => const LoadingScreen(),
         '/init': (context) => const InitScreen(),
@@ -40,6 +41,7 @@ class MyApp extends StatelessWidget {
         '/std_main_screen': (context) => const StudentMainScreen(),
         '/super_main_screen': (context) => const SuperMainScreen(),
         '/super_add_group_screen': (context) => const SuperAddGroupScreen(),
+        '/super_game_code_screen': (context) => const SuperGameCodeScreen(),
         '/super_game_screen': (context) => const SuperGameScreen(),
         '/setting_screen': (context) => const SettingScreen(),
       },

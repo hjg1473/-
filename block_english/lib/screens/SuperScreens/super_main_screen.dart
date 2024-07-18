@@ -1,6 +1,9 @@
 import 'package:block_english/screens/SuperScreens/super_game_setting_screen.dart';
 import 'package:block_english/screens/SuperScreens/super_monitor_screen.dart';
+import 'package:block_english/services/super_service.dart';
+import 'package:block_english/widgets/profile_card_widget.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class SuperMainScreen extends StatefulWidget {
   const SuperMainScreen({super.key});
@@ -11,13 +14,36 @@ class SuperMainScreen extends StatefulWidget {
 
 class _SuperMainScreenState extends State<SuperMainScreen> {
   int _selectedIndex = 0;
-  static const TextStyle optionStyle =
-      TextStyle(fontSize: 30, fontWeight: FontWeight.bold);
 
   final List<Widget> _widgetOptions = <Widget>[
     const SuperMonitorScreen(),
     const SuperGameSettingScreen(),
-    const Text('My Page', style: optionStyle),
+    Column(
+      children: [
+        Consumer(
+          builder: (context, ref, child) {
+            return FutureBuilder(
+              future: ref.watch(superServiceProvider).getSuperInfo(),
+              builder: (context, snapshot) {
+                String text = '';
+                if (!snapshot.hasData) {
+                  return const Text('Loading...');
+                }
+                snapshot.data!.fold(
+                  (failure) {
+                    text = failure.detail;
+                  },
+                  (superinfo) {
+                    text = superinfo.name;
+                  },
+                );
+                return ProfileCard(name: text);
+              },
+            );
+          },
+        ),
+      ],
+    ),
   ];
 
   void _onItemTapped(int index) {
@@ -40,7 +66,7 @@ class _SuperMainScreenState extends State<SuperMainScreen> {
             label: '모니터링',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.gamepad_rounded, size: 40),
+            icon: Icon(Icons.category_rounded, size: 40),
             label: '게임 관리',
           ),
           BottomNavigationBarItem(

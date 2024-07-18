@@ -1,7 +1,7 @@
-import 'package:block_english/utils/colors.dart';
-import 'package:block_english/utils/constants.dart';
-import 'package:block_english/widgets/round_corner_route_button.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
+import 'package:flutter/widgets.dart';
+import 'package:percent_indicator/linear_percent_indicator.dart';
 
 class SuperGameScreen extends StatefulWidget {
   const SuperGameScreen({super.key});
@@ -15,127 +15,194 @@ class _SuperGameScreenState extends State<SuperGameScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
-          'Block English',
-          style: TextStyle(
-            fontSize: 25,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        centerTitle: true,
-        elevation: 10,
-      ),
-      body: Center(
-        child: Column(
-          children: [
-            const SizedBox(
-              height: 25,
-            ),
-            Container(
-              width: 300,
-              height: 80,
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(15),
-                boxShadow: const [
-                  BoxShadow(
-                    color: Colors.black45,
-                    blurRadius: 3,
-                    offset: Offset(0, 3),
-                  ),
-                ],
+          automaticallyImplyLeading: false,
+          backgroundColor: Colors.white,
+          centerTitle: true,
+          title: const Column(
+            children: [
+              Text(
+                '문장 맞추기',
               ),
-              child: const Center(
+              Text(
+                '1/14',
+                style: TextStyle(
+                  fontSize: 14,
+                  color: Color(0xFF989898),
+                ),
+              ),
+            ],
+          ),
+          actions: const [
+            Icon(
+              Icons.group_rounded,
+              size: 24,
+            ),
+            SizedBox(
+              width: 5,
+            ),
+            Text(
+              '24',
+              style: TextStyle(
+                fontSize: 14,
+              ),
+            ),
+            SizedBox(
+              width: 20,
+            ),
+          ]),
+      body: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
+        child: Column(children: [
+          LinearPercentIndicator(
+            percent: 0.05,
+            progressColor: const Color(0xFFA0A0A0),
+            backgroundColor: const Color(0xFFD9D9D9),
+            barRadius: const Radius.circular(10),
+            lineHeight: 22,
+            padding: const EdgeInsets.all(0),
+            center: const Padding(
+              padding: EdgeInsets.only(right: 13.0),
+              child: SizedBox.expand(
                 child: Text(
-                  '블록 잉글리쉬 앱에서\n아래 번호를 입력해 주세요',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    color: lightPrimary,
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  '7분 남음',
+                  textAlign: TextAlign.end,
                 ),
               ),
             ),
-            const SizedBox(
-              height: 30,
-            ),
-            const Text(
-              '12345678',
-              style: TextStyle(
-                fontSize: 30,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(
-              height: 20,
-            ),
-            Container(
-              width: 280,
-              height: 300,
-              decoration: BoxDecoration(
-                color: lightPrimary,
-                borderRadius: BorderRadius.circular(15),
-              ),
-              child: const Column(
-                children: [
-                  SizedBox(
-                    height: 20,
+          ),
+          const Spacer(flex: 1),
+          Container(
+            width: double.infinity,
+            height: 440,
+            decoration: BoxDecoration(
+                color: const Color(0xFFEFEFEF),
+                borderRadius: BorderRadius.circular(10)),
+            child: Padding(
+              padding: const EdgeInsets.all(17.0),
+              child: Stack(children: [
+                Column(
+                  children: [
+                    Row(
+                      children: [
+                        Container(
+                          width: 25,
+                          height: 25,
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(25),
+                            color: const Color(0xFFc2c2c2),
+                          ),
+                          child: const Center(
+                            child: Text(
+                              '1',
+                              style: TextStyle(
+                                color: Color(0xFFf7f7f7),
+                                fontSize: 14,
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(
+                          width: 10,
+                        ),
+                        const Text(
+                          '문장을 번역해 보세요',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(
+                      height: 10,
+                    ),
+                    Expanded(
+                      child: Container(
+                        width: double.infinity,
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFD9D9D9),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: const Center(
+                          child: Text(
+                            '그는 그녀를 좋아한다',
+                            style: TextStyle(
+                              fontSize: 18,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(
+                      height: 25,
+                    ),
+                    Expanded(
+                      child: Container(
+                        width: double.infinity,
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: const Center(
+                          child: Text(
+                            '사진',
+                            style: TextStyle(
+                              fontSize: 18,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                Center(
+                  child: Container(
+                    width: 230,
+                    height: 130,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFA0A0A0),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: const Padding(
+                      padding: EdgeInsets.symmetric(
+                          horizontal: 20.0, vertical: 30.0),
+                      child: Column(children: [
+                        Text(
+                          '친구들이 들어오고 있어요',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 18,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        Spacer(),
+                        Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.group_rounded,
+                                color: Colors.white,
+                                size: 35,
+                              ),
+                              SizedBox(width: 10),
+                              Text(
+                                '6/24',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ])
+                      ]),
+                    ),
                   ),
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        '김철수',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 17,
-                        ),
-                      ),
-                      SizedBox(
-                        width: 20,
-                      ),
-                      Text(
-                        '홍길동',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 17,
-                        ),
-                      ),
-                      SizedBox(
-                        width: 20,
-                      ),
-                      Text(
-                        '박영희',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 17,
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
+                )
+              ]),
             ),
-            const Spacer(),
-            const RoundCornerRouteButton(
-              text: "게임 시작",
-              routeName: '/super_game_screen',
-              width: 330,
-              height: 55,
-              type: ButtonType.outlined,
-              radius: 10,
-              bold: true,
-            ),
-            const SizedBox(
-              height: 50,
-            ),
-          ],
-        ),
+          ),
+          const Spacer(flex: 3),
+        ]),
       ),
     );
   }
