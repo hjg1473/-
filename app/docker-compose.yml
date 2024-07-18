@@ -10,6 +10,10 @@ services:
       DATABASE_URL: mysql+pymysql://root:mysql1234@127.0.0.1:3306/test2
     depends_on:
       - cloudsql-proxy
+    volumes:
+      - /home/ubuntu/app/src/logs:/app/src/logs
+      - /home/ubuntu/app/src/EasyOCR/model/craft_mlt_25k.pth:/root/.EasyOCR/model/craft_mlt_25k.pth
+      - /home/ubuntu/app/src/EasyOCR/model/english_g2.pth:/root/.EasyOCR/model/english_g2.pth
 
   cloudsql-proxy:
     image: gcr.io/cloudsql-docker/gce-proxy:latest
@@ -77,6 +81,7 @@ services:
     container_name: logstash
     volumes:
       - ./logstash/pipeline:/usr/share/logstash/pipeline
+      - /home/ubuntu/app/src/logs/fastapi-efk.log:/usr/share/logstash/logfile.log
     ports:
       - "5044:5044"
     depends_on:

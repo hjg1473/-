@@ -11,4 +11,8 @@ def http_exception():
 
 def get_user_exception(user):
     if user is None:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Could not validate credentials")
+        raise HTTPException(status_code=404, detail="Could not validate credentials")
+
+def get_problem_exception(stepinfo_model):
+    if stepinfo_model is None:
+        raise HTTPException(status_code=404, detail='문제 데이터가 존재하지 않습니다.')

@@ -4,8 +4,8 @@ from pydantic import BaseModel
 
 class Problem(BaseModel):
     season: str
-    type: str
-    problemLevel: int
+    level: str
+    step: str
     koreaProblem: str
     englishProblem: str
     img_path: Optional[str]

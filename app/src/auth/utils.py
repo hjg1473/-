@@ -1,5 +1,6 @@
 import asyncio
 import sys, os
+import random
 
 from sqlalchemy import select
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))))
@@ -10,6 +11,11 @@ from passlib.context import CryptContext
 from jose import jwt, JWTError
 
 bcrypt_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+def create_pin_number():
+    min = 0
+    max = 999999
+    return '{:06d}'.format(random.randint(min, max))
 
 def get_password_hash(password):
     return bcrypt_context.hash(password)

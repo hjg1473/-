@@ -10,6 +10,9 @@ def get_user_exception(username):
     if not username:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Could not validate credentials")
 
+def phone_verify_exception():
+    raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="인증에 실패하였습니다.")
+
 def get_valid_user_exception():
     credentials_exception = HTTPException(
         status_code=status.HTTP_404_NOT_FOUND,
