@@ -16,6 +16,7 @@ from problem.dependencies import user_dependency, db_dependency
 from problem.schemas import Problem
 from problem.exceptions import http_exception, successful_response, get_user_exception
 from problem.service import create_problem_in_db
+from problem.utils import check_answer
 
 router = APIRouter(
     prefix="/problem",
@@ -174,13 +175,16 @@ async def user_solve_problem(problemID:int=Form(...), file: UploadFile = File(..
     sorted_data = sorted(filtered_data, key=lambda item: min(point[0] for point in item[0]))
     words = [item[1] for item in sorted_data]
     
-    correct_answer = db_dependency.query(Problems).filter(Problems.id==problemID).first().englishProblem
-
-    user_word_list = words
+    # correct_answer = db_dependency.query(Problems).filter(Problems.id==problemID).first().englishProblem
+    
+    # test code
+    correct_answer = ['Dogs', 'hate', 'their', 'people']
+    
     # anwser_list = 
-    user_string = " ".join(user_word_list)
+    user_string = " ".join(words)
+    isAnswer, false_location = check_answer(correct_answer, words)
 
     #answer = problem.englishProblem
     answer = "I am pretty"
     
-    return {'user_string': user_string }
+    return {'user_string': user_string, 'isAnswer': isAnswer, 'false_location': false_location}
