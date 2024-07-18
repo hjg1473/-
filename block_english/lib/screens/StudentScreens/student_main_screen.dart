@@ -20,41 +20,34 @@ class StudentMainScreen extends StatelessWidget {
           ),
           centerTitle: true,
           title: const Text("Block English"),
-          bottom: const TabBar(tabs: <Widget>[
-            Tab(
-              text: "문제 풀기",
-            ),
-            Tab(
-              text: "실전 문제",
-            ),
-            Tab(
-              text: "게임하기",
-            ),
-            Tab(
-              text: "프로필",
-            ),
-          ]),
         ),
-        body: TabBarView(
-          physics: const NeverScrollableScrollPhysics(),
+        bottomNavigationBar: const TabBar(tabs: <Widget>[
+          Tab(
+            icon: Icon(Icons.menu_book_rounded),
+            text: "문제 풀기",
+          ),
+          Tab(
+            icon: Icon(Icons.looks_two_outlined),
+            text: "실전 문제",
+          ),
+          Tab(
+            icon: Icon(Icons.games_outlined),
+            text: "게임하기",
+          ),
+          Tab(
+            icon: Icon(Icons.person_outline_rounded),
+            text: "프로필",
+          ),
+        ]),
+        body: const TabBarView(
+          physics: NeverScrollableScrollPhysics(),
           children: <Widget>[
-            Column(
-              children: [
-                ElevatedButton(
-                  onPressed: () {},
-                  child: const Column(
-                    children: [Text("chapter1")],
-                  ),
-                ),
-              ],
-            ),
-            const Center(
+            Placeholder(),
+            Center(
               child: Text('실전 문제'),
             ),
-            const StudentGameScreen(),
-            const Center(
-              child: StudentProfileScreen(),
-            ),
+            StudentGameScreen(),
+            StudentProfileScreen(),
           ],
         ),
       ),

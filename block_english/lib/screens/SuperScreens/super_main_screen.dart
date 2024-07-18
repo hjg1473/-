@@ -1,5 +1,4 @@
 import 'dart:ui';
-import 'package:block_english/models/SuperModel/super_group_model.dart';
 import 'package:block_english/services/super_service.dart';
 import 'package:block_english/utils/constants.dart';
 import 'package:block_english/widgets/image_card_button.dart';
@@ -9,6 +8,7 @@ import 'package:block_english/widgets/round_corner_route_button.dart';
 import 'package:block_english/widgets/profile_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:block_english/models/model.dart';
 
 class SuperMainScreen extends StatelessWidget {
   const SuperMainScreen({super.key});
