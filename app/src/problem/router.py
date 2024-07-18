@@ -11,7 +11,6 @@ import sys, os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))))
 from app.src.models import Users, StudyInfo, Problems
 from fastapi import requests, UploadFile, File, Form
-from app.src.main import reader
 import requests
 from problem.dependencies import user_dependency, db_dependency
 from problem.schemas import Problem
@@ -170,12 +169,11 @@ async def user_solve_problem(file: UploadFile = File(...)):
     
     img_binary = await file.read()
 
-    # image = Image.open(io.BytesIO(img_binary))
     image = await asyncio.to_thread(Image.open,io.BytesIO(img_binary))
     img_array = np.array(image)
-    # from app.src.main import reader
+    from app.src.main import reader
     result = await asyncio.to_thread(reader.readtext, img_array, allowlist='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz!,?.', text_threshold=0.4,low_text=0.3)
-    # result = reader.readtext(img_array, allowlist='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz!,?.', text_threshold=0.4,low_text=0.3)
+ 
     # 1. 각 사각형의 높이 구하기
     heights = []
     for item in result:
