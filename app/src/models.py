@@ -96,8 +96,8 @@ class Problems(Base):  # Problems
 
     id = Column(Integer, primary_key=True, index=True)  # PK
     season = Column(String)  # Season
-    type = Column(String)  # Type
-    problemLevel = Column(Integer)  # Problem level (1-3)
+    level = Column(String)  # Type >> level
+    step = Column(String)  # Problem level (1-3)>> step
     koreaProblem = Column(String)  # Korean sentence
     englishProblem = Column(String)  # English sentence
     img_path = Column(String)  # Problem image (optional)

@@ -8,7 +8,7 @@ RUN pip install -r requirements.txt
 COPY src /app/src
 
 COPY src/EasyOCR/model/craft_mlt_25k.pth /root/.EasyOCR/model/craft_mlt_25k.pth
-COPY src/EasyOCR/model/english_g2.pth /root/.EasyOCR/model/english_g2.pth
+COPY src/EasyOCR/model/english_g2.pth /root/.EasyOCR/model/english_g2.python
 
 # Set environment variable to include /app/src in PYTHONPATH
 ENV PYTHONPATH="${PYTHONPATH}:/app/src"

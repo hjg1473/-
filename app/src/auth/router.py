@@ -7,12 +7,12 @@ import sys, os
 from sqlalchemy import select
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))))
 from app.src.models import Users
-from auth.schemas import CreateUser, Message
-from auth.utils import authenticate_user, decode_token, validate_token_payload
+from auth.schemas import CreateUser, Message, PhoneNumber, verify_number
+from auth.utils import authenticate_user, decode_token, validate_token_payload, create_pin_number
 from auth.service import create_access_token, create_user_in_db, create_study_info
 from auth.dependencies import db_dependency
-from auth.exceptions import login_exception, get_user_exception, token_exception1, token_exception2, username_exception
-from auth.constants import REFRESH_TOKEN_EXPIRE_DAYS, ACCESS_TOKEN_EXPIRE_MINUTES
+from auth.exceptions import login_exception, get_user_exception, token_exception1, token_exception2, username_exception, phone_verify_exception
+from auth.constants import REFRESH_TOKEN_EXPIRE_DAYS, ACCESS_TOKEN_EXPIRE_MINUTES, SMS_KEY, SMS_SECRET_KEY
 import logging
 from app.src.logging_setup import LoggerSetup
 
@@ -28,6 +28,12 @@ router = APIRouter(
 
 oauth2_bearer = OAuth2PasswordBearer(tokenUrl="auth/token")
 
+@router.get("")
+async def welcome_home():
+    logger = logger_setup.get_logger("user_id")
+    logger.info("--- welcome_home ---")
+    return "welcome lemoncode21"
+
 # 비동기 -> 동기
 def get_current_user(token: Annotated[str, Depends(oauth2_bearer)]):
     payload = decode_token(token)
@@ -35,6 +41,43 @@ def get_current_user(token: Annotated[str, Depends(oauth2_bearer)]):
     username, user_id, user_role = validate_token_payload(payload)
     return {'username' : username, 'id' : user_id, 'user_role': user_role}
 
+# 전화번호 인증번호 요청
+@router.post("/get_number", status_code=status.HTTP_200_OK, responses={409: {"model": Message}})
+async def request_pin(phone_number: PhoneNumber):
+    import vonage
+    client = vonage.Client(key=SMS_KEY, secret=SMS_SECRET_KEY)
+    sms = vonage.Sms(client)
+
+    redis_client = await aioredis.create_redis_pool('redis://localhost')
+    pin = create_pin_number()
+    print(type(phone_number.phone_number))
+    await redis_client.setex(f"{phone_number.phone_number}_pin", 180, pin)
+    sms.send_message(
+        {
+            "from": "Vic-Dream",
+            "to": phone_number.phone_number,
+            "text": "Vic-Dream for membership registration phone number verification test : " + pin,
+        }
+    )
+    redis_client.close()
+    await redis_client.wait_closed()
+
+    return {'detail': '성공적으로 발송되었습니다.'}
+
+# 전화번호 인증번호 검증
+@router.post("/verify_number/{phone_number}", status_code=status.HTTP_200_OK, responses={409: {"model": Message}})
+async def request_pin(verify_number: verify_number, phone_number:str):
+
+    redis_client = await aioredis.create_redis_pool('redis://localhost')
+    stored_pin = await redis_client.get(f"{phone_number}_pin")
+    string_value = stored_pin.decode('utf-8')
+    redis_client.close()
+    await redis_client.wait_closed()
+    if string_value == verify_number.verify_number:
+        return {'detail': '성공적으로 인증되었습니다.'}
+    else:
+        phone_verify_exception()
+    
 # 회원가입
 @router.post("/register", status_code=status.HTTP_200_OK, responses={409: {"model": Message}})
 async def create_new_user(db: db_dependency, create_user: CreateUser):

@@ -2,6 +2,7 @@ import logging
 import logging.handlers
 import time
 
+
 class LoggerSetup:
 
     def __init__(self) -> None:
@@ -23,7 +24,7 @@ class LoggerSetup:
         console.setFormatter(formatter)
 
         # configure TimeRotatingFileHandler
-        log_file = f"src/logs/fastapi-efk.log"
+        log_file = "src/logs/fastapi-efk.log"
         file = logging.handlers.TimedRotatingFileHandler(filename=log_file, when="midnight", backupCount=5)
         file.setFormatter(formatter)
 

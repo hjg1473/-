@@ -17,3 +17,9 @@ class Token(BaseModel):
 
 class Message(BaseModel):
     message: str
+
+class PhoneNumber(BaseModel):
+    phone_number: str
+
+class verify_number(BaseModel):
+    verify_number: str
