@@ -181,7 +181,7 @@ async def user_solve_problem(problemID:int=Form(...), file: UploadFile = File(..
     correct_answer = ['Dogs', 'hate', 'their', 'people']
     
     # anwser_list = 
-    user_string = " ".join(words)
+    user_string = ' '.join(words)
     isAnswer, false_location = check_answer(correct_answer, words)
 
     #answer = problem.englishProblem
