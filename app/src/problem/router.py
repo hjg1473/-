@@ -177,7 +177,7 @@ async def user_solve_problem(problemID:int=Form(...), file: UploadFile = File(..
     
     # correct_answer = db_dependency.query(Problems).filter(Problems.id==problemID).first().englishProblem
     
-    # test code
+    
     correct_answer = ['Dogs', 'hate', 'their', 'people']
     
     # anwser_list = 
