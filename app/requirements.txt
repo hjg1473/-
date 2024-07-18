@@ -4,6 +4,7 @@ scipy==1.13.0
 scikit-image==0.24.0
 torch==2.3.1
 easyocr==1.7.1
+asyncio==3.4.3
 anyio==3.6.2
 bcrypt==4.0.1
 cffi==1.15.1

@@ -24,7 +24,6 @@ class LoadingScreen extends ConsumerWidget {
                               '/init',
                               (Route<dynamic> route) => false,
                             ));
-                    return const CircularProgressIndicator();
                   },
                   (accessresponse) {
                     switch (accessresponse.role) {
