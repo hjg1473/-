@@ -7,6 +7,9 @@ export './AuthModel/reg_response_model.dart';
 // FailureModel
 export './FailureModel/failure_model.dart';
 
+// ProblemModel
+export './ProblemModel/problem_info_model.dart';
+
 // StudentModel
 export './StudentModel/student_info_model.dart';
 

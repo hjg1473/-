@@ -1,4 +1,5 @@
 import 'package:block_english/screens/StudentScreens/student_game_screen.dart';
+import 'package:block_english/screens/StudentScreens/student_practice_screen.dart';
 import 'package:block_english/screens/StudentScreens/student_profile_screen.dart';
 import 'package:flutter/material.dart';
 
@@ -42,7 +43,7 @@ class StudentMainScreen extends StatelessWidget {
         body: const TabBarView(
           physics: NeverScrollableScrollPhysics(),
           children: <Widget>[
-            Placeholder(),
+            StudentPracticeScreen(),
             Center(
               child: Text('실전 문제'),
             ),

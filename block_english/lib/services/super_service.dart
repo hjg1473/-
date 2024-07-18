@@ -1,6 +1,4 @@
-import 'package:block_english/models/FailureModel/failure_model.dart';
-import 'package:block_english/models/SuperModel/super_group_model.dart';
-import 'package:block_english/models/SuperModel/super_info_response_model.dart';
+import 'package:block_english/models/model.dart';
 import 'package:block_english/utils/constants.dart';
 import 'package:block_english/utils/dio.dart';
 import 'package:dartz/dartz.dart';
