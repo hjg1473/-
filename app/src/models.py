@@ -67,6 +67,7 @@ class Groups(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String)
+    grade = Column(String)
     admin_id = Column(Integer, ForeignKey("users.id")) # FK, teacher_id
 
     owner = relationship("Users", foreign_keys=[admin_id], back_populates="managed_groups")

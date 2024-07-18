@@ -1,6 +1,8 @@
 from fastapi import APIRouter
 import os
 import sys
+
+from sqlalchemy import select
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))))
 from app.src.models import Users, StudyInfo, Groups, Problems, CustomProblemSet
 import app.src.models
@@ -9,6 +11,7 @@ import json
 from game.schemas import Room, CreateRoomRequest, JoinRoomRequest, GetStudentScoreRequest, ParticipantSolveRequest, ConnectionManager, rooms
 from game.utils import create_pin_number
 from game.exceptions import room_exception, participant_exception, host_exception1, host_exception2, participant_exception1, participant_exception2, participant_exception3, participant_exception4
+from game.dependencies import db_dependency
 
 router = APIRouter(
     prefix="/game",
@@ -74,7 +77,7 @@ async def participant_action(room_id: str = Form(...),
 # 게임방 생성 api
 # 호스트 1인당 하나의 방만
 @router.post("/create_room")
-async def create_room(request: CreateRoomRequest):
+async def create_room(db: db_dependency ,request: CreateRoomRequest):
     host_exception1(rooms.values(), request.host_id)
     pin_number = create_pin_number()
     # 핀 번호 중복 검사
@@ -82,16 +85,17 @@ async def create_room(request: CreateRoomRequest):
         pin_number = create_pin_number()
     rooms[pin_number] = Room(pin_number, request.host_id, request.room_max) # 방 생성
 
-    # custom_problem_set = db.query(CustomProblemSet)\
-    # .filter(CustomProblemSet.name == set_name)\
-    # .first()
-
-    # custom_problem_sets = db.query(Problems)\
-    # .filter(custom_problem_set.id == Problems.cproblem_id)\
-    # .all()  
-
+    result = await db.execute(select(CustomProblemSet).filter(CustomProblemSet.name == request.set_name))
+    CustomProblem_model = result.scalars().first()
+    print(CustomProblem_model.id)
+    result = await db.execute(select(Problems).filter(CustomProblem_model.id == Problems.cproblem_id))
+    CustomProblemSet_model = result.scalars().all()
+    
+    custom = []  
+    for i in CustomProblemSet_model:
+        custom.append({'id': i.id, 'koreaProblem': i.koreaProblem, 'img_path': i.img_path})
     # result = custom_problem_sets
-    return {"detail": "Room created successfully","pin_number": pin_number} # 메세지
+    return {"detail": "Room created successfully","pin_number": pin_number, "custom_problem": custom} 
 
 # 게임방 참가 api
 # 방에 참가한 상태로 다른 방으로 참가하는 것도 막아야됨

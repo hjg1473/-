@@ -12,3 +12,4 @@ class ProblemSet(BaseModel):
 
 class AddGroup(BaseModel):
     name: str
+    grade: str

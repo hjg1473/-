@@ -99,7 +99,7 @@ async def first_login_for_access_token(form_data: Annotated[OAuth2PasswordReques
     #     raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="이미 로그인한 유저가 있습니다.")
 
     access_token = create_access_token(user.username, user.id, user.role, timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES))
-    refresh_token = create_access_token(user.username, '', '', timedelta(minutes=REFRESH_TOKEN_EXPIRE_DAYS))
+    refresh_token = create_access_token(user.username, '', '', timedelta(days=REFRESH_TOKEN_EXPIRE_DAYS))
     await redis_client.set(f"{user.username}_refresh", refresh_token)
     await redis_client.set(f"{user.username}_access", access_token)
 

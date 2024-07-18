@@ -65,4 +65,3 @@ def check_answer(problem:list, response:list):
     print(response)
     print(false_check)
     return isAnswer, false_check
-    

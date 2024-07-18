@@ -22,7 +22,6 @@ router = APIRouter(
     responses={404: {"description": "Not found"}}
 )
 
-
 @router.post("/create")
 async def create_problem(problem: Problem, user: user_dependency, db: db_dependency):
     get_user_exception(user)

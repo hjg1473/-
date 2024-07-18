@@ -60,6 +60,7 @@ async def get_group_name(name, admin_id, db: db_dependency):
 async def update_new_group(addgroup, admin_id, db: db_dependency):
     group_model = Groups()
     group_model.name = addgroup.name
+    group_model.grade = addgroup.grade
     group_model.admin_id = admin_id
 
     db.add(group_model)

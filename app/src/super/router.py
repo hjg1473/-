@@ -65,7 +65,7 @@ async def read_group_info(user: user_dependency, db: db_dependency):
     
     group_list = await get_group_list(user.get("id"), db)
     
-    result = {'groups': [{'id': u.id, 'name': u.name} for u in group_list]}
+    result = {'groups': [{'id': u.id, 'name': u.name, 'grade': u.grade} for u in group_list]}
     
     return result
 
@@ -75,7 +75,7 @@ async def create_solve_problem(addgroup: AddGroup,
                             user: user_dependency, db: db_dependency):
     
     super_authenticate_exception(user)
-    await existing_name_exception(addgroup.name, user.get('id'), db)
+    # await existing_name_exception(addgroup.name, user.get('id'), db)
 
     await update_new_group(addgroup, user.get('id'), db)
 
