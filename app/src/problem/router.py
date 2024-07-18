@@ -164,4 +164,4 @@ async def user_solve_problem(file: UploadFile = File(...)):
     #answer = problem.englishProblem
     answer = "I am pretty"
     
-    return {'user_string': user_string }
+    return {'user_string': user_string, 'isAnswer': isAnswer, 'false_location': false_location}
