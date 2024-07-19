@@ -7,9 +7,9 @@ import sys, os
 from sqlalchemy import select
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))))
 from app.src.models import Users
-from auth.schemas import CreateUser, Message, PhoneNumber, verify_number
+from auth.schemas import CreateUser, Message, PhoneNumber, verify_number, Username_Phone
 from auth.utils import authenticate_user, decode_token, validate_token_payload, create_pin_number
-from auth.service import create_access_token, create_user_in_db, create_study_info
+from auth.service import create_access_token, create_user_in_db, create_study_info, get_user_to_username, get_user_to_phone_number
 from auth.dependencies import db_dependency
 from auth.exceptions import login_exception, get_user_exception, token_exception1, token_exception2, username_exception, phone_verify_exception
 from auth.constants import REFRESH_TOKEN_EXPIRE_DAYS, ACCESS_TOKEN_EXPIRE_MINUTES, SMS_KEY, SMS_SECRET_KEY
@@ -41,6 +41,15 @@ def get_current_user(token: Annotated[str, Depends(oauth2_bearer)]):
     username, user_id, user_role = validate_token_payload(payload)
     return {'username' : username, 'id' : user_id, 'user_role': user_role}
 
+# 회원가입 인증
+@router.post("/username_phone/verify", status_code=status.HTTP_200_OK, responses={409: {"model": Message}})
+async def verify_username_phone(db: db_dependency, user: Username_Phone):
+    username = await get_user_to_username(user.username, db)
+    isUser = True if username else False
+    phone_number = await get_user_to_phone_number(user.phone_number, db)
+    isPhone = True if phone_number else False
+    return { 'username_exist': isUser, 'phone_number_exist': isPhone }
+
 # 전화번호 인증번호 요청
 @router.post("/get_number", status_code=status.HTTP_200_OK, responses={409: {"model": Message}})
 async def request_pin(phone_number: PhoneNumber):
@@ -64,12 +73,12 @@ async def request_pin(phone_number: PhoneNumber):
 
     return {'detail': '성공적으로 발송되었습니다.'}
 
-# 전화번호 인증번호 검증
-@router.post("/verify_number/{phone_number}", status_code=status.HTTP_200_OK, responses={409: {"model": Message}})
-async def request_pin(verify_number: verify_number, phone_number:str):
+# 전화번호 인증번호 검증 + 전화번호 토큰 반환 (Redis에 저장)
+@router.post("/verify_number", status_code=status.HTTP_200_OK, responses={409: {"model": Message}})
+async def request_pin(verify_number: verify_number):
 
     redis_client = await aioredis.create_redis_pool('redis://localhost')
-    stored_pin = await redis_client.get(f"{phone_number}_pin")
+    stored_pin = await redis_client.get(f"{verify_number.phone_number}_pin")
     string_value = stored_pin.decode('utf-8')
     redis_client.close()
     await redis_client.wait_closed()
@@ -78,7 +87,7 @@ async def request_pin(verify_number: verify_number, phone_number:str):
     else:
         phone_verify_exception()
     
-# 회원가입
+# 회원가입 + 전화번호 토큰 검증 
 @router.post("/register", status_code=status.HTTP_200_OK, responses={409: {"model": Message}})
 async def create_new_user(db: db_dependency, create_user: CreateUser):
     await username_exception(create_user.username, db)

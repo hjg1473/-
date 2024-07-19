@@ -71,6 +71,12 @@ async def get_std_info(group_id, db: db_dependency):
     user_group = result.scalars().all()
     return user_group
 
+async def get_std_group_count(group_id, db: db_dependency):
+    result = await db.execute(select(Users).where(Users.team_id == group_id))
+    user_group = result.scalars().all()
+    user_count = len(user_group)
+    return user_count
+
 async def update_std_group(group_id, user_id, db: db_dependency):
     result = await db.execute(select(Users).where(Users.id == user_id))
     student_model = result.scalars().first()

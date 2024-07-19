@@ -65,7 +65,7 @@ async def read_group_info(user: user_dependency, db: db_dependency):
     
     group_list = await get_group_list(user.get("id"), db)
     
-    result = {'groups': [{'id': u.id, 'name': u.name, 'grade': u.grade} for u in group_list]}
+    result = {'groups': [{'id': u.id, 'name': u.name, 'count': await get_std_group_count(u.id, db)} for u in group_list]}
     
     return result
 
