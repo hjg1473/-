@@ -136,6 +136,7 @@ async def user_solve_problem(file: UploadFile = File(...)):
     img_array = np.array(image)
     from app.src.main import reader
     result = await asyncio.to_thread(reader.readtext, img_array, allowlist='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz!,?.', text_threshold=0.4,low_text=0.3)
+<<<<<<< HEAD
     # result = reader.readtext(img_array, allowlist='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz!,?.', text_threshold=0.4,low_text=0.3)
     # 1. 각 사각형의 높이 구하기
     heights = []
@@ -144,23 +145,58 @@ async def user_solve_problem(file: UploadFile = File(...)):
         y_values = [point[1] for point in coords]
         height = max(y_values) - min(y_values)
         heights.append(height)
+=======
+ 
+    sorted_data = sorted(result, key=lambda item: item[0][0][0])
+>>>>>>> 17c090f (Add: sentencre detection)
 
-    # 높이의 최댓값 구하기
-    max_height = max(heights)
+    # 가장 긴 불록의 인덱스를 구함
+    max_h=0
+    ref_block_idx=0
+    # y_middle=0
+    for index, item in enumerate(sorted_data):
+        height = item[0][2][1] - item[0][0][1]
+        if height > max_h:
+            max_h = height
+            ref_block_idx = index
+    print(ref_block_idx)
 
-    # 2. 높이의 최댓값의 0.7배 이하 무시하기
-    threshold = max_height * 0.7
-    filtered_data = [item for item, height in zip(result, heights) if height > threshold]
+    # 가장 높이가 긴 단어박스를 가진 줄을 반환
+    word_list=[sorted_data[ref_block_idx][1]]
 
-    # 3. 남은 단어들을 x축 오름차순으로 정렬해서 단어 리스트 만들기
-    sorted_data = sorted(filtered_data, key=lambda item: min(point[0] for point in item[0]))
-    words = [item[1] for item in sorted_data]
+    # 오른쪽부터
+    if(ref_block_idx+1<len(sorted_data)):
+        low_y = sorted_data[ref_block_idx][0][0][1]
+        high_y = sorted_data[ref_block_idx][0][2][1]
+        for block in sorted_data[ref_block_idx+1:]:
+            if (max(low_y, block[0][0][1]) <= min(high_y, block[0][2][1])):
+                low_y = block[0][0][1]
+                high_y = block[0][2][1]
+                # print(block[1])
+                word_list.append(block[1])
+
+    # 왼쪽
+    if(ref_block_idx>0):
+        low_y = sorted_data[ref_block_idx][0][0][1]
+        high_y = sorted_data[ref_block_idx][0][2][1]
+        for block in reversed(sorted_data[:ref_block_idx-1]):
+            if (max(low_y, block[0][0][1]) <= min(high_y, block[0][2][1])):
+                low_y = block[0][0][1]
+                high_y = block[0][2][1]
+                # print(block[1])
+                word_list.insert(0,block[1])
     
+<<<<<<< HEAD
     # correct_answer = db_dependency.query(Problems).filter(Problems.id==problemID).first().englishProblem
     
     
     correct_answer = ['Dogs', 'hate', 'their', 'people']
     
+=======
+    correct_answer = db_dependency.query(Problems).filter(Problems.id==problemID).first().englishProblem
+
+    user_word_list = word_list
+>>>>>>> 17c090f (Add: sentencre detection)
     # anwser_list = 
     user_string = ' '.join(words)
     isAnswer, false_location = check_answer(correct_answer, words)
