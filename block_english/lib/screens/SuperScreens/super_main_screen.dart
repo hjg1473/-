@@ -1,7 +1,7 @@
 import 'package:block_english/screens/SuperScreens/super_game_setting_screen.dart';
 import 'package:block_english/screens/SuperScreens/super_monitor_screen.dart';
 import 'package:block_english/services/super_service.dart';
-import 'package:block_english/widgets/profile_card_widget.dart';
+import 'package:block_english/widgets/student_profile_card_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -17,6 +17,7 @@ class _SuperMainScreenState extends State<SuperMainScreen> {
 
   final List<Widget> _widgetOptions = <Widget>[
     const SuperMonitorScreen(),
+    //const Text('hi'),
     const SuperGameSettingScreen(),
     Column(
       children: [
@@ -37,7 +38,7 @@ class _SuperMainScreenState extends State<SuperMainScreen> {
                     text = superinfo.name;
                   },
                 );
-                return ProfileCard(name: text);
+                return StudentProfileCard(name: text);
               },
             );
           },
