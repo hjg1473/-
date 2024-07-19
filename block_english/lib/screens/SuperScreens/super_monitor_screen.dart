@@ -159,9 +159,7 @@ class _SuperMonitorScreenState extends ConsumerState<SuperMonitorScreen> {
     if (string.length < target.length) {
       return false;
     }
-
     if (target.isEmpty) return true;
-
     for (int i = 0; i < string.length - target.length + 1; i++) {
       bool contains = true;
       for (int j = 0; j < target.length; j++) {
