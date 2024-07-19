@@ -30,7 +30,7 @@ class MyApp extends StatelessWidget {
         // ),
       ),
       title: "Block English",
-      initialRoute: '/super_main_screen',
+      initialRoute: '/init',
       routes: {
         '/loading_screen': (context) => const LoadingScreen(),
         '/init': (context) => const InitScreen(),
