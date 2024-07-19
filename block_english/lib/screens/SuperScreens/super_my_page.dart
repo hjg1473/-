@@ -24,30 +24,33 @@ class SuperMyPage extends StatelessWidget {
           const SizedBox(width: 10),
         ],
       ),
-      body: Column(children: [
-        Consumer(
-          builder: (context, ref, child) {
-            return FutureBuilder(
-              future: ref.watch(superServiceProvider).getSuperInfo(),
-              builder: (context, snapshot) {
-                String text = '';
-                if (!snapshot.hasData) {
-                  return const Text('Loading...');
-                }
-                snapshot.data!.fold(
-                  (failure) {
-                    text = failure.detail;
-                  },
-                  (superinfo) {
-                    text = superinfo.name;
-                  },
-                );
-                return StudentProfileCard(name: text);
-              },
-            );
-          },
-        ),
-      ]),
+      body: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+        child: Column(children: [
+          Consumer(
+            builder: (context, ref, child) {
+              return FutureBuilder(
+                future: ref.watch(superServiceProvider).getSuperInfo(),
+                builder: (context, snapshot) {
+                  String text = '';
+                  if (!snapshot.hasData) {
+                    return const Text('Loading...');
+                  }
+                  snapshot.data!.fold(
+                    (failure) {
+                      text = failure.detail;
+                    },
+                    (superinfo) {
+                      text = superinfo.name;
+                    },
+                  );
+                  return StudentProfileCard(name: text);
+                },
+              );
+            },
+          ),
+        ]),
+      ),
     );
   }
 }
