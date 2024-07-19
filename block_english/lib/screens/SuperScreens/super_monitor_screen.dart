@@ -6,6 +6,7 @@ import 'package:block_english/widgets/group_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:wolt_modal_sheet/wolt_modal_sheet.dart';
 
 class SuperMonitorScreen extends ConsumerStatefulWidget {
   const SuperMonitorScreen({super.key});
@@ -20,6 +21,112 @@ class _SuperMonitorScreenState extends ConsumerState<SuperMonitorScreen> {
   List<SuperGroupModel> groups = [];
   List<SuperGroupModel> filteredGroups = [];
   bool isLoading = true;
+  bool bottomSheet = false;
+
+  SliverWoltModalSheetPage addPage(
+      BuildContext modalSheetContext, TextTheme textTheme) {
+    return WoltModalSheetPage(
+      hasSabGradient: false,
+      backgroundColor: Colors.white,
+      topBarTitle: const Column(
+        children: [
+          Spacer(flex: 3),
+          Text(
+            '추가하기',
+            style: TextStyle(
+              color: Colors.black,
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          Spacer(flex: 1),
+        ],
+      ),
+      isTopBarLayerAlwaysVisible: true,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 30),
+        child: Column(
+          children: [
+            ElevatedButton.icon(
+                style: ElevatedButton.styleFrom(
+                  padding: const EdgeInsets.all(20),
+                  backgroundColor: const Color(0xFF4A4949),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  iconColor: const Color(0xFFC2C2C2),
+                  elevation: 0,
+                ),
+                icon: const Icon(Icons.local_library_rounded),
+                label: const Row(
+                  children: [
+                    SizedBox(width: 20),
+                    Text(
+                      '새로운 그룹 만들기',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 16,
+                      ),
+                    ),
+                  ],
+                ),
+                onPressed: () {
+                  Navigator.of(context).pushNamed('/super_group_create_screen');
+                }),
+            const SizedBox(height: 10),
+            ElevatedButton.icon(
+                style: ElevatedButton.styleFrom(
+                  padding: const EdgeInsets.all(20),
+                  backgroundColor: const Color(0xFFD9D9D9),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  iconColor: const Color(0xFF989898),
+                  elevation: 0,
+                ),
+                icon: const Icon(Icons.group_rounded),
+                label: const Row(
+                  children: [
+                    SizedBox(width: 20),
+                    Text(
+                      '모니터링 학습자 추가하기',
+                      style: TextStyle(
+                        color: Colors.black,
+                        fontSize: 16,
+                      ),
+                    ),
+                  ],
+                ),
+                onPressed: () {
+                  debugPrint('pressed');
+                }),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void addButtonPressed() {
+    WoltModalSheet.show<void>(
+        context: context,
+        pageListBuilder: (modalSheetContext) {
+          return [
+            addPage(modalSheetContext, Theme.of(modalSheetContext).textTheme),
+          ];
+        },
+        modalTypeBuilder: (context) {
+          final size = MediaQuery.sizeOf(context).width;
+          if (size < 768) {
+            return const WoltBottomSheetType();
+          } else {
+            return const WoltDialogType();
+          }
+        },
+        onModalDismissedWithBarrierTap: () {
+          debugPrint('Closed modal sheet with barrier tap');
+          Navigator.of(context).pop();
+        });
+  }
 
   void waitForGroups() async {
     var response = await ref.watch(superServiceProvider).getGroupList();
@@ -52,9 +159,7 @@ class _SuperMonitorScreenState extends ConsumerState<SuperMonitorScreen> {
     if (string.length < target.length) {
       return false;
     }
-
     if (target.isEmpty) return true;
-
     for (int i = 0; i < string.length - target.length + 1; i++) {
       bool contains = true;
       for (int j = 0; j < target.length; j++) {
@@ -99,9 +204,7 @@ class _SuperMonitorScreenState extends ConsumerState<SuperMonitorScreen> {
                 Icons.person_add,
                 color: Colors.black,
               ),
-              onPressed: () {
-                Navigator.pushNamed(context, '/super_add_group_screen');
-              },
+              onPressed: addButtonPressed,
             ),
             const SizedBox(width: 10),
           ]),
