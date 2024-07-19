@@ -1,7 +1,7 @@
 import 'package:flutter/cupertino.dart';
 
-class SuperAddGroupScreen extends StatelessWidget {
-  const SuperAddGroupScreen({super.key});
+class SuperGroupCreateScreen extends StatelessWidget {
+  const SuperGroupCreateScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
