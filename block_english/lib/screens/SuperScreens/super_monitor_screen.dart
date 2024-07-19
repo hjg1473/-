@@ -98,7 +98,7 @@ class _SuperMonitorScreenState extends ConsumerState<SuperMonitorScreen> {
                   ],
                 ),
                 onPressed: () {
-                  debugPrint('pressed');
+                  debugPrint('모니터링 학습자 추가하기');
                 }),
           ],
         ),
@@ -176,11 +176,7 @@ class _SuperMonitorScreenState extends ConsumerState<SuperMonitorScreen> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    if (isLoading) {
-      // Check if the operation has not been performed
-      waitForGroups();
-      isLoading = false; // Set the flag to true after performing the operation
-    }
+    waitForGroups();
   }
 
   @override
@@ -267,7 +263,7 @@ class _SuperMonitorScreenState extends ConsumerState<SuperMonitorScreen> {
                                   return GroupButton(
                                     name: group.name,
                                     id: group.id,
-                                    studentNum: 1,
+                                    studentNum: group.count,
                                   );
                                 },
                                 separatorBuilder: (context, index) =>
