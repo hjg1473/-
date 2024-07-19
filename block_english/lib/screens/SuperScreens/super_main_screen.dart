@@ -1,9 +1,7 @@
 import 'package:block_english/screens/SuperScreens/super_game_setting_screen.dart';
 import 'package:block_english/screens/SuperScreens/super_monitor_screen.dart';
-import 'package:block_english/services/super_service.dart';
-import 'package:block_english/widgets/student_profile_card_widget.dart';
+import 'package:block_english/screens/SuperScreens/super_my_page.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class SuperMainScreen extends StatefulWidget {
   const SuperMainScreen({super.key});
@@ -17,34 +15,8 @@ class _SuperMainScreenState extends State<SuperMainScreen> {
 
   final List<Widget> _widgetOptions = <Widget>[
     const SuperMonitorScreen(),
-    //const Text('hi'),
     const SuperGameSettingScreen(),
-    Column(
-      children: [
-        Consumer(
-          builder: (context, ref, child) {
-            return FutureBuilder(
-              future: ref.watch(superServiceProvider).getSuperInfo(),
-              builder: (context, snapshot) {
-                String text = '';
-                if (!snapshot.hasData) {
-                  return const Text('Loading...');
-                }
-                snapshot.data!.fold(
-                  (failure) {
-                    text = failure.detail;
-                  },
-                  (superinfo) {
-                    text = superinfo.name;
-                  },
-                );
-                return StudentProfileCard(name: text);
-              },
-            );
-          },
-        ),
-      ],
-    ),
+    const SuperMyPage(),
   ];
 
   void _onItemTapped(int index) {

@@ -3,7 +3,6 @@ import 'dart:ui';
 import 'package:block_english/models/SuperModel/super_group_model.dart';
 import 'package:block_english/services/super_service.dart';
 import 'package:block_english/widgets/group_button.dart';
-import 'package:block_english/widgets/profile_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -30,6 +29,7 @@ class _SuperMonitorScreenState extends ConsumerState<SuperMonitorScreen> {
       },
       (groupList) {
         groups = groupList;
+        filteredGroups = groups;
       },
     );
     setState(() {
@@ -76,6 +76,12 @@ class _SuperMonitorScreenState extends ConsumerState<SuperMonitorScreen> {
       waitForGroups();
       isLoading = false; // Set the flag to true after performing the operation
     }
+  }
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
   }
 
   @override
