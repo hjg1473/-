@@ -4,7 +4,6 @@ import 'package:block_english/models/SuperModel/super_group_model.dart';
 import 'package:block_english/services/super_service.dart';
 import 'package:block_english/widgets/group_button.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:wolt_modal_sheet/wolt_modal_sheet.dart';
 
@@ -139,9 +138,11 @@ class _SuperMonitorScreenState extends ConsumerState<SuperMonitorScreen> {
         filteredGroups = groups;
       },
     );
-    setState(() {
-      isLoading = false;
-    });
+    if (mounted) {
+      setState(() {
+        isLoading = false;
+      });
+    }
   }
 
   void search() {
@@ -214,16 +215,6 @@ class _SuperMonitorScreenState extends ConsumerState<SuperMonitorScreen> {
                 Icons.search_rounded,
                 color: Colors.white,
               ),
-              trailing: [
-                IconButton(
-                  icon: const Icon(Icons.clear_rounded),
-                  color: Colors.grey.shade600,
-                  onPressed: () {
-                    searchValue = '';
-                    search();
-                  },
-                ),
-              ],
               hintText: '검색',
               hintStyle: const WidgetStatePropertyAll(
                 TextStyle(
