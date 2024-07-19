@@ -1,43 +1,34 @@
 import 'package:block_english/screens/SuperScreens/super_group_screen.dart';
-import 'package:block_english/screens/SuperScreens/super_profile_screen.dart';
-import 'package:block_english/utils/colors.dart';
 import 'package:flutter/material.dart';
 
-class ProfileButton extends StatelessWidget {
-  const ProfileButton({
+class GroupButton extends StatelessWidget {
+  const GroupButton({
     super.key,
     required this.name,
-    this.groupId = -1,
-    this.isStudent = false,
+    required this.id,
+    required this.studentNum,
   });
 
   final String name;
-  final int groupId;
-  final bool isStudent;
+  final int id;
+  final int studentNum;
 
   @override
   Widget build(BuildContext context) {
     return FilledButton(
       onPressed: () {
-        if (isStudent) {
-          Navigator.push(
-              context,
-              MaterialPageRoute(
-                  builder: (context) => ProfileScreen(studentName: name)));
-        } else {
-          Navigator.push(
-              context,
-              MaterialPageRoute(
-                  builder: (context) => GroupScreen(
-                        groupName: name,
-                        groupId: groupId,
-                      )));
-        }
+        Navigator.push(
+            context,
+            MaterialPageRoute(
+                builder: (context) => GroupScreen(
+                      groupName: name,
+                      groupId: id,
+                    )));
       },
       style: FilledButton.styleFrom(
         backgroundColor: const Color(0xFFEAEAEA),
         minimumSize: const Size(330, 80),
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(10),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(10),
         ),
@@ -47,18 +38,18 @@ class ProfileButton extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Container(
-            height: 45,
-            width: 45,
+            height: 60,
+            width: 60,
             decoration: BoxDecoration(
-              color: lightPrimary,
-              borderRadius: BorderRadius.circular(50),
+              color: const Color(0xFFD9D9D9),
+              borderRadius: BorderRadius.circular(10),
             ),
             child: Center(
               child: Text(
-                name[0],
+                id.toString(),
                 style: const TextStyle(
-                  color: lightSurface,
-                  fontSize: 17,
+                  color: Color(0xFFC2C2C2),
+                  fontSize: 30,
                 ),
               ),
             ),
@@ -77,6 +68,14 @@ class ProfileButton extends StatelessWidget {
                   color: Colors.black,
                 ),
               ),
+              Row(
+                children: [
+                  const Icon(Icons.person_rounded,
+                      color: Color(0xFF838383), size: 15),
+                  Text(' $studentNum명',
+                      style: const TextStyle(color: Color(0xFF9D9D9D))),
+                ],
+              )
             ],
           ),
         ],

@@ -1,6 +1,6 @@
 import 'package:block_english/models/StudentModel/student_info_model.dart';
 import 'package:block_english/services/student_service.dart';
-import 'package:block_english/widgets/profile_card_widget.dart';
+import 'package:block_english/widgets/student_profile_card_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -37,7 +37,7 @@ class StudentProfileScreen extends StatelessWidget {
                         },
                       );
                       return error.isEmpty
-                          ? ProfileCard(
+                          ? StudentProfileCard(
                               name: studentInfo.name,
                               age: studentInfo.age,
                               isStudent: true,
