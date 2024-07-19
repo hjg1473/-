@@ -1,4 +1,4 @@
-import 'package:block_english/widgets/profile_card_widget.dart';
+import 'package:block_english/widgets/student_profile_card_widget.dart';
 import 'package:flutter/material.dart';
 
 class ProfileScreen extends StatelessWidget {
@@ -31,7 +31,7 @@ class ProfileScreen extends StatelessWidget {
           ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 30.0),
-            child: ProfileCard(
+            child: StudentProfileCard(
               name: studentName,
               age: "10세",
               isStudent: true,

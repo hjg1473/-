@@ -2,8 +2,8 @@ import 'package:block_english/utils/colors.dart';
 import 'package:block_english/utils/constants.dart';
 import 'package:flutter/material.dart';
 
-class ProfileCard extends StatelessWidget {
-  const ProfileCard({
+class StudentProfileCard extends StatelessWidget {
+  const StudentProfileCard({
     super.key,
     required this.name,
     this.age = '',
