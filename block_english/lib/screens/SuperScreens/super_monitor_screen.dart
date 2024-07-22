@@ -1,6 +1,6 @@
 import 'dart:ui';
 
-import 'package:block_english/models/SuperModel/super_group_model.dart';
+import 'package:block_english/models/SuperModel/group_info_model.dart';
 import 'package:block_english/services/super_service.dart';
 import 'package:block_english/widgets/group_button.dart';
 import 'package:flutter/material.dart';
@@ -17,8 +17,8 @@ class SuperMonitorScreen extends ConsumerStatefulWidget {
 class _SuperMonitorScreenState extends ConsumerState<SuperMonitorScreen> {
   String searchValue = '';
   String error = '';
-  List<SuperGroupModel> groups = [];
-  List<SuperGroupModel> filteredGroups = [];
+  List<GroupInfoModel> groups = [];
+  List<GroupInfoModel> filteredGroups = [];
   bool isLoading = true;
   bool bottomSheet = false;
 

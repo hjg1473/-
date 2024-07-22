@@ -1,8 +1,8 @@
 import 'package:block_english/widgets/student_profile_card_widget.dart';
 import 'package:flutter/material.dart';
 
-class ProfileScreen extends StatelessWidget {
-  const ProfileScreen({
+class MonitorProfileScreen extends StatelessWidget {
+  const MonitorProfileScreen({
     super.key,
     required this.studentName,
   });

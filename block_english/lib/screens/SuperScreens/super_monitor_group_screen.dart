@@ -1,8 +1,8 @@
 import 'package:block_english/widgets/profile_button.dart';
 import 'package:flutter/material.dart';
 
-class GroupScreen extends StatelessWidget {
-  const GroupScreen({
+class MonitorGroupScreen extends StatelessWidget {
+  const MonitorGroupScreen({
     super.key,
     required this.groupName,
     required this.groupId,

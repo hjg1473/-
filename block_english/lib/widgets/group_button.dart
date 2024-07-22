@@ -1,4 +1,4 @@
-import 'package:block_english/screens/SuperScreens/super_group_screen.dart';
+import 'package:block_english/screens/SuperScreens/super_monitor_group_screen.dart';
 import 'package:flutter/material.dart';
 
 class GroupButton extends StatelessWidget {
@@ -20,7 +20,7 @@ class GroupButton extends StatelessWidget {
         Navigator.push(
             context,
             MaterialPageRoute(
-                builder: (context) => GroupScreen(
+                builder: (context) => MonitorGroupScreen(
                       groupName: name,
                       groupId: id,
                     )));

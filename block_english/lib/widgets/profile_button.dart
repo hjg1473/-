@@ -1,5 +1,5 @@
-import 'package:block_english/screens/SuperScreens/super_group_screen.dart';
-import 'package:block_english/screens/SuperScreens/super_profile_screen.dart';
+import 'package:block_english/screens/SuperScreens/super_monitor_group_screen.dart';
+import 'package:block_english/screens/SuperScreens/super_monitor_student_screen.dart';
 import 'package:block_english/utils/colors.dart';
 import 'package:flutter/material.dart';
 
@@ -23,12 +23,13 @@ class ProfileButton extends StatelessWidget {
           Navigator.push(
               context,
               MaterialPageRoute(
-                  builder: (context) => ProfileScreen(studentName: name)));
+                  builder: (context) =>
+                      MonitorProfileScreen(studentName: name)));
         } else {
           Navigator.push(
               context,
               MaterialPageRoute(
-                  builder: (context) => GroupScreen(
+                  builder: (context) => MonitorGroupScreen(
                         groupName: name,
                         groupId: groupId,
                       )));
