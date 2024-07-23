@@ -1,4 +1,3 @@
-import 'package:block_english/utils/colors.dart';
 import 'package:flutter/material.dart';
 
 class StudentProfileCard extends StatelessWidget {
@@ -20,7 +19,7 @@ class StudentProfileCard extends StatelessWidget {
     return Container(
       height: 80,
       decoration: BoxDecoration(
-        color: lightSurface,
+        color: Colors.grey[300],
         borderRadius: BorderRadius.circular(10),
         border: Border.all(
           color: Colors.black54,
@@ -39,14 +38,14 @@ class StudentProfileCard extends StatelessWidget {
               height: 45,
               width: 45,
               decoration: BoxDecoration(
-                color: lightPrimary,
+                color: Colors.grey[800],
                 borderRadius: BorderRadius.circular(50),
               ),
               child: Center(
                 child: Text(
                   name != '' ? name[0] : " ",
-                  style: const TextStyle(
-                    color: lightSurface,
+                  style: TextStyle(
+                    color: Colors.grey[300],
                     fontSize: 17,
                   ),
                 ),
@@ -73,17 +72,17 @@ class StudentProfileCard extends StatelessWidget {
                 ? Container(
                     height: 80,
                     width: 125,
-                    decoration: const BoxDecoration(
-                        color: lightPrimary,
-                        borderRadius: BorderRadius.only(
+                    decoration: BoxDecoration(
+                        color: Colors.grey[800],
+                        borderRadius: const BorderRadius.only(
                           topRight: Radius.circular(8),
                           bottomRight: Radius.circular(8),
                         )),
                     child: Center(
                       child: Text(
                         teamName ?? "반 등록하기",
-                        style: const TextStyle(
-                          color: lightSurface,
+                        style: TextStyle(
+                          color: Colors.grey[300],
                           fontSize: 20,
                           fontWeight: FontWeight.bold,
                         ),

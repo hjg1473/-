@@ -1,5 +1,4 @@
 import 'package:block_english/screens/SuperScreens/super_monitor_student_screen.dart';
-import 'package:block_english/utils/colors.dart';
 import 'package:flutter/material.dart';
 
 class StudentButton extends StatelessWidget {
@@ -43,8 +42,8 @@ class StudentButton extends StatelessWidget {
             child: Center(
               child: Text(
                 name[0],
-                style: const TextStyle(
-                  color: lightSurface,
+                style: TextStyle(
+                  color: Colors.grey[300],
                   fontSize: 17,
                 ),
               ),

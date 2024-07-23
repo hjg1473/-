@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 
-import '../utils/colors.dart';
-
 class ImageCard extends StatelessWidget {
   const ImageCard({
     super.key,
@@ -27,9 +25,9 @@ class ImageCard extends StatelessWidget {
         children: [
           Container(
             height: 55,
-            decoration: const BoxDecoration(
-              color: lightSurface,
-              borderRadius: BorderRadius.only(
+            decoration: BoxDecoration(
+              color: Colors.grey[300],
+              borderRadius: const BorderRadius.only(
                 topLeft: Radius.circular(15),
                 topRight: Radius.circular(15),
               ),
