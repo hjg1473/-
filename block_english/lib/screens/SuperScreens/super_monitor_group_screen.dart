@@ -78,21 +78,23 @@ class _MonitorGroupScreenState extends ConsumerState<MonitorGroupScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Expanded(
-                child: error.isEmpty
-                    ? ListView.separated(
-                        scrollDirection: Axis.vertical,
-                        itemCount: students.length,
-                        itemBuilder: (BuildContext context, int index) {
-                          var student = students[index];
-                          return StudentButton(
-                            name: student.name,
-                          );
-                        },
-                        separatorBuilder: (context, index) =>
-                            const SizedBox(height: 20),
-                      )
-                    : Center(child: Text(error))),
+            isLoading
+                ? const Text('Loading...')
+                : Expanded(
+                    child: error.isEmpty
+                        ? ListView.separated(
+                            scrollDirection: Axis.vertical,
+                            itemCount: students.length,
+                            itemBuilder: (BuildContext context, int index) {
+                              var student = students[index];
+                              return StudentButton(
+                                name: student.name,
+                              );
+                            },
+                            separatorBuilder: (context, index) =>
+                                const SizedBox(height: 20),
+                          )
+                        : Center(child: Text(error))),
           ],
         ),
       ),
