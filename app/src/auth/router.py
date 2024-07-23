@@ -28,12 +28,6 @@ router = APIRouter(
 
 oauth2_bearer = OAuth2PasswordBearer(tokenUrl="auth/token")
 
-@router.get("")
-async def welcome_home():
-    logger = logger_setup.get_logger("user_id")
-    logger.info("--- welcome_home ---")
-    return "welcome lemoncode21"
-
 # 비동기 -> 동기
 def get_current_user(token: Annotated[str, Depends(oauth2_bearer)]):
     payload = decode_token(token)

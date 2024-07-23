@@ -12,3 +12,6 @@ class User_info(BaseModel):
     name: str
     phone_number: str
     email: str
+
+class User_season(BaseModel):
+    season: str

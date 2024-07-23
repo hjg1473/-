@@ -43,8 +43,8 @@ async def create_user_in_db(db: db_dependency, create_user: CreateUser) -> Users
 async def create_study_info(db: db_dependency, user_id: int):
     study_info = StudyInfo(
         owner_id=user_id,
-        type1Level=0,
-        type2Level=0,
+        totalStudyTime=0,
+        streamStudyDay=0,
         type3Level=0
     )
     db.add(study_info)

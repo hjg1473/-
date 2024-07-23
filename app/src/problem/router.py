@@ -12,15 +12,65 @@ from fastapi import requests, UploadFile, File, Form
 import requests
 from problem.dependencies import user_dependency, db_dependency
 from problem.schemas import Problem
-from problem.exceptions import http_exception, successful_response, get_user_exception, get_problem_exception
+from problem.exceptions import http_exception, successful_response, get_user_exception, get_problem_exception, get_studyStart_exception, get_doubleEnd_exception
 from problem.service import *
-from problem.utils import check_answer
+from problem.utils import check_answer, search_log_timestamp
+from problem.constants import INDEX, QUERY_MATCH_ALL
+import re
+from elasticsearch import AsyncElasticsearch
+from datetime import datetime, timezone
+import logging
+from app.src.logging_setup import LoggerSetup
+
+LOGGER = logging.getLogger(__name__)
+logger_setup = LoggerSetup()
 
 router = APIRouter(
     prefix="/problem",
     tags=["problem"],
     responses={404: {"description": "Not found"}}
 )
+
+es = AsyncElasticsearch(['http://3.34.58.76:9200'])
+
+@router.get("/study_start")
+async def study_start(user: user_dependency):
+    get_user_exception(user)
+    logger = logger_setup.get_logger(user.get("id"))
+    logger.info("--- studyStart ---")
+    return {"detail":"학습을 시작합니다."}
+
+@router.get("/study_end")
+async def study_end(user: user_dependency, db: db_dependency):
+    get_user_exception(user)
+    
+    res = await es.search(index=INDEX, body=QUERY_MATCH_ALL)
+    
+    studyStart_timestamp = search_log_timestamp(res, "studyStart", user.get("id"))
+
+    get_studyStart_exception(studyStart_timestamp)
+
+    recent_studyEnd_timestamp = search_log_timestamp(res, "studyEnd", user.get("id"))
+
+    if recent_studyEnd_timestamp is None:
+        recent_studyEnd_timestamp = datetime.fromisoformat("2024-01-01T00:00:00.847Z".replace('Z', '+00:00'))
+
+    get_doubleEnd_exception(studyStart_timestamp, recent_studyEnd_timestamp)
+
+    logger = logger_setup.get_logger(user.get("id"))
+    logger.info("--- studyEnd ---")
+
+    time_difference = datetime.utcnow().replace(tzinfo=timezone.utc) - studyStart_timestamp
+    seconds_difference = time_difference.total_seconds() // 60
+    
+    result = await db.execute(select(StudyInfo).filter(StudyInfo.owner_id == user.get("id")))
+    studyinfo_model = result.scalars().first()
+
+    studyinfo_model.totalStudyTime += int(seconds_difference)
+    db.add(studyinfo_model)
+    await db.commit()
+
+    return {"detail":"학습을 마쳤습니다.",'study_time(minutes)': int(seconds_difference)}
 
 @router.post("/create")
 async def create_problem(problem: Problem, user: user_dependency, db: db_dependency):

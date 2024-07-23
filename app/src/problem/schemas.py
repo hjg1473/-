@@ -1,7 +1,6 @@
 from typing import Optional
 from pydantic import BaseModel
 
-
 class Problem(BaseModel):
     season: str
     level: str

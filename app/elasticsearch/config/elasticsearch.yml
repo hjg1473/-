@@ -4,6 +4,7 @@
 # address here to expose this node on the network:
 #
 network.host: 0.0.0.0
+http.port: 9200
 #
 # By default Elasticsearch listens for HTTP traffic on the first free port it
 # finds starting at 9200. Set a specific HTTP port here:

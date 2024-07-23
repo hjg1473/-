@@ -82,7 +82,7 @@ services:
     container_name: logstash
     volumes:
       - ./logstash/pipeline:/usr/share/logstash/pipeline
-      - /home/ubuntu/app/src/logs/fastapi-efk.log:/usr/share/logstash/logfile.log
+      - /home/ubuntu/app/src/logs:/usr/share/logstash/logs
     ports:
       - "5044:5044"
     depends_on:

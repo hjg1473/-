@@ -16,3 +16,11 @@ def get_user_exception(user):
 def get_problem_exception(stepinfo_model):
     if stepinfo_model is None:
         raise HTTPException(status_code=404, detail='문제 데이터가 존재하지 않습니다.')
+    
+def get_studyStart_exception(studyStart_timestamp):
+    if studyStart_timestamp is None: #
+        raise HTTPException(status_code=404, detail="학습을 시작하지 않았습니다.")
+    
+def get_doubleEnd_exception(studyStart_timestamp, recent_studyEnd_timestamp):
+    if studyStart_timestamp < recent_studyEnd_timestamp:
+        raise HTTPException(status_code=400, detail="중복된 학습 종료 호출입니다.")

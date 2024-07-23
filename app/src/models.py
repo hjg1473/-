@@ -30,10 +30,10 @@ class Users(Base):
     email = Column(String)  # Email (teachers only)
     name = Column(String)  # Real name
     age = Column(Integer)  # Age
-    role = Column(String, index=True)  # Role (super or student)
+    role = Column(String, index=True)  # Role (super or student or parent)
     #group = Column(Integer)  # Group (students only) # delete
     phone_number = Column(String) # phone_number (teachers only)
-    idToken = Column(String)  # Unique token (teachers only)
+    released_season = Column(String)  # Unique token (teachers only) > released_season
 
     # Relationship with Groups
     team_id = Column(Integer, ForeignKey("groups.id"), nullable=True) # FK, team (student only)
@@ -68,6 +68,8 @@ class Groups(Base):
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String)
     grade = Column(String)
+    releasedLevel = Column(String)
+    releasedStep = Column(String)
     admin_id = Column(Integer, ForeignKey("users.id")) # FK, teacher_id
 
     owner = relationship("Users", foreign_keys=[admin_id], back_populates="managed_groups")
@@ -80,8 +82,8 @@ class StudyInfo(Base):  # Study information
     __tablename__ = "studyInfo"
 
     id = Column(Integer, primary_key=True, index=True)  # PK
-    type1Level = Column(Integer)  # Student Type1 level
-    type2Level = Column(Integer)  # Student Type2 level
+    totalStudyTime = Column(Integer)  # Student Type1 level >> stream_study_day
+    streamStudyDay = Column(Integer)  # Student Type2 level >> total_study_time
     type3Level = Column(Integer)  # Student Type3 level
     owner_id = Column(Integer, ForeignKey("users.id"))  # FK to users
 

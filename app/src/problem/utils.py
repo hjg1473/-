@@ -65,3 +65,19 @@ def check_answer(problem:list, response:list):
     print(response)
     print(false_check)
     return isAnswer, false_check
+
+
+def search_log_timestamp(res, action, user_id):
+    import re
+    from datetime import datetime
+    for hit in res['hits']['hits']:
+        message = hit['_source']['message']
+        timestamp = hit['_source']['@timestamp']
+        
+        # 정규 표현식을 사용하여 필요한 정보 추출
+        match = re.search(f'- --- {action} --- - \[user: {user_id}\]', message)
+        if match:
+            return datetime.fromisoformat(timestamp.replace('Z', '+00:00'))
+            break  # 최신 로그만 필요하므로 루프를 종료합니다.
+        else:
+            return None

@@ -88,7 +88,7 @@ async def update_std_group(group_id, user_id, db: db_dependency):
 async def get_super_info(user, db: db_dependency):
     result = await db.execute(select(Users).filter(Users.id == user.get('id')))
     user_model = result.scalars().first()
-    return { "name": user_model.name }
+    return { "name": user_model.name, 'released_season': user_model.released_season }
 
 async def get_user_to_userid(user_id, db: db_dependency):
     result = await db.execute(select(Users).filter(Users.id == user_id))
