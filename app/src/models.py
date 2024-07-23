@@ -108,20 +108,20 @@ class Problems(Base):  # Problems
     # 동일 문제에서, 민수(id=1)도 이 문제를 맞추고, 철수(id=2)도 이 문제를 맞추면 TStudyInfo_id 에는 [1, 2] 가 들어가야 됨.
     # TStudyInfo_id = Column(Integer, ForeignKey("studyInfo.id"))  # FK to correct study info 
     # FStudyInfo_id = Column(Integer, ForeignKey("studyInfo.id"))  # FK to incorrect study info
-    cproblem_id = Column(Integer, ForeignKey("customProblemSet.id"))  # FK to custom problem set
+    # cproblem_id = Column(Integer, ForeignKey("customProblemSet.id"))  # FK to custom problem set
 
     # # Relationships
     # correct_study_info = relationship("StudyInfo", foreign_keys=[TStudyInfo_id], back_populates="correct_problems")
     # incorrect_study_info = relationship("StudyInfo", foreign_keys=[FStudyInfo_id], back_populates="incorrect_problems")
     correct_study_infos = relationship("StudyInfo", secondary=correct_problem_table, back_populates="correct_problems")
     incorrect_study_infos = relationship("StudyInfo", secondary=incorrect_problem_table, back_populates="incorrect_problems")
-    custom_problem_set = relationship("CustomProblemSet", foreign_keys=[cproblem_id], back_populates="problems")
+    # custom_problem_set = relationship("CustomProblemSet", foreign_keys=[cproblem_id], back_populates="problems")
 
-class CustomProblemSet(Base):  # Custom problem set
-    __tablename__ = "customProblemSet"
+# class CustomProblemSet(Base):  # Custom problem set
+#     __tablename__ = "customProblemSet"
 
-    id = Column(Integer, primary_key=True, index=True)  # PK
-    name = Column(String)
+#     id = Column(Integer, primary_key=True, index=True)  # PK
+#     name = Column(String)
 
-    # Relationship
-    problems = relationship("Problems", back_populates="custom_problem_set")
+#     # Relationship
+#     problems = relationship("Problems", back_populates="custom_problem_set")

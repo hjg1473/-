@@ -13,50 +13,6 @@ router = APIRouter(
     responses={404: {"description": "Not found"}}
 )
 
-# 선생님이 커스텀 문제 생성
-@router.post("/create/custom_problems")
-async def create_problem(user: user_dependency, db:db_dependency, problemset: ProblemSet):
-    
-    super_authenticate_exception(user)
-
-    problem_exists_exception(problemset, db)
-
-    await update_cproblem(problemset, db)
-
-    return {'detail': '성공적으로 생성되었습니다!'}
-
-# 만들어진 커스텀 문제 세트의 목록 조회
-@router.get("/custom_problem_set/info", status_code = status.HTTP_200_OK)
-async def read_group_info(user: user_dependency, db: db_dependency):
-    
-    super_authenticate_exception(user)
-    
-    custom_problem_set_list = await get_cproblem_list(db)
-    
-    result = {'custom_problem_set':[{'name': name} for name in custom_problem_set_list]}
-    
-    return result
-
-
-# 만들어진 커스텀 문제 세트 조회
-@router.get("/custom_problem_info/{set_name}", status_code = status.HTTP_200_OK)
-async def read_group_info(set_name: str, user: user_dependency, db: db_dependency):
-
-    super_authenticate_exception(user)
-
-    custom_problems = await get_cproblems(set_name, db)
-
-    return custom_problems
-
-@router.delete("/custom_problem_set_delete/{set_name}", status_code=status.HTTP_200_OK)
-async def delete_user(set_name: str, user: user_dependency, db: db_dependency):
-
-    super_authenticate_exception(user)
-    
-    await delete_cproblem(set_name, db)
-
-    return {"detail": '성공적으로 삭제되었습니다.'}
-
 # 해당 선생님이 관리하는 반 조회
 @router.get("/group", status_code = status.HTTP_200_OK)
 async def read_group_info(user: user_dependency, db: db_dependency):
@@ -129,6 +85,50 @@ async def read_info(user: user_dependency, db: db_dependency):
 
     return user_model_json
 
+
+# 선생님이 커스텀 문제 생성
+# @router.post("/create/custom_problems")
+# async def create_problem(user: user_dependency, db:db_dependency, problemset: ProblemSet):
+    
+#     super_authenticate_exception(user)
+
+#     problem_exists_exception(problemset, db)
+
+#     await update_cproblem(problemset, db)
+
+#     return {'detail': '성공적으로 생성되었습니다!'}
+
+# # 만들어진 커스텀 문제 세트의 목록 조회
+# @router.get("/custom_problem_set/info", status_code = status.HTTP_200_OK)
+# async def read_group_info(user: user_dependency, db: db_dependency):
+    
+#     super_authenticate_exception(user)
+    
+#     custom_problem_set_list = await get_cproblem_list(db)
+    
+#     result = {'custom_problem_set':[{'name': name} for name in custom_problem_set_list]}
+    
+#     return result
+
+
+# # 만들어진 커스텀 문제 세트 조회
+# @router.get("/custom_problem_info/{set_name}", status_code = status.HTTP_200_OK)
+# async def read_group_info(set_name: str, user: user_dependency, db: db_dependency):
+
+#     super_authenticate_exception(user)
+
+#     custom_problems = await get_cproblems(set_name, db)
+
+#     return custom_problems
+
+# @router.delete("/custom_problem_set_delete/{set_name}", status_code=status.HTTP_200_OK)
+# async def delete_user(set_name: str, user: user_dependency, db: db_dependency):
+
+#     super_authenticate_exception(user)
+    
+#     await delete_cproblem(set_name, db)
+
+#     return {"detail": '성공적으로 삭제되었습니다.'}
 
 # # 선생님이 학생 개인의 정보를 살펴볼 때
 # @router.get("/searchStudyinfo/{user_id}", status_code = status.HTTP_200_OK)

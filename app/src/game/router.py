@@ -4,7 +4,7 @@ import sys
 
 from sqlalchemy import select
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))))
-from app.src.models import Users, StudyInfo, Groups, Problems, CustomProblemSet
+from app.src.models import Users, StudyInfo, Groups, Problems
 import app.src.models
 from fastapi import FastAPI, File, Form, UploadFile, WebSocket, WebSocketDisconnect
 import json
@@ -85,17 +85,17 @@ async def create_room(db: db_dependency ,request: CreateRoomRequest):
         pin_number = create_pin_number()
     rooms[pin_number] = Room(pin_number, request.host_id, request.room_max) # 방 생성
 
-    result = await db.execute(select(CustomProblemSet).filter(CustomProblemSet.name == request.set_name))
-    CustomProblem_model = result.scalars().first()
-    print(CustomProblem_model.id)
-    result = await db.execute(select(Problems).filter(CustomProblem_model.id == Problems.cproblem_id))
-    CustomProblemSet_model = result.scalars().all()
+    # result = await db.execute(select(CustomProblemSet).filter(CustomProblemSet.name == request.set_name))
+    # CustomProblem_model = result.scalars().first()
+    # print(CustomProblem_model.id)
+    # result = await db.execute(select(Problems).filter(CustomProblem_model.id == Problems.cproblem_id))
+    # CustomProblemSet_model = result.scalars().all()
     
-    custom = []  
-    for i in CustomProblemSet_model:
-        custom.append({'id': i.id, 'koreaProblem': i.koreaProblem, 'img_path': i.img_path})
+    # custom = []  
+    # for i in CustomProblemSet_model:
+    #     custom.append({'id': i.id, 'koreaProblem': i.koreaProblem, 'img_path': i.img_path})
     # result = custom_problem_sets
-    return {"detail": "Room created successfully","pin_number": pin_number, "custom_problem": custom} 
+    return {"detail": "Room created successfully","pin_number": pin_number} 
 
 # 게임방 참가 api
 # 방에 참가한 상태로 다른 방으로 참가하는 것도 막아야됨
