@@ -78,6 +78,9 @@ class GroupButton extends StatelessWidget {
               )
             ],
           ),
+          const Spacer(),
+          const Icon(Icons.arrow_forward_ios_rounded, color: Color(0xFFA0A0A0)),
+          const SizedBox(width: 10),
         ],
       ),
     );

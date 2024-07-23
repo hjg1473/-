@@ -1,4 +1,5 @@
 import 'package:block_english/models/SuperModel/student_in_group_model.dart';
+import 'package:block_english/screens/SuperScreens/super_group_setting_screen.dart';
 import 'package:block_english/services/super_service.dart';
 import 'package:block_english/widgets/student_button.dart';
 import 'package:flutter/material.dart';
@@ -63,15 +64,21 @@ class _MonitorGroupScreenState extends ConsumerState<MonitorGroupScreen> {
           ),
           centerTitle: true,
           backgroundColor: Colors.white,
-          actions: const [
+          actions: [
             IconButton(
-              icon: Icon(
-                Icons.person_add,
+              icon: const Icon(
+                Icons.settings_rounded,
                 color: Colors.black,
               ),
-              onPressed: null,
+              onPressed: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (context) => const GroupSettingScreen(),
+                  ),
+                );
+              },
             ),
-            SizedBox(width: 10),
+            const SizedBox(width: 10),
           ]),
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),

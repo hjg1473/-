@@ -1,5 +1,4 @@
 import 'package:block_english/utils/colors.dart';
-import 'package:block_english/utils/constants.dart';
 import 'package:flutter/material.dart';
 
 class StudentProfileCard extends StatelessWidget {
