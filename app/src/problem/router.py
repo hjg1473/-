@@ -1,4 +1,5 @@
 import asyncio
+from typing_extensions import List
 import numpy as np
 from PIL import Image
 import io
@@ -128,61 +129,74 @@ async def user_solve_problem(user: user_dependency, db: db_dependency, problem_i
 
 # 학생이 문제를 풀었을 때, 일단 임시로 맞았다고 처리 
 @router.post("/solve_test", status_code = status.HTTP_200_OK)
-async def user_solve_problem(file: UploadFile = File(...)):
-    
-    img_binary = await file.read()
-    image = await asyncio.to_thread(Image.open,io.BytesIO(img_binary))
-    # image = Image.open(io.BytesIO(img_binary))
-    img_array = np.array(image)
+async def user_solve_problem(problem_id : int = Form(...), files: List[UploadFile] = File(...)):
+    user_word_list=[]
+    file_count = len(files)
+
     from app.src.main import reader
-    result = await asyncio.to_thread(reader.readtext, img_array, allowlist='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz!,?.', text_threshold=0.4,low_text=0.3)
+
+    for file_index, file in enumerate(files):
+        contents = await file.read()
+        image = Image.open(io.BytesIO(contents))
+        img_array = np.array(image)
+        result = reader.readtext(img_array, allowlist='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz!,?.', text_threshold=0.4,low_text=0.3)
  
-    sorted_data = sorted(result, key=lambda item: item[0][0][0])
+        sorted_data = sorted(result, key=lambda item: item[0][0][0])
 
-    # 가장 긴 불록의 인덱스를 구함
-    max_h=0
-    ref_block_idx=0
-    # y_middle=0
-    for index, item in enumerate(sorted_data):
-        height = item[0][2][1] - item[0][0][1]
-        if height > max_h:
-            max_h = height
-            ref_block_idx = index
-    print(ref_block_idx)
+        # 가장 낮은 불록의 인덱스를 구함
+        low_point=0
+        ref_block_idx=0
+        for index, item in enumerate(sorted_data):
+            point = item[0][3][1]
+            if point > low_point:
+                low_point = point
+                ref_block_idx = index
+        lower_word_list=[sorted_data[ref_block_idx][1]]
 
-    # 가장 높이가 긴 단어박스를 가진 줄을 반환
-    word_list=[sorted_data[ref_block_idx][1]]
+        # 오른쪽부터
+        if(ref_block_idx+1<len(sorted_data)):
+            low_y = sorted_data[ref_block_idx][0][3][1]
+            high_y = sorted_data[ref_block_idx][0][0][1]
+            for block in sorted_data[ref_block_idx+1:]:
+                if (min(low_y, block[0][3][1]) >= max(high_y, block[0][0][1])):
+                    low_y = block[0][3][1]
+                    high_y = block[0][0][1]
+                    lower_word_list.append(block[1])
 
-    # 오른쪽부터
-    if(ref_block_idx+1<len(sorted_data)):
-        low_y = sorted_data[ref_block_idx][0][0][1]
-        high_y = sorted_data[ref_block_idx][0][2][1]
-        for block in sorted_data[ref_block_idx+1:]:
-            if (max(low_y, block[0][0][1]) <= min(high_y, block[0][2][1])):
-                low_y = block[0][0][1]
-                high_y = block[0][2][1]
-                # print(block[1])
-                word_list.append(block[1])
+        # 왼쪽
+        if(ref_block_idx>0):
+            low_y = sorted_data[ref_block_idx][0][3][1]
+            high_y = sorted_data[ref_block_idx][0][0][1]
+            for block in reversed(sorted_data[:ref_block_idx]):
+                if (min(low_y, block[0][3][1]) >= max(high_y, block[0][0][1])):
+                    low_y = block[0][3][1]
+                    high_y = block[0][0][1]
+                    lower_word_list.insert(0,block[1])
 
-    # 왼쪽
-    if(ref_block_idx>0):
-        low_y = sorted_data[ref_block_idx][0][0][1]
-        high_y = sorted_data[ref_block_idx][0][2][1]
-        for block in reversed(sorted_data[:ref_block_idx-1]):
-            if (max(low_y, block[0][0][1]) <= min(high_y, block[0][2][1])):
-                low_y = block[0][0][1]
-                high_y = block[0][2][1]
-                # print(block[1])
-                word_list.insert(0,block[1])
+        # 단어가 잘린 경우를 피하기 위해 리스트의 앞 혹은 뒤를 자름
+        if file_count == 1:
+            user_word_list = lower_word_list
+        else:
+            if file_index==0:
+                lower_word_list.pop()
+            elif file_index==file_count-1:
+                lower_word_list.pop(0)
+            else:
+                lower_word_list.pop(0)
+                lower_word_list.pop()
+        
+        seen_words = set(user_word_list)        
+
+        for index, word in enumerate(lower_word_list):
+
+            if word not in seen_words:
+                user_word_list.extend(lower_word_list[index:])
+                break
     
-    correct_answer = db_dependency.query(Problems).filter(Problems.id==problemID).first().englishProblem
-
-    user_word_list = word_list
-    # anwser_list = 
-    user_string = ' '.join(words)
-    isAnswer, false_location = check_answer(correct_answer, words)
-
-    #answer = problem.englishProblem
-    answer = "I am pretty"
+    user_string = " ".join(user_word_list)
+    correct_answer = await db_dependency.query(Problems).filter(Problems.id==problem_id).first().englishProblem
+    isAnswer=False
+    if user_string==correct_answer:
+        isAnswer=True
     
-    return {'user_string': user_string, 'isAnswer': isAnswer, 'false_location': false_location}
+    return {'user_string': user_string, 'isAnswer': isAnswer, 'correct_answer': correct_answer}
