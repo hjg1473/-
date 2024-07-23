@@ -1,7 +1,6 @@
 import 'package:block_english/utils/constants.dart';
 import 'package:block_english/utils/storage.dart';
 import 'package:dio/dio.dart';
-import 'package:flutter/material.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'dio.g.dart';

@@ -1,4 +1,3 @@
-import 'package:block_english/utils/colors.dart';
 import 'package:flutter/material.dart';
 
 class NoImageCard extends StatelessWidget {
@@ -15,7 +14,7 @@ class NoImageCard extends StatelessWidget {
       width: 330,
       height: 55,
       decoration: BoxDecoration(
-        color: lightSurface,
+        color: Colors.grey[300],
         borderRadius: BorderRadius.circular(15),
         border: Border.all(
           color: Colors.black54,

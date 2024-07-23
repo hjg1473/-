@@ -1,4 +1,3 @@
-import 'package:block_english/utils/colors.dart';
 import 'package:block_english/utils/constants.dart';
 import 'package:block_english/widgets/round_corner_route_button.dart';
 import 'package:flutter/material.dart';
@@ -45,12 +44,12 @@ class _SuperGameCodeScreenState extends State<SuperGameCodeScreen> {
                   ),
                 ],
               ),
-              child: const Center(
+              child: Center(
                 child: Text(
                   '블록 잉글리쉬 앱에서\n아래 번호를 입력해 주세요',
                   textAlign: TextAlign.center,
                   style: TextStyle(
-                    color: lightPrimary,
+                    color: Colors.grey[800],
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
                   ),
@@ -74,7 +73,7 @@ class _SuperGameCodeScreenState extends State<SuperGameCodeScreen> {
               width: 280,
               height: 300,
               decoration: BoxDecoration(
-                color: lightPrimary,
+                color: Colors.grey[800],
                 borderRadius: BorderRadius.circular(15),
               ),
               child: const Column(
