@@ -62,7 +62,7 @@ class StudentProfileCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    age == '' ? name : "$name / ${gradelist[int.parse(age)]}",
+                    name,
                     style: const TextStyle(
                       fontSize: 15,
                     ),

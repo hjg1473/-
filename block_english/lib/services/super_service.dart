@@ -1,6 +1,7 @@
 import 'package:block_english/models/FailureModel/failure_model.dart';
 import 'package:block_english/models/SuperModel/create_group_response_model.dart';
 import 'package:block_english/models/SuperModel/group_info_model.dart';
+import 'package:block_english/models/SuperModel/student_in_group_model.dart';
 import 'package:block_english/models/SuperModel/super_info_model.dart';
 import 'package:block_english/utils/constants.dart';
 import 'package:block_english/utils/dio.dart';
@@ -69,7 +70,6 @@ class SuperService {
             'accept': 'application/json',
             TOKENVALIDATE: 'true',
           },
-          contentType: Headers.jsonContentType,
         ),
         data: {
           'name': name,
@@ -77,6 +77,27 @@ class SuperService {
         },
       );
       return Right(CreateGroupResponseModel.fromJson(response.data));
+    } on DioException catch (e) {
+      return Left(FailureModel(
+        statusCode: e.response?.statusCode ?? 0,
+        detail: e.response?.data['detail'] ?? "",
+      ));
+    }
+  }
+
+  Future<Either<FailureModel, List<StudentInGroupModel>>> getStudentInGroup(
+      int groupId) async {
+    final dio = _ref.watch(dioProvider);
+    try {
+      final response = await dio.get(
+        '/super/student_in_group/$groupId',
+        options: Options(
+          headers: {'accept': 'application/json', TOKENVALIDATE: 'true'},
+        ),
+      );
+      return Right((response.data['groups'] as List)
+          .map((e) => StudentInGroupModel.fromJson(e))
+          .toList());
     } on DioException catch (e) {
       return Left(FailureModel(
         statusCode: e.response?.statusCode ?? 0,
