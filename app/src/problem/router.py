@@ -136,19 +136,8 @@ async def user_solve_problem(file: UploadFile = File(...)):
     img_array = np.array(image)
     from app.src.main import reader
     result = await asyncio.to_thread(reader.readtext, img_array, allowlist='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz!,?.', text_threshold=0.4,low_text=0.3)
-<<<<<<< HEAD
-    # result = reader.readtext(img_array, allowlist='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz!,?.', text_threshold=0.4,low_text=0.3)
-    # 1. 각 사각형의 높이 구하기
-    heights = []
-    for item in result:
-        coords = item[0]
-        y_values = [point[1] for point in coords]
-        height = max(y_values) - min(y_values)
-        heights.append(height)
-=======
  
     sorted_data = sorted(result, key=lambda item: item[0][0][0])
->>>>>>> 17c090f (Add: sentencre detection)
 
     # 가장 긴 불록의 인덱스를 구함
     max_h=0
@@ -186,17 +175,9 @@ async def user_solve_problem(file: UploadFile = File(...)):
                 # print(block[1])
                 word_list.insert(0,block[1])
     
-<<<<<<< HEAD
-    # correct_answer = db_dependency.query(Problems).filter(Problems.id==problemID).first().englishProblem
-    
-    
-    correct_answer = ['Dogs', 'hate', 'their', 'people']
-    
-=======
     correct_answer = db_dependency.query(Problems).filter(Problems.id==problemID).first().englishProblem
 
     user_word_list = word_list
->>>>>>> 17c090f (Add: sentencre detection)
     # anwser_list = 
     user_string = ' '.join(words)
     isAnswer, false_location = check_answer(correct_answer, words)
