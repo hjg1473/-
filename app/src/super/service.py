@@ -97,3 +97,12 @@ async def get_user_to_userid(user_id, db: db_dependency):
 async def get_group_to_groupid(group_id, db: db_dependency):
     result = await db.execute(select(Groups).filter(Groups.id == group_id))
     return result.scalars().first()
+
+async def update_group_level_and_step(group_id, level, step, db:db_dependency):
+    result = await db.execute(select(Groups).filter(Groups.id == group_id))
+    group_model = result.scalars().first()
+    group_model.releasedLevel = level
+    group_model.releasedStep = step
+
+    db.add(group_model)
+    await db.commit()
