@@ -3,11 +3,12 @@ import numpy as np
 from PIL import Image
 import io
 from sqlalchemy import select
+from sqlalchemy.orm import joinedload
 from fastapi import APIRouter
 from starlette import status
 import sys, os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))))
-from app.src.models import Users, StudyInfo, Problems
+from app.src.models import Users, StudyInfo, Problems, correct_problem_table
 from fastapi import requests, UploadFile, File, Form
 import requests
 from problem.dependencies import user_dependency, db_dependency
@@ -72,11 +73,11 @@ async def study_end(user: user_dependency, db: db_dependency):
 
     return {"detail":"학습을 마쳤습니다.",'study_time(minutes)': int(seconds_difference)}
 
-@router.post("/create")
-async def create_problem(problem: Problem, user: user_dependency, db: db_dependency):
-    get_user_exception(user)
-    await create_problem_in_db(db, problem)
-    return successful_response(201)
+# @router.post("/create")
+# async def create_problem(problem: Problem, user: user_dependency, db: db_dependency):
+#     get_user_exception(user)
+#     await create_problem_in_db(db, problem)
+#     return successful_response(201)
 
 @router.get("/test_info", status_code = status.HTTP_200_OK)
 async def read_problem_all(user: user_dependency, db: db_dependency):
@@ -107,12 +108,12 @@ async def read_level_and_step_all(user: user_dependency, db: db_dependency):
 
     problems = list(problems)
     for level in problems:
-        problem_step = []
+        problem_step = set()  # 중복 제거를 위해 set 사용
         for problem in problem_model:
             if problem.level == level: 
                 if problem.step:
-                    problem_step.append(problem.step) 
-        result.append({'level_name': level, 'steps': problem_step})
+                    problem_step.add(problem.step) 
+        result.append({'level_name': level, 'steps': list(problem_step)})
         
     # 학생 정보 테이블에 current_level, current_step 추가.
     return {'current_level': 1, 'current_step': 1, 'levels' : result }
@@ -175,6 +176,31 @@ async def user_solve_problem(user: user_dependency, db: db_dependency, problem_i
 
     return {'isAnswer' : problem.englishProblem, 'user_answer': user_string, 'false_location': false_location}
 
+# 학생이 문제를 풀었을 때, 일단 임시로 맞았다고 처리 
+@router.post("/solve_test_problem_count", status_code = status.HTTP_200_OK)
+async def user_solve_problem(user: user_dependency, db: db_dependency, problem_id: int):
+    get_user_exception(user)
+
+    result2 = await db.execute(select(StudyInfo).options(joinedload(StudyInfo.correct_problems)).options(joinedload(StudyInfo.incorrect_problems)).filter(StudyInfo.owner_id == user.get("id")))
+    study_info = result2.scalars().first()
+    if study_info is None:
+        raise http_exception()
+
+    result1 = await db.execute(select(Problems).filter(Problems.id == problem_id))
+    problem = result1.scalars().first()
+    user_string = "I am pretty"
+    answer = "I am pretty"
+    
+    # isAnswer, false_location = check_answer(answer, user_string)
+    study_info.correct_problems.append(problem)
+    study_info.incorrect_problems.append(problem)
+    
+    await increment_correct_problem_count(study_info.id, problem_id, db)
+    count = await get_correct_problem_count(study_info.id, problem_id, db)
+    db.add(study_info)
+    await db.commit()
+
+    return {'isAnswer' : problem.englishProblem, 'user_answer': user_string, 'correct_count': count}
 
 # 학생이 문제를 풀었을 때, 일단 임시로 맞았다고 처리 
 @router.post("/solve_test", status_code = status.HTTP_200_OK)

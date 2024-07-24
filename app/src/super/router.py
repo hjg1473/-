@@ -3,7 +3,9 @@ import sys, os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))))
 from super.dependencies import db_dependency, user_dependency
 from super.service import *
-from super.schemas import ProblemSet, AddGroup
+from super.schemas import ProblemSet, AddGroup, GroupStep
+from super.utils import *
+from app.src.models import StudyInfo, Problems
 from super.exceptions import *
 from starlette import status
 
@@ -74,7 +76,6 @@ async def update_user_team(user_id: int,
 
     return {'detail' : 'Success'}
 
-
 # 선생님의 정보 반환, self
 @router.get("/info", status_code = status.HTTP_200_OK)
 async def read_info(user: user_dependency, db: db_dependency):
@@ -85,6 +86,18 @@ async def read_info(user: user_dependency, db: db_dependency):
 
     return user_model_json
 
+# 특정 반의 특정 스텝의 오답률 정보 조회
+@router.post("/group_step_info", status_code = status.HTTP_200_OK)
+async def read_group_info(groupStep: GroupStep, user: user_dependency, db: db_dependency):
+    
+    super_authenticate_exception(user)
+    await find_group_exception(groupStep.group_id, db)
+    correct_count = await group_step_problem_count(groupStep.group_id, groupStep.step, "correct_problems", db)
+    incorrect_count = await group_step_problem_count(groupStep.group_id, groupStep.step, "incorrect_problems", db)
+    group_step_incorrect_answer_rate = 0
+    await get_studyInfo_exception(correct_count, incorrect_count)
+    group_step_incorrect_answer_rate = f"{incorrect_count / (correct_count + incorrect_count):.2f}"
+    return {'correct_count': correct_count, 'incorrect_count': incorrect_count, 'group_step_incorrect_answer_rate': group_step_incorrect_answer_rate}
 
 # 선생님이 커스텀 문제 생성
 # @router.post("/create/custom_problems")

@@ -83,31 +83,6 @@ async def read_user_studyinfo(user: user_dependency, db: db_dependency):
 
     get_user_exception(user)
     auth_exception(user.get('user_role'))
-
-    result = await db.execute(select(Users).filter(Users.id == user.get('id')))
-    user_model = result.scalars().first()
-
-    result2 = await db.execute(select(StudyInfo).options(
-        joinedload(StudyInfo.incorrect_problems)
-        ).filter(StudyInfo.id == user.get("id")))
-    study_info = result2.scalars().first()
-
-    incorrect_problems_type1_count = 0
-    incorrect_problems_type2_count = 0
-    incorrect_problems_type3_count = 0
-
-    for problem in study_info.incorrect_problems:
-        if problem.type == '부정문':
-            incorrect_problems_type1_count += 1
-        elif problem.type == '의문문':
-            incorrect_problems_type2_count += 1
-        elif problem.type == '단어와품사':
-            incorrect_problems_type3_count += 1
-
-    return {
-        'user_id': user_model.id,
-        'name': user_model.username,
-        'age': user_model.name,
-        'type1_False_cnt' : incorrect_problems_type1_count,
-        'type2_False_cnt' : incorrect_problems_type2_count,
-        'type3_False_cnt' : incorrect_problems_type3_count }
+    #로그를 보여주자. 학습 기록 처럼. ex) 7/18 - step1 완료, 7/19 - step2 완료 ... 등등
+    
+    return 

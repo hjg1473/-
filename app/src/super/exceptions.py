@@ -46,5 +46,9 @@ async def find_student_exception(user_id, db):
 async def find_group_exception(group_id, db):
     from super.service import get_group_to_groupid
     group = await get_group_to_groupid(group_id, db)
-    if not group:
+    if group is None:
         raise HTTPException(status_code=404, detail="해당 반을 찾을 수 없습니다.")
+    
+async def get_studyInfo_exception(correct_count, incorrect_count):
+    if correct_count + incorrect_count == 0:
+        raise HTTPException(status_code=404, detail="학습 정보가 기록되지 않았습니다.")

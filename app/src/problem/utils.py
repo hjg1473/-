@@ -81,3 +81,4 @@ def search_log_timestamp(res, action, user_id):
             break  # 최신 로그만 필요하므로 루프를 종료합니다.
         else:
             return None
+
