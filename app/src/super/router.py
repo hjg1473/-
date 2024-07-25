@@ -79,7 +79,7 @@ async def update_user_team(user_id: int,
 async def unlock_step_level(group_id: int, level:str, step:str, user:user_dependency, db:db_dependency):
     super_authenticate_exception(user)
 
-    # check that level and step are valid.
+    # check whether level and step are valid.
     target_problems = await db.execute(select(Problems).filter(Problems.level == level, Problems.step == step)).scalars().all()
 
     if target_problems == None:
