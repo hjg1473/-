@@ -38,7 +38,6 @@ class _SuperGameSettingScreenState extends State<SuperGameSettingScreen> {
           '게임',
         ),
         centerTitle: true,
-        backgroundColor: Colors.white,
       ),
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
@@ -198,7 +197,7 @@ class _SuperGameSettingScreenState extends State<SuperGameSettingScreen> {
               child: RoundCornerRouteButton(
                 text: "방 생성하기",
                 routeName: '/super_game_code_screen',
-                width: 330,
+                width: double.infinity,
                 height: 60,
                 type: ButtonType.filled,
                 radius: 10,

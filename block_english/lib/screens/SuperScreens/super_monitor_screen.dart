@@ -194,7 +194,6 @@ class _SuperMonitorScreenState extends ConsumerState<SuperMonitorScreen> {
             '모니터링',
           ),
           centerTitle: true,
-          backgroundColor: Colors.white,
           actions: [
             IconButton(
               icon: const Icon(

@@ -13,7 +13,6 @@ class SuperMyPage extends StatelessWidget {
         title: const Text(
           '마이 페이지',
         ),
-        backgroundColor: Colors.white,
         centerTitle: true,
         actions: [
           IconButton(

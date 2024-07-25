@@ -15,7 +15,6 @@ class _GroupSettingScreenState extends State<GroupSettingScreen> {
     return Scaffold(
         appBar: AppBar(
           title: const Text('그룹 설정'),
-          backgroundColor: Colors.white,
         ),
         body: const Padding(
             padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),

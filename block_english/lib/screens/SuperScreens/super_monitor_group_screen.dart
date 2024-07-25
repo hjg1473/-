@@ -63,7 +63,6 @@ class _MonitorGroupScreenState extends ConsumerState<MonitorGroupScreen> {
             widget.groupName,
           ),
           centerTitle: true,
-          backgroundColor: Colors.white,
           actions: [
             IconButton(
               icon: const Icon(

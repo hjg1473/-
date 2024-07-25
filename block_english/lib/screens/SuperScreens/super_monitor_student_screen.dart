@@ -21,7 +21,6 @@ class MonitorStudentScreen extends StatelessWidget {
           ),
         ),
         centerTitle: true,
-        elevation: 10,
       ),
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
