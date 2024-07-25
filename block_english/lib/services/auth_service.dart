@@ -1,4 +1,5 @@
 import 'package:block_english/models/AuthModel/access_response_model.dart';
+import 'package:block_english/models/AuthModel/exist_check_model.dart';
 import 'package:block_english/models/AuthModel/login_response_model.dart';
 import 'package:block_english/models/AuthModel/reg_response_model.dart';
 import 'package:block_english/models/FailureModel/failure_model.dart';
@@ -10,8 +11,15 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'auth_service.g.dart';
 
+@Riverpod(keepAlive: true)
+AuthService authService(AuthServiceRef ref) {
+  return AuthService(ref);
+}
+
 class AuthService {
   static const String _auth = "auth";
+  static const String _username_phone = "username_phone";
+  static const String _verify = "verify";
   static const String _register = "register";
   static const String _token = "token";
   static const String _access = "access";
@@ -21,6 +29,32 @@ class AuthService {
 
   AuthService(AuthServiceRef ref) {
     _ref = ref;
+  }
+
+  Future<Either<FailureModel, ExistCheckModel>> postAuthExistVerify(
+      String username, String phonenumber) async {
+    final dio = _ref.watch(dioProvider);
+
+    try {
+      final response = await dio.post(
+        '/$_auth/$_username_phone/$_verify',
+        options: Options(
+          contentType: Headers.jsonContentType,
+          headers: {'accept': 'application/json'},
+        ),
+        data: {
+          'username': username,
+          'phone_number': phonenumber,
+        },
+      );
+
+      return Right(ExistCheckModel.fromJson(response.data));
+    } on DioException catch (e) {
+      return Left(FailureModel(
+        statusCode: e.response?.statusCode ?? 0,
+        detail: e.response?.data['detail'] ?? "",
+      ));
+    }
   }
 
   Future<Either<FailureModel, RegResponseModel>> postAuthRegister(
@@ -119,9 +153,4 @@ class AuthService {
       ));
     }
   }
-}
-
-@Riverpod(keepAlive: true)
-AuthService authService(AuthServiceRef ref) {
-  return AuthService(ref);
 }
