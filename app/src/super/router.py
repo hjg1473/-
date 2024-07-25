@@ -121,8 +121,7 @@ async def read_group_studylevel(group_id:int, user:user_dependency, db:db_depend
 
     # suppose level format == "level(x)", step format == "step(y)"
     # parse the last character and cast to integer
-    rLevel = int(list(rLevel)[-1])
-    rStep = int(list(rStep)[-1])
+    
 
 
 # 선생님의 정보 반환, self
