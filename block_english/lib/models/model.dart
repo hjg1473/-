@@ -1,5 +1,6 @@
 // AuthModel
 export './AuthModel/access_response_model.dart';
+export './AuthModel/exist_check_model.dart';
 export './AuthModel/login_response_model.dart';
 export './AuthModel/refresh_response_model.dart';
 export './AuthModel/reg_response_model.dart';
@@ -14,5 +15,7 @@ export './ProblemModel/problem_info_model.dart';
 export './StudentModel/student_info_model.dart';
 
 // SuperModel
-export './SuperModel/super_group_model.dart';
-export './SuperModel/super_info_response_model.dart';
+export './SuperModel/create_group_response_model.dart';
+export './SuperModel/group_info_model.dart';
+export './SuperModel/student_in_group_model.dart';
+export './SuperModel/super_info_model.dart';
