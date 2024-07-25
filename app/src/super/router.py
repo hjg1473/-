@@ -76,6 +76,75 @@ async def update_user_team(user_id: int,
 
     return {'detail' : 'Success'}
 
+# 선생님이 관리하는 반의 step 및 level 해금
+@router.put("/group/{group_id}/problems/add/{level}/{step}", status_code= status.HTTP_200_OK)
+async def unlock_step_level(group_id: int, level:str, step:str, user:user_dependency, db:db_dependency):
+    super_authenticate_exception(user)
+
+    # check whether level and step are valid.
+    target_problems = await db.execute(select(Problems).filter(Problems.level == level, Problems.step == step)).scalars().all()
+
+    if target_problems == None:
+        raise http_exception()
+
+    target_level_num = int(list(level)[-1])    # suppose level format == level1, level2, ...
+    target_step_num = int(list(step)[-1])      # suppose step format == step1, step2, ...
+
+    group_model = get_group_to_groupid(group_id, db)
+
+    current_level = group_model.releasedLevel
+    current_step = group_model.releasedStep
+    
+    current_level = int(list(current_level)[-1])
+    current_step = int(list(current_step)[-1])
+
+    if (target_level_num <= current_level) or (target_step_num <= current_step):
+        raise http_exception()
+
+    await update_group_level_and_step(group_id, level, step, db)
+
+    return {'detail' : 'Success'}
+
+
+# 반 정보 개괄 확인하기; 현재 학습 진행 정도, 학습 완료율, 명단
+# @router.get("/group/{group_id}/info", status_code=status.HTTP_200_OK)
+# async def read_group_info(group_id:int, user:user_dependency, db:db_dependency):
+#     super_authenticate_exception(user)
+
+#     find_group_exception(group_id, db)
+
+#     group_model = await get_group_to_groupid(group_id)
+
+#     released_level = group_model.releasedLevel
+#     released_step = group_model.releasedStep
+
+#     student_list = await get_std_info(group_id, db)
+
+#     result = {
+#         "released_level":released_level,
+#         "released_step":released_step,
+#         "students":student_list
+#     }
+
+#     return result
+
+# 반 문제 해금 정보 확인하기
+# @router.get("/group/{group_id}/problems/info", status_code=status.HTTP_200_OK)
+# async def read_group_studylevel(group_id:int, user:user_dependency, db:db_dependency):
+#     super_authenticate_exception(user)
+
+#     find_group_exception(group_id, db)
+
+#     group_model = await get_group_to_groupid(group_id, db)
+
+#     rLevel = group_model.releasedLevel
+#     rStep = group_model.releasedStep
+
+#     # suppose level format == "level(x)", step format == "step(y)"
+#     # parse the last character and cast to integer
+    
+
+
 # 선생님의 정보 반환, self
 @router.get("/info", status_code = status.HTTP_200_OK)
 async def read_info(user: user_dependency, db: db_dependency):
