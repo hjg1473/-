@@ -17,3 +17,11 @@ class AddGroup(BaseModel):
 class GroupStep(BaseModel):
     group_id: int
     step: str
+
+class GroupAvgTime(BaseModel):
+    group_id: int
+
+class GroupLevelStep(BaseModel):
+    group_id: int
+    step: str
+    level: str

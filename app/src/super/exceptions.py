@@ -25,7 +25,9 @@ def super_authenticate_exception(user):
     if user.get('user_role') != 'super':
         raise HTTPException(status_code=401, detail='학부모 계정이 아닙니다')
     
-
+def group_count_exception(count):
+    if count == 0:
+        raise HTTPException(status_code=404, detail="학습 시간을 찾을 수 없습니다.")
 # async def problem_exists_exception(problemset, db):
 #     custom_problem_set = await get_problemset(problemset, db)
 #     if custom_problem_set:

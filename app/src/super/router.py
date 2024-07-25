@@ -3,7 +3,7 @@ import sys, os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))))
 from super.dependencies import db_dependency, user_dependency
 from super.service import *
-from super.schemas import ProblemSet, AddGroup, GroupStep
+from super.schemas import ProblemSet, AddGroup, GroupStep, GroupAvgTime, GroupLevelStep
 from super.utils import *
 from app.src.models import StudyInfo, Problems
 from super.exceptions import *
@@ -87,17 +87,41 @@ async def read_info(user: user_dependency, db: db_dependency):
     return user_model_json
 
 # 특정 반의 특정 스텝의 오답률 정보 조회
-@router.post("/group_step_info", status_code = status.HTTP_200_OK)
-async def read_group_info(groupStep: GroupStep, user: user_dependency, db: db_dependency):
+@router.post("/group_answer_rate_info", status_code = status.HTTP_200_OK)
+async def read_group_info(user: user_dependency, db: db_dependency, groupStep: GroupLevelStep):
     
     super_authenticate_exception(user)
     await find_group_exception(groupStep.group_id, db)
-    correct_count = await group_step_problem_count(groupStep.group_id, groupStep.step, "correct_problems", db)
-    incorrect_count = await group_step_problem_count(groupStep.group_id, groupStep.step, "incorrect_problems", db)
+    correct_count = await group_step_problem_count(groupStep.group_id, groupStep.step, groupStep.level, "correct_problems", db)
+    incorrect_count = await group_step_problem_count(groupStep.group_id, groupStep.step, groupStep.level, "incorrect_problems", db)
     group_step_incorrect_answer_rate = 0
     await get_studyInfo_exception(correct_count, incorrect_count)
     group_step_incorrect_answer_rate = f"{incorrect_count / (correct_count + incorrect_count):.2f}"
     return {'correct_count': correct_count, 'incorrect_count': incorrect_count, 'group_step_incorrect_answer_rate': group_step_incorrect_answer_rate}
+
+# 특정 반의 평균 학습 시간 조회
+@router.post("/group_student_avg_time", status_code = status.HTTP_200_OK)
+async def read_group_info(groupAvgTime: GroupAvgTime, user: user_dependency, db: db_dependency):
+    
+    super_authenticate_exception(user)
+    await find_group_exception(groupAvgTime.group_id, db)
+    return await group_avg_time(groupAvgTime.group_id, db)
+
+# 특정 반의 특정 레벨-스텝의 학습 현황 조회
+@router.post("/group_study_info", status_code = status.HTTP_200_OK)
+async def read_group_info(groupStep: GroupLevelStep, user: user_dependency, db: db_dependency):
+    
+    super_authenticate_exception(user)
+    find_group_exception(groupStep.group_id, db)
+    return await group_student_problem(groupStep.group_id, groupStep.step, groupStep.level, db)
+
+# 특정 반의 특정 레벨 스텝의 평균 학습 문장 조회
+@router.post("/group_student_avg_problem", status_code = status.HTTP_200_OK)
+async def read_group_info(groupStep: GroupLevelStep, user: user_dependency, db: db_dependency):
+    
+    super_authenticate_exception(user)
+    find_group_exception(groupStep.group_id, db)
+    return await group_avg_student_problem(groupStep.group_id, groupStep.step, groupStep.level, db)
 
 # 선생님이 커스텀 문제 생성
 # @router.post("/create/custom_problems")

@@ -9,25 +9,25 @@ Base = declarative_base()
 correct_problem_table = Table('correct_problem', Base.metadata,
     Column('study_info_id', Integer, ForeignKey('studyInfo.id')),
     Column('problem_id', Integer, ForeignKey('problems.id')),
-    Column('count', Integer, nullable=False, default=0)
+    Column('count', Integer, nullable=False, default=1)
 )
 
 incorrect_problem_table = Table('incorrect_problem', Base.metadata,
     Column('study_info_id', Integer, ForeignKey('studyInfo.id')),
     Column('problem_id', Integer, ForeignKey('problems.id')),
-    Column('count', Integer, nullable=False, default=0)
+    Column('count', Integer, nullable=False, default=1)
 )
 
 correct_problem_table_group = Table('correct_problem_group', Base.metadata,
     Column('study_info_id', Integer, ForeignKey('studyInfo.id')),
     Column('problem_id', Integer, ForeignKey('problems.id')),
-    Column('count', Integer, nullable=False, default=0)
+    Column('count', Integer, nullable=False, default=1)
 )
 
 incorrect_problem_table_group = Table('incorrect_problem_group', Base.metadata,
     Column('study_info_id', Integer, ForeignKey('studyInfo.id')),
     Column('problem_id', Integer, ForeignKey('problems.id')),
-    Column('count', Integer, nullable=False, default=0)
+    Column('count', Integer, nullable=False, default=1)
 )
 # Association table for many-to-many relationship between students and teachers
 student_teacher_table = Table('student_teacher', Base.metadata,
@@ -135,23 +135,6 @@ class Problems(Base):  # Problems
     incorrect_study_infos_group = relationship("StudyInfo", secondary=incorrect_problem_table, back_populates="incorrect_problems_group")
     # custom_problem_set = relationship("CustomProblemSet", foreign_keys=[cproblem_id], back_populates="problems")
 
-class Blocks(Base):
-    __tablename__ = "blocks"
-
-    id = Column(Integer, primary_key=True, index=True)  # PK
-    color = Column(String)      # color: skyblue, pink, green, yellow, purple
-
-    word = relationship("Words", back_populates="block")
-
-class Words(Base):
-    __tablename__ = "words"
-
-    id = Column(Integer, primary_key=True, index=True)  # PK
-    block_id = Column(Integer, ForeignKey("block.id"))  # FK
-    block = relationship("Blocks", back_populates="word")
-    
-    value = Column(String)      # word value: I, me, dog, ...
-
 # class CustomProblemSet(Base):  # Custom problem set
 #     __tablename__ = "customProblemSet"
 
@@ -160,3 +143,20 @@ class Words(Base):
 
 #     # Relationship
 #     problems = relationship("Problems", back_populates="custom_problem_set")
+
+# class Blocks(Base):
+#     __tablename__ = "blocks"
+
+#     id = Column(Integer, primary_key=True, index=True)  # PK
+#     color = Column(String)      # color: skyblue, pink, green, yellow, purple
+
+#     word = relationship("Words", back_populates="block")
+
+# class Words(Base):
+#     __tablename__ = "words"
+
+#     id = Column(Integer, primary_key=True, index=True)  # PK
+#     block_id = Column(Integer, ForeignKey("block.id"))  # FK
+#     block = relationship("Blocks", back_populates="word")
+    
+#     value = Column(String)      # word value: I, me, dog, ...
