@@ -245,6 +245,8 @@ class RegSuperSecondScreen extends ConsumerStatefulWidget {
 class _RegSuperSecondScreenState extends ConsumerState<RegSuperSecondScreen> {
   final formkey = GlobalKey<FormState>();
 
+  String password = '';
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -326,11 +328,8 @@ class _RegSuperSecondScreenState extends ConsumerState<RegSuperSecondScreen> {
                   // },
                   autovalidateMode: AutovalidateMode.onUserInteraction,
                 ),
-                const SizedBox(
-                  height: 20,
-                ),
                 Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 10.0),
+                  padding: const EdgeInsets.symmetric(vertical: 20.0),
                   child: SizedBox(
                     width: double.infinity,
                     height: 60.0,
@@ -350,6 +349,65 @@ class _RegSuperSecondScreenState extends ConsumerState<RegSuperSecondScreen> {
                       ),
                     ),
                   ),
+                ),
+                TextFormField(
+                  inputFormatters: [
+                    FilteringTextInputFormatter.allow(
+                      RegExp(r'[a-zA-Z0-9]'),
+                    ),
+                  ],
+                  obscureText: true,
+                  decoration: const InputDecoration(
+                    filled: true,
+                    fillColor: Color.fromRGBO(237, 231, 246, 1),
+                    border: UnderlineInputBorder(),
+                    labelText: '비밀번호',
+                  ),
+                  onChanged: (value) => setState(() => password = value),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return '비밀번호를 입력해주세요';
+                    }
+                    if (value.length < 8) {
+                      return '비밀번호가 너무 짧습니다';
+                    }
+                    return null;
+                  },
+                  autovalidateMode: AutovalidateMode.onUserInteraction,
+                ),
+                const Text(
+                  "영문/숫자 조합, 8자 이상",
+                  style: TextStyle(
+                    color: Colors.black54,
+                  ),
+                ),
+                const SizedBox(
+                  height: 10,
+                ),
+                TextFormField(
+                  inputFormatters: [
+                    FilteringTextInputFormatter.allow(
+                      RegExp(r'[a-zA-Z0-9]'),
+                    ),
+                  ],
+                  obscureText: true,
+                  decoration: const InputDecoration(
+                    filled: true,
+                    fillColor: Color.fromRGBO(237, 231, 246, 1),
+                    border: UnderlineInputBorder(),
+                    labelText: '비밀번호 확인',
+                  ),
+                  onChanged: null,
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return '비밀번호를 다시 입력해주세요';
+                    }
+                    if (value != password) {
+                      return '비밀번호가 일치하지 않습니다';
+                    }
+                    return null;
+                  },
+                  autovalidateMode: AutovalidateMode.onUserInteraction,
                 ),
                 Padding(
                   padding: const EdgeInsets.symmetric(vertical: 20.0),
