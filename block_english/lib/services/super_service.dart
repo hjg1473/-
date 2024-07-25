@@ -1,8 +1,4 @@
-import 'package:block_english/models/FailureModel/failure_model.dart';
-import 'package:block_english/models/SuperModel/create_group_response_model.dart';
-import 'package:block_english/models/SuperModel/group_info_model.dart';
-import 'package:block_english/models/SuperModel/student_in_group_model.dart';
-import 'package:block_english/models/SuperModel/super_info_model.dart';
+import 'package:block_english/models/model.dart';
 import 'package:block_english/utils/constants.dart';
 import 'package:block_english/utils/dio.dart';
 import 'package:dartz/dartz.dart';

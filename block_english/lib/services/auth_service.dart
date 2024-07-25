@@ -1,8 +1,4 @@
-import 'package:block_english/models/AuthModel/access_response_model.dart';
-import 'package:block_english/models/AuthModel/exist_check_model.dart';
-import 'package:block_english/models/AuthModel/login_response_model.dart';
-import 'package:block_english/models/AuthModel/reg_response_model.dart';
-import 'package:block_english/models/FailureModel/failure_model.dart';
+import 'package:block_english/models/model.dart';
 import 'package:block_english/utils/constants.dart';
 import 'package:block_english/utils/dio.dart';
 import 'package:dartz/dartz.dart';
@@ -117,11 +113,13 @@ class AuthService {
   Future<Either<FailureModel, AccessReponseModel>> postAuthAccess() async {
     final dio = _ref.watch(dioProvider);
     try {
-      final response = await dio.post('/$_auth/$_access',
-          options: Options(
-            contentType: Headers.jsonContentType,
-            headers: {TOKENVALIDATE: 'true'},
-          ));
+      final response = await dio.post(
+        '/$_auth/$_access',
+        options: Options(
+          contentType: Headers.jsonContentType,
+          headers: {TOKENVALIDATE: 'true'},
+        ),
+      );
       return Right(AccessReponseModel.fromJson(response.data));
     } on DioException catch (e) {
       return Left(FailureModel(
