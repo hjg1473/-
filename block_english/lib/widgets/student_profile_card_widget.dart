@@ -5,14 +5,12 @@ class StudentProfileCard extends StatelessWidget {
     super.key,
     required this.name,
     this.age = '',
-    this.isStudent = false,
     this.teamName,
   });
 
   final String name;
   final String age;
   final String? teamName;
-  final bool isStudent;
 
   @override
   Widget build(BuildContext context) {
@@ -68,28 +66,26 @@ class StudentProfileCard extends StatelessWidget {
                 ],
               ),
             ),
-            isStudent
-                ? Container(
-                    height: 80,
-                    width: 125,
-                    decoration: BoxDecoration(
-                        color: Colors.grey[800],
-                        borderRadius: const BorderRadius.only(
-                          topRight: Radius.circular(8),
-                          bottomRight: Radius.circular(8),
-                        )),
-                    child: Center(
-                      child: Text(
-                        teamName ?? "반 등록하기",
-                        style: TextStyle(
-                          color: Colors.grey[300],
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                  )
-                : const SizedBox(),
+            Container(
+              height: 80,
+              width: 125,
+              decoration: BoxDecoration(
+                  color: Colors.grey[800],
+                  borderRadius: const BorderRadius.only(
+                    topRight: Radius.circular(8),
+                    bottomRight: Radius.circular(8),
+                  )),
+              child: Center(
+                child: Text(
+                  teamName ?? "반 등록하기",
+                  style: TextStyle(
+                    color: Colors.grey[300],
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ),
           ],
         ),
       ),
