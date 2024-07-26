@@ -56,7 +56,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       if (mounted) {
         if (role == 'student') {
           Navigator.of(context).pushNamedAndRemoveUntil(
-            '/std_main_screen',
+            '/stud_main_screen',
             (Route<dynamic> route) => false,
           );
         } else if (role == 'super') {

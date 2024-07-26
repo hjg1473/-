@@ -25,9 +25,10 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       theme: ThemeData(
         scaffoldBackgroundColor: Colors.white,
-        // colorScheme: ColorScheme.fromSeed(
-        //   seedColor: const Color(0xFF6750A4),
-        // ),
+        appBarTheme: const AppBarTheme(
+          backgroundColor: Colors.white,
+          elevation: 0,
+        ),
       ),
       title: "Block English",
       initialRoute: '/loading_screen',
@@ -38,7 +39,7 @@ class MyApp extends StatelessWidget {
         '/reg_select_role_screen': (context) => const RegSelectRoleScreen(),
         '/reg_student_screen': (context) => const RegStudentScreen(),
         '/reg_super_screen': (context) => const RegSuperScreen(),
-        '/std_main_screen': (context) => const StudentMainScreen(),
+        '/stud_main_screen': (context) => const StudentMainScreen(),
         '/super_main_screen': (context) => const SuperMainScreen(),
         '/super_group_create_screen': (context) =>
             const SuperGroupCreateScreen(),
