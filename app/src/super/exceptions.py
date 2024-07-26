@@ -9,6 +9,9 @@ from auth.exceptions import get_user_exception
 def http_exception():
     return HTTPException(status_code=404, detail="Not found")
 
+def group_remove_exception():
+    return HTTPException(status_code=400, detail="그룹에 학생이 존재합니다.")
+
 # 필요없는 코드인가
 def user_authenticate_exception(user: user_dependency):
     if user is None:
@@ -24,6 +27,13 @@ def super_authenticate_exception(user):
         raise HTTPException(status_code=404, detail="Could not validate credentials")
     if user.get('user_role') != 'super':
         raise HTTPException(status_code=401, detail='학부모 계정이 아닙니다')
+    
+def problem_found_exception(target_problems):
+    if target_problems is None:
+        raise HTTPException(status_code=404, detail="해당 스텝의 문제를 찾을 수 없습니다.")
+    
+def released_step_exception():
+    return HTTPException(status_code=404, detail="해당 스텝을 해금할 수 없습니다.")
     
 def group_count_exception(count):
     if count == 0:
@@ -51,6 +61,24 @@ async def find_group_exception(group_id, db):
     if group is None:
         raise HTTPException(status_code=404, detail="해당 반을 찾을 수 없습니다.")
     
-async def get_studyInfo_exception(correct_count, incorrect_count):
+def get_studyInfo_exception(correct_count, incorrect_count):
     if correct_count + incorrect_count == 0:
         raise HTTPException(status_code=404, detail="학습 정보가 기록되지 않았습니다.")
+    
+async def super_group_exception(user_id, group_id, db):
+    from super.service import get_group_list
+    group = await get_group_list(user_id, db)
+    isGroup = False
+    for g in group:
+        if g.id == group_id:
+            isGroup = True
+    if not isGroup:
+        raise HTTPException(status_code=403, detail="해당 반은 접근할 수 없습니다.")
+    
+def std_access_exception(group_list, std_team_id):
+    isGroup = False
+    for u in group_list:
+        if u.id == std_team_id:
+            isGroup = True
+    if not isGroup:
+        raise HTTPException(status_code=403, detail="해당 학생에 접근할 수 없습니다.")
