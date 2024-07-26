@@ -37,7 +37,6 @@ class MonitorStudentScreen extends StatelessWidget {
             StudentProfileCard(
               name: studentName,
               age: "10세",
-              isStudent: true,
             ),
             const SizedBox(
               height: 30,

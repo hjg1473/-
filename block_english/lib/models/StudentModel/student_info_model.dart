@@ -1,10 +1,12 @@
+import 'package:block_english/utils/constants.dart';
+
 class StudentInfoModel {
   final String name;
   final String age;
-  final String? teamId;
+  final int? teamId;
 
   StudentInfoModel.fromJson(Map<String, dynamic> json)
       : name = json['name'],
-        age = json['age'].toString(),
+        age = gradelist[json['age']],
         teamId = json['team_id'];
 }

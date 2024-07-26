@@ -3,6 +3,7 @@ import 'package:block_english/utils/constants.dart';
 import 'package:block_english/utils/dio.dart';
 import 'package:dartz/dartz.dart';
 import 'package:dio/dio.dart';
+import 'package:flutter/material.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'student_service.g.dart';
@@ -33,6 +34,7 @@ class StudentService {
           },
         ),
       );
+      debugPrint(response.data.toString());
       return Right(StudentInfoModel.fromJson(response.data));
     } on DioException catch (e) {
       return Left(FailureModel(

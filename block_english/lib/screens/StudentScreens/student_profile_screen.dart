@@ -3,13 +3,9 @@ import 'package:block_english/services/student_service.dart';
 import 'package:block_english/widgets/student_profile_card_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class StudentProfileScreen extends StatelessWidget {
   const StudentProfileScreen({super.key});
-
-  final FlutterSecureStorage storage = const FlutterSecureStorage();
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -25,6 +21,9 @@ class StudentProfileScreen extends StatelessWidget {
                     builder: (context, snapshot) {
                       late StudentInfoModel studentInfo;
                       String error = '';
+                      if (snapshot.hasError) {
+                        debugPrint('Error: ${snapshot.error}');
+                      }
                       if (!snapshot.hasData) {
                         return const CircularProgressIndicator();
                       }
@@ -40,7 +39,6 @@ class StudentProfileScreen extends StatelessWidget {
                           ? StudentProfileCard(
                               name: studentInfo.name,
                               age: studentInfo.age,
-                              isStudent: true,
                             )
                           : // TODO: Error handling
                           Text(error);

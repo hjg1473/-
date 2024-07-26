@@ -18,7 +18,6 @@ class StudentPracticeScreen extends ConsumerWidget {
             int currentLevel = 0;
             int currentStep = 0;
             List<Level> levels = [];
-
             if (!snapshot.hasData) {
               return const CircularProgressIndicator();
             }
