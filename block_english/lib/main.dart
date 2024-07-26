@@ -38,7 +38,7 @@ class MyApp extends StatelessWidget {
         '/reg_select_role_screen': (context) => const RegSelectRoleScreen(),
         '/reg_student_screen': (context) => const RegStudentScreen(),
         '/reg_super_screen': (context) => const RegSuperFirstScreen(),
-        '/std_main_screen': (context) => const StudentMainScreen(),
+        '/stud_main_screen': (context) => const StudentMainScreen(),
         '/super_main_screen': (context) => const SuperMainScreen(),
         '/super_group_create_screen': (context) =>
             const SuperGroupCreateScreen(),
