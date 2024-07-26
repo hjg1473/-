@@ -82,8 +82,8 @@ class Groups(Base):
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String)
     grade = Column(String)
-    releasedLevel = Column(String)
-    releasedStep = Column(String)
+    releasedLevel = Column(Integer, default=1)
+    releasedStep = Column(Integer, default=1)
     admin_id = Column(Integer, ForeignKey("users.id")) # FK, teacher_id
 
     owner = relationship("Users", foreign_keys=[admin_id], back_populates="managed_groups")

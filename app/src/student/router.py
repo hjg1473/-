@@ -1,3 +1,4 @@
+import aioredis
 from sqlalchemy import select
 from sqlalchemy.orm import joinedload
 from fastapi import APIRouter
@@ -9,14 +10,37 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(
 from app.src.models import Users, StudyInfo
 from student.dependencies import user_dependency, db_dependency
 from student.exceptions import get_user_exception, get_user_exception2, auth_exception, http_exception, select_exception1, select_exception2, select_exception3
-
+from student.schemas import PinNumber
+from app.src.super.exceptions import find_student_exception, find_group_exception
+from app.src.super.service import update_std_group
 router = APIRouter( 
     prefix="/student",
     tags=["student"],
     responses={404: {"description": "Not found"}}
 )
 
-# 학생과 선생님 연결, 학생 -> 선생님(student_teachers) / 선생님 -> 학생(teachers_students) ?
+
+@router.post("/group/enter", status_code = status.HTTP_200_OK)
+async def user_solve_problem(pin_number: PinNumber,
+                            user: user_dependency,
+                            db: db_dependency):
+    
+    redis_client = await aioredis.create_redis_pool('redis://localhost')
+    print(type(pin_number.pin_number))
+    stored_group_id = await redis_client.get(f"{pin_number.pin_number}")
+    if stored_group_id is None:
+        return {'detail': '유효하지 않은 핀코드입니다.'}
+    string_group_id = stored_group_id.decode('utf-8')
+    redis_client.close()
+    await redis_client.wait_closed()
+
+    await find_student_exception(user.get("id"), db)
+    await find_group_exception(int(string_group_id), db)
+    await update_std_group(int(string_group_id), user.get("id"), db)
+
+    return {'detail' : '연결되었습니다.'}
+
+# 학생과 학부모 연결, 학생 -> 학부모(student_teachers) / 학부모 -> 학생(teachers_students) ?
 @router.get("/connecting", status_code = status.HTTP_200_OK)
 async def connect_teacher(teacher_id: int, user: user_dependency, db: db_dependency):
 

@@ -98,6 +98,11 @@ async def get_group_to_groupid(group_id, db: db_dependency):
     result = await db.execute(select(Groups).filter(Groups.id == group_id))
     return result.scalars().first()
 
+async def get_std_team_id(user_id, db: db_dependency):
+    result = await db.execute(select(Users).where(Users.id == user_id))
+    user_group = result.scalars().first()
+    return user_group.team_id
+
 async def update_group_level_and_step(group_id, level, step, db:db_dependency):
     result = await db.execute(select(Groups).filter(Groups.id == group_id))
     group_model = result.scalars().first()
@@ -106,3 +111,12 @@ async def update_group_level_and_step(group_id, level, step, db:db_dependency):
 
     db.add(group_model)
     await db.commit()
+
+async def update_group_name(group_id, name, db: db_dependency):
+    result = await db.execute(select(Groups).filter(Groups.id == group_id))
+    group_model = result.scalars().first()
+    group_model.name = name
+
+    db.add(group_model)
+    await db.commit()
+

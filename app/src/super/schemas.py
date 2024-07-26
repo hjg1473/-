@@ -23,5 +23,24 @@ class GroupAvgTime(BaseModel):
 
 class GroupLevelStep(BaseModel):
     group_id: int
-    step: str
-    level: str
+    step: int
+    level: int
+
+class PinNumber(BaseModel):
+    pin_number: int
+
+class GroupName(BaseModel):
+    group_id: int
+    group_name: str
+
+class GroupId(BaseModel):
+    group_id: int
+
+
+class UserStep(BaseModel):
+    user_id: int
+
+class UserStep2(BaseModel):
+    user_id: int
+    step: int
+    level: int
