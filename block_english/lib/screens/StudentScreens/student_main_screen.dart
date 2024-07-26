@@ -5,6 +5,23 @@ const route1 = "/standard";
 const route2 = '/expansion';
 const route3 = "/game";
 
+class CustomRoute<T> extends MaterialPageRoute<T> {
+  CustomRoute({required super.builder});
+
+  @override
+  Widget buildTransitions(BuildContext context, Animation<double> animation,
+      Animation<double> secondaryAnimation, Widget child) {
+    //return FadeTransition(opacity: animation, child: child);
+    return SlideTransition(
+      position:
+          Tween<Offset>(begin: const Offset(0, 0), end: const Offset(0, 0))
+              //.chain(CurveTween(curve: Curves.linear))
+              .animate(animation),
+      child: child,
+    );
+  }
+}
+
 class StudentMainScreen extends StatefulWidget {
   const StudentMainScreen({super.key});
 
@@ -17,7 +34,7 @@ class _StudentMainScreenState extends State<StudentMainScreen> {
 
   onPressedR(String route) {
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _navigatorKey.currentState!.pushReplacementNamed(route);
+      _navigatorKey.currentState!.popAndPushNamed(route);
     });
   }
 
@@ -25,11 +42,12 @@ class _StudentMainScreenState extends State<StudentMainScreen> {
   Widget build(BuildContext context) {
     return Stack(
       children: [
+        const MainPage(),
         Navigator(
           key: _navigatorKey,
           onGenerateRoute: (settings) {
-            return CupertinoPageRoute(
-              fullscreenDialog: true,
+            return CustomRoute(
+              //fullscreenDialog: true,
               builder: (context) {
                 switch (settings.name) {
                   case route1:
@@ -64,23 +82,8 @@ class MainPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        centerTitle: true,
-        title: const Text('테스트'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.settings_outlined),
-            onPressed: () {
-              Navigator.of(context).pushNamed('/setting_screen');
-            },
-          ),
-          const SizedBox(width: 10),
-        ],
-      ),
+    return const Scaffold(
       backgroundColor: Colors.white,
-      body: const SizedBox(),
     );
   }
 }
