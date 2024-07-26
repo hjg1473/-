@@ -28,9 +28,6 @@ class MyApp extends StatelessWidget {
         appBarTheme: const AppBarTheme(
           backgroundColor: Colors.white,
         ),
-        // colorScheme: ColorScheme.fromSeed(
-        //   seedColor: const Color(0xFF6750A4),
-        // ),
       ),
       title: "Block English",
       initialRoute: '/loading_screen',

@@ -1,6 +1,6 @@
 class FailureModel {
   final int statusCode;
-  final String detail;
+  final dynamic detail;
 
   FailureModel({
     required this.statusCode,

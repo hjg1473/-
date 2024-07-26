@@ -202,7 +202,6 @@ class _SuperMonitorScreenState extends ConsumerState<SuperMonitorScreen> {
               ),
               onPressed: addButtonPressed,
             ),
-            const SizedBox(width: 10),
           ]),
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
@@ -240,7 +239,7 @@ class _SuperMonitorScreenState extends ConsumerState<SuperMonitorScreen> {
             ),
             const SizedBox(height: 20),
             isLoading
-                ? const Text('Loading...')
+                ? const CircularProgressIndicator()
                 : Expanded(
                     child: error.isEmpty
                         ? filteredGroups.isEmpty

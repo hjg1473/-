@@ -336,10 +336,12 @@ class _RegSuperSecondScreenState extends ConsumerState<RegSuperSecondScreen> {
                     child: ElevatedButton(
                       onPressed: () {},
                       style: ElevatedButton.styleFrom(
-                          backgroundColor:
-                              const Color.fromARGB(255, 102, 80, 164),
-                          shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12.0))),
+                        backgroundColor:
+                            const Color.fromARGB(255, 102, 80, 164),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12.0),
+                        ),
+                      ),
                       child: const Text(
                         "중복 확인",
                         style: TextStyle(
