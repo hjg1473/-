@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 const route1 = "/standard";
 const route2 = '/expansion';
 const route3 = "/game";
+String appBarTitle = '기본 문제';
 
 class CustomRoute<T> extends MaterialPageRoute<T> {
   CustomRoute({required super.builder});
@@ -35,57 +36,64 @@ class _StudentMainScreenState extends State<StudentMainScreen> {
   final _navigatorKey = GlobalKey<NavigatorState>();
 
   onPressedR(String route) {
+    setState(() {
+      switch (route) {
+        case route1:
+          appBarTitle = '기본 문제';
+          break;
+        case route2:
+          appBarTitle = '확장 문제';
+          break;
+        case route3:
+          appBarTitle = '게임';
+          break;
+      }
+    });
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _navigatorKey.currentState!.popAndPushNamed(route);
+      _navigatorKey.currentState!.pushReplacementNamed(route);
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    return Stack(
-      children: [
-        const MainPage(),
-        Navigator(
-          key: _navigatorKey,
-          onGenerateRoute: (settings) {
-            return CustomRoute(
-              //fullscreenDialog: true,
-              builder: (context) {
-                switch (settings.name) {
-                  case route1:
-                    return const StudentPracticeScreen();
-                  case route2:
-                    return const Exp();
-                  case route3:
-                    return const Game();
-                  default:
-                    return const StudentPracticeScreen();
-                }
-              },
-            );
-          },
-        ),
-        Scaffold(
-          backgroundColor: Colors.transparent,
-          floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
-          floatingActionButton: FloatingSideBar(
-            onPressed: onPressedR,
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(appBarTitle),
+        centerTitle: true,
+        actions: [
+          IconButton(
+            onPressed: () {
+              Navigator.pushNamed(context, '/setting_screen');
+            },
+            icon: const Icon(Icons.account_circle_outlined),
           ),
-        ),
-      ],
-    );
-  }
-}
-
-class MainPage extends StatelessWidget {
-  const MainPage({
-    super.key,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return const Scaffold(
-      backgroundColor: Colors.white,
+        ],
+      ),
+      body: Navigator(
+        key: _navigatorKey,
+        onGenerateRoute: (settings) {
+          return CustomRoute(
+            //fullscreenDialog: true,
+            builder: (context) {
+              switch (settings.name) {
+                case route1:
+                  return const StudentPracticeScreen();
+                case route2:
+                  return const Exp();
+                case route3:
+                  return const StudentGameScreen();
+                default:
+                  return const StudentPracticeScreen();
+              }
+            },
+          );
+        },
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
+      floatingActionButton: FloatingSideBar(
+        onPressed: onPressedR,
+      ),
     );
   }
 }
@@ -206,25 +214,6 @@ class Exp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('확장 문제'),
-      ),
-      body: const Center(child: Text('hello')),
-    );
-  }
-}
-
-class Game extends StatelessWidget {
-  const Game({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('게임'),
-      ),
-      body: const Center(child: Text('hi')),
-    );
+    return const Scaffold(body: Center(child: Text('hello')));
   }
 }
