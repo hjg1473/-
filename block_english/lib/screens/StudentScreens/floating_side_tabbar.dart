@@ -1,5 +1,8 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+
+const route1 = "/standard";
+const route2 = '/expansion';
+const route3 = "/game";
 
 void main() {
   runApp(const MaterialApp(
@@ -15,26 +18,53 @@ class StudTempMain extends StatefulWidget {
 }
 
 class _StudTempMainState extends State<StudTempMain> {
-  List<TabItem> tabList = [
-    TabItem(
-      title: '기본 문제',
-      onTap: () {},
-      icon: const Icon(Icons.school_rounded),
-      tab: const Text('기본 문제'),
-    ),
-    TabItem(
-      title: '확장 문제',
-      onTap: () {},
-      icon: const Icon(Icons.import_contacts_rounded),
-      tab: const Text('확장 문제'),
-    ),
-    TabItem(
-      title: '게임',
-      onTap: () {},
-      icon: const Icon(Icons.category_rounded),
-      tab: const Text('게임'),
-    ),
-  ];
+  final _navigatorKey = GlobalKey<NavigatorState>();
+
+  onPressedR(String route) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _navigatorKey.currentState!.pushReplacementNamed(route);
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      children: [
+        Navigator(
+          key: _navigatorKey,
+          onGenerateRoute: (settings) {
+            return MaterialPageRoute(
+              builder: (context) {
+                switch (settings.name) {
+                  case route1:
+                    return const Std();
+                  case route2:
+                    return const Exp();
+                  case route3:
+                    return const Game();
+                  default:
+                    return const Std();
+                }
+              },
+            );
+          },
+        ),
+        Scaffold(
+          backgroundColor: Colors.transparent,
+          floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
+          floatingActionButton: FloatingSideBar(
+            onPressed: onPressedR,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class MainPage extends StatelessWidget {
+  const MainPage({
+    super.key,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -54,36 +84,15 @@ class _StudTempMainState extends State<StudTempMain> {
         ],
       ),
       backgroundColor: Colors.white,
-      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
-      floatingActionButton: FloatingSideBar(
-        children: tabList,
-      ),
       body: const SizedBox(),
     );
   }
 }
 
 class FloatingSideBar extends StatefulWidget {
-  final List<TabItem> children;
-  final Widget? leading;
-  final Color? indicatorColor;
-  final Color? activeColor;
-  final Color? inactiveColor;
-  final Color? backgroundColor;
-  final bool? useIndicator;
-  final double? minExtendedHeight;
+  const FloatingSideBar({super.key, required this.onPressed});
 
-  const FloatingSideBar({
-    super.key,
-    required this.children,
-    this.leading,
-    this.indicatorColor,
-    this.activeColor,
-    this.inactiveColor,
-    this.backgroundColor,
-    this.useIndicator,
-    this.minExtendedHeight = 200,
-  });
+  final dynamic onPressed;
 
   @override
   State<FloatingSideBar> createState() => _FloatingSideBarState();
@@ -92,24 +101,6 @@ class FloatingSideBar extends StatefulWidget {
 class _FloatingSideBarState extends State<FloatingSideBar> {
   PageController floatingTabBarPageViewController =
       PageController(initialPage: 0);
-
-  final int _selectedIndex = 0;
-  final List<SideBarItem> _sideBarItems = [];
-
-  void setTabItems() {
-    for (int i = 0; i < widget.children.length; i++) {
-      _sideBarItems.add(SideBarItem(
-        icon: widget.children[i].icon,
-        label: widget.children[i].title,
-      ));
-    }
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    setTabItems();
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -124,11 +115,50 @@ class _FloatingSideBarState extends State<FloatingSideBar> {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           const Spacer(flex: 2),
-          _sideBarItems[0],
+          IconButton(
+            icon: const Icon(Icons.school_rounded),
+            onPressed: () => widget.onPressed('/standard'),
+            style: IconButton.styleFrom(
+              iconSize: 40,
+            ),
+          ),
+          const Text(
+            '기본 문제',
+            style: TextStyle(
+                fontSize: 14,
+                color: Colors.black,
+                fontWeight: FontWeight.normal),
+          ),
           const Spacer(flex: 1),
-          _sideBarItems[1],
+          IconButton(
+            icon: const Icon(Icons.import_contacts_rounded),
+            onPressed: () => widget.onPressed('/expansion'),
+            style: IconButton.styleFrom(
+              iconSize: 40,
+            ),
+          ),
+          const Text(
+            '확장 문제',
+            style: TextStyle(
+                fontSize: 14,
+                color: Colors.black,
+                fontWeight: FontWeight.normal),
+          ),
           const Spacer(flex: 1),
-          _sideBarItems[2],
+          IconButton(
+            icon: const Icon(Icons.category_rounded),
+            onPressed: () => widget.onPressed('/game'),
+            style: IconButton.styleFrom(
+              iconSize: 40,
+            ),
+          ),
+          const Text(
+            '게임',
+            style: TextStyle(
+                fontSize: 14,
+                color: Colors.black,
+                fontWeight: FontWeight.normal),
+          ),
           const Spacer(flex: 2),
         ],
       ),
@@ -136,52 +166,44 @@ class _FloatingSideBarState extends State<FloatingSideBar> {
   }
 }
 
-class SideBarItem extends StatelessWidget {
-  SideBarItem({
-    super.key,
-    required this.icon,
-    required this.label,
-  });
-
-  final Widget icon;
-  final String label;
-  bool isSelected = false;
+class Std extends StatelessWidget {
+  const Std({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        IconButton(
-          icon: icon,
-          onPressed: () {
-            debugPrint(label);
-          },
-          style: IconButton.styleFrom(
-            iconSize: 40,
-          ),
-        ),
-        Text(label),
-      ],
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('기본 문제'),
+      ),
+      body: const Center(child: Text('bye')),
     );
   }
 }
 
-class TabItem {
-  final String title;
-  final void Function()? onTap;
-  final bool tIOnTap;
-  final Widget icon;
-  final Widget? tab;
-  final List<TabItem>? children;
-  final Function(bool)? isSelected;
+class Exp extends StatelessWidget {
+  const Exp({super.key});
 
-  const TabItem({
-    required this.title,
-    required this.onTap,
-    this.tIOnTap = false,
-    required this.icon,
-    this.tab,
-    this.children = const [],
-    this.isSelected,
-  });
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('확장 문제'),
+      ),
+      body: const Center(child: Text('hello')),
+    );
+  }
+}
+
+class Game extends StatelessWidget {
+  const Game({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('게임'),
+      ),
+      body: const Center(child: Text('hi')),
+    );
+  }
 }
