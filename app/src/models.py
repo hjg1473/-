@@ -115,11 +115,12 @@ class Problems(Base):  # Problems
 
     id = Column(Integer, primary_key=True, index=True)  # PK
     season = Column(String)  # Season
-    level = Column(String)  # Type >> level
-    step = Column(String)  # Problem level (1-3)>> step
+    level = Column(Integer)  # Type >> level
+    step = Column(Integer)  # Problem level (1-3)>> step
     koreaProblem = Column(String)  # Korean sentence
     englishProblem = Column(String)  # English sentence
     img_path = Column(String)  # Problem image (optional)
+    type = Column(String) # normal or ai
     # StudyInfo_id 가 갖는 id 값은 StudyInfo.id 값.
     # 동일 문제에서, 민수(id=1)도 이 문제를 맞추고, 철수(id=2)도 이 문제를 맞추면 TStudyInfo_id 에는 [1, 2] 가 들어가야 됨.
     # TStudyInfo_id = Column(Integer, ForeignKey("studyInfo.id"))  # FK to correct study info 

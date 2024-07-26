@@ -3,8 +3,8 @@ from pydantic import BaseModel
 
 class Problem(BaseModel):
     season: str
-    level: str
-    step: str
+    level: int
+    step: int
     koreaProblem: str
     englishProblem: str
     img_path: Optional[str]

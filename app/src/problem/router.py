@@ -121,10 +121,10 @@ async def read_level_and_step_all(user: user_dependency, db: db_dependency):
 
 # 연습 문제 반환
 @router.get("practice_set/level={level}/step={step}", status_code = status.HTTP_200_OK)
-async def read_problem_all(level:str, step:str, user: user_dependency, db: db_dependency):
+async def read_problem_all(level:int, step:int, user: user_dependency, db: db_dependency):
     get_user_exception(user)
     
-    result = await db.execute(select(Problems).filter(Problems.level == level).filter(Problems.step == step))
+    result = await db.execute(select(Problems).filter(Problems.level == level).filter(Problems.step == step).filter(Problems.type == "normal"))
     stepinfo_model = result.scalars().all()
 
     get_problem_exception(stepinfo_model)
