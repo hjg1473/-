@@ -52,7 +52,6 @@ class _SuperGroupCreateScreenState
     return Scaffold(
         appBar: AppBar(
           title: const Text('그룹 생성'),
-          backgroundColor: Colors.white,
         ),
         body: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 30),

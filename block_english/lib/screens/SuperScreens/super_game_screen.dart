@@ -16,7 +16,6 @@ class _SuperGameScreenState extends State<SuperGameScreen> {
     return Scaffold(
       appBar: AppBar(
           automaticallyImplyLeading: false,
-          backgroundColor: Colors.white,
           centerTitle: true,
           title: const Column(
             children: [

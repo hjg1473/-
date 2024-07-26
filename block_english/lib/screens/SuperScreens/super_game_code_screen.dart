@@ -22,7 +22,6 @@ class _SuperGameCodeScreenState extends State<SuperGameCodeScreen> {
           ),
         ),
         centerTitle: true,
-        elevation: 10,
       ),
       body: Center(
         child: Column(

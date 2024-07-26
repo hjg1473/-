@@ -25,9 +25,9 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       theme: ThemeData(
         scaffoldBackgroundColor: Colors.white,
-        // colorScheme: ColorScheme.fromSeed(
-        //   seedColor: const Color(0xFF6750A4),
-        // ),
+        appBarTheme: const AppBarTheme(
+          backgroundColor: Colors.white,
+        ),
       ),
       title: "Block English",
       initialRoute: '/loading_screen',

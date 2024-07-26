@@ -6,8 +6,10 @@ class StudentButton extends StatelessWidget {
     super.key,
     required this.name,
     this.groupId = -1,
+    required this.studentId,
   });
 
+  final int studentId;
   final String name;
   final int groupId;
 
@@ -16,9 +18,14 @@ class StudentButton extends StatelessWidget {
     return FilledButton(
       onPressed: () {
         Navigator.push(
-            context,
-            MaterialPageRoute(
-                builder: (context) => MonitorStudentScreen(studentName: name)));
+          context,
+          MaterialPageRoute(
+            builder: (context) => MonitorStudentScreen(
+              studentName: name,
+              studentId: studentId,
+            ),
+          ),
+        );
       },
       style: FilledButton.styleFrom(
         backgroundColor: const Color(0xFFEAEAEA),

@@ -1,3 +1,4 @@
+import 'package:block_english/models/SuperModel/pin_model.dart';
 import 'package:block_english/models/model.dart';
 import 'package:block_english/utils/constants.dart';
 import 'package:block_english/utils/dio.dart';
@@ -11,6 +12,9 @@ class SuperService {
   final String _super = "super";
   final String _group = "group";
   final String _info = "info";
+  final String _getpin = "get_pin";
+  final String _remove = "remove";
+  final String _groupId = "group_id";
   late final SuperServiceRef _ref;
 
   SuperService(SuperServiceRef ref) {
@@ -101,6 +105,38 @@ class SuperService {
       ));
     }
   }
+
+  Future<Either<FailureModel, PinModel>> postPinNumber(int groupId) async {
+    try {
+      final dio = _ref.watch(dioProvider);
+      final response = await dio.post(
+        '/$_super/$_getpin',
+        options: Options(
+          headers: {'accept': 'application/json', TOKENVALIDATE: 'true'},
+        ),
+        data: {
+          _groupId: groupId.toString(),
+        },
+      );
+
+      return Right(PinModel.fromJson(response.data));
+    } on DioException catch (e) {
+      return Left(FailureModel(
+        statusCode: e.response?.statusCode ?? 0,
+        detail: e.response?.data['detail'],
+      ));
+    }
+  }
+
+  // Future<Either<FailureModel, Response>> putRemoveStudentInGroup(
+  //     int studentId) async {
+  //   final dio = _ref.watch(dioProvider);
+
+  //   final response = await dio.get(
+  //     '/$_super/$_group/$_remove/${studentId.toString()}',
+
+  //   );
+  // }
 }
 
 @Riverpod(keepAlive: true)

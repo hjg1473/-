@@ -79,9 +79,12 @@ Dio dio(DioRef ref) {
           );
           return handler.resolve(response);
         } on DioException catch (e) {
-          return handler.next(DioException(requestOptions: e.requestOptions));
+          return handler.next(DioException(
+              requestOptions: e.requestOptions, response: e.response));
         }
       }
+      return handler.next(DioException(
+          requestOptions: error.requestOptions, response: error.response));
     },
   ));
 

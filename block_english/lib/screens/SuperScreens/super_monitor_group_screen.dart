@@ -63,7 +63,6 @@ class _MonitorGroupScreenState extends ConsumerState<MonitorGroupScreen> {
             widget.groupName,
           ),
           centerTitle: true,
-          backgroundColor: Colors.white,
           actions: [
             IconButton(
               icon: const Icon(
@@ -73,34 +72,72 @@ class _MonitorGroupScreenState extends ConsumerState<MonitorGroupScreen> {
               onPressed: () {
                 Navigator.of(context).push(
                   MaterialPageRoute(
-                    builder: (context) => const GroupSettingScreen(),
+                    builder: (context) => GroupSettingScreen(
+                      groupName: widget.groupName,
+                      groupId: widget.groupId,
+                    ),
                   ),
                 );
               },
             ),
-            const SizedBox(width: 10),
           ]),
       body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
+        padding: const EdgeInsets.symmetric(horizontal: 20.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             isLoading
-                ? const Text('Loading...')
+                ? const Center(
+                    child: CircularProgressIndicator(),
+                  )
                 : Expanded(
                     child: error.isEmpty
-                        ? ListView.separated(
-                            scrollDirection: Axis.vertical,
-                            itemCount: students.length,
-                            itemBuilder: (BuildContext context, int index) {
-                              var student = students[index];
-                              return StudentButton(
-                                name: student.name,
-                              );
-                            },
-                            separatorBuilder: (context, index) =>
-                                const SizedBox(height: 20),
-                          )
+                        ? students.isEmpty
+                            ? const Center(
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Text(
+                                      '관리 중인 학생이 존재하지 않습니다',
+                                      style: TextStyle(
+                                        fontSize: 24.0,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                    SizedBox(
+                                      height: 20,
+                                    ),
+                                    Text(
+                                      '그룹 설정 버튼을 눌러',
+                                      style: TextStyle(
+                                        fontSize: 24.0,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                    Text(
+                                      '학생을 추가하세요',
+                                      style: TextStyle(
+                                        fontSize: 24.0,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              )
+                            : ListView.separated(
+                                scrollDirection: Axis.vertical,
+                                itemCount: students.length,
+                                itemBuilder: (BuildContext context, int index) {
+                                  var student = students[index];
+                                  return StudentButton(
+                                    name: student.name,
+                                    studentId: student.id,
+                                    groupId: widget.groupId,
+                                  );
+                                },
+                                separatorBuilder: (context, index) =>
+                                    const SizedBox(height: 20),
+                              )
                         : Center(child: Text(error))),
           ],
         ),
