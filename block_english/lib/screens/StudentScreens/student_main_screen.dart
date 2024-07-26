@@ -1,3 +1,5 @@
+import 'package:block_english/screens/StudentScreens/student_game_screen.dart';
+import 'package:block_english/screens/StudentScreens/student_practice_screen.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
@@ -51,13 +53,13 @@ class _StudentMainScreenState extends State<StudentMainScreen> {
               builder: (context) {
                 switch (settings.name) {
                   case route1:
-                    return const Std();
+                    return const StudentPracticeScreen();
                   case route2:
                     return const Exp();
                   case route3:
                     return const Game();
                   default:
-                    return const Std();
+                    return const StudentPracticeScreen();
                 }
               },
             );
@@ -195,20 +197,6 @@ class _FloatingSideBarState extends State<FloatingSideBar> {
           const Spacer(flex: 2),
         ],
       ),
-    );
-  }
-}
-
-class Std extends StatelessWidget {
-  const Std({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('기본 문제'),
-      ),
-      body: const Center(child: Text('bye')),
     );
   }
 }
