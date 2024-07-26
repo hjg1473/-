@@ -23,8 +23,8 @@ class ProblemInfoModel {
 }
 
 class Level {
-  String levelName;
-  List<String> steps;
+  int levelName;
+  List<int> steps;
 
   Level({
     required this.levelName,
@@ -35,7 +35,7 @@ class Level {
   static Level fromJson(Map<String, dynamic> json) {
     return Level(
       levelName: json['level_name'],
-      steps: List<String>.from(json['steps']),
+      steps: List<int>.from(json['steps']),
     );
   }
 }
