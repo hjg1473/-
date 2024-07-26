@@ -34,7 +34,6 @@ class StudentService {
           },
         ),
       );
-      debugPrint(response.data.toString());
       return Right(StudentInfoModel.fromJson(response.data));
     } on DioException catch (e) {
       return Left(FailureModel(

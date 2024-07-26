@@ -9,6 +9,9 @@ class StudentPracticeScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
+      appBar: AppBar(
+        title: const Text('기본 문제'),
+      ),
       body: Padding(
         padding: const EdgeInsets.all(8.0),
         child: FutureBuilder(

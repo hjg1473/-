@@ -36,7 +36,6 @@ class ProblemService {
           },
         ),
       );
-      debugPrint(response.data.toString());
       return Right(ProblemInfoModel.fromJson(response.data));
     } on DioException catch (e) {
       return Left(
