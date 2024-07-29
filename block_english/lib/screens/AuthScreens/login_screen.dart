@@ -8,10 +8,10 @@ class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
 
   @override
-  ConsumerState<LoginScreen> createState() => _LoginScreenState();
+  ConsumerState<LoginScreen> createState() => _LoginState();
 }
 
-class _LoginScreenState extends ConsumerState<LoginScreen> {
+class _LoginState extends ConsumerState<LoginScreen> {
   final formkey = GlobalKey<FormState>();
 
   String username = '';
@@ -72,35 +72,86 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-      ),
-      body: SingleChildScrollView(
-        child: Center(
-          child: Form(
-            key: formkey,
-            child: Column(
-              children: [
-                const Icon(
-                  Icons.abc,
-                  size: 300,
-                ),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 40.0),
-                      child: TextFormField(
+      body: Row(
+        children: [
+          Container(
+            width: MediaQuery.of(context).size.width / 2 - 10,
+            height: MediaQuery.of(context).size.height,
+            color: Colors.grey[200],
+          ),
+          SizedBox(
+            width: MediaQuery.of(context).size.width / 2 + 10,
+            height: MediaQuery.of(context).size.height,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 30),
+              child: SingleChildScrollView(
+                child: Form(
+                  key: formkey,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          const Text('로그인',
+                              style: TextStyle(
+                                fontSize: 24,
+                                fontWeight: FontWeight.w600,
+                              )),
+                          SizedBox(
+                            height: 45,
+                            child: FilledButton(
+                              onPressed: () {
+                                Navigator.of(context)
+                                    .pushNamed('/reg_select_role_screen');
+                              },
+                              style: FilledButton.styleFrom(
+                                backgroundColor: Colors.grey[700],
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(50),
+                                ),
+                              ),
+                              child: const Text(
+                                '회원가입',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 18),
+                      Text(
+                        '아이디',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.grey[700],
+                        ),
+                      ),
+                      const SizedBox(height: 3),
+                      TextFormField(
                         inputFormatters: [
                           FilteringTextInputFormatter.allow(
                             RegExp(r'[a-zA-Z0-9]'),
                           ),
                         ],
-                        decoration: const InputDecoration(
+                        decoration: InputDecoration(
+                          contentPadding:
+                              const EdgeInsets.symmetric(horizontal: 20),
+                          hintText: '전화번호 또는 이메일을 입력해주세요',
+                          hintStyle: TextStyle(
+                            color: Colors.grey[500],
+                            fontSize: 16,
+                          ),
                           filled: true,
-                          fillColor: Color.fromRGBO(237, 231, 246, 1),
-                          border: UnderlineInputBorder(),
-                          labelText: '아이디',
+                          fillColor: Colors.grey[200],
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                            borderSide: BorderSide.none,
+                          ),
                         ),
                         onChanged: (value) => setState(() => username = value),
                         validator: (value) {
@@ -112,40 +163,38 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           }
                           return null;
                         },
-                        autovalidateMode: AutovalidateMode.onUserInteraction,
                       ),
-                    ),
-                    const Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 40.0),
-                      child: Text(
-                        "영문/숫자 조합, 6자 이상",
+                      const SizedBox(height: 12),
+                      Text(
+                        '비밀번호',
                         style: TextStyle(
-                          color: Colors.black54,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.grey[700],
                         ),
                       ),
-                    ),
-                  ],
-                ),
-                const SizedBox(
-                  height: 10,
-                ),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 40.0),
-                      child: TextFormField(
+                      const SizedBox(height: 3),
+                      TextFormField(
                         inputFormatters: [
                           FilteringTextInputFormatter.allow(
                             RegExp(r'[a-zA-Z0-9]'),
                           ),
                         ],
                         obscureText: true,
-                        decoration: const InputDecoration(
+                        decoration: InputDecoration(
+                          contentPadding:
+                              const EdgeInsets.symmetric(horizontal: 20),
+                          hintText: '비밀번호를 입력해주세요',
+                          hintStyle: TextStyle(
+                            color: Colors.grey[500],
+                            fontSize: 16,
+                          ),
                           filled: true,
-                          fillColor: Color.fromRGBO(237, 231, 246, 1),
-                          border: UnderlineInputBorder(),
-                          labelText: '비밀번호',
+                          fillColor: Colors.grey[200],
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                            borderSide: BorderSide.none,
+                          ),
                         ),
                         onChanged: (value) => setState(() => password = value),
                         validator: (value) {
@@ -157,43 +206,45 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           }
                           return null;
                         },
-                        autovalidateMode: AutovalidateMode.onUserInteraction,
                       ),
-                    ),
-                    const Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 40.0),
-                      child: Text(
-                        "영문/숫자 조합, 8자 이상",
-                        style: TextStyle(
-                          color: Colors.black54,
+                      Row(
+                        children: [
+                          const Spacer(),
+                          SizedBox(
+                            height: 33,
+                            child: TextButton(
+                              onPressed: () {},
+                              style: TextButton.styleFrom(),
+                              child: Text(
+                                '비밀번호 찾기',
+                                style: TextStyle(
+                                    fontSize: 12, color: Colors.grey[500]),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      FilledButton(
+                        onPressed: onLoginPressed,
+                        style: FilledButton.styleFrom(
+                          minimumSize: const Size(double.infinity, 50),
+                          backgroundColor: Colors.grey[500],
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                        ),
+                        child: const Text(
+                          '로그인',
+                          style: TextStyle(fontSize: 18),
                         ),
                       ),
-                    ),
-                  ],
-                ),
-                Padding(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 40.0, vertical: 15.0),
-                  child: FilledButton(
-                    onPressed: onLoginPressed,
-                    style: FilledButton.styleFrom(
-                      minimumSize: const Size(313, 50),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                    ),
-                    child: const Text(
-                      "로그인",
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
+                    ],
                   ),
                 ),
-              ],
+              ),
             ),
           ),
-        ),
+        ],
       ),
     );
   }
