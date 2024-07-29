@@ -99,7 +99,7 @@ class _LoginState extends ConsumerState<LoginScreen> {
                                 fontWeight: FontWeight.w600,
                               )),
                           SizedBox(
-                            height: 45,
+                            height: 40,
                             child: FilledButton(
                               onPressed: () {
                                 Navigator.of(context)
@@ -211,14 +211,14 @@ class _LoginState extends ConsumerState<LoginScreen> {
                         children: [
                           const Spacer(),
                           SizedBox(
-                            height: 33,
+                            height: 35,
                             child: TextButton(
                               onPressed: () {},
                               style: TextButton.styleFrom(),
                               child: Text(
                                 '비밀번호 찾기',
                                 style: TextStyle(
-                                    fontSize: 12, color: Colors.grey[500]),
+                                    fontSize: 13, color: Colors.grey[500]),
                               ),
                             ),
                           ),
