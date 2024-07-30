@@ -8,20 +8,21 @@ from fastapi import APIRouter
 from starlette import status
 import sys, os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))))
-from app.src.models import Users, StudyInfo, Problems, correct_problem_table
+from app.src.models import Users, StudyInfo, Problems, Blocks, Words, correct_problem_table
 from fastapi import requests, UploadFile, File, Form
 import requests
 from problem.dependencies import user_dependency, db_dependency
 from problem.schemas import Problem
 from problem.exceptions import http_exception, successful_response, get_user_exception, get_problem_exception, get_studyStart_exception, get_doubleEnd_exception
 from problem.service import *
-from problem.utils import check_answer, search_log_timestamp
+from problem.utils import search_log_timestamp, lettercase_filter, punctuation_filter, check_answer, parse_sentence, combine_sentence
 from problem.constants import INDEX, QUERY_MATCH_ALL
 import re
 from elasticsearch import AsyncElasticsearch
 from datetime import datetime, timezone
 import logging
 from app.src.logging_setup import LoggerSetup
+import math
 
 LOGGER = logging.getLogger(__name__)
 logger_setup = LoggerSetup()
@@ -165,7 +166,7 @@ async def user_solve_problem(user: user_dependency, db: db_dependency, problem_i
     
     # 문제를 맞춘 경우, correct_problems에 추가. id 만 추가. > 하고 싶은데 안되서 일단 problem 전체 저장함.
     # 일단 정답인 경우만 구현, 문장이 다르면 오답처리
-    isAnswer, false_location = check_answer(answer, user_string)
+    isAnswer, false_location, score = check_answer(answer, user_string)
     if isAnswer:
         study_info.correct_problems.append(problem)
 
@@ -245,3 +246,35 @@ async def user_solve_problem(file: UploadFile = File(...)):
     answer = "I am pretty"
     
     return {'user_string': user_string, 'isAnswer': isAnswer, 'false_location': false_location}
+
+
+@router.post("/solve_test_feedback", status_code = status.HTTP_200_OK)
+async def user_solve_problem(response:str, problem_id:int, user:user_dependency, db:db_dependency):
+    get_user_exception(user)
+
+    result = await db.execute(select(Problems).filter(Problems.id == problem_id))
+    problem_model = result.scalars().first()
+    if problem_model is None:
+        raise http_exception()
+    problem = problem_model.englishProblem
+    # 일단 문자열로 받아서 테스트
+    problem_parse = parse_sentence(problem)
+    response_parse = parse_sentence(response)
+
+    isAnswer, false_location = check_answer(problem_parse, response_parse)
+    result2 = await db.execute(select(StudyInfo).options(joinedload(StudyInfo.correct_problems)).options(joinedload(StudyInfo.incorrect_problems)).filter(StudyInfo.owner_id == user.get("id")))
+    study_info = result2.scalars().first()
+
+    if isAnswer:
+        study_info.correct_problems.append(problem_model)
+        await increment_correct_problem_count(study_info.id, problem_model.id, db)
+        db.add(study_info)
+        await db.commit()
+        result = {"you did good job"}
+    else:
+        study_info.incorrect_problems.append(problem_model)
+        result = await calculate_wrong_info(problem_parse, response_parse, db)
+    db.add(study_info)
+    await db.commit()
+
+    return result
