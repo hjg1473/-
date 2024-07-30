@@ -1,5 +1,5 @@
 import json
-from typing import Dict
+from typing import Dict, List
 from fastapi import WebSocket
 from pydantic import BaseModel
 
@@ -13,10 +13,13 @@ class Room:
 
 rooms: Dict[str, Room] = {}
 
+roomProblem: Dict[str, List] = {}
+
 # 호스트가 방 생성할 때 쓰는 객체 
 class CreateRoomRequest(BaseModel):
     host_id: str
-    set_name: str
+    choiceLevel: int
+    problemsCount: int
     room_max: int
 
 # 참여자가 방 참가할 때 쓰는 객체
