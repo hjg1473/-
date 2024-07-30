@@ -183,16 +183,19 @@ async def user_solve_problem(user: user_dependency, db: db_dependency, problem_i
 
     if isAnswer:
         study_info.correct_problems.append(problem_model)
-        await increment_correct_problem_count(study_info.id, problem_model.id, db)
+        await increment_correct_problem_count(study_info.id, problem_id, db)
+        count = await get_correct_problem_count(study_info.id, problem_id, db)
         db.add(study_info)
         await db.commit()
-        result = {"you did good job"}
+        result = {"you did good job":True, "correct_problems":count}
     else:
         study_info.incorrect_problems.append(problem_model)
         result = await calculate_wrong_info(problem_parse, response_parse, db)
-    db.add(study_info)
-    await db.commit()
-
+        await increment_incorrect_problem_count(study_info.id, problem_id, db)
+        count = await get_incorrect_problem_count(study_info.id, problem_id, db)
+        result["incorrect_problems"] = count
+        db.add(study_info)
+        await db.commit()
     return result    
 
 
