@@ -21,7 +21,7 @@ class LoadingScreen extends ConsumerWidget {
                   (failure) {
                     WidgetsBinding.instance.addPostFrameCallback(
                         (_) => Navigator.of(context).pushNamedAndRemoveUntil(
-                              '/init',
+                              '/login_screen',
                               (Route<dynamic> route) => false,
                             ));
                   },

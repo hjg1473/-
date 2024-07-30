@@ -32,7 +32,7 @@ class _SettingScreenState extends ConsumerState<SettingScreen> {
           storage.removeTokens();
           if (mounted) {
             Navigator.of(context).pushNamedAndRemoveUntil(
-              '/init',
+              '/login_screen',
               (Route<dynamic> route) => false,
             );
           }

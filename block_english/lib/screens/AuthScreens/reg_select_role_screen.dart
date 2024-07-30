@@ -71,7 +71,7 @@ class RegSelectRoleScreen extends StatelessWidget {
                       icon: Icons.school,
                       label: '학습자',
                       text: '학생들은 선택해주세요',
-                      routeName: '/reg_super_screen',
+                      routeName: '/reg_student_screen',
                     ),
                   ],
                 )
