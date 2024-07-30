@@ -8,7 +8,7 @@ from fastapi import APIRouter
 from starlette import status
 import sys, os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))))
-from app.src.models import Users, StudyInfo, Problems, correct_problem_table
+from app.src.models import Users, StudyInfo, Problems, Blocks
 from fastapi import requests, UploadFile, File, Form
 import requests
 from problem.dependencies import user_dependency, db_dependency
@@ -132,7 +132,20 @@ async def read_problem_all(level:int, step:int, user: user_dependency, db: db_de
 
     problem = []
     for p in stepinfo_model:
-        problem.append({'id': p.id, 'englishProblem': p.englishProblem})
+        p_str = p.englishProblem
+        p_list = parse_sentence(p_str)
+        p_colors = []
+        # 단어마다 block 색깔 가져오기 ...
+        for word in p_list:
+            result = await db.execute(select(Words).filter(Words.words == word))
+            word_model = result.scalars().first()
+            
+            result = await db.execute(select(Blocks).filter(Blocks.id == word_model.block_id))
+            block_model = result.scalars().first()
+            p_colors.append(block_model.color)
+
+        problem.append({'id': p.id, 'englishProblem': p.englishProblem, 'blockColors':p_colors})
+
     return {'problems': problem}
 
 
