@@ -71,174 +71,181 @@ class _LoginState extends ConsumerState<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
+    Size screenSize = MediaQuery.of(context).size;
+
     return Scaffold(
       body: Row(
         children: [
           Container(
-            width: MediaQuery.of(context).size.width / 2 - 10,
-            height: MediaQuery.of(context).size.height,
+            width: screenSize.width / 2 - 10,
+            height: screenSize.height,
             color: Colors.grey[200],
           ),
           SizedBox(
-            width: MediaQuery.of(context).size.width / 2 + 10,
-            height: MediaQuery.of(context).size.height,
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 30),
-              child: SingleChildScrollView(
-                child: Form(
-                  key: formkey,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          const Text('로그인',
-                              style: TextStyle(
-                                fontSize: 24,
-                                fontWeight: FontWeight.w600,
-                              )),
-                          SizedBox(
-                            height: 40,
-                            child: FilledButton(
-                              onPressed: () {
-                                Navigator.of(context)
-                                    .pushNamed('/reg_select_role_screen');
-                              },
-                              style: FilledButton.styleFrom(
-                                backgroundColor: Colors.grey[700],
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(50),
-                                ),
-                              ),
-                              child: const Text(
-                                '회원가입',
+            width: screenSize.width / 2 + 10,
+            height: screenSize.height,
+            child: SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 30),
+                child: SingleChildScrollView(
+                  child: Form(
+                    key: formkey,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            const Text('로그인',
                                 style: TextStyle(
-                                  fontSize: 16,
-                                  color: Colors.white,
+                                  fontSize: 24,
+                                  fontWeight: FontWeight.w600,
+                                )),
+                            SizedBox(
+                              height: 40,
+                              child: FilledButton(
+                                onPressed: () {
+                                  Navigator.of(context)
+                                      .pushNamed('/reg_select_role_screen');
+                                },
+                                style: FilledButton.styleFrom(
+                                  backgroundColor: Colors.grey[700],
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(50),
+                                  ),
+                                ),
+                                child: const Text(
+                                  '회원가입',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    color: Colors.white,
+                                  ),
                                 ),
                               ),
                             ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 18),
-                      Text(
-                        '아이디',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.grey[700],
+                          ],
                         ),
-                      ),
-                      const SizedBox(height: 3),
-                      TextFormField(
-                        inputFormatters: [
-                          FilteringTextInputFormatter.allow(
-                            RegExp(r'[a-zA-Z0-9]'),
-                          ),
-                        ],
-                        decoration: InputDecoration(
-                          contentPadding:
-                              const EdgeInsets.symmetric(horizontal: 20),
-                          hintText: '전화번호 또는 이메일을 입력해주세요',
-                          hintStyle: TextStyle(
-                            color: Colors.grey[500],
+                        const SizedBox(height: 18),
+                        Text(
+                          '아이디',
+                          style: TextStyle(
                             fontSize: 16,
-                          ),
-                          filled: true,
-                          fillColor: Colors.grey[200],
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(10),
-                            borderSide: BorderSide.none,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.grey[700],
                           ),
                         ),
-                        onChanged: (value) => setState(() => username = value),
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return '아이디를 입력해주세요';
-                          }
-                          if (value.length < 6) {
-                            return '아이디가 너무 짧습니다';
-                          }
-                          return null;
-                        },
-                      ),
-                      const SizedBox(height: 12),
-                      Text(
-                        '비밀번호',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.grey[700],
-                        ),
-                      ),
-                      const SizedBox(height: 3),
-                      TextFormField(
-                        inputFormatters: [
-                          FilteringTextInputFormatter.allow(
-                            RegExp(r'[a-zA-Z0-9]'),
-                          ),
-                        ],
-                        obscureText: true,
-                        decoration: InputDecoration(
-                          contentPadding:
-                              const EdgeInsets.symmetric(horizontal: 20),
-                          hintText: '비밀번호를 입력해주세요',
-                          hintStyle: TextStyle(
-                            color: Colors.grey[500],
-                            fontSize: 16,
-                          ),
-                          filled: true,
-                          fillColor: Colors.grey[200],
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(10),
-                            borderSide: BorderSide.none,
-                          ),
-                        ),
-                        onChanged: (value) => setState(() => password = value),
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return '비밀번호를 입력해주세요';
-                          }
-                          if (value.length < 8) {
-                            return '비밀번호가 너무 짧습니다';
-                          }
-                          return null;
-                        },
-                      ),
-                      Row(
-                        children: [
-                          const Spacer(),
-                          SizedBox(
-                            height: 35,
-                            child: TextButton(
-                              onPressed: () {},
-                              style: TextButton.styleFrom(),
-                              child: Text(
-                                '비밀번호 찾기',
-                                style: TextStyle(
-                                    fontSize: 13, color: Colors.grey[500]),
-                              ),
+                        const SizedBox(height: 3),
+                        TextFormField(
+                          inputFormatters: [
+                            FilteringTextInputFormatter.allow(
+                              RegExp(r'[a-zA-Z0-9]'),
+                            ),
+                          ],
+                          decoration: InputDecoration(
+                            contentPadding:
+                                const EdgeInsets.symmetric(horizontal: 20),
+                            hintText: '전화번호 또는 이메일을 입력해주세요',
+                            hintStyle: TextStyle(
+                              color: Colors.grey[500],
+                              fontSize: 16,
+                            ),
+                            filled: true,
+                            fillColor: Colors.grey[200],
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(10),
+                              borderSide: BorderSide.none,
                             ),
                           ),
-                        ],
-                      ),
-                      FilledButton(
-                        onPressed: onLoginPressed,
-                        style: FilledButton.styleFrom(
-                          minimumSize: const Size(double.infinity, 50),
-                          backgroundColor: Colors.grey[500],
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10),
+                          onChanged: (value) =>
+                              setState(() => username = value),
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return '아이디를 입력해주세요';
+                            }
+                            if (value.length < 6) {
+                              return '아이디가 너무 짧습니다';
+                            }
+                            return null;
+                          },
+                        ),
+                        const SizedBox(height: 12),
+                        Text(
+                          '비밀번호',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.grey[700],
                           ),
                         ),
-                        child: const Text(
-                          '로그인',
-                          style: TextStyle(fontSize: 18),
+                        const SizedBox(height: 3),
+                        TextFormField(
+                          inputFormatters: [
+                            FilteringTextInputFormatter.allow(
+                              RegExp(r'[a-zA-Z0-9]'),
+                            ),
+                          ],
+                          obscureText: true,
+                          decoration: InputDecoration(
+                            contentPadding:
+                                const EdgeInsets.symmetric(horizontal: 20),
+                            hintText: '비밀번호를 입력해주세요',
+                            hintStyle: TextStyle(
+                              color: Colors.grey[500],
+                              fontSize: 16,
+                            ),
+                            filled: true,
+                            fillColor: Colors.grey[200],
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(10),
+                              borderSide: BorderSide.none,
+                            ),
+                          ),
+                          onChanged: (value) =>
+                              setState(() => password = value),
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return '비밀번호를 입력해주세요';
+                            }
+                            if (value.length < 8) {
+                              return '비밀번호가 너무 짧습니다';
+                            }
+                            return null;
+                          },
                         ),
-                      ),
-                    ],
+                        Row(
+                          children: [
+                            const Spacer(),
+                            SizedBox(
+                              height: 35,
+                              child: TextButton(
+                                onPressed: () {},
+                                style: TextButton.styleFrom(),
+                                child: Text(
+                                  '비밀번호 찾기',
+                                  style: TextStyle(
+                                      fontSize: 13, color: Colors.grey[500]),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        FilledButton(
+                          onPressed: onLoginPressed,
+                          style: FilledButton.styleFrom(
+                            minimumSize: const Size(double.infinity, 50),
+                            backgroundColor: Colors.grey[500],
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                          ),
+                          child: const Text(
+                            '로그인',
+                            style: TextStyle(fontSize: 18),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),
