@@ -1,17 +1,19 @@
+import random
 from fastapi import APIRouter
 import os
 import sys
 
-from sqlalchemy import select
+from sqlalchemy import func, select
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))))
 from app.src.models import Users, StudyInfo, Groups, Problems
 import app.src.models
 from fastapi import FastAPI, File, Form, UploadFile, WebSocket, WebSocketDisconnect
 import json
-from game.schemas import Room, CreateRoomRequest, JoinRoomRequest, GetStudentScoreRequest, ParticipantSolveRequest, ConnectionManager, rooms
+from game.schemas import Room, CreateRoomRequest, JoinRoomRequest, GetStudentScoreRequest, ParticipantSolveRequest, ConnectionManager, rooms, roomProblem
 from game.utils import create_pin_number
 from game.exceptions import room_exception, participant_exception, host_exception1, host_exception2, participant_exception1, participant_exception2, participant_exception3, participant_exception4
 from game.dependencies import db_dependency
+from game.constants import PROBLEM_OFFSET
 
 router = APIRouter(
     prefix="/game",
@@ -57,7 +59,8 @@ async def participant_action(room_id: str = Form(...),
         # user_string = " ".join(user_word_list.json())
 
         # answer은 키 값으로 값(리스트)를 찾은 다음에 문제 순서에 맞는 값 출력.
-        answer = custom_problem["312321"][pnum]
+        answer = roomProblem[room_id][pnum]
+        # answer = custom_problem["312321"][pnum]
         user_string = "I am pretty."
 
         if user_string == answer: # 정답이면 
@@ -77,7 +80,7 @@ async def participant_action(room_id: str = Form(...),
 # 게임방 생성 api
 # 호스트 1인당 하나의 방만
 @router.post("/create_room")
-async def create_room(db: db_dependency ,request: CreateRoomRequest):
+async def create_room(db: db_dependency, request: CreateRoomRequest):
     host_exception1(rooms.values(), request.host_id)
     pin_number = create_pin_number()
     # 핀 번호 중복 검사
@@ -85,17 +88,30 @@ async def create_room(db: db_dependency ,request: CreateRoomRequest):
         pin_number = create_pin_number()
     rooms[pin_number] = Room(pin_number, request.host_id, request.room_max) # 방 생성
 
-    # result = await db.execute(select(CustomProblemSet).filter(CustomProblemSet.name == request.set_name))
-    # CustomProblem_model = result.scalars().first()
-    # print(CustomProblem_model.id)
-    # result = await db.execute(select(Problems).filter(CustomProblem_model.id == Problems.cproblem_id))
-    # CustomProblemSet_model = result.scalars().all()
-    
-    # custom = []  
-    # for i in CustomProblemSet_model:
-    #     custom.append({'id': i.id, 'koreaProblem': i.koreaProblem, 'img_path': i.img_path})
-    # result = custom_problem_sets
-    return {"detail": "Room created successfully","pin_number": pin_number} 
+    total_count = await db.scalar(select(func.count()).select_from(Problems))
+    random_offset = random.randint(0, max(0, total_count - PROBLEM_OFFSET))
+
+    # PROBLEM_OFFSET개의 데이터 가져오기
+    result = await db.execute(
+        select(Problems)
+        .filter(Problems.level == request.choiceLevel)
+        .filter(Problems.type == "ai")
+        .offset(random_offset)
+        .limit(PROBLEM_OFFSET)
+    )
+
+    # 무작위로 n개 선택
+    random_problems = result.scalars().all()
+    final_problems = random.sample(random_problems, min(request.problemsCount, len(random_problems)))
+
+    problems = []
+    pnum = 0
+    for problem in final_problems:
+        problems.append({"problem_id":problem.id, "koreaProblem":problem.koreaProblem})
+        roomProblem[pin_number][pnum] = problem.englishProblem
+        pnum += 1
+
+    return {"pin_number": pin_number, "problems": problems} 
 
 # 게임방 참가 api
 # 방에 참가한 상태로 다른 방으로 참가하는 것도 막아야됨
