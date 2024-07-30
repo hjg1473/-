@@ -10,7 +10,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(
 from app.src.models import Users, StudyInfo
 from student.dependencies import user_dependency, db_dependency
 from student.exceptions import get_user_exception, get_user_exception2, auth_exception, http_exception, select_exception1, select_exception2, select_exception3
-from student.schemas import PinNumber
+from student.schemas import PinNumber, SoloGroup
 from app.src.super.exceptions import find_student_exception, find_group_exception
 from app.src.super.service import update_std_group
 router = APIRouter( 
@@ -19,6 +19,31 @@ router = APIRouter(
     responses={404: {"description": "Not found"}}
 )
 
+@router.get("/get_season", status_code = status.HTTP_200_OK)
+async def get_season(user: user_dependency, db: db_dependency):
+
+    get_user_exception(user)
+    auth_exception(user.get('user_role'))
+
+    result = await db.execute(select(Users).filter(Users.id == user.get('id')))
+    user_model = result.scalars().first()
+
+    return {"user_season": user_model.released_season}
+
+
+@router.post("/select/solo_or_group", status_code = status.HTTP_200_OK)
+async def select_mode(soloGroup: SoloGroup,
+                            user: user_dependency,
+                            db: db_dependency):
+
+    redis_client = await aioredis.create_redis_pool('redis://localhost')
+    key = f"{user.get('id')}_mode"
+    await redis_client.set(key, soloGroup.mode)
+
+    redis_client.close()
+    await redis_client.wait_closed()
+    
+    return {'mode' : soloGroup.mode}
 
 @router.post("/group/enter", status_code = status.HTTP_200_OK)
 async def user_solve_problem(pin_number: PinNumber,
