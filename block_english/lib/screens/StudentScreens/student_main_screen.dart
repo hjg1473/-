@@ -61,6 +61,7 @@ class _StudentMainScreenState extends State<StudentMainScreen> {
       appBar: AppBar(
         title: Text(appBarTitle),
         centerTitle: true,
+        scrolledUnderElevation: 0,
         actions: [
           IconButton(
             onPressed: () {

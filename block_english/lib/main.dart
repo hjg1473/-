@@ -27,6 +27,7 @@ class MyApp extends StatelessWidget {
         scaffoldBackgroundColor: Colors.white,
         appBarTheme: const AppBarTheme(
           backgroundColor: Colors.white,
+          scrolledUnderElevation: 0,
         ),
       ),
       title: "Block English",
