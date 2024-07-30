@@ -91,22 +91,24 @@ class _StudState extends ConsumerState<RegStudentScreen> {
   @override
   Widget build(BuildContext context) {
     Size screenSize = MediaQuery.of(context).size;
-    var horPadding = MediaQuery.of(context).viewPadding.horizontal;
-    var verPadding = MediaQuery.of(context).viewPadding.vertical;
+    var horArea =
+        screenSize.width - MediaQuery.of(context).viewPadding.horizontal;
+    var verArea =
+        screenSize.height - MediaQuery.of(context).viewPadding.vertical;
 
     return Scaffold(
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(0, 30, 0, 0),
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 30),
           child: SingleChildScrollView(
             child: SizedBox(
-              height: MediaQuery.of(context).size.height - 30,
+              height: verArea - 60,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       FilledButton.icon(
                         icon: const Icon(Icons.arrow_back_ios, size: 16),
@@ -156,66 +158,69 @@ class _StudState extends ConsumerState<RegStudentScreen> {
                       ),
                     ],
                   ),
-                  const SizedBox(height: 20),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  Column(
                     children: [
-                      CustomTextField(
-                        width: (screenSize.width - horPadding - 15) / 2,
-                        labelText: '이름',
-                        hintText: '이름을 입력해주세요',
-                        controller: nameController,
-                        inputFormatters: [
-                          FilteringTextInputFormatter.allow(
-                              RegExp(r'[a-zA-Zㄱ-ㅎ가-힣]')),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          CustomTextField(
+                            width: (horArea - 25 - 40) / 2,
+                            labelText: '이름',
+                            hintText: '이름을 입력해주세요',
+                            controller: nameController,
+                            inputFormatters: [
+                              FilteringTextInputFormatter.allow(
+                                  RegExp(r'[a-zA-Zㄱ-ㅎ가-힣]')),
+                            ],
+                            errorMessage: nameError,
+                          ),
+                          CustomTextField(
+                            width: (horArea - 25 - 40) / 2,
+                            labelText: '전화번호',
+                            hintText: '전화번호를 입력해주세요',
+                            controller: usernameController,
+                            inputFormatters: [
+                              FilteringTextInputFormatter.allow(
+                                  RegExp(r'[0-9]')),
+                            ],
+                            errorMessage: usernameError,
+                          ),
                         ],
-                        errorMessage: nameError,
                       ),
-                      CustomTextField(
-                        width: (screenSize.width - horPadding - 15) / 2,
-                        labelText: '전화번호',
-                        hintText: '전화번호를 입력해주세요',
-                        controller: usernameController,
-                        inputFormatters: [
-                          FilteringTextInputFormatter.allow(RegExp(r'[0-9]')),
+                      const SizedBox(height: 20),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          CustomTextField(
+                            width: (horArea - 25 - 40) / 2,
+                            labelText: '비밀번호',
+                            hintText: '비밀번호를 입력해주세요',
+                            controller: passwordController,
+                            inputFormatters: [
+                              FilteringTextInputFormatter.allow(
+                                RegExp(r'[a-zA-Z0-9]'),
+                              ),
+                            ],
+                            errorMessage: passwordError,
+                            obscureText: true,
+                          ),
+                          CustomTextField(
+                            width: (horArea - 25 - 40) / 2,
+                            labelText: '비밀번호 확인',
+                            hintText: '비밀번호를 다시 입력해주세요',
+                            controller: password2Controller,
+                            inputFormatters: [
+                              FilteringTextInputFormatter.allow(
+                                RegExp(r'[a-zA-Z0-9]'),
+                              ),
+                            ],
+                            errorMessage: password2Error,
+                            obscureText: true,
+                          ),
                         ],
-                        errorMessage: usernameError,
                       ),
                     ],
                   ),
-                  const SizedBox(height: 20),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      CustomTextField(
-                        width: (screenSize.width - horPadding - 15) / 2,
-                        labelText: '비밀번호',
-                        hintText: '비밀번호를 입력해주세요',
-                        controller: passwordController,
-                        inputFormatters: [
-                          FilteringTextInputFormatter.allow(
-                            RegExp(r'[a-zA-Z0-9]'),
-                          ),
-                        ],
-                        errorMessage: passwordError,
-                        obscureText: true,
-                      ),
-                      CustomTextField(
-                        width: (screenSize.width - horPadding - 15) / 2,
-                        labelText: '비밀번호 확인',
-                        hintText: '비밀번호를 다시 입력해주세요',
-                        controller: password2Controller,
-                        inputFormatters: [
-                          FilteringTextInputFormatter.allow(
-                            RegExp(r'[a-zA-Z0-9]'),
-                          ),
-                        ],
-                        errorMessage: password2Error,
-                        obscureText: true,
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 20),
                   FilledButton(
                     onPressed: onRegisterPressed,
                     style: FilledButton.styleFrom(
