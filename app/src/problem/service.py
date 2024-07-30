@@ -2,7 +2,7 @@ import sys, os
 from sqlalchemy.dialects.mysql import insert
 from sqlalchemy import select, update
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))))
-from app.src.models import Problems, correct_problem_table, incorrect_problem_table, Words
+from app.src.models import Problems, Words, correct_problem_table, incorrect_problem_table
 from problem.schemas import Problem
 from problem.dependencies import db_dependency
 from problem.utils import *
@@ -52,6 +52,7 @@ async def increment_incorrect_problem_count(study_info_id: int, problem_id: int,
     await db.execute(stmt)
     await db.commit()
 
+
 async def get_correct_problem_count(study_info_id: int, problem_id: int, db):
     query = select(correct_problem_table.c.count).where(
         correct_problem_table.c.study_info_id == study_info_id,
@@ -60,6 +61,31 @@ async def get_correct_problem_count(study_info_id: int, problem_id: int, db):
     result = await db.execute(query)
     count = result.scalar()
     return count
+
+
+async def increment_incorrect_problem_count(study_info_id: int, problem_id: int, db=db_dependency):
+    # 업데이트 문 생성
+    stmt = update(incorrect_problem_table).\
+        where(
+            incorrect_problem_table.c.study_info_id == study_info_id,
+            incorrect_problem_table.c.problem_id == problem_id
+        ).\
+        values(count=incorrect_problem_table.c.count + 1)
+
+    # 업데이트 문 실행
+    await db.execute(stmt)
+    await db.commit()
+
+
+async def get_incorrect_problem_count(study_info_id: int, problem_id: int, db):
+    query = select(incorrect_problem_table.c.count).where(
+        incorrect_problem_table.c.study_info_id == study_info_id,
+        incorrect_problem_table.c.problem_id == problem_id
+    )
+    result = await db.execute(query)
+    count = result.scalar()
+    return count
+
 
 async def calculate_wrong_info(problem_parse:list, response_parse:list, db=db_dependency):
     problem = combine_sentence(problem_parse)
@@ -109,7 +135,7 @@ async def calculate_wrong_info(problem_parse:list, response_parse:list, db=db_de
         response_block.append(word_model.block_id)
 
 
-    block_wrong += max(r_len_v2 - p_len_v2, p_len_v2-r_len_v2)
+    block_wrong += max(0, p_len_v2-r_len_v2)
     response_v3_split = response_v2_split.copy()
 
     for i in range(r_len_v2):

@@ -140,19 +140,68 @@ async def read_problem_all(level:int, step:int, user: user_dependency, db: db_de
 async def send_problems_data(user: user_dependency, db: db_dependency, answer: Answer):
 
     get_user_exception(user)
-    tempUserProblem = TempUserProblems.get(user.get("id")) # 정답 반환할 때.
-    tempUserProblem.totalFullStop += 1 # 알고리즘 따라서 어느걸 틀렸는지.
-    if answer.problem_id in tempUserProblem.problem_incorrect_count:
-        tempUserProblem.problem_incorrect_count[answer.problem_id] += 1
-    else:
-        tempUserProblem.problem_incorrect_count[answer.problem_id] = 1
-    for problem_id, incorrect_count in tempUserProblem.problem_incorrect_count.items():
-        print(f"Problem ID: {problem_id}, Incorrect Count: {incorrect_count}")
-    return tempUserProblem
 
-# 스텝 끝날때 마지막에 문제 저장
-@router.post("/send_problems_data", status_code = status.HTTP_200_OK)
-async def send_problems_data(user: user_dependency, db: db_dependency):
+    # study info 가져오기
+    temp_result = await db.execute(select(StudyInfo).options(joinedload(StudyInfo.correct_problems)).options(joinedload(StudyInfo.incorrect_problems)).filter(StudyInfo.owner_id == user.get("id")))
+    study_info = temp_result.scalars().first()
+
+    # 문제 id로 문제 가져오기
+    temp_result = await db.execute(select(Problems).filter(Problems.id == problem_id))
+    problem_model = temp_result.scalars().first()
+    problem = problem_model.englishProblem
+    problem_parse = parse_sentence(problem)
+
+    # OCR로 response 읽어오기
+    img_binary = await file.read()
+    image = await asyncio.to_thread(Image.open,io.BytesIO(img_binary))
+    # image = Image.open(io.BytesIO(img_binary))
+    img_array = np.array(image)
+    from app.src.main import reader
+    result = await asyncio.to_thread(reader.readtext, img_array, allowlist='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz!,?.', text_threshold=0.4,low_text=0.3)
+
+    # 1. 각 사각형의 높이 구하기
+    heights = []
+    for item in result:
+        coords = item[0]
+        y_values = [point[1] for point in coords]
+        height = max(y_values) - min(y_values)
+        heights.append(height)
+
+    # 높이의 최댓값 구하기
+    max_height = max(heights)
+
+    # 2. 높이의 최댓값의 0.7배 이하 무시하기
+    threshold = max_height * 0.7
+    filtered_data = [item for item, height in zip(result, heights) if height > threshold]
+
+    # 3. 남은 단어들을 x축 오름차순으로 정렬해서 단어 리스트 만들기
+    sorted_data = sorted(filtered_data, key=lambda item: min(point[0] for point in item[0]))
+    response_parse = [item[1] for item in sorted_data]
+
+    # 채점
+    isAnswer, false_location = check_answer(problem_parse, response_parse)
+
+    if isAnswer:
+        study_info.correct_problems.append(problem_model)
+        await increment_correct_problem_count(study_info.id, problem_id, db)
+        count = await get_correct_problem_count(study_info.id, problem_id, db)
+        db.add(study_info)
+        await db.commit()
+        result = {"you did good job":True, "correct_problems":count}
+    else:
+        study_info.incorrect_problems.append(problem_model)
+        result = await calculate_wrong_info(problem_parse, response_parse, db)
+        await increment_incorrect_problem_count(study_info.id, problem_id, db)
+        count = await get_incorrect_problem_count(study_info.id, problem_id, db)
+        result["incorrect_problems"] = count
+        db.add(study_info)
+        await db.commit()
+    return result    
+
+
+# 학생이 문제를 풀었을 때, 일단 임시로 맞았다고 처리 
+@router.post("/solve_test_problem_count", status_code = status.HTTP_200_OK)
+async def user_solve_problem(user: user_dependency, db: db_dependency, problem_id: int):
     get_user_exception(user)
     result2 = await db.execute(select(StudyInfo).options(joinedload(StudyInfo.correct_problems)).options(joinedload(StudyInfo.incorrect_problems)).filter(StudyInfo.owner_id == user.get("id")))
     study_info = result2.scalars().first()
