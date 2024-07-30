@@ -8,21 +8,20 @@ from fastapi import APIRouter
 from starlette import status
 import sys, os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))))
-from app.src.models import Users, StudyInfo, Problems, Blocks, Words, correct_problem_table
+from app.src.models import Users, StudyInfo, Problems, correct_problem_table
 from fastapi import requests, UploadFile, File, Form
 import requests
 from problem.dependencies import user_dependency, db_dependency
-from problem.schemas import Problem
+from problem.schemas import Problem, ProblemInfo, UserProblems, TempUserProblem, TempUserProblems, Answer
 from problem.exceptions import http_exception, successful_response, get_user_exception, get_problem_exception, get_studyStart_exception, get_doubleEnd_exception
 from problem.service import *
-from problem.utils import search_log_timestamp, lettercase_filter, punctuation_filter, check_answer, parse_sentence, combine_sentence
+from problem.utils import check_answer, search_log_timestamp
 from problem.constants import INDEX, QUERY_MATCH_ALL
 import re
 from elasticsearch import AsyncElasticsearch
 from datetime import datetime, timezone
 import logging
 from app.src.logging_setup import LoggerSetup
-import math
 
 LOGGER = logging.getLogger(__name__)
 logger_setup = LoggerSetup()
@@ -40,6 +39,7 @@ async def study_start(user: user_dependency):
     get_user_exception(user)
     logger = logger_setup.get_logger(user.get("id"))
     logger.info("--- studyStart ---")
+    TempUserProblems[user.get("id")] = TempUserProblem(0, 0, 0, 0, 0) # 객체 생성. 시작할 때.
     return {"detail":"학습을 시작합니다."}
 
 @router.get("/study_end")
@@ -135,73 +135,127 @@ async def read_problem_all(level:int, step:int, user: user_dependency, db: db_de
         problem.append({'id': p.id, 'englishProblem': p.englishProblem})
     return {'problems': problem}
 
+# 푼 문제 학습 정보 업데이트
+@router.post("/update_study_data", status_code = status.HTTP_200_OK)
+async def send_problems_data(user: user_dependency, db: db_dependency, answer: Answer):
 
-# 학생이 문제를 풀었을 때, 일단 임시로 맞았다고 처리 
-@router.post("/solve", status_code = status.HTTP_200_OK)
-async def user_solve_problem(user: user_dependency, db: db_dependency, problem_id: int = Form(...), file: UploadFile = File(...)):
     get_user_exception(user)
-    user_instance = db.query(Users).filter(Users.id == user.get("id")).first()
-
-    study_info = db.query(StudyInfo).filter(StudyInfo.owner_id == user.get("id")).first()
-    if study_info is None:
-        raise http_exception()
-
-    # 학생이 제시받은 문제 id와 문제 id 비교해서 문제 찾아냄.
-    problem = db.query(Problems)\
-        .filter(Problems.id == problem_id)\
-        .first()
-
-    # 학생이 제출한 답변을 OCR을 돌리고 있는 GPU 환경으로 전송 및 단어를 순서대로 배열로 받음.
-    GPU_SERVER_URL = "http://146.148.75.252:8000/ocr/" 
-    
-    img_binary = await file.read()
-    file.filename = "img.png"
-    files = {"file": (file.filename, img_binary)}
-    user_word_list = requests.post(GPU_SERVER_URL, files=files)
-    
-    user_string = " ".join(user_word_list.json())
-
-    #answer = problem.englishProblem
-    answer = "I am pretty"
-    
-    # 문제를 맞춘 경우, correct_problems에 추가. id 만 추가. > 하고 싶은데 안되서 일단 problem 전체 저장함.
-    # 일단 정답인 경우만 구현, 문장이 다르면 오답처리
-    isAnswer, false_location, score = check_answer(answer, user_string)
-    if isAnswer:
-        study_info.correct_problems.append(problem)
-
+    tempUserProblem = TempUserProblems.get(user.get("id")) # 정답 반환할 때.
+    tempUserProblem.totalFullStop += 1 # 알고리즘 따라서 어느걸 틀렸는지.
+    if answer.problem_id in tempUserProblem.problem_incorrect_count:
+        tempUserProblem.problem_incorrect_count[answer.problem_id] += 1
     else:
-        study_info.incorrect_problems.append(problem)
-    db.add(study_info)
-    db.commit()
+        tempUserProblem.problem_incorrect_count[answer.problem_id] = 1
+    for problem_id, incorrect_count in tempUserProblem.problem_incorrect_count.items():
+        print(f"Problem ID: {problem_id}, Incorrect Count: {incorrect_count}")
+    return tempUserProblem
 
-    return {'isAnswer' : problem.englishProblem, 'user_answer': user_string, 'false_location': false_location}
-
-# 학생이 문제를 풀었을 때, 일단 임시로 맞았다고 처리 
-@router.post("/solve_test_problem_count", status_code = status.HTTP_200_OK)
-async def user_solve_problem(user: user_dependency, db: db_dependency, problem_id: int):
+# 스텝 끝날때 마지막에 문제 저장
+@router.post("/send_problems_data", status_code = status.HTTP_200_OK)
+async def send_problems_data(user: user_dependency, db: db_dependency):
     get_user_exception(user)
-
     result2 = await db.execute(select(StudyInfo).options(joinedload(StudyInfo.correct_problems)).options(joinedload(StudyInfo.incorrect_problems)).filter(StudyInfo.owner_id == user.get("id")))
     study_info = result2.scalars().first()
     if study_info is None:
         raise http_exception()
+    
+    tempUserProblem = TempUserProblems.get(user.get("id")) # 정답 반환할 때.
+    problem_ids = list(tempUserProblem.problem_incorrect_count.keys())
+    result = await db.execute(select(Problems).filter(Problems.id.in_(problem_ids)))
+    problems_info = result.scalars().all()
+    # return problems_info
+    for problem in problems_info:
+        if problem not in study_info.correct_problems: # 문제 리스트 검사. 없다면 추가. 근데 매번 해야됨? ..
+            study_info.correct_problems.append(problem)
+        if problem not in study_info.incorrect_problems:
+            study_info.incorrect_problems.append(problem)
 
-    result1 = await db.execute(select(Problems).filter(Problems.id == problem_id))
-    problem = result1.scalars().first()
-    user_string = "I am pretty"
-    answer = "I am pretty"
-    
-    # isAnswer, false_location = check_answer(answer, user_string)
-    study_info.correct_problems.append(problem)
-    study_info.incorrect_problems.append(problem)
-    
-    await increment_correct_problem_count(study_info.id, problem_id, db)
-    count = await get_correct_problem_count(study_info.id, problem_id, db)
+    for problem_id, incorrect_count in tempUserProblem.problem_incorrect_count.items():
+        await increment_correct_problem_count(study_info.id, problem_id, 1, db)
+        if incorrect_count != 0:
+            await increment_incorrect_problem_count(study_info.id, problem_id, incorrect_count, db)
+
+    # for problem in user_problems.problems:
+    #         await increment_correct_problem_count(study_info.id, problem.problem_id, 1, db)
+    #         if problem.incorrectCount != 0:
+    #             await increment_incorrect_problem_count(study_info.id, problem.problem_id, problem.incorrectCount, db)
+                
     db.add(study_info)
     await db.commit()
+    return {"detail": "저장되었습니다."}
 
-    return {'isAnswer' : problem.englishProblem, 'user_answer': user_string, 'correct_count': count}
+
+# # 학생이 문제를 풀었을 때, 일단 임시로 맞았다고 처리 
+# @router.post("/solve", status_code = status.HTTP_200_OK)
+# async def user_solve_problem(user: user_dependency, db: db_dependency, problem_id: int = Form(...), file: UploadFile = File(...)):
+#     get_user_exception(user)
+#     user_instance = db.query(Users).filter(Users.id == user.get("id")).first()
+
+#     study_info = db.query(StudyInfo).filter(StudyInfo.owner_id == user.get("id")).first()
+#     if study_info is None:
+#         raise http_exception()
+
+#     # 학생이 제시받은 문제 id와 문제 id 비교해서 문제 찾아냄.
+#     problem = db.query(Problems)\
+#         .filter(Problems.id == problem_id)\
+#         .first()
+
+#     # 학생이 제출한 답변을 OCR을 돌리고 있는 GPU 환경으로 전송 및 단어를 순서대로 배열로 받음.
+#     GPU_SERVER_URL = "http://146.148.75.252:8000/ocr/" 
+    
+#     img_binary = await file.read()
+#     file.filename = "img.png"
+#     files = {"file": (file.filename, img_binary)}
+#     user_word_list = requests.post(GPU_SERVER_URL, files=files)
+    
+#     user_string = " ".join(user_word_list.json())
+
+#     #answer = problem.englishProblem
+#     answer = "I am pretty"
+    
+#     # 문제를 맞춘 경우, correct_problems에 추가. id 만 추가. > 하고 싶은데 안되서 일단 problem 전체 저장함.
+#     # 일단 정답인 경우만 구현, 문장이 다르면 오답처리
+#     isAnswer, false_location = check_answer(answer, user_string)
+#     if isAnswer:
+#         study_info.correct_problems.append(problem)
+#     else:
+#         study_info.incorrect_problems.append(problem)
+#     db.add(study_info)
+#     db.commit()
+
+#     return {'isAnswer' : problem.englishProblem, 'user_answer': user_string, 'false_location': false_location}
+
+
+# # 학생이 문제를 풀었을 때, 일단 임시로 맞았다고 처리 
+# @router.post("/solve_test_problem_count", status_code = status.HTTP_200_OK)
+# async def user_solve_problem(user: user_dependency, db: db_dependency, problem_id: int):
+#     get_user_exception(user)
+
+#     result2 = await db.execute(select(StudyInfo).options(joinedload(StudyInfo.correct_problems)).options(joinedload(StudyInfo.incorrect_problems)).filter(StudyInfo.owner_id == user.get("id")))
+#     study_info = result2.scalars().first()
+#     if study_info is None:
+#         raise http_exception()
+
+#     result1 = await db.execute(select(Problems).filter(Problems.id == problem_id))
+#     problem = result1.scalars().first()
+#     user_string = "I am pretty"
+#     answer = "I am pretty"
+    
+#     # isAnswer, false_location = check_answer(answer, user_string)
+#     if problem not in study_info.correct_problems:# 문제 리스트 검사. 없다면 추가. 근데 매번 해야됨? ..
+#         study_info.correct_problems.append(problem)
+#     if problem not in study_info.incorrect_problems:
+#         study_info.incorrect_problems.append(problem)
+#     # study_info.correct_problems.append(problem) # 추가 안하면 null 됨. 
+#     # study_info.incorrect_problems.append(problem)
+    
+#     await increment_correct_problem_count(study_info.id, problem_id, 1, db)
+#     count = await get_correct_problem_count(study_info.id, problem_id, db)
+#     db.add(study_info)
+#     await db.commit()
+
+#     return {'isAnswer' : problem.englishProblem, 'user_answer': user_string, 'study_info': study_info}
+
 
 # 학생이 문제를 풀었을 때, 일단 임시로 맞았다고 처리 
 @router.post("/solve_test", status_code = status.HTTP_200_OK)
@@ -267,7 +321,7 @@ async def user_solve_problem(response:str, problem_id:int, user:user_dependency,
 
     if isAnswer:
         study_info.correct_problems.append(problem_model)
-        await increment_correct_problem_count(study_info.id, problem_model.id, db)
+        await increment_correct_problem_count(study_info.id, problem_model.id, 1, db)
         db.add(study_info)
         await db.commit()
         result = {"you did good job"}

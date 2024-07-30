@@ -151,4 +151,3 @@ def lettercase_filter(problem:str, response:str):
 
     filteredR = ' '.join(r_split)
     return letter_wrong, filteredR
-    

@@ -2,7 +2,7 @@ import sys, os
 from sqlalchemy.dialects.mysql import insert
 from sqlalchemy import select, update
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))))
-from app.src.models import Problems, Words, correct_problem_table
+from app.src.models import Problems, correct_problem_table, incorrect_problem_table, Words
 from problem.schemas import Problem
 from problem.dependencies import db_dependency
 from problem.utils import *
@@ -26,14 +26,27 @@ async def get_problem_info(db):
     problem_list = result.scalars().all()
     return problem_list
 
-async def increment_correct_problem_count(study_info_id: int, problem_id: int, db=db_dependency):
+async def increment_correct_problem_count(study_info_id: int, problem_id: int, p_count: int, db: db_dependency):
     # 업데이트 문 생성
     stmt = update(correct_problem_table).\
         where(
             correct_problem_table.c.study_info_id == study_info_id,
             correct_problem_table.c.problem_id == problem_id
         ).\
-        values(count=correct_problem_table.c.count + 1)
+        values(count=correct_problem_table.c.count + p_count)
+
+    # 업데이트 문 실행
+    await db.execute(stmt)
+    await db.commit()
+
+async def increment_incorrect_problem_count(study_info_id: int, problem_id: int, p_count: int, db: db_dependency):
+    # 업데이트 문 생성
+    stmt = update(incorrect_problem_table).\
+        where(
+            incorrect_problem_table.c.study_info_id == study_info_id,
+            incorrect_problem_table.c.problem_id == problem_id
+        ).\
+        values(count=incorrect_problem_table.c.count + p_count)
 
     # 업데이트 문 실행
     await db.execute(stmt)
@@ -54,7 +67,7 @@ async def calculate_wrong_info(problem_parse:list, response_parse:list, db=db_de
     # 0. response의 단어들이 블록에 있는 단어인지 검사    
     popList = []
     for item in response_parse:
-        result = await db.execute(select(Words).filter(Words.value == item))
+        result = await db.execute(select(Words).filter(Words.words == item))
         word_model = result.scalars().first()
 
         if word_model is None:
@@ -84,14 +97,14 @@ async def calculate_wrong_info(problem_parse:list, response_parse:list, db=db_de
     # problem 블록 id 리스트
     problem_block = []
     for item in problem_v2_split:
-        result = await db.execute(select(Words).filter(Words.value == item))
+        result = await db.execute(select(Words).filter(Words.words == item))
         word_model = result.scalars().first()
         problem_block.append(word_model.block_id)
 
     # response 블록 id 리스트
     response_block = []
     for item in response_v2_split:
-        result = await db.execute(select(Words).filter(Words.value == item))
+        result = await db.execute(select(Words).filter(Words.words == item))
         word_model = result.scalars().first()
         response_block.append(word_model.block_id)
 

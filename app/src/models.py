@@ -145,19 +145,19 @@ class Problems(Base):  # Problems
 #     # Relationship
 #     problems = relationship("Problems", back_populates="custom_problem_set")
 
-# class Blocks(Base):
-#     __tablename__ = "blocks"
+class Blocks(Base):
+    __tablename__ = "blocks"
 
-#     id = Column(Integer, primary_key=True, index=True)  # PK
-#     color = Column(String)      # color: skyblue, pink, green, yellow, purple
+    id = Column(Integer, primary_key=True, index=True)  # PK
+    color = Column(String)      # color: skyblue, pink, green, yellow, purple
 
-#     word = relationship("Words", back_populates="block")
+    word = relationship("Words", back_populates="block")
 
-# class Words(Base):
-#     __tablename__ = "words"
+class Words(Base):
+    __tablename__ = "words"
 
-#     id = Column(Integer, primary_key=True, index=True)  # PK
-#     block_id = Column(Integer, ForeignKey("block.id"))  # FK
-#     block = relationship("Blocks", back_populates="word")
+    id = Column(Integer, primary_key=True, index=True)  # PK
+    block_id = Column(Integer, ForeignKey("blocks.id"))  # FK
+    block = relationship("Blocks", back_populates="word")
     
-#     value = Column(String)      # word value: I, me, dog, ...
+    words = Column(String)      # word value: I, me, dog, ...
