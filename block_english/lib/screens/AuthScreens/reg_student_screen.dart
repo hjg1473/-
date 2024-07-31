@@ -26,6 +26,25 @@ class _StudState extends ConsumerState<RegStudentScreen> {
   String passwordError = '';
   String password2Error = '';
 
+  bool isObsecure = true;
+  bool isObsecure2 = true;
+
+  onDoubleCheckPressed() {
+    debugPrint('double check');
+  }
+
+  onEyePressed() {
+    setState(() {
+      isObsecure = !isObsecure;
+    });
+  }
+
+  onEye2Pressed() {
+    setState(() {
+      isObsecure2 = !isObsecure2;
+    });
+  }
+
   onRegisterPressed() async {
     bool onError = false;
 
@@ -164,7 +183,7 @@ class _StudState extends ConsumerState<RegStudentScreen> {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           CustomTextField(
-                            width: (horArea - 25 - 40) / 2,
+                            width: (horArea - 20 - 40) / 2,
                             labelText: '이름',
                             hintText: '이름을 입력해주세요',
                             controller: nameController,
@@ -175,7 +194,7 @@ class _StudState extends ConsumerState<RegStudentScreen> {
                             errorMessage: nameError,
                           ),
                           CustomTextField(
-                            width: (horArea - 25 - 40) / 2,
+                            width: (horArea - 20 - 40) / 2,
                             labelText: '전화번호',
                             hintText: '전화번호를 입력해주세요',
                             controller: usernameController,
@@ -184,6 +203,7 @@ class _StudState extends ConsumerState<RegStudentScreen> {
                                   RegExp(r'[0-9]')),
                             ],
                             errorMessage: usernameError,
+                            checkPressed: onDoubleCheckPressed,
                           ),
                         ],
                       ),
@@ -192,7 +212,7 @@ class _StudState extends ConsumerState<RegStudentScreen> {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           CustomTextField(
-                            width: (horArea - 25 - 40) / 2,
+                            width: (horArea - 20 - 40) / 2,
                             labelText: '비밀번호',
                             hintText: '비밀번호를 입력해주세요',
                             controller: passwordController,
@@ -202,10 +222,12 @@ class _StudState extends ConsumerState<RegStudentScreen> {
                               ),
                             ],
                             errorMessage: passwordError,
-                            obscureText: true,
+                            obscureText: isObsecure,
+                            isSelected: !isObsecure,
+                            eyePressed: onEyePressed,
                           ),
                           CustomTextField(
-                            width: (horArea - 25 - 40) / 2,
+                            width: (horArea - 20 - 40) / 2,
                             labelText: '비밀번호 확인',
                             hintText: '비밀번호를 다시 입력해주세요',
                             controller: password2Controller,
@@ -215,7 +237,9 @@ class _StudState extends ConsumerState<RegStudentScreen> {
                               ),
                             ],
                             errorMessage: password2Error,
-                            obscureText: true,
+                            obscureText: isObsecure2,
+                            isSelected: !isObsecure2,
+                            eyePressed: onEye2Pressed,
                           ),
                         ],
                       ),
@@ -225,7 +249,7 @@ class _StudState extends ConsumerState<RegStudentScreen> {
                     onPressed: onRegisterPressed,
                     style: FilledButton.styleFrom(
                       minimumSize: const Size(330, 50),
-                      backgroundColor: Colors.grey[500],
+                      backgroundColor: Colors.grey[700],
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(10),
                       ),
@@ -254,6 +278,9 @@ class CustomTextField extends StatelessWidget {
   final List<TextInputFormatter>? inputFormatters;
   final String errorMessage;
   final bool obscureText;
+  final bool isSelected;
+  final VoidCallback? checkPressed;
+  final VoidCallback? eyePressed;
 
   const CustomTextField({
     super.key,
@@ -265,6 +292,9 @@ class CustomTextField extends StatelessWidget {
     this.inputFormatters,
     this.errorMessage = '',
     this.obscureText = false,
+    this.isSelected = false,
+    this.checkPressed,
+    this.eyePressed,
   });
 
   @override
@@ -279,48 +309,88 @@ class CustomTextField extends StatelessWidget {
       ),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisAlignment: MainAxisAlignment.center,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(labelText),
-                errorMessage != ''
-                    ? Row(
-                        children: [
-                          const SizedBox(width: 10),
-                          const Icon(
-                            Icons.error_outline,
-                            color: Colors.red,
-                            size: 15,
-                          ),
-                          const SizedBox(width: 5),
-                          Text(
-                            errorMessage,
-                            style: const TextStyle(
-                                color: Colors.red, fontSize: 12),
-                          ),
-                        ],
-                      )
-                    : const SizedBox(),
-              ],
-            ),
-            TextField(
-              inputFormatters: inputFormatters,
-              obscureText: obscureText,
-              controller: controller,
-              cursorHeight: 20,
-              cursorColor: Colors.grey,
-              decoration: InputDecoration(
-                isCollapsed: true,
-                hintText: hintText,
-                border: const OutlineInputBorder(
-                  borderSide: BorderSide.none,
-                ),
+            SizedBox(
+              width: labelText == '전화번호'
+                  ? (width - 40) * 0.71
+                  : (width - 40) * 0.75,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(labelText),
+                      errorMessage != ''
+                          ? Row(
+                              children: [
+                                const SizedBox(width: 5),
+                                const Icon(
+                                  Icons.error_outline,
+                                  color: Colors.red,
+                                  size: 13,
+                                ),
+                                const SizedBox(width: 5),
+                                Text(
+                                  errorMessage,
+                                  style: const TextStyle(
+                                      color: Colors.red, fontSize: 11),
+                                ),
+                              ],
+                            )
+                          : const SizedBox(width: 1),
+                    ],
+                  ),
+                  TextField(
+                    inputFormatters: inputFormatters,
+                    obscureText: obscureText,
+                    controller: controller,
+                    cursorHeight: 20,
+                    cursorColor: Colors.grey,
+                    decoration: InputDecoration(
+                      isCollapsed: true,
+                      hintText: hintText,
+                      border: const OutlineInputBorder(
+                        borderSide: BorderSide.none,
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
+            labelText == '전화번호'
+                ? FilledButton(
+                    onPressed: checkPressed,
+                    style: FilledButton.styleFrom(
+                      fixedSize: const Size(65, 35),
+                      padding: const EdgeInsets.all(0),
+                      backgroundColor: Colors.grey[600],
+                    ),
+                    child: const Text(
+                      '중복확인',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.white,
+                      ),
+                    ),
+                  )
+                : labelText == '비밀번호' || labelText == '비밀번호 확인'
+                    ? SizedBox(
+                        width: 30,
+                        child: IconButton(
+                          padding: const EdgeInsets.all(0),
+                          isSelected: isSelected,
+                          icon: const Icon(Icons.visibility_off_outlined),
+                          selectedIcon: const Icon(Icons.visibility_outlined),
+                          iconSize: 25,
+                          color: Colors.grey,
+                          onPressed: eyePressed,
+                        ),
+                      )
+                    : const SizedBox(width: 1),
           ],
         ),
       ),
