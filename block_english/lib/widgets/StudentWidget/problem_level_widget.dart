@@ -9,7 +9,7 @@ class ProblemLevelWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: 200,
-      height: 300,
+      height: double.minPositive,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(12.0),
         color: const Color(0xFFC4C4C4),
