@@ -1,4 +1,5 @@
 import 'package:block_english/services/auth_service.dart';
+import 'package:block_english/widgets/reg_input_box.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -25,6 +26,25 @@ class _StudState extends ConsumerState<RegStudentScreen> {
   String usernameError = '';
   String passwordError = '';
   String password2Error = '';
+
+  bool isObsecure = true;
+  bool isObsecure2 = true;
+
+  onDoubleCheckPressed() {
+    debugPrint('double check');
+  }
+
+  onEyePressed() {
+    setState(() {
+      isObsecure = !isObsecure;
+    });
+  }
+
+  onEye2Pressed() {
+    setState(() {
+      isObsecure2 = !isObsecure2;
+    });
+  }
 
   onRegisterPressed() async {
     bool onError = false;
@@ -91,22 +111,24 @@ class _StudState extends ConsumerState<RegStudentScreen> {
   @override
   Widget build(BuildContext context) {
     Size screenSize = MediaQuery.of(context).size;
-    var horPadding = MediaQuery.of(context).viewPadding.horizontal;
-    var verPadding = MediaQuery.of(context).viewPadding.vertical;
+    var horArea =
+        screenSize.width - MediaQuery.of(context).viewPadding.horizontal;
+    var verArea =
+        screenSize.height - MediaQuery.of(context).viewPadding.vertical;
 
     return Scaffold(
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(0, 30, 0, 0),
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 30),
           child: SingleChildScrollView(
             child: SizedBox(
-              height: MediaQuery.of(context).size.height - 30,
+              height: verArea - 60,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       FilledButton.icon(
                         icon: const Icon(Icons.arrow_back_ios, size: 16),
@@ -156,71 +178,79 @@ class _StudState extends ConsumerState<RegStudentScreen> {
                       ),
                     ],
                   ),
-                  const SizedBox(height: 20),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  Column(
                     children: [
-                      CustomTextField(
-                        width: (screenSize.width - horPadding - 15) / 2,
-                        labelText: '이름',
-                        hintText: '이름을 입력해주세요',
-                        controller: nameController,
-                        inputFormatters: [
-                          FilteringTextInputFormatter.allow(
-                              RegExp(r'[a-zA-Zㄱ-ㅎ가-힣]')),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          RegInputBox(
+                            width: (horArea - 20 - 40) / 2,
+                            labelText: '이름',
+                            hintText: '이름을 입력해주세요',
+                            controller: nameController,
+                            inputFormatters: [
+                              FilteringTextInputFormatter.allow(
+                                  RegExp(r'[a-zA-Zㄱ-ㅎ가-힣]')),
+                            ],
+                            errorMessage: nameError,
+                          ),
+                          RegInputBox(
+                            width: (horArea - 20 - 40) / 2,
+                            labelText: '전화번호',
+                            hintText: '전화번호를 입력해주세요',
+                            controller: usernameController,
+                            inputFormatters: [
+                              FilteringTextInputFormatter.allow(
+                                  RegExp(r'[0-9]')),
+                            ],
+                            errorMessage: usernameError,
+                            checkPressed: onDoubleCheckPressed,
+                          ),
                         ],
-                        errorMessage: nameError,
                       ),
-                      CustomTextField(
-                        width: (screenSize.width - horPadding - 15) / 2,
-                        labelText: '전화번호',
-                        hintText: '전화번호를 입력해주세요',
-                        controller: usernameController,
-                        inputFormatters: [
-                          FilteringTextInputFormatter.allow(RegExp(r'[0-9]')),
+                      const SizedBox(height: 20),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          RegInputBox(
+                            width: (horArea - 20 - 40) / 2,
+                            labelText: '비밀번호',
+                            hintText: '비밀번호를 입력해주세요',
+                            controller: passwordController,
+                            inputFormatters: [
+                              FilteringTextInputFormatter.allow(
+                                RegExp(r'[a-zA-Z0-9]'),
+                              ),
+                            ],
+                            errorMessage: passwordError,
+                            obscureText: isObsecure,
+                            isSelected: !isObsecure,
+                            eyePressed: onEyePressed,
+                          ),
+                          RegInputBox(
+                            width: (horArea - 20 - 40) / 2,
+                            labelText: '비밀번호 확인',
+                            hintText: '비밀번호를 다시 입력해주세요',
+                            controller: password2Controller,
+                            inputFormatters: [
+                              FilteringTextInputFormatter.allow(
+                                RegExp(r'[a-zA-Z0-9]'),
+                              ),
+                            ],
+                            errorMessage: password2Error,
+                            obscureText: isObsecure2,
+                            isSelected: !isObsecure2,
+                            eyePressed: onEye2Pressed,
+                          ),
                         ],
-                        errorMessage: usernameError,
                       ),
                     ],
                   ),
-                  const SizedBox(height: 20),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      CustomTextField(
-                        width: (screenSize.width - horPadding - 15) / 2,
-                        labelText: '비밀번호',
-                        hintText: '비밀번호를 입력해주세요',
-                        controller: passwordController,
-                        inputFormatters: [
-                          FilteringTextInputFormatter.allow(
-                            RegExp(r'[a-zA-Z0-9]'),
-                          ),
-                        ],
-                        errorMessage: passwordError,
-                        obscureText: true,
-                      ),
-                      CustomTextField(
-                        width: (screenSize.width - horPadding - 15) / 2,
-                        labelText: '비밀번호 확인',
-                        hintText: '비밀번호를 다시 입력해주세요',
-                        controller: password2Controller,
-                        inputFormatters: [
-                          FilteringTextInputFormatter.allow(
-                            RegExp(r'[a-zA-Z0-9]'),
-                          ),
-                        ],
-                        errorMessage: password2Error,
-                        obscureText: true,
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 20),
                   FilledButton(
                     onPressed: onRegisterPressed,
                     style: FilledButton.styleFrom(
                       minimumSize: const Size(330, 50),
-                      backgroundColor: Colors.grey[500],
+                      backgroundColor: Colors.grey[700],
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(10),
                       ),
@@ -234,89 +264,6 @@ class _StudState extends ConsumerState<RegStudentScreen> {
               ),
             ),
           ),
-        ),
-      ),
-    );
-  }
-}
-
-class CustomTextField extends StatelessWidget {
-  final double width;
-  final double height;
-  final String labelText;
-  final String hintText;
-  final TextEditingController controller;
-  final List<TextInputFormatter>? inputFormatters;
-  final String errorMessage;
-  final bool obscureText;
-
-  const CustomTextField({
-    super.key,
-    this.width = 300,
-    this.height = 70,
-    required this.labelText,
-    required this.hintText,
-    required this.controller,
-    this.inputFormatters,
-    this.errorMessage = '',
-    this.obscureText = false,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: width,
-      height: height,
-      decoration: BoxDecoration(
-        color: Colors.grey[200],
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: Colors.transparent),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(labelText),
-                errorMessage != ''
-                    ? Row(
-                        children: [
-                          const SizedBox(width: 10),
-                          const Icon(
-                            Icons.error_outline,
-                            color: Colors.red,
-                            size: 15,
-                          ),
-                          const SizedBox(width: 5),
-                          Text(
-                            errorMessage,
-                            style: const TextStyle(
-                                color: Colors.red, fontSize: 12),
-                          ),
-                        ],
-                      )
-                    : const SizedBox(),
-              ],
-            ),
-            TextField(
-              inputFormatters: inputFormatters,
-              obscureText: obscureText,
-              controller: controller,
-              cursorHeight: 20,
-              cursorColor: Colors.grey,
-              decoration: InputDecoration(
-                isCollapsed: true,
-                hintText: hintText,
-                border: const OutlineInputBorder(
-                  borderSide: BorderSide.none,
-                ),
-              ),
-            ),
-          ],
         ),
       ),
     );
