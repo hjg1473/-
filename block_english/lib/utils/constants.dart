@@ -20,6 +20,11 @@ enum StudentMode {
   NONE,
 }
 
+enum Season {
+  NONE,
+  LEVEL1,
+}
+
 const String BASEURL = 'http://3.34.58.76';
 const String ACCESSTOKEN = 'accessToken';
 const String REFRESHTOKEN = 'refreshToken';

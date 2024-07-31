@@ -47,7 +47,7 @@ class StudentModeSelectScreen extends ConsumerWidget {
                                 .watch(statusProvider)
                                 .setStudentMode(StudentMode.PRIVATE);
                             Navigator.of(context)
-                                .pushNamed('/stud_main_screen');
+                                .pushNamed('/stud_season_select_screen');
                           },
                           icon: SvgPicture.asset(
                             width: 180 * DeviceScale.scaleWidth(context),
@@ -66,7 +66,7 @@ class StudentModeSelectScreen extends ConsumerWidget {
                                 .watch(statusProvider)
                                 .setStudentMode(StudentMode.GROUP);
                             Navigator.of(context)
-                                .pushNamed('/stud_main_screen');
+                                .pushNamed('/stud_season_select_screen');
                           },
                           icon: SvgPicture.asset(
                             width: 180 * DeviceScale.scaleWidth(context),

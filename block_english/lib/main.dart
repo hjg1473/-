@@ -5,6 +5,7 @@ import 'package:block_english/screens/AuthScreens/reg_student_screen.dart';
 import 'package:block_english/screens/AuthScreens/super_temp.dart';
 import 'package:block_english/screens/StudentScreens/student_main_screen.dart';
 import 'package:block_english/screens/StudentScreens/student_mode_select_screen.dart';
+import 'package:block_english/screens/StudentScreens/student_season_select_screen.dart';
 import 'package:block_english/screens/SuperScreens/super_group_create_screen.dart';
 import 'package:block_english/screens/SuperScreens/super_game_code_screen.dart';
 import 'package:block_english/screens/SuperScreens/super_game_screen.dart';
@@ -45,6 +46,8 @@ class MyApp extends StatelessWidget {
         '/reg_super_screen': (context) => const RegSuperScreen(),
         '/stud_mode_select_screen': (context) =>
             const StudentModeSelectScreen(),
+        '/stud_season_select_screen': (context) =>
+            const StudentSeasonSelectScreen(),
         '/stud_main_screen': (context) => const StudentMainScreen(),
         '/super_main_screen': (context) => const SuperMainScreen(),
         '/super_group_create_screen': (context) =>

@@ -5,9 +5,14 @@ part 'status.g.dart';
 
 class Status {
   StudentMode studentMode = StudentMode.NONE;
+  Season season = Season.NONE;
 
   setStudentMode(StudentMode mode) {
     studentMode = mode;
+  }
+
+  setSeason(Season season) {
+    this.season = season;
   }
 }
 
