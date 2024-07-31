@@ -1,4 +1,5 @@
 import 'package:block_english/services/auth_service.dart';
+import 'package:block_english/utils/constants.dart';
 import 'package:block_english/widgets/reg_input_box.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -27,11 +28,21 @@ class _StudState extends ConsumerState<RegStudentScreen> {
   String passwordError = '';
   String password2Error = '';
 
+  bool isChecked = false;
   bool isObsecure = true;
   bool isObsecure2 = true;
 
   onDoubleCheckPressed() {
-    debugPrint('double check');
+    username = usernameController.text;
+    if (username == '') {
+      setState(() {
+        usernameError = '전화번호를 입력해주세요';
+      });
+      return;
+    }
+
+    //TODO: double check
+    isChecked = true;
   }
 
   onEyePressed() {
@@ -50,7 +61,6 @@ class _StudState extends ConsumerState<RegStudentScreen> {
     bool onError = false;
 
     name = nameController.text;
-    username = usernameController.text;
     password = passwordController.text;
     password2 = password2Controller.text;
 
@@ -61,9 +71,9 @@ class _StudState extends ConsumerState<RegStudentScreen> {
       onError = true;
     }
 
-    if (username == '') {
+    if (!isChecked) {
       setState(() {
-        usernameError = '전화번호를 입력해주세요';
+        usernameError = '중복확인을 해주세요';
       });
       onError = true;
     }
@@ -111,10 +121,12 @@ class _StudState extends ConsumerState<RegStudentScreen> {
   @override
   Widget build(BuildContext context) {
     Size screenSize = MediaQuery.of(context).size;
-    var horArea =
-        screenSize.width - MediaQuery.of(context).viewPadding.horizontal;
-    var verArea =
-        screenSize.height - MediaQuery.of(context).viewPadding.vertical;
+    var horArea = screenSize.width -
+        MediaQuery.of(context).viewPadding.horizontal -
+        2 * horPadding;
+    var verArea = screenSize.height -
+        MediaQuery.of(context).viewPadding.vertical -
+        2 * verPadding;
 
     return Scaffold(
       body: SafeArea(
@@ -122,7 +134,7 @@ class _StudState extends ConsumerState<RegStudentScreen> {
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 30),
           child: SingleChildScrollView(
             child: SizedBox(
-              height: verArea - 60,
+              height: verArea,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -184,7 +196,7 @@ class _StudState extends ConsumerState<RegStudentScreen> {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           RegInputBox(
-                            width: (horArea - 20 - 40) / 2,
+                            width: (horArea - 20) / 2,
                             labelText: '이름',
                             hintText: '이름을 입력해주세요',
                             controller: nameController,
@@ -195,7 +207,7 @@ class _StudState extends ConsumerState<RegStudentScreen> {
                             errorMessage: nameError,
                           ),
                           RegInputBox(
-                            width: (horArea - 20 - 40) / 2,
+                            width: (horArea - 20) / 2,
                             labelText: '전화번호',
                             hintText: '전화번호를 입력해주세요',
                             controller: usernameController,
@@ -204,7 +216,8 @@ class _StudState extends ConsumerState<RegStudentScreen> {
                                   RegExp(r'[0-9]')),
                             ],
                             errorMessage: usernameError,
-                            checkPressed: onDoubleCheckPressed,
+                            doubleCheck: true,
+                            onCheckPressed: onDoubleCheckPressed,
                           ),
                         ],
                       ),
@@ -213,7 +226,7 @@ class _StudState extends ConsumerState<RegStudentScreen> {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           RegInputBox(
-                            width: (horArea - 20 - 40) / 2,
+                            width: (horArea - 20) / 2,
                             labelText: '비밀번호',
                             hintText: '비밀번호를 입력해주세요',
                             controller: passwordController,
@@ -225,10 +238,10 @@ class _StudState extends ConsumerState<RegStudentScreen> {
                             errorMessage: passwordError,
                             obscureText: isObsecure,
                             isSelected: !isObsecure,
-                            eyePressed: onEyePressed,
+                            onEyePressed: onEyePressed,
                           ),
                           RegInputBox(
-                            width: (horArea - 20 - 40) / 2,
+                            width: (horArea - 20) / 2,
                             labelText: '비밀번호 확인',
                             hintText: '비밀번호를 다시 입력해주세요',
                             controller: password2Controller,
@@ -240,7 +253,7 @@ class _StudState extends ConsumerState<RegStudentScreen> {
                             errorMessage: password2Error,
                             obscureText: isObsecure2,
                             isSelected: !isObsecure2,
-                            eyePressed: onEye2Pressed,
+                            onEyePressed: onEye2Pressed,
                           ),
                         ],
                       ),

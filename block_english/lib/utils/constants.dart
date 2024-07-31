@@ -16,3 +16,6 @@ const String BASEURL = 'http://3.34.58.76';
 const String ACCESSTOKEN = 'accessToken';
 const String REFRESHTOKEN = 'refreshToken';
 const String TOKENVALIDATE = 'tokenValidate';
+
+double horPadding = 20;
+double verPadding = 30;
