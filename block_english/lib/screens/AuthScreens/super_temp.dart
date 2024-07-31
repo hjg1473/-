@@ -41,6 +41,12 @@ class _SuperState extends ConsumerState<RegSuperScreen> {
         isChecked = false;
       });
       return;
+    } else if (!username.contains('@')) {
+      setState(() {
+        usernameError = '이메일 형식이 아닙니다';
+        isChecked = false;
+      });
+      return;
     }
 
     //TODO: double check
@@ -85,6 +91,8 @@ class _SuperState extends ConsumerState<RegSuperScreen> {
       setState(() {
         usernameError = '중복확인을 다시 해주세요';
         isChecked = false;
+        usernameController.clear();
+        username = '';
       });
       onError = true;
     }
@@ -94,11 +102,17 @@ class _SuperState extends ConsumerState<RegSuperScreen> {
         passwordError = '비밀번호를 입력해주세요';
       });
       onError = true;
+    } else if (password.length < 8) {
+      setState(() {
+        passwordError = '8자 이상 입력해주세요';
+      });
+      onError = true;
     }
 
     if (password != password2) {
       setState(() {
         password2Error = '비밀번호가 일치하지 않습니다';
+        password2Controller.clear();
       });
       onError = true;
     }
@@ -107,9 +121,11 @@ class _SuperState extends ConsumerState<RegSuperScreen> {
       return;
     }
 
-    nameError = '';
-    passwordError = '';
-    password2Error = '';
+    setState(() {
+      nameError = '';
+      passwordError = '';
+      password2Error = '';
+    });
 
     if (mounted) {
       Navigator.of(context).push(MaterialPageRoute(
@@ -183,7 +199,7 @@ class _SuperState extends ConsumerState<RegSuperScreen> {
                               RegInputBox(
                                 width: (horArea - 20) / 2,
                                 labelText: '이름',
-                                hintText: '이름을 입력해주세요',
+                                hintText: '한글 또는 영문만 입력해주세요',
                                 controller: nameController,
                                 inputFormatters: [
                                   FilteringTextInputFormatter.allow(
@@ -194,11 +210,11 @@ class _SuperState extends ConsumerState<RegSuperScreen> {
                               RegInputBox(
                                 width: (horArea - 20) / 2,
                                 labelText: '이메일',
-                                hintText: '이메일을 입력해주세요',
+                                hintText: '사용할 이메일을 입력해주세요',
                                 controller: usernameController,
                                 inputFormatters: [
                                   FilteringTextInputFormatter.allow(
-                                      RegExp(r'[a-zA-Z0-9@.]')),
+                                      RegExp(r'[a-zA-Z0-9@.-]')),
                                 ],
                                 errorMessage: usernameError,
                                 doubleCheck: true,
@@ -214,7 +230,7 @@ class _SuperState extends ConsumerState<RegSuperScreen> {
                               RegInputBox(
                                 width: (horArea - 20) / 2,
                                 labelText: '비밀번호',
-                                hintText: '비밀번호를 입력해주세요',
+                                hintText: '영문/숫자 조합, 8자 이상 입력해주세요',
                                 controller: passwordController,
                                 inputFormatters: [
                                   FilteringTextInputFormatter.allow(
@@ -295,9 +311,36 @@ class _RegSuperNextScreenState extends ConsumerState<RegSuperNextScreen> {
       });
       return;
     }
+
+    phoneNumberError = '';
+    final reponse =
+        await ref.watch(authServiceProvider).postAuthGetNumber(phoneNumber);
+
+    reponse.fold((failure) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('인증번호 전송 실패\n다시 시도해 주세요'),
+          ),
+        );
+      }
+    }, (getNumberResponseModel) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('인증번호가 전송되었습니다.'),
+          ),
+        );
+        setState(() {
+          isChecked = false;
+          verifyNumberError = '';
+          verifynumberController.clear();
+        });
+      }
+    });
   }
 
-  onCheckPressed() {
+  onCheckPressed() async {
     verifyNumber = verifynumberController.text;
     if (verifyNumber == '') {
       setState(() {
@@ -308,13 +351,35 @@ class _RegSuperNextScreenState extends ConsumerState<RegSuperNextScreen> {
     }
 
     // TODO: verify number
-    isChecked = true;
+    final response = await ref
+        .watch(authServiceProvider)
+        .postAuthVerifyNumber(phoneNumber, verifyNumber);
+
+    response.fold(
+      (failure) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('인증번호가 틀렸습니다'),
+            ),
+          );
+        }
+      },
+      (verifyResponseModel) {
+        if (mounted) {
+          setState(() {
+            isChecked = true;
+            verifyNumberError = '인증이 완료되었습니다';
+          });
+        }
+      },
+    );
   }
 
   onRegisterPressed() async {
     if (!isChecked) {
       setState(() {
-        verifyNumberError = '인증번호를 확인해주세요';
+        verifyNumberError = '인증을 완료해 주세요';
       });
       return;
     }
@@ -329,6 +394,10 @@ class _RegSuperNextScreenState extends ConsumerState<RegSuperNextScreen> {
             content: Text('가입 다시해'),
           ),
         );
+
+        setState(() {
+          phoneNumberError = '';
+        });
       }
     }, (regResponseModel) {
       if (mounted) {
@@ -407,7 +476,7 @@ class _RegSuperNextScreenState extends ConsumerState<RegSuperNextScreen> {
                               RegInputBox(
                                 width: horArea * 0.7,
                                 labelText: '전화번호',
-                                hintText: '전화번호를 입력해 주세요 (- 제외)',
+                                hintText: '- 없이 숫자만 입력해주세요',
                                 controller: phonenumberController,
                                 inputFormatters: [
                                   FilteringTextInputFormatter.allow(

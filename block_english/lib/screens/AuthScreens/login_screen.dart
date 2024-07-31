@@ -159,7 +159,7 @@ class _LoginState extends ConsumerState<LoginScreen> {
                               decoration: InputDecoration(
                                 contentPadding:
                                     const EdgeInsets.symmetric(horizontal: 20),
-                                hintText: '전화번호 또는 이메일을 입력해주세요',
+                                hintText: '전화번호 또는 이메일을 입력해 주세요',
                                 hintStyle: TextStyle(
                                   color: Colors.grey[500],
                                   fontSize: 16,
@@ -175,7 +175,7 @@ class _LoginState extends ConsumerState<LoginScreen> {
                                   setState(() => username = value),
                               validator: (value) {
                                 if (value == null || value.isEmpty) {
-                                  return '아이디를 입력해주세요';
+                                  return '아이디를 입력해 주세요';
                                 }
                                 if (value.length < 6) {
                                   return '아이디가 너무 짧습니다';
@@ -202,7 +202,7 @@ class _LoginState extends ConsumerState<LoginScreen> {
                               decoration: InputDecoration(
                                 contentPadding:
                                     const EdgeInsets.symmetric(horizontal: 20),
-                                hintText: '비밀번호를 입력해주세요',
+                                hintText: '영문/숫자 조합, 8자 이상 입력해주세요',
                                 hintStyle: TextStyle(
                                   color: Colors.grey[500],
                                   fontSize: 16,

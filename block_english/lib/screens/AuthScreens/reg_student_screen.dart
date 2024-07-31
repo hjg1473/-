@@ -66,21 +66,26 @@ class _StudState extends ConsumerState<RegStudentScreen> {
 
     if (name == '') {
       setState(() {
-        nameError = '이름을 입력해주세요';
+        nameError = '이름을 입력해 주세요';
       });
       onError = true;
     }
 
     if (!isChecked) {
       setState(() {
-        usernameError = '중복확인을 해주세요';
+        usernameError = '중복확인을 해 주세요';
       });
       onError = true;
     }
 
     if (password == '') {
       setState(() {
-        passwordError = '비밀번호를 입력해주세요';
+        passwordError = '비밀번호를 입력해 주세요';
+      });
+      onError = true;
+    } else if (password.length < 8) {
+      setState(() {
+        passwordError = '8자 이상 입력해주세요';
       });
       onError = true;
     }
@@ -88,6 +93,7 @@ class _StudState extends ConsumerState<RegStudentScreen> {
     if (password != password2) {
       setState(() {
         password2Error = '비밀번호가 일치하지 않습니다';
+        password2Controller.clear();
       });
       onError = true;
     }
@@ -107,6 +113,11 @@ class _StudState extends ConsumerState<RegStudentScreen> {
             content: Text('가입 다시해'),
           ),
         );
+        setState(() {
+          nameError = '';
+          passwordError = '';
+          password2Error = '';
+        });
       }
     }, (regResponseModel) {
       if (mounted) {
@@ -199,7 +210,7 @@ class _StudState extends ConsumerState<RegStudentScreen> {
                               RegInputBox(
                                 width: (horArea - 20) / 2,
                                 labelText: '이름',
-                                hintText: '이름을 입력해주세요',
+                                hintText: '한글 또는 영문만 입력해주세요',
                                 controller: nameController,
                                 inputFormatters: [
                                   FilteringTextInputFormatter.allow(
@@ -211,7 +222,7 @@ class _StudState extends ConsumerState<RegStudentScreen> {
                               RegInputBox(
                                 width: (horArea - 20) / 2,
                                 labelText: '전화번호',
-                                hintText: '전화번호를 입력해주세요',
+                                hintText: '- 없이 숫자만 입력해주세요',
                                 controller: usernameController,
                                 inputFormatters: [
                                   FilteringTextInputFormatter.allow(
@@ -230,7 +241,7 @@ class _StudState extends ConsumerState<RegStudentScreen> {
                               RegInputBox(
                                 width: (horArea - 20) / 2,
                                 labelText: '비밀번호',
-                                hintText: '비밀번호를 입력해주세요',
+                                hintText: '영문/숫자 조합, 8자 이상 입력해주세요',
                                 controller: passwordController,
                                 inputFormatters: [
                                   FilteringTextInputFormatter.allow(
