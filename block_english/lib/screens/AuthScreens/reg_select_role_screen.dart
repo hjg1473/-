@@ -1,3 +1,4 @@
+import 'package:block_english/utils/media.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
@@ -60,8 +61,8 @@ class RegSelectRoleScreen extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     SizedBox(
-                      width: 180,
-                      height: 206,
+                      width: 180 * DeviceScale.scaleWidth(context),
+                      height: 206 * DeviceScale.scaleHeight(context),
                       child: IconButton(
                         onPressed: null,
                         icon: SvgPicture.asset(
@@ -73,8 +74,8 @@ class RegSelectRoleScreen extends StatelessWidget {
                       width: 60,
                     ),
                     SizedBox(
-                      width: 180,
-                      height: 206,
+                      width: 180 * DeviceScale.scaleWidth(context),
+                      height: 206 * DeviceScale.scaleHeight(context),
                       child: IconButton(
                         onPressed: null,
                         icon: SvgPicture.asset(
