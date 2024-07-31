@@ -322,28 +322,42 @@ async def user_solve_problem(user: user_dependency, db: db_dependency, problem_i
     from app.src.main import reader
     result = await asyncio.to_thread(reader.readtext, img_array, allowlist='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz!,?.', text_threshold=0.4,low_text=0.3)
     # result = reader.readtext(img_array, allowlist='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz!,?.', text_threshold=0.4,low_text=0.3)
-    # 1. 각 사각형의 높이 구하기
-    heights = []
-    for item in result:
-        coords = item[0]
-        y_values = [point[1] for point in coords]
-        height = max(y_values) - min(y_values)
-        heights.append(height)
 
-    # 높이의 최댓값 구하기
-    max_height = max(heights)
+    sorted_data = sorted(result, key=lambda item: item[0][0][0])
+    max_height = 0
+    ref_block_idx = 0
+    for block_idx, block in enumerate(sorted_data):
+        height = block[0][2][1] - block[0][0][1]
+        if height > max_height:
+            max_height = height
+            ref_block_idx = block_idx
+    word_list=[sorted_data[ref_block_idx][1]]
 
-    # 2. 높이의 최댓값의 0.7배 이하 무시하기
-    threshold = max_height * 0.7
-    filtered_data = [item for item, height in zip(result, heights) if height > threshold]
 
-    # 3. 남은 단어들을 x축 오름차순으로 정렬해서 단어 리스트 만들기
-    sorted_data = sorted(filtered_data, key=lambda item: min(point[0] for point in item[0]))
-    words = [item[1] for item in sorted_data]
-    
+
+    # 오른쪽부터
+    if(ref_block_idx+1<len(sorted_data)):
+        low_y = sorted_data[ref_block_idx][0][3][1]
+        high_y = sorted_data[ref_block_idx][0][0][1]
+        for block in sorted_data[ref_block_idx+1:]:
+            if (min(low_y, block[0][3][1]) >= max(high_y, block[0][0][1])):
+                low_y = block[0][3][1]
+                high_y = block[0][0][1]
+                word_list.append(block[1])
+
+    # 왼쪽
+    if(ref_block_idx>0):
+        low_y = sorted_data[ref_block_idx][0][3][1]
+        high_y = sorted_data[ref_block_idx][0][0][1]
+        for block in reversed(sorted_data[:ref_block_idx]):
+            if (min(low_y, block[0][3][1]) >= max(high_y, block[0][0][1])):
+                low_y = block[0][3][1]
+                high_y = block[0][0][1]
+                word_list.insert(0,block[1])
+
     correct_answer = problem_model.englishProblem
     
-    user_string = ' '.join(words)
+    user_string = ' '.join(word_list)
     # isAnswer, false_location = check_answer(correct_answer, words)
     problem_parse = parse_sentence(correct_answer)
     response_parse = parse_sentence(user_string)
