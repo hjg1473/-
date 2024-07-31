@@ -108,7 +108,7 @@ async def first_login_for_access_token(form_data: Annotated[OAuth2PasswordReques
 
     redis_client.close()
     await redis_client.wait_closed()
-    return {'access_token' : access_token, 'token_type' : 'bearer', 'role': user.role, 'refresh_token' : refresh_token}
+    return {'access_token' : access_token, 'token_type' : 'bearer', 'role': user.role, 'refresh_token' : refresh_token, 'team_id': user.team_id}
 
 # Access Token 유효성 검사
 @router.post("/access", status_code=status.HTTP_200_OK, responses={401: {"model": Message}})

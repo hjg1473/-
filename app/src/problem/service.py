@@ -70,7 +70,7 @@ async def get_incorrect_problem_count(study_info_id: int, problem_id: int, db):
     count = result.scalar()
     return count
 
-async def calculate_wrong_info(problem_parse:list, response_parse:list, db=db_dependency):
+async def calculate_wrong_info(problem_parse:list, response_parse:list, tempUserProblem, db=db_dependency):
     problem = combine_sentence(problem_parse)
 
     # 0. response의 단어들이 블록에 있는 단어인지 검사    
@@ -84,7 +84,9 @@ async def calculate_wrong_info(problem_parse:list, response_parse:list, db=db_de
         
     for item in popList:
         response_parse.remove(item)
-
+        
+    if response_parse is None:
+        return {'detail':'공백 블럭'}
     response = combine_sentence(response_parse)
     # v1: 대소문자 filter 거친 문장 --> 대소문자 맞는 걸로 바뀜
     # v2: 구두점 filter 거친 문장   --> 구두점 사라짐
@@ -140,4 +142,11 @@ async def calculate_wrong_info(problem_parse:list, response_parse:list, db=db_de
         else:
             word_wrong += 1    
     
-    return {"problem_v1":problem, "response_v1":response_v1, "problem_v2":problem_v2, "r_v2":response_v2, "r_v3":response_v3_split, "letter":letter_wrong, "punc":punc_wrong, "block":block_wrong, "word":word_wrong, "order":order_wrong}
+    tempUserProblem.totalFullStop += letter_wrong 
+    tempUserProblem.totalTextType += punc_wrong
+    tempUserProblem.totalIncorrectCompose += block_wrong
+    tempUserProblem.totalIncorrectWords += word_wrong
+    tempUserProblem.totalIncorrectOrder += order_wrong
+
+    return
+    # return {"problem_v1":problem, "response_v1":response_v1, "problem_v2":problem_v2, "r_v2":response_v2, "r_v3":response_v3_split, "letter":letter_wrong, "punc":punc_wrong, "block":block_wrong, "word":word_wrong, "order":order_wrong}

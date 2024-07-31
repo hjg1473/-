@@ -1,14 +1,15 @@
 import asyncio
+import time
 import numpy as np
 from PIL import Image
 import io
-from sqlalchemy import select
+from sqlalchemy import collate, func, select
 from sqlalchemy.orm import joinedload
-from fastapi import APIRouter
+from fastapi import APIRouter, BackgroundTasks
 from starlette import status
 import sys, os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))))
-from app.src.models import Users, StudyInfo, Problems, correct_problem_table
+from app.src.models import Users, StudyInfo, Problems, correct_problem_table, Words
 from fastapi import requests, UploadFile, File, Form
 import requests
 from problem.dependencies import user_dependency, db_dependency
@@ -291,97 +292,94 @@ async def send_problems_data(user: user_dependency, db: db_dependency):
 
 #     return {'isAnswer' : problem.englishProblem, 'user_answer': user_string, 'false_location': false_location}
 
-# 학생이 문제를 풀었을 때, 일단 임시로 맞았다고 처리 
-@router.post("/solve_test", status_code = status.HTTP_200_OK)
-async def user_solve_problem(user: user_dependency, db: db_dependency, problem_id: int = Form(...), file: UploadFile = File(...)):
+
+# 학생이 문제를 풀었을 때, 일단 임시로 맞았다고 처리 (33초) (31초) -> (6~7초)
+@router.post("/solve_OCR", status_code = status.HTTP_200_OK)
+async def user_solve_problem(user: user_dependency, db: db_dependency, 
+                             file: UploadFile = File(...)):
+    get_user_exception(user)
+    
+    # img_binary = await file.read()
+    # image = await asyncio.to_thread(Image.open,io.BytesIO(img_binary))
+    # # image = Image.open(io.BytesIO(img_binary))
+    # img_array = np.array(image)
+
+    img_binary = await file.read()
+    image = await asyncio.to_thread(Image.open, io.BytesIO(img_binary))
+
+    # 이미지 크기 줄이기
+    max_dimension = 1000  # 예: 최대 1000픽셀
+    if max(image.size) > max_dimension:
+        scale = max_dimension / max(image.size)
+        image = image.resize((int(image.width * scale), int(image.height * scale)))
+
+    img_array = np.array(image)
+    # 이미지 읽는게 img_array 크기 줄이니까 빨라짐.
+    from app.src.main import reader
+    result = await asyncio.to_thread(reader.readtext, img_array, allowlist='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz!,?.', text_threshold=0.4,low_text=0.3)
+    sorted_data = sorted(result, key=lambda item: item[0][0][0])
+    max_height = 0
+    ref_block_idx = 0
+    for block_idx, block in enumerate(sorted_data):
+        height = block[0][2][1] - block[0][0][1]
+        if height > max_height:
+            max_height = height
+            ref_block_idx = block_idx
+    word_list=[sorted_data[ref_block_idx][1]]
+
+    # 오른쪽부터
+    if(ref_block_idx+1<len(sorted_data)):
+        low_y = sorted_data[ref_block_idx][0][3][1]
+        high_y = sorted_data[ref_block_idx][0][0][1]
+        for block in sorted_data[ref_block_idx+1:]:
+            if (min(low_y, block[0][3][1]) >= max(high_y, block[0][0][1])):
+                low_y = block[0][3][1]
+                high_y = block[0][0][1]
+                word_list.append(block[1])
+
+    # 왼쪽
+    if(ref_block_idx>0):
+        low_y = sorted_data[ref_block_idx][0][3][1]
+        high_y = sorted_data[ref_block_idx][0][0][1]
+        for block in reversed(sorted_data[:ref_block_idx]):
+            if (min(low_y, block[0][3][1]) >= max(high_y, block[0][0][1])):
+                low_y = block[0][3][1]
+                high_y = block[0][0][1]
+                word_list.insert(0,block[1])
+    
+    user_string = ' '.join(word_list)
+
+    temp_result = await db.execute(select(Words).filter(collate(Words.words,'utf8mb4_bin').in_(word_list)))
+    word_model = temp_result.scalars().all()
+    
+    return {"user_input": user_string, "words_id": word_model}
+
+
+@router.post("/solve_check", status_code = status.HTTP_200_OK)
+async def user_solve_problem(background_tasks: BackgroundTasks, user_string: str, problem_id: int, user: user_dependency, db: db_dependency):
     get_user_exception(user)
 
-    # 학생이 제시받은 문제 id와 문제 id 비교해서 문제 찾아냄.
     temp_result = await db.execute(select(Problems).filter(Problems.id == problem_id))
     problem_model = temp_result.scalars().first()
     if problem_model is None:
         raise http_exception()
-    
-    img_binary = await file.read()
-    image = await asyncio.to_thread(Image.open,io.BytesIO(img_binary))
-    # image = Image.open(io.BytesIO(img_binary))
-    img_array = np.array(image)
-    from app.src.main import reader
-    result = await asyncio.to_thread(reader.readtext, img_array, allowlist='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz!,?.', text_threshold=0.4,low_text=0.3)
-    # result = reader.readtext(img_array, allowlist='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz!,?.', text_threshold=0.4,low_text=0.3)
-    # 1. 각 사각형의 높이 구하기
-    heights = []
-    for item in result:
-        coords = item[0]
-        y_values = [point[1] for point in coords]
-        height = max(y_values) - min(y_values)
-        heights.append(height)
 
-    # 높이의 최댓값 구하기
-    max_height = max(heights)
-
-    # 2. 높이의 최댓값의 0.7배 이하 무시하기
-    threshold = max_height * 0.7
-    filtered_data = [item for item, height in zip(result, heights) if height > threshold]
-
-    # 3. 남은 단어들을 x축 오름차순으로 정렬해서 단어 리스트 만들기
-    sorted_data = sorted(filtered_data, key=lambda item: min(point[0] for point in item[0]))
-    words = [item[1] for item in sorted_data]
-    
     correct_answer = problem_model.englishProblem
-    
-    user_string = ' '.join(words)
-    # isAnswer, false_location = check_answer(correct_answer, words)
     problem_parse = parse_sentence(correct_answer)
     response_parse = parse_sentence(user_string)
-
-    isAnswer, false_location = check_answer(problem_parse, response_parse)
+    isAnswer, false_location = check_answer(problem_parse, list(response_parse))
     tempUserProblem = TempUserProblems.get(user.get("id")) # 정답 반환할 때.
+
+    #  조금 느리긴 함 (약 2초) > 백그라운드 실행
     if isAnswer:
         result = {"you did good job"}
     else:
-        result = await calculate_wrong_info(problem_parse, response_parse, db)
-        tempUserProblem.totalFullStop += result["letter_wrong"] 
-        tempUserProblem.totalTextType += result["punc_wrong"]
-        tempUserProblem.totalIncorrectCompose += result["block_wrong"] 
-        tempUserProblem.totalIncorrectWords += result["word_wrong"] 
-        tempUserProblem.totalIncorrectOrder += result["order_wrong"] 
+        background_tasks.add_task(calculate_wrong_info, problem_parse, response_parse, tempUserProblem, db)
 
     if problem_id in tempUserProblem.problem_incorrect_count:
         tempUserProblem.problem_incorrect_count[problem_id] += 1
     else:
         tempUserProblem.problem_incorrect_count[problem_id] = 1
 
-    return result
+    return {"answer": correct_answer, "isAnswer": isAnswer}
 
-
-# @router.post("/solve_test_feedback", status_code = status.HTTP_200_OK)
-# async def user_solve_problem(response:str, problem_id:int, user:user_dependency, db:db_dependency):
-#     get_user_exception(user)
-
-#     result = await db.execute(select(Problems).filter(Problems.id == problem_id))
-#     problem_model = result.scalars().first()
-#     if problem_model is None:
-#         raise http_exception()
-#     problem = problem_model.englishProblem
-#     # 일단 문자열로 받아서 테스트
-#     problem_parse = parse_sentence(problem)
-#     response_parse = parse_sentence(response)
-
-#     isAnswer, false_location = check_answer(problem_parse, response_parse)
-#     result2 = await db.execute(select(StudyInfo).options(joinedload(StudyInfo.correct_problems)).options(joinedload(StudyInfo.incorrect_problems)).filter(StudyInfo.owner_id == user.get("id")))
-#     study_info = result2.scalars().first()
-
-#     if isAnswer:
-#         study_info.correct_problems.append(problem_model)
-#         await increment_correct_problem_count(study_info.id, problem_model.id, 1, db)
-#         db.add(study_info)
-#         await db.commit()
-#         result = {"you did good job"}
-#     else:
-#         study_info.incorrect_problems.append(problem_model)
-#         result = await calculate_wrong_info(problem_parse, response_parse, db)
-#     db.add(study_info)
-#     await db.commit()
-
-#     return result
