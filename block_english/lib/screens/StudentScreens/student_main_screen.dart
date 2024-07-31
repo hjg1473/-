@@ -1,7 +1,9 @@
 import 'package:block_english/screens/StudentScreens/student_game_screen.dart';
 import 'package:block_english/screens/StudentScreens/student_practice_screen.dart';
+import 'package:block_english/utils/status.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 const route1 = "/standard";
 const route2 = '/expansion';
@@ -25,14 +27,14 @@ class CustomRoute<T> extends MaterialPageRoute<T> {
   }
 }
 
-class StudentMainScreen extends StatefulWidget {
+class StudentMainScreen extends ConsumerStatefulWidget {
   const StudentMainScreen({super.key});
 
   @override
-  State<StudentMainScreen> createState() => _StudentMainScreenState();
+  ConsumerState<StudentMainScreen> createState() => _StudentMainScreenState();
 }
 
-class _StudentMainScreenState extends State<StudentMainScreen> {
+class _StudentMainScreenState extends ConsumerState<StudentMainScreen> {
   final _navigatorKey = GlobalKey<NavigatorState>();
 
   onPressedR(String route) {

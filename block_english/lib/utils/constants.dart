@@ -1,6 +1,8 @@
+// ignore_for_file: constant_identifier_names
+
 enum ButtonType {
-  filled,
-  outlined,
+  FILLED,
+  OUTLINED,
 }
 
 const List<String> gradelist = [
@@ -11,6 +13,12 @@ const List<String> gradelist = [
   "5학년",
   "6학년",
 ];
+
+enum StudentMode {
+  PRIVATE,
+  GROUP,
+  NONE,
+}
 
 const String BASEURL = 'http://3.34.58.76';
 const String ACCESSTOKEN = 'accessToken';
