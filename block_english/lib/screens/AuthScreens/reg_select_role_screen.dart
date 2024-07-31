@@ -1,5 +1,6 @@
-import 'package:block_english/widgets/registration_button.dart';
+import 'package:block_english/utils/media.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 class RegSelectRoleScreen extends StatelessWidget {
   const RegSelectRoleScreen({super.key});
@@ -56,22 +57,31 @@ class RegSelectRoleScreen extends StatelessWidget {
                     const SizedBox(width: 100),
                   ],
                 ),
-                const Spacer(),
-                const Row(
+                Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    RegistrationWidget(
-                      icon: Icons.supervisor_account,
-                      label: '관리자',
-                      text: '교사, 학부모는 선택해주세요',
-                      routeName: '/reg_super_screen',
+                    SizedBox(
+                      width: 180 * DeviceScale.scaleWidth(context),
+                      height: 206 * DeviceScale.scaleHeight(context),
+                      child: IconButton(
+                        onPressed: null,
+                        icon: SvgPicture.asset(
+                          'assets/cards/sign_in_user.svg',
+                        ),
+                      ),
                     ),
-                    SizedBox(width: 60),
-                    RegistrationWidget(
-                      icon: Icons.school,
-                      label: '학습자',
-                      text: '학생들은 선택해주세요',
-                      routeName: '/reg_student_screen',
+                    const SizedBox(
+                      width: 60,
+                    ),
+                    SizedBox(
+                      width: 180 * DeviceScale.scaleWidth(context),
+                      height: 206 * DeviceScale.scaleHeight(context),
+                      child: IconButton(
+                        onPressed: null,
+                        icon: SvgPicture.asset(
+                          'assets/cards/sign_in_manager.svg',
+                        ),
+                      ),
                     ),
                   ],
                 )
