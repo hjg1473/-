@@ -53,6 +53,7 @@ class AuthService {
     }
   }
 
+  // TODO: Update Reg Request
   Future<Either<FailureModel, RegResponseModel>> postAuthRegister(
     String name,
     String username,
