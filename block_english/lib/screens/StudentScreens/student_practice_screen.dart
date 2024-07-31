@@ -1,5 +1,6 @@
 import 'package:block_english/models/model.dart';
 import 'package:block_english/services/problem_service.dart';
+import 'package:block_english/widgets/StudentWidget/problem_level_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -34,18 +35,13 @@ class StudentPracticeScreen extends ConsumerWidget {
 
             return error.isEmpty
                 ? ListView.separated(
-                    scrollDirection: Axis.vertical,
+                    scrollDirection: Axis.horizontal,
                     itemBuilder: (context, index) {
-                      return Column(
-                        children: [
-                          for (var step in levels[index].steps)
-                            Text(
-                                '[LEVEL]: ${levels[index].levelName}, [STEP]: $step')
-                        ],
-                      );
+                      return ProblemLevelWidget(
+                          levelName: 'Level ${levels[index].levelName}');
                     },
                     separatorBuilder: (context, index) =>
-                        const SizedBox(height: 20),
+                        const SizedBox(width: 20),
                     itemCount: levels.length,
                   )
                 : const CircularProgressIndicator();

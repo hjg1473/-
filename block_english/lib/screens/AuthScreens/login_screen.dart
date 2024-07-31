@@ -74,20 +74,20 @@ class _LoginState extends ConsumerState<LoginScreen> {
     Size screenSize = MediaQuery.of(context).size;
 
     return Scaffold(
-      body: Row(
-        children: [
-          Container(
-            width: screenSize.width / 2 - 10,
-            height: screenSize.height,
-            color: Colors.grey[200],
-          ),
-          SizedBox(
-            width: screenSize.width / 2 + 10,
-            height: screenSize.height,
-            child: SafeArea(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 30),
-                child: SingleChildScrollView(
+      body: SingleChildScrollView(
+        child: Row(
+          children: [
+            Container(
+              width: screenSize.width / 2 - 10,
+              height: screenSize.height,
+              color: Colors.grey[200],
+            ),
+            SizedBox(
+              width: screenSize.width / 2 + 10,
+              height: screenSize.height,
+              child: SafeArea(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 30),
                   child: Form(
                     key: formkey,
                     child: Column(
@@ -250,8 +250,8 @@ class _LoginState extends ConsumerState<LoginScreen> {
                 ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
