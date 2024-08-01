@@ -17,6 +17,11 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 void main() {
+  WidgetsFlutterBinding.ensureInitialized();
+  SystemChrome.setPreferredOrientations([
+    DeviceOrientation.landscapeLeft,
+    DeviceOrientation.landscapeRight,
+  ]);
   runApp(const ProviderScope(child: MyApp()));
 }
 
@@ -36,7 +41,7 @@ class MyApp extends StatelessWidget {
         ),
       ),
       title: "Block English",
-      initialRoute: '/login_screen',
+      initialRoute: '/loading_screen',
       routes: {
         '/loading_screen': (context) => const LoadingScreen(),
         '/init': (context) => const InitScreen(),

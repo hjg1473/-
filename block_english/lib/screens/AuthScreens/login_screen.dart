@@ -30,8 +30,8 @@ class _LoginState extends ConsumerState<LoginScreen> {
     result.fold((failure) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('로그인 다시해'),
+          SnackBar(
+            content: Text('${failure.statusCode}: ${failure.detail}'),
           ),
         );
       }

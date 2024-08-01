@@ -2,6 +2,7 @@ import 'dart:ui';
 
 import 'package:block_english/models/SuperModel/group_info_model.dart';
 import 'package:block_english/services/super_service.dart';
+import 'package:block_english/utils/device_scale.dart';
 import 'package:block_english/widgets/group_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -21,6 +22,7 @@ class _SuperMonitorScreenState extends ConsumerState<SuperMonitorScreen> {
   List<GroupInfoModel> filteredGroups = [];
   bool isLoading = true;
   bool bottomSheet = false;
+  bool isSearching = false;
 
   SliverWoltModalSheetPage addPage(
       BuildContext modalSheetContext, TextTheme textTheme) {
@@ -156,6 +158,20 @@ class _SuperMonitorScreenState extends ConsumerState<SuperMonitorScreen> {
     setState(() {});
   }
 
+  void onSearchPressed() {
+    setState(() {
+      isSearching = true;
+    });
+  }
+
+  void onCancelPressed() {
+    setState(() {
+      isSearching = false;
+      searchValue = '';
+      search();
+    });
+  }
+
   bool containsKor(String string, String target) {
     if (string.length < target.length) {
       return false;
@@ -188,63 +204,157 @@ class _SuperMonitorScreenState extends ConsumerState<SuperMonitorScreen> {
 
   @override
   Widget build(BuildContext context) {
+    double horArea = MediaQuery.of(context).size.width -
+        2 * DeviceScale.scaffoldPadding(context).horizontal;
     return Scaffold(
-      appBar: AppBar(
-          title: const Text(
-            '모니터링',
-          ),
-          centerTitle: true,
-          actions: [
-            IconButton(
-              icon: const Icon(
-                Icons.person_add,
-                color: Colors.black,
-              ),
-              onPressed: addButtonPressed,
-            ),
-          ]),
       body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
+        padding: DeviceScale.scaffoldPadding(context),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            SearchBar(
-              leading: const Icon(
-                Icons.search_rounded,
-                color: Colors.white,
-              ),
-              hintText: '검색',
-              hintStyle: const WidgetStatePropertyAll(
-                TextStyle(
-                  color: Colors.white,
+            Stack(
+              children: [
+                Positioned(
+                  top: 0,
+                  child: IconButton(
+                    icon: const Icon(
+                      Icons.arrow_back_ios_new_rounded,
+                      size: 16,
+                      color: Colors.white,
+                    ),
+                    style: IconButton.styleFrom(
+                      minimumSize: const Size(48, 48),
+                      padding: const EdgeInsets.all(10),
+                      backgroundColor: Colors.black,
+                    ),
+                    onPressed: () {},
+                  ),
                 ),
-              ),
-              textStyle: const WidgetStatePropertyAll(
-                TextStyle(
-                  color: Colors.white,
+                const SizedBox(
+                  height: 48,
+                  child: Center(
+                    child: Text(
+                      '모니터링',
+                      style: TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
                 ),
-              ),
-              backgroundColor: const WidgetStatePropertyAll(Color(0xFFB5B5B5)),
-              elevation: const WidgetStatePropertyAll(0.0),
-              constraints: const BoxConstraints(minHeight: 45),
-              shape: WidgetStatePropertyAll(
-                RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    isSearching
+                        ? const SizedBox()
+                        : IconButton(
+                            icon: const Icon(
+                              Icons.search_rounded,
+                              color: Colors.white,
+                            ),
+                            style: IconButton.styleFrom(
+                              minimumSize: const Size(48, 48),
+                              padding: const EdgeInsets.all(10),
+                              backgroundColor: Colors.grey[700],
+                            ),
+                            onPressed: onSearchPressed,
+                          ),
+                    const SizedBox(width: 20),
+                    IconButton(
+                      icon: const Icon(
+                        Icons.person_add_alt_1_rounded,
+                        color: Colors.white,
+                      ),
+                      style: IconButton.styleFrom(
+                        minimumSize: const Size(48, 48),
+                        padding: const EdgeInsets.all(10),
+                        backgroundColor: Colors.grey[700],
+                      ),
+                      onPressed: addButtonPressed,
+                    ),
+                  ],
                 ),
-              ),
-              onChanged: (value) {
-                searchValue = value;
-                search();
-              },
+                isSearching
+                    ? Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          SizedBox(
+                            width: 400 * DeviceScale.scaleWidth(context),
+                            child: SearchBar(
+                              padding: const WidgetStatePropertyAll(
+                                EdgeInsets.symmetric(horizontal: 30),
+                              ),
+                              leading: const Icon(
+                                Icons.search_rounded,
+                                color: Colors.white,
+                              ),
+                              hintText: '검색',
+                              hintStyle: const WidgetStatePropertyAll(
+                                TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.white,
+                                ),
+                              ),
+                              textStyle: const WidgetStatePropertyAll(
+                                TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.white,
+                                ),
+                              ),
+                              backgroundColor:
+                                  WidgetStatePropertyAll(Colors.grey[400]),
+                              elevation: const WidgetStatePropertyAll(0.0),
+                              constraints: const BoxConstraints(minHeight: 48),
+                              shape: WidgetStatePropertyAll(
+                                RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(50),
+                                ),
+                              ),
+                              onChanged: (value) {
+                                searchValue = value;
+                                search();
+                              },
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                          FilledButton(
+                            onPressed: onCancelPressed,
+                            style: FilledButton.styleFrom(
+                              minimumSize: const Size(double.minPositive, 48),
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 20),
+                              backgroundColor: Colors.grey[400],
+                            ),
+                            child: const Text(
+                              '취소',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                        ],
+                      )
+                    : const SizedBox(),
+              ],
             ),
-            const SizedBox(height: 20),
+            SizedBox(height: DeviceScale.verticalPadding(context)),
             isLoading
                 ? const CircularProgressIndicator()
                 : Expanded(
                     child: error.isEmpty
                         ? filteredGroups.isEmpty
                             ? const SizedBox()
-                            : ListView.separated(
+                            : GridView.builder(
+                                gridDelegate:
+                                    const SliverGridDelegateWithFixedCrossAxisCount(
+                                  crossAxisCount: 2,
+                                  crossAxisSpacing: 15,
+                                  mainAxisSpacing: 10,
+                                  childAspectRatio: 4.5,
+                                ),
                                 scrollDirection: Axis.vertical,
                                 itemCount: filteredGroups.length,
                                 itemBuilder: (BuildContext context, int index) {
@@ -255,8 +365,6 @@ class _SuperMonitorScreenState extends ConsumerState<SuperMonitorScreen> {
                                     studentNum: group.count,
                                   );
                                 },
-                                separatorBuilder: (context, index) =>
-                                    const SizedBox(height: 20),
                               )
                         : // TODO: handle error
                         Text('Error: $error'),

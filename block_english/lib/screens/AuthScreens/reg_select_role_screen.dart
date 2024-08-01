@@ -14,9 +14,7 @@ class RegSelectRoleScreen extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.start,
+              Stack(
                 children: [
                   FilledButton.icon(
                     icon: const Icon(Icons.arrow_back_ios, size: 16),
@@ -32,28 +30,26 @@ class RegSelectRoleScreen extends StatelessWidget {
                       backgroundColor: Colors.black,
                     ),
                   ),
-                  const Spacer(),
-                  Column(
-                    children: [
-                      const Text(
-                        '나는 어떤 사용자인가요?',
-                        style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.w600,
+                  Center(
+                    child: Column(
+                      children: [
+                        const Text(
+                          '나는 어떤 사용자인가요?',
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.w600,
+                          ),
                         ),
-                      ),
-                      Text(
-                        '본인의 신분에 맞게 선택해주세요',
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: Colors.grey[600],
+                        Text(
+                          '본인의 신분에 맞게 선택해주세요',
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: Colors.grey[600],
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
-                  const Spacer(),
-                  //TODO: 정렬 맞추기
-                  const SizedBox(width: 100),
                 ],
               ),
               const Spacer(),
