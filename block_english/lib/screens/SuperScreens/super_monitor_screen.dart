@@ -204,8 +204,6 @@ class _SuperMonitorScreenState extends ConsumerState<SuperMonitorScreen> {
 
   @override
   Widget build(BuildContext context) {
-    double horArea = MediaQuery.of(context).size.width -
-        2 * DeviceScale.scaffoldPadding(context).horizontal;
     return Scaffold(
       body: Padding(
         padding: DeviceScale.scaffoldPadding(context),

@@ -14,24 +14,20 @@ import 'package:block_english/screens/loading_screen.dart';
 import 'package:block_english/screens/setting_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 void main() {
-  WidgetsFlutterBinding.ensureInitialized();
-  SystemChrome.setPreferredOrientations([
-    DeviceOrientation.landscapeLeft,
-    DeviceOrientation.landscapeRight,
-  ]);
   runApp(const ProviderScope(child: MyApp()));
 }
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
-
   @override
   Widget build(BuildContext context) {
-    SystemChrome.setPreferredOrientations([DeviceOrientation.landscapeLeft]);
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.landscapeLeft,
+      DeviceOrientation.landscapeRight,
+    ]);
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
 
     return MaterialApp(
@@ -43,7 +39,7 @@ class MyApp extends StatelessWidget {
         ),
       ),
       title: "Block English",
-      initialRoute: '/loading_screen',
+      initialRoute: '/login_screen',
       routes: {
         '/loading_screen': (context) => const LoadingScreen(),
         '/init': (context) => const InitScreen(),

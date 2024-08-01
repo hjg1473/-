@@ -4,12 +4,19 @@ class DeviceScale {
   static const baseDeviceWidth = 812;
   static const baseDeviceHeight = 375;
 
+  static Size screenSize(BuildContext context) {
+    return Size(
+        MediaQuery.of(context).size.width -
+            MediaQuery.of(context).viewPadding.horizontal,
+        MediaQuery.of(context).size.height);
+  }
+
   static double scaleWidth(BuildContext context) {
-    return MediaQuery.of(context).size.width / baseDeviceWidth;
+    return screenSize(context).width / baseDeviceWidth;
   }
 
   static double scaleHeight(BuildContext context) {
-    return MediaQuery.of(context).size.height / baseDeviceHeight;
+    return screenSize(context).height / baseDeviceHeight;
   }
 
   static double horizontalPadding(BuildContext context) {

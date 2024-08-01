@@ -5,12 +5,14 @@ class SquareButton extends StatelessWidget {
   final String text;
   final Color? backgroundColor;
   final VoidCallback? onPressed;
+  final double width;
 
   const SquareButton({
     super.key,
     required this.text,
     this.backgroundColor = Colors.black,
     this.onPressed,
+    this.width = double.infinity,
   });
 
   @override
@@ -18,8 +20,7 @@ class SquareButton extends StatelessWidget {
     return FilledButton(
       onPressed: onPressed,
       style: FilledButton.styleFrom(
-        minimumSize:
-            Size(double.infinity, DeviceScale.squareButtonHeight(context)),
+        minimumSize: Size(width, DeviceScale.squareButtonHeight(context)),
         backgroundColor: backgroundColor,
         shape: const BeveledRectangleBorder(),
       ),
