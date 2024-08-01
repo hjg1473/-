@@ -1,220 +1,109 @@
-import 'package:block_english/screens/StudentScreens/student_game_screen.dart';
-import 'package:block_english/screens/StudentScreens/student_practice_screen.dart';
-import 'package:flutter/cupertino.dart';
+import 'package:block_english/utils/constants.dart';
+import 'package:block_english/utils/device_scale.dart';
+import 'package:block_english/utils/status.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
-const route1 = "/standard";
-const route2 = '/expansion';
-const route3 = "/game";
-String appBarTitle = '기본 문제';
-
-class CustomRoute<T> extends MaterialPageRoute<T> {
-  CustomRoute({required super.builder});
-
-  @override
-  Widget buildTransitions(BuildContext context, Animation<double> animation,
-      Animation<double> secondaryAnimation, Widget child) {
-    //return FadeTransition(opacity: animation, child: child);
-    return SlideTransition(
-      position:
-          Tween<Offset>(begin: const Offset(0, 0), end: const Offset(0, 0))
-              //.chain(CurveTween(curve: Curves.linear))
-              .animate(animation),
-      child: child,
-    );
-  }
-}
-
-class StudentMainScreen extends StatefulWidget {
+class StudentMainScreen extends ConsumerWidget {
   const StudentMainScreen({super.key});
 
   @override
-  State<StudentMainScreen> createState() => _StudentMainScreenState();
-}
-
-class _StudentMainScreenState extends State<StudentMainScreen> {
-  final _navigatorKey = GlobalKey<NavigatorState>();
-
-  onPressedR(String route) {
-    setState(() {
-      switch (route) {
-        case route1:
-          appBarTitle = '기본 문제';
-          break;
-        case route2:
-          appBarTitle = '확장 문제';
-          break;
-        case route3:
-          appBarTitle = '게임';
-          break;
-      }
-    });
-
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _navigatorKey.currentState!.pushReplacementNamed(route);
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(appBarTitle),
-        centerTitle: true,
-        scrolledUnderElevation: 0,
-        actions: [
-          IconButton(
-            onPressed: () {
-              Navigator.pushNamed(context, '/setting_screen');
-            },
-            icon: const Icon(Icons.account_circle_outlined),
-          ),
-        ],
-      ),
-      body: Navigator(
-        key: _navigatorKey,
-        onGenerateRoute: (settings) {
-          return CustomRoute(
-            //fullscreenDialog: true,
-            builder: (context) {
-              switch (settings.name) {
-                case route1:
-                  return const StudentPracticeScreen();
-                case route2:
-                  return const Exp();
-                case route3:
-                  return const StudentGameScreen();
-                default:
-                  return const StudentPracticeScreen();
-              }
-            },
-          );
-        },
-      ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
-      floatingActionButton: FloatingSideBar(
-        onPressed: onPressedR,
-      ),
-    );
-  }
-}
-
-class FloatingSideBar extends StatefulWidget {
-  const FloatingSideBar({super.key, required this.onPressed});
-
-  final dynamic onPressed;
-
-  @override
-  State<FloatingSideBar> createState() => _FloatingSideBarState();
-}
-
-class _FloatingSideBarState extends State<FloatingSideBar> {
-  int currentPage = 1;
-  Color selectedColor = Colors.black87;
-  Color unselectedColor = Colors.grey;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      height: MediaQuery.of(context).size.height * 0.75,
-      width: MediaQuery.of(context).size.width * 0.1,
-      decoration: BoxDecoration(
-        color: Colors.grey[200],
-        borderRadius: BorderRadius.circular(15),
-      ),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
+      body: Stack(
         children: [
-          const Spacer(flex: 2),
-          IconButton(
-            icon: Icon(
-              Icons.school_rounded,
-              color: currentPage == 1 ? selectedColor : unselectedColor,
-            ),
-            onPressed: () {
-              if (currentPage == 1) {
-                return;
-              }
-              widget.onPressed('/standard');
-              setState(() {
-                currentPage = 1;
-              });
-            },
-            style: IconButton.styleFrom(
-              iconSize: 40,
-            ),
-          ),
-          Text(
-            '기본 문제',
-            style: TextStyle(
-                fontSize: 14,
-                color: currentPage == 1 ? selectedColor : unselectedColor,
-                fontWeight: FontWeight.normal),
-          ),
-          const Spacer(flex: 1),
-          IconButton(
-            icon: Icon(
-              Icons.import_contacts_rounded,
-              color: currentPage == 2 ? selectedColor : unselectedColor,
-            ),
-            onPressed: () {
-              if (currentPage == 2) {
-                return;
-              }
-              widget.onPressed('/expansion');
-              setState(() {
-                currentPage = 2;
-              });
-            },
-            style: IconButton.styleFrom(
-              iconSize: 40,
+          Align(
+            alignment: Alignment.topLeft,
+            child: Padding(
+              padding: EdgeInsets.only(
+                top: 20.0 * DeviceScale.scaleHeight(context),
+                left: 50.0 * DeviceScale.scaleWidth(context),
+              ),
+              child: ClipOval(
+                child: Material(
+                  color: const Color(0xFF5D5D5D),
+                  child: InkWell(
+                    onTap: () => Navigator.of(context).pop(),
+                    child: SizedBox(
+                      width: 48 * DeviceScale.scaleWidth(context),
+                      height: 48 * DeviceScale.scaleHeight(context),
+                      child: const Icon(
+                        Icons.arrow_back_ios_rounded,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
             ),
           ),
-          Text(
-            '확장 문제',
-            style: TextStyle(
-                fontSize: 14,
-                color: currentPage == 2 ? selectedColor : unselectedColor,
-                fontWeight: FontWeight.normal),
-          ),
-          const Spacer(flex: 1),
-          IconButton(
-            icon: Icon(
-              Icons.category_rounded,
-              color: currentPage == 3 ? selectedColor : unselectedColor,
+          Align(
+            alignment: Alignment.topCenter,
+            child: Container(
+              padding:
+                  EdgeInsets.only(top: 20.0 * DeviceScale.scaleHeight(context)),
+              child: Stack(
+                alignment: Alignment.center,
+                children: [
+                  SvgPicture.asset(
+                    'assets/images/season_block.svg',
+                    height: 45 * DeviceScale.scaleHeight(context),
+                    width: 128 * DeviceScale.scaleWidth(context),
+                  ),
+                  Text(
+                    seasonToString(ref.watch(statusProvider).season),
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 18 * DeviceScale.scaleHeight(context),
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                ],
+              ),
             ),
-            onPressed: () {
-              if (currentPage == 3) {
-                return;
-              }
-              widget.onPressed('/game');
-              setState(() {
-                currentPage = 3;
-              });
-            },
-            style: IconButton.styleFrom(
-              iconSize: 40,
+          ),
+          Align(
+            alignment: const Alignment(0, 0.3),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                IconButton(
+                  onPressed: () {},
+                  icon: SvgPicture.asset(
+                    'assets/cards/student_main_1.svg',
+                    width: 230 * DeviceScale.scaleWidth(context),
+                    height: 207 * DeviceScale.scaleHeight(context),
+                  ),
+                ),
+                SizedBox(
+                  width: 6 * DeviceScale.scaleWidth(context),
+                ),
+                IconButton(
+                  onPressed: () {},
+                  icon: SvgPicture.asset(
+                    'assets/cards/student_main_2.svg',
+                    width: 205 * DeviceScale.scaleWidth(context),
+                    height: 207 * DeviceScale.scaleHeight(context),
+                  ),
+                ),
+                SizedBox(
+                  width: 6 * DeviceScale.scaleWidth(context),
+                ),
+                IconButton(
+                  onPressed: () {},
+                  icon: SvgPicture.asset(
+                    'assets/cards/student_main_3.svg',
+                    width: 205 * DeviceScale.scaleWidth(context),
+                    height: 207 * DeviceScale.scaleHeight(context),
+                  ),
+                ),
+              ],
             ),
-          ),
-          Text(
-            '게임',
-            style: TextStyle(
-                fontSize: 14,
-                color: currentPage == 3 ? selectedColor : unselectedColor,
-                fontWeight: FontWeight.normal),
-          ),
-          const Spacer(flex: 2),
+          )
         ],
       ),
     );
-  }
-}
-
-class Exp extends StatelessWidget {
-  const Exp({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return const Scaffold(body: Center(child: Text('hello')));
   }
 }

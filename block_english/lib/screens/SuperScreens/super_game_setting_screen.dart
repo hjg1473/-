@@ -199,7 +199,7 @@ class _SuperGameSettingScreenState extends State<SuperGameSettingScreen> {
                 routeName: '/super_game_code_screen',
                 width: double.infinity,
                 height: 60,
-                type: ButtonType.filled,
+                type: ButtonType.FILLED,
                 radius: 10,
                 bold: true,
               ),

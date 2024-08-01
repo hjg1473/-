@@ -1,5 +1,6 @@
-import 'package:block_english/widgets/registration_button.dart';
+import 'package:block_english/utils/device_scale.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 class RegSelectRoleScreen extends StatelessWidget {
   const RegSelectRoleScreen({super.key});
@@ -8,32 +9,29 @@ class RegSelectRoleScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
         backgroundColor: Colors.grey[300],
-        body: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.all(30),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    FilledButton.icon(
-                      icon: const Icon(Icons.arrow_back_ios, size: 16),
-                      onPressed: () {
-                        Navigator.pop(context);
-                      },
-                      label: const Text(
-                        '로그인',
-                        style: TextStyle(fontSize: 16),
-                      ),
-                      style: FilledButton.styleFrom(
-                        minimumSize: const Size(double.minPositive, 40),
-                        backgroundColor: Colors.black,
-                      ),
+        body: Padding(
+          padding: DeviceScale.scaffoldPadding(context),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Stack(
+                children: [
+                  FilledButton.icon(
+                    icon: const Icon(Icons.arrow_back_ios, size: 16),
+                    onPressed: () {
+                      Navigator.pop(context);
+                    },
+                    label: const Text(
+                      '로그인',
+                      style: TextStyle(fontSize: 16),
                     ),
-                    const Spacer(),
-                    Column(
+                    style: FilledButton.styleFrom(
+                      minimumSize: const Size(double.minPositive, 40),
+                      backgroundColor: Colors.black,
+                    ),
+                  ),
+                  Center(
+                    child: Column(
                       children: [
                         const Text(
                           '나는 어떤 사용자인가요?',
@@ -51,32 +49,44 @@ class RegSelectRoleScreen extends StatelessWidget {
                         ),
                       ],
                     ),
-                    const Spacer(),
-                    //TODO: 정렬 맞추기
-                    const SizedBox(width: 100),
-                  ],
-                ),
-                const Spacer(),
-                const Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    RegistrationWidget(
-                      icon: Icons.supervisor_account,
-                      label: '관리자',
-                      text: '교사, 학부모는 선택해주세요',
-                      routeName: '/reg_super_screen',
+                  ),
+                ],
+              ),
+              const Spacer(),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  SizedBox(
+                    child: IconButton(
+                      onPressed: () {
+                        Navigator.pushNamed(context, '/reg_student_screen');
+                      },
+                      icon: SvgPicture.asset(
+                        width: 180 * DeviceScale.scaleWidth(context),
+                        height: 206 * DeviceScale.scaleHeight(context),
+                        'assets/cards/sign_in_user.svg',
+                      ),
                     ),
-                    SizedBox(width: 60),
-                    RegistrationWidget(
-                      icon: Icons.school,
-                      label: '학습자',
-                      text: '학생들은 선택해주세요',
-                      routeName: '/reg_student_screen',
+                  ),
+                  SizedBox(
+                    width: 70 * DeviceScale.scaleWidth(context),
+                  ),
+                  SizedBox(
+                    child: IconButton(
+                      onPressed: () {
+                        Navigator.pushNamed(context, '/reg_super_screen');
+                      },
+                      icon: SvgPicture.asset(
+                        width: 180 * DeviceScale.scaleWidth(context),
+                        height: 206 * DeviceScale.scaleHeight(context),
+                        'assets/cards/sign_in_manager.svg',
+                      ),
                     ),
-                  ],
-                )
-              ],
-            ),
+                  ),
+                ],
+              ),
+              const Spacer(),
+            ],
           ),
         ));
   }
