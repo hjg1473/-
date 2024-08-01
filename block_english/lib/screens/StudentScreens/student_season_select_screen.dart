@@ -45,7 +45,7 @@ class StudentSeasonSelectScreen extends ConsumerWidget {
               child: Material(
                 child: InkWell(
                   onTap: () {
-                    ref.watch(statusProvider).setSeason(Season.LEVEL1);
+                    ref.watch(statusProvider).setSeason(Season.SEASON1);
                     Navigator.of(context).pushNamed('/stud_main_screen');
                   },
                   child: Container(
