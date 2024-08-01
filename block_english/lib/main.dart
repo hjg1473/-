@@ -2,7 +2,7 @@ import 'package:block_english/screens/AuthScreens/init_screen.dart';
 import 'package:block_english/screens/AuthScreens/login_screen.dart';
 import 'package:block_english/screens/AuthScreens/reg_select_role_screen.dart';
 import 'package:block_english/screens/AuthScreens/reg_student_screen.dart';
-import 'package:block_english/screens/AuthScreens/super_temp.dart';
+import 'package:block_english/screens/AuthScreens/reg_super_screen.dart';
 import 'package:block_english/screens/StudentScreens/student_main_screen.dart';
 import 'package:block_english/screens/StudentScreens/student_mode_select_screen.dart';
 import 'package:block_english/screens/StudentScreens/student_season_select_screen.dart';
