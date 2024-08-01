@@ -6,6 +6,7 @@ import 'package:block_english/screens/AuthScreens/reg_super_screen.dart';
 import 'package:block_english/screens/StudentScreens/student_main_screen.dart';
 import 'package:block_english/screens/StudentScreens/student_mode_select_screen.dart';
 import 'package:block_english/screens/StudentScreens/student_season_select_screen.dart';
+import 'package:block_english/screens/StudentScreens/student_step_select_screen.dart';
 import 'package:block_english/screens/SuperScreens/super_group_create_screen.dart';
 import 'package:block_english/screens/SuperScreens/super_game_code_screen.dart';
 import 'package:block_english/screens/SuperScreens/super_game_screen.dart';
@@ -13,7 +14,6 @@ import 'package:block_english/screens/SuperScreens/super_main_screen.dart';
 import 'package:block_english/screens/loading_screen.dart';
 import 'package:block_english/screens/setting_screen.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -56,6 +56,8 @@ class MyApp extends StatelessWidget {
         '/stud_season_select_screen': (context) =>
             const StudentSeasonSelectScreen(),
         '/stud_main_screen': (context) => const StudentMainScreen(),
+        '/stud_step_select_screen': (context) =>
+            const StudentStepSelectScreen(),
         '/super_main_screen': (context) => const SuperMainScreen(),
         '/super_group_create_screen': (context) =>
             const SuperGroupCreateScreen(),

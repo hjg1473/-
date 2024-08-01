@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 
 class DeviceScale {
@@ -10,6 +12,11 @@ class DeviceScale {
 
   static double scaleHeight(BuildContext context) {
     return MediaQuery.of(context).size.height / baseDeviceHeight;
+  }
+
+  static double scaleSize(BuildContext context) {
+    return min(MediaQuery.of(context).size.width / baseDeviceWidth,
+        MediaQuery.of(context).size.height / baseDeviceHeight);
   }
 
   static double horizontalPadding(BuildContext context) {
