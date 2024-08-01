@@ -36,6 +36,7 @@ dependencies:
   flutter_riverpod: ^2.5.1
   dartz: ^0.10.1
   flutter_svg: ^2.0.10+1
+  debounce_throttle: ^2.0.0
 
   flutter:
     sdk: flutter
