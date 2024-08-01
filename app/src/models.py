@@ -39,15 +39,15 @@ class Users(Base):
     __tablename__ = "users"
 
     id = Column(Integer, primary_key=True, index=True)  # PK, auto-increment
-    username = Column(String, unique=True, index=True)  # Unique username
-    hashed_password = Column(String)  # Hashed password
-    email = Column(String)  # Email (teachers only)
-    name = Column(String)  # Real name
+    username = Column(String(100), unique=True, index=True)  # Unique username
+    hashed_password = Column(String(100))  # Hashed password
+    email = Column(String(100))  # Email (teachers only)
+    name = Column(String(100))  # Real name
     age = Column(Integer)  # Age
-    role = Column(String, index=True)  # Role (super or student or parent)
+    role = Column(String(100), index=True)  # Role (super or student or parent)
     #group = Column(Integer)  # Group (students only) # delete
-    phone_number = Column(String) # phone_number (teachers only)
-    released_season = Column(String)  # Unique token (teachers only) > released_season
+    phone_number = Column(String(100)) # phone_number (teachers only)
+    released_season = Column(String(100))  # Unique token (teachers only) > released_season
 
     # Relationship with Groups
     team_id = Column(Integer, ForeignKey("groups.id"), nullable=True) # FK, team (student only)
@@ -80,8 +80,8 @@ class Groups(Base):
     __tablename__ = "groups"
 
     id = Column(Integer, primary_key=True, index=True)
-    name = Column(String)
-    grade = Column(String)
+    name = Column(String(100))
+    grade = Column(String(100))
     releasedLevel = Column(Integer, default=1)
     releasedStep = Column(Integer, default=1)
     admin_id = Column(Integer, ForeignKey("users.id")) # FK, teacher_id
@@ -98,7 +98,8 @@ class StudyInfo(Base):  # Study information
     id = Column(Integer, primary_key=True, index=True)  # PK
     totalStudyTime = Column(Integer)  # Student Type1 level >> stream_study_day
     streamStudyDay = Column(Integer)  # Student Type2 level >> total_study_time
-    type3Level = Column(Integer)  # Student Type3 level
+    releasedLevel = Column(Integer, default=1)  # Student Type3 level >> released_level, the highest level that the student can solve.
+    releasedStep = Column(Integer, default=1)
     owner_id = Column(Integer, ForeignKey("users.id"))  # FK to users
 
     # Relationships
@@ -114,13 +115,14 @@ class Problems(Base):  # Problems
     __tablename__ = "problems"
 
     id = Column(Integer, primary_key=True, index=True)  # PK
-    season = Column(String)  # Season
+    season = Column(String(100))  # Season
     level = Column(Integer)  # Type >> level
     step = Column(Integer)  # Problem level (1-3)>> step
-    koreaProblem = Column(String)  # Korean sentence
-    englishProblem = Column(String)  # English sentence
-    img_path = Column(String)  # Problem image (optional)
-    type = Column(String) # normal or ai
+    koreaProblem = Column(String(100))  # Korean sentence
+    englishProblem = Column(String(100))  # English sentence
+    img_path = Column(String(100))  # Problem image (optional)
+    type = Column(String(100)) # normal or ai
+    difficulty = Column(Integer)
     # StudyInfo_id 가 갖는 id 값은 StudyInfo.id 값.
     # 동일 문제에서, 민수(id=1)도 이 문제를 맞추고, 철수(id=2)도 이 문제를 맞추면 TStudyInfo_id 에는 [1, 2] 가 들어가야 됨.
     # TStudyInfo_id = Column(Integer, ForeignKey("studyInfo.id"))  # FK to correct study info 
@@ -140,7 +142,7 @@ class Problems(Base):  # Problems
 #     __tablename__ = "customProblemSet"
 
 #     id = Column(Integer, primary_key=True, index=True)  # PK
-#     name = Column(String)
+#     name = Column(String(100))
 
 #     # Relationship
 #     problems = relationship("Problems", back_populates="custom_problem_set")
@@ -149,7 +151,7 @@ class Blocks(Base):
     __tablename__ = "blocks"
 
     id = Column(Integer, primary_key=True, index=True)  # PK
-    color = Column(String)      # color: skyblue, pink, green, yellow, purple
+    color = Column(String(100))      # color: skyblue, pink, green, yellow, purple
 
     word = relationship("Words", back_populates="block")
 
@@ -160,4 +162,4 @@ class Words(Base):
     block_id = Column(Integer, ForeignKey("blocks.id"))  # FK
     block = relationship("Blocks", back_populates="word")
     
-    words = Column(String)      # word value: I, me, dog, ...
+    words = Column(String(100))      # word value: I, me, dog, ...
