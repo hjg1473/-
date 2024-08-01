@@ -11,7 +11,7 @@ class Problem(BaseModel):
 
 class Answer(BaseModel):
     problem_id: int
-    picture: str
+    user_string: str
 
 class ProblemInfo(BaseModel):
     user_id: int 

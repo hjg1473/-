@@ -42,36 +42,33 @@ async def get_student_score(request: GetStudentScoreRequest):
 @router.post("/student_solve")
 async def participant_action(room_id: str = Form(...),
         participant_id: str = Form(...),
-        pnum: int = Form(...), # 0~9,
+        pnum: int = Form(...), # 몇번째 문제인지? 0부터 시작
         file: UploadFile = File(...)):
     
     room = rooms.get(room_id)
     room_exception(room)
-
     participant_exception(participant_id, room.participants)
-    
     if room.host_websocket:
-        # GPU_SERVER_URL = "http://146.148.75.252:8000/ocr/" 
-        # img_binary = await file.read()
-        # file.filename = "img.png"
-        # files = {"file": (file.filename, img_binary)}
-        # user_word_list = requests.post(GPU_SERVER_URL, files=files)
-        # user_string = " ".join(user_word_list.json())
-
-        # answer은 키 값으로 값(리스트)를 찾은 다음에 문제 순서에 맞는 값 출력.
         answer = roomProblem[room_id][pnum]
-        # answer = custom_problem["312321"][pnum]
-        user_string = "I am pretty."
+        from app.src.problem.router import ocr
+        word_list = await ocr(file)
+        user_string = ' '.join(word_list)
 
-        if user_string == answer: # 정답이면 
+        if user_string != answer: # 정답이면 == 으로 고치기.
             # await manager.send_personal_message(f"Participant {participant_id} is right", room.host_websocket) # True 라는 메세지를 보냄.
             room.participants[participant_id] += 100 # 정답이니까 +100 점
-            # 연속 정답일 때 보너스 점수는 어떻게 구현할까.. -> 보류
+            room.participants_bonus[participant_id].append(1) # 정답이면 1
+            if pnum >= 2:
+                if room.participants_bonus[participant_id][pnum] == 1\
+                and room.participants_bonus[participant_id][pnum-1] == 1\
+                and room.participants_bonus[participant_id][pnum-2] == 1:
+                    room.participants[participant_id] += 100 # 100점 추가 
 
             await manager.send_personal_message({"participant_id": participant_id, "isAnswer": "correct", "score": room.participants[participant_id]}, room.host_websocket) # True 라는 메세지를 보냄.
             return {"detail": "정답입니다."}
         else: # 오답이면
-            # await manager.send_personal_message(f"Participant {participant_id} is wrong", room.host_websocket) # True 라는 메세지를 보냄.
+            room.participants_bonus[participant_id].append(0) # 오답이면 0
+            # await manager.send_personal_message(f"Participant {participant_id} is wrong", room.host_websocket) # False 라는 메세지를 보냄.
             await manager.send_personal_message({"participant_id": participant_id, "isAnswer": "incorrect", "score": room.participants[participant_id]}, room.host_websocket) # True 라는 메세지를 보냄.
             return {"detail": "오답입니다."}
     else:
@@ -88,7 +85,7 @@ async def create_room(db: db_dependency, request: CreateRoomRequest):
         pin_number = create_pin_number()
     rooms[pin_number] = Room(pin_number, request.host_id, request.room_max) # 방 생성
 
-    total_count = await db.scalar(select(func.count()).select_from(Problems))
+    total_count = await db.scalar(select(func.count()).select_from(Problems).filter(Problems.level == request.choiceLevel).filter(Problems.type == "ai"))
     random_offset = random.randint(0, max(0, total_count - PROBLEM_OFFSET))
 
     # PROBLEM_OFFSET개의 데이터 가져오기
@@ -106,12 +103,14 @@ async def create_room(db: db_dependency, request: CreateRoomRequest):
 
     problems = []
     pnum = 0
+    roomProblem[pin_number] = {}
     for problem in final_problems:
-        problems.append({"problem_id":problem.id, "koreaProblem":problem.koreaProblem})
+        problems.append({"problem_id": problem.id, "koreaProblem": problem.koreaProblem})
         roomProblem[pin_number][pnum] = problem.englishProblem
         pnum += 1
 
     return {"pin_number": pin_number, "problems": problems} 
+
 
 # 게임방 참가 api
 # 방에 참가한 상태로 다른 방으로 참가하는 것도 막아야됨
@@ -124,6 +123,7 @@ async def join_room(request: JoinRoomRequest):
     if len(room.participants) < room.room_max:
     # room.participants.append(request.participant_id) # 방 리스트에 추가. 
         room.participants[request.participant_id] = 0 # 방 딕셔너리에 참여자 추가 및 초기값 0 설정 
+        room.participants_bonus[request.participant_id] = []
     else:
         raise participant_exception4()
     
@@ -170,6 +170,6 @@ async def websocket_endpoint(websocket: WebSocket, room_id: str, client_id: str)
         manager.disconnect(room_id, client_id)
         if client_id in room.participants: # 리스트에 참여자가 있다면
             room.participants.pop(client_id) # 참여자 딕셔너리에서 삭제
-
+            del room.participants_bonus[client_id] # 보너스 점수도 삭제
         if client_id == room.host_id:
             room.host_websocket = None

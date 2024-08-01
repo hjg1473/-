@@ -41,12 +41,10 @@ class Users(Base):
     id = Column(Integer, primary_key=True, index=True)  # PK, auto-increment
     username = Column(String, unique=True, index=True)  # Unique username
     hashed_password = Column(String)  # Hashed password
-    email = Column(String)  # Email (teachers only)
     name = Column(String)  # Real name
-    age = Column(Integer)  # Age
     role = Column(String, index=True)  # Role (super or student or parent)
-    #group = Column(Integer)  # Group (students only) # delete
-    phone_number = Column(String) # phone_number (teachers only)
+    question = Column(String)
+    questionType = Column(Integer)
     released_season = Column(String)  # Unique token (teachers only) > released_season
 
     # Relationship with Groups
@@ -98,7 +96,8 @@ class StudyInfo(Base):  # Study information
     id = Column(Integer, primary_key=True, index=True)  # PK
     totalStudyTime = Column(Integer)  # Student Type1 level >> stream_study_day
     streamStudyDay = Column(Integer)  # Student Type2 level >> total_study_time
-    type3Level = Column(Integer)  # Student Type3 level
+    releasedLevel = Column(Integer, default=1)  # Student Type3 level >> released_level, the highest level that the student can solve.
+    releasedStep = Column(Integer, default=1)
     owner_id = Column(Integer, ForeignKey("users.id"))  # FK to users
 
     # Relationships
@@ -121,6 +120,7 @@ class Problems(Base):  # Problems
     englishProblem = Column(String)  # English sentence
     img_path = Column(String)  # Problem image (optional)
     type = Column(String) # normal or ai
+    difficulty = Column(Integer)
     # StudyInfo_id 가 갖는 id 값은 StudyInfo.id 값.
     # 동일 문제에서, 민수(id=1)도 이 문제를 맞추고, 철수(id=2)도 이 문제를 맞추면 TStudyInfo_id 에는 [1, 2] 가 들어가야 됨.
     # TStudyInfo_id = Column(Integer, ForeignKey("studyInfo.id"))  # FK to correct study info 

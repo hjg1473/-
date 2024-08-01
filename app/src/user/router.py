@@ -8,7 +8,7 @@ from app.src.models import Users
 from user.dependencies import user_dependency, db_dependency
 from user.schemas import UserQuitVerification, UserVerification, User_info, User_season
 from user.utils import bcrypt_context
-from user.exceptions import successful_response, http_exception, email_exception, password_exception, user_exception
+from user.exceptions import successful_response, http_exception, email_exception, password_exception, user_exception, group_exception
 
 router = APIRouter(
     prefix='/users', 
@@ -72,7 +72,11 @@ async def delete_user(user: user_dependency, db: db_dependency, user_verificatio
     result = await db.execute(select(Users).filter(Users.id == user.get('id')))
     user_model = result.scalars().first()
     http_exception(user_model)
-    
+    from app.src.super.service import get_group_list
+    if user_model.role == 'super':
+        group_list = await get_group_list(user.get("id"), db)
+        group_exception(group_list)
+
     password_exception(user_verification.password, user_model.hashed_password)
     
     result = await db.execute(delete(Users).filter(Users.id == user.get('id')))
