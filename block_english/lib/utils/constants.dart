@@ -14,6 +14,12 @@ const List<String> gradelist = [
   "6학년",
 ];
 
+const List<String> levellist = [
+  "어순과 격",
+  "부정문",
+  "의문문",
+];
+
 enum StudentMode {
   PRIVATE,
   GROUP,
