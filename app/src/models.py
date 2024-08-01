@@ -78,8 +78,8 @@ class Groups(Base):
     __tablename__ = "groups"
 
     id = Column(Integer, primary_key=True, index=True)
-    name = Column(String)
-    grade = Column(String)
+    name = Column(String(100))
+    grade = Column(String(100))
     releasedLevel = Column(Integer, default=1)
     releasedStep = Column(Integer, default=1)
     admin_id = Column(Integer, ForeignKey("users.id")) # FK, teacher_id
@@ -113,7 +113,7 @@ class Problems(Base):  # Problems
     __tablename__ = "problems"
 
     id = Column(Integer, primary_key=True, index=True)  # PK
-    season = Column(String)  # Season
+    season = Column(String(100))  # Season
     level = Column(Integer)  # Type >> level
     step = Column(Integer)  # Problem level (1-3)>> step
     koreaProblem = Column(String)  # Korean sentence
@@ -140,7 +140,7 @@ class Problems(Base):  # Problems
 #     __tablename__ = "customProblemSet"
 
 #     id = Column(Integer, primary_key=True, index=True)  # PK
-#     name = Column(String)
+#     name = Column(String(100))
 
 #     # Relationship
 #     problems = relationship("Problems", back_populates="custom_problem_set")
@@ -149,7 +149,7 @@ class Blocks(Base):
     __tablename__ = "blocks"
 
     id = Column(Integer, primary_key=True, index=True)  # PK
-    color = Column(String)      # color: skyblue, pink, green, yellow, purple
+    color = Column(String(100))      # color: skyblue, pink, green, yellow, purple
 
     word = relationship("Words", back_populates="block")
 
@@ -160,4 +160,4 @@ class Words(Base):
     block_id = Column(Integer, ForeignKey("blocks.id"))  # FK
     block = relationship("Blocks", back_populates="word")
     
-    words = Column(String)      # word value: I, me, dog, ...
+    words = Column(String(100))      # word value: I, me, dog, ...

@@ -43,9 +43,7 @@ async def create_study_info(db: db_dependency, user_id: int):
     study_info = StudyInfo(
         owner_id=user_id,
         totalStudyTime=0,
-        streamStudyDay=0,
-        releasedLevel=1,
-        releasedStep=1
+        streamStudyDay=0
     )
     db.add(study_info)
     await db.commit()

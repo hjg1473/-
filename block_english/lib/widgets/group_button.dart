@@ -7,14 +7,20 @@ class GroupButton extends StatelessWidget {
     required this.name,
     required this.id,
     required this.studentNum,
+    this.detail = '',
   });
 
   final String name;
   final int id;
   final int studentNum;
+  final String detail;
 
   @override
   Widget build(BuildContext context) {
+    double height = 70;
+    double padding = 12;
+    double area = height - padding * 2;
+
     return FilledButton(
       onPressed: () {
         Navigator.push(
@@ -27,8 +33,8 @@ class GroupButton extends StatelessWidget {
       },
       style: FilledButton.styleFrom(
         backgroundColor: const Color(0xFFEAEAEA),
-        minimumSize: const Size(330, 80),
-        padding: const EdgeInsets.all(10),
+        minimumSize: Size(330, height),
+        padding: EdgeInsets.all(padding),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(10),
         ),
@@ -38,11 +44,11 @@ class GroupButton extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Container(
-            height: 60,
-            width: 60,
+            height: area,
+            width: area,
             decoration: BoxDecoration(
               color: const Color(0xFFD9D9D9),
-              borderRadius: BorderRadius.circular(10),
+              borderRadius: BorderRadius.circular(5),
             ),
             child: Center(
               child: Text(
@@ -61,26 +67,38 @@ class GroupButton extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                name,
-                style: const TextStyle(
-                  fontSize: 15,
-                  color: Colors.black,
-                ),
-              ),
               Row(
                 children: [
+                  Text(
+                    name,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      color: Colors.black,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
                   const Icon(Icons.person_rounded,
-                      color: Color(0xFF838383), size: 15),
+                      color: Color(0xFF838383), size: 13),
                   Text(' $studentNum명',
-                      style: const TextStyle(color: Color(0xFF9D9D9D))),
+                      style: const TextStyle(
+                        color: Color(0xFF9D9D9D),
+                        fontSize: 12,
+                      )),
                 ],
-              )
+              ),
+              detail != ''
+                  ? Text(
+                      detail,
+                      style: const TextStyle(
+                        color: Color(0xFF9D9D9D),
+                        fontSize: 13,
+                      ),
+                    )
+                  : const SizedBox(),
             ],
           ),
           const Spacer(),
           const Icon(Icons.arrow_forward_ios_rounded, color: Color(0xFFA0A0A0)),
-          const SizedBox(width: 10),
         ],
       ),
     );

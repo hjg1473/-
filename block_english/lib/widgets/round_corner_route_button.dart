@@ -26,7 +26,7 @@ class RoundCornerRouteButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return switch (type) {
-      ButtonType.filled => FilledButton(
+      ButtonType.FILLED => FilledButton(
           onPressed: () {
             cancel
                 ? Navigator.of(context).pop()
@@ -45,7 +45,7 @@ class RoundCornerRouteButton extends StatelessWidget {
                 )
               : Text(text),
         ),
-      ButtonType.outlined => OutlinedButton(
+      ButtonType.OUTLINED => OutlinedButton(
           onPressed: () {
             cancel
                 ? Navigator.of(context).pop()

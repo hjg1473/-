@@ -1,3 +1,5 @@
+import 'package:block_english/models/AuthModel/get_number_response_model.dart';
+import 'package:block_english/models/AuthModel/verify_response_model.dart';
 import 'package:block_english/models/model.dart';
 import 'package:block_english/utils/constants.dart';
 import 'package:block_english/utils/dio.dart';
@@ -53,6 +55,61 @@ class AuthService {
     }
   }
 
+  Future<Either<FailureModel, GetNumberResponseModel>> postAuthGetNumber(
+    String phonenumber,
+  ) async {
+    final dio = _ref.watch(dioProvider);
+
+    try {
+      final response = await dio.post(
+        '/$_auth/get_number',
+        options: Options(
+          contentType: Headers.jsonContentType,
+          headers: {'accept': 'application/json'},
+        ),
+        data: {
+          'phone_number': phonenumber,
+        },
+      );
+
+      return Right(GetNumberResponseModel.fromJson(response.data));
+    } on DioException catch (e) {
+      return Left(FailureModel(
+        statusCode: e.response?.statusCode ?? 0,
+        detail: e.response?.data['detail'] ?? "",
+      ));
+    }
+  }
+
+  Future<Either<FailureModel, VerifyResponseModel>> postAuthVerifyNumber(
+    String phonenumber,
+    String verifynumber,
+  ) async {
+    final dio = _ref.watch(dioProvider);
+
+    try {
+      final response = await dio.post(
+        '/$_auth/verify_number',
+        options: Options(
+          contentType: Headers.jsonContentType,
+          headers: {'accept': 'application/json'},
+        ),
+        data: {
+          'phone_number': phonenumber,
+          'verify_number': verifynumber,
+        },
+      );
+
+      return Right(VerifyResponseModel.fromJson(response.data));
+    } on DioException catch (e) {
+      return Left(FailureModel(
+        statusCode: e.response?.statusCode ?? 0,
+        detail: e.response?.data['detail'] ?? "",
+      ));
+    }
+  }
+
+  // TODO: Update Reg Request
   Future<Either<FailureModel, RegResponseModel>> postAuthRegister(
     String name,
     String username,

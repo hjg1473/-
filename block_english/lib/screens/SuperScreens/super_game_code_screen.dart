@@ -125,7 +125,7 @@ class _SuperGameCodeScreenState extends State<SuperGameCodeScreen> {
               routeName: '/super_game_screen',
               width: 330,
               height: 55,
-              type: ButtonType.outlined,
+              type: ButtonType.OUTLINED,
               radius: 10,
               bold: true,
             ),
