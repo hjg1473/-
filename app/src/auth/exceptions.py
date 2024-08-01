@@ -6,12 +6,22 @@ async def username_exception(username: str, db):
     if user:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="중복된 아이디입니다.")
 
+async def username2_exception(username: str, db):
+    from auth.service import get_user_to_username
+    user = await get_user_to_username(username, db)
+    if not user:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="존재하지 않는 아이디입니다.")
+
 def get_user_exception(username):
     if not username:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Could not validate credentials")
 
-def phone_verify_exception():
-    raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="인증에 실패하였습니다.")
+def get_password_exception():
+    raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="세션 만료: 처음부터 다시 시도해주세요.")
+    
+def password_verify_exception(newPassword, newPasswordVerify):
+    if newPassword != newPasswordVerify:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="비밀번호가 불일치합니다.")
 
 def get_valid_user_exception():
     credentials_exception = HTTPException(
