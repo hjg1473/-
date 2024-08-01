@@ -216,6 +216,42 @@ async def read_problem_all(level:int, step:int, user: user_dependency, db: db_de
     return {'problems': problem}
 
 
+@router.post("/expert/set_season", status_code = status.HTTP_200_OK)
+async def set_season(user:user_dependency, db:db_dependency):
+    get_user_exception(user)
+    await db.execute(update(Problems).where(Problems.season == None).values(season="1"))
+    result = await db.execute(select(Problems))
+    all_problems = result.scalars().all()
+    # # all_problems = list(all_problems)
+    # for p in all_problems:
+    #     p.season = '1'
+    # await db.add(all_problems)
+    await db.commit()
+    return {"problems:":all_problems[70:140]}
+
+
+@router.post("/expert/set_difficulty", status_code = status.HTTP_200_OK)
+async def set_season(update_level:int, user:user_dependency, db:db_dependency):
+    get_user_exception(user)
+    result = await db.execute(select(Problems).filter(Problems.level==update_level, Problems.type=='ai'))
+    level_problems = result.scalars().all()
+    len_ps = len(level_problems)
+    base_p = (level_problems[0]).step
+    top_p = (level_problems[len_ps-1]).step
+    len_ps = top_p - base_p
+    await db.execute(update(Problems).where(Problems.level==update_level).where(Problems.type=='ai').where(Problems.step < (base_p + int(len_ps/3))).values(difficulty=1))
+    await db.execute(update(Problems).where(Problems.level==update_level, Problems.type=='ai', Problems.step <= (base_p + int(2 * len_ps/3)), Problems.step > (base_p + int(len_ps/3))).values(difficulty=2))
+    await db.execute(update(Problems).where(Problems.level==update_level).where(Problems.type=='ai').where(Problems.step <= (base_p + int(len_ps))).where(Problems.step > (base_p + int(2*len_ps/3))).values(difficulty=3))
+    result = await db.execute(select(Problems).filter(Problems.level==update_level, Problems.type=='ai'))
+    all_problems = result.scalars().all()
+    # # all_problems = list(all_problems)
+    # for p in all_problems:
+    #     p.season = '1'
+    # await db.add(all_problems)
+    await db.commit()
+    return {"problems:":all_problems}
+    # return {"b":base_p, "len":len_ps}
+
 # 확장 문제 반환
 @router.get("/expert/level={level}/step={step}", status_code = status.HTTP_200_OK)
 async def read_problem_all(level:int, step:int, user: user_dependency, db: db_dependency):
