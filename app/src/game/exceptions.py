@@ -23,12 +23,9 @@ def participant_exception2(participants_len, room_max):
 def participant_exception3():
     return HTTPException(status_code=400, detail="미등록된 참여자입니다.")
 
-def participant_exception3():
-    return HTTPException(status_code=400, detail="미등록된 참여자입니다.")
-
 def participant_exception4(room):
     if room:
-        return HTTPException(status_code=404, detail="해당 방은 게임 진행 중입니다.")
+        raise HTTPException(status_code=403, detail="해당 방은 게임 진행 중입니다.")
 
 def host_exception():
     return HTTPException(status_code=404, detail="host not in the room")

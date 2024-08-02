@@ -270,14 +270,15 @@ async def read_problem_all(season:str, level:int, step:int, user: user_dependenc
         for word in p_list:
             result = await db.execute(select(Words).filter(Words.words == word))
             word_model = result.scalars().first()
+            
             result = await db.execute(select(Blocks).filter(Blocks.id == word_model.block_id))
             block_model = result.scalars().first()
             p_colors.append(block_model.color)
 
         problem.append({'id': p.id, 'englishProblem': p.englishProblem, 'blockColors':p_colors})
-    
+
     return {'problems': problem}
-    
+
 
 # # 푼 문제 학습 정보 업데이트
 # @router.post("/update_study_data", status_code = status.HTTP_200_OK)

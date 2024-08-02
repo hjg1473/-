@@ -1,9 +1,9 @@
+import json
 import aioredis
 from sqlalchemy import select
 from sqlalchemy.orm import joinedload
 from fastapi import APIRouter
 from starlette import status
-import json
 
 import sys, os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))))
@@ -19,18 +19,6 @@ router = APIRouter(
     tags=["student"],
     responses={404: {"description": "Not found"}}
 )
-
-# 가진 시즌'들' 조회
-@router.get("/season_info", status_code = status.HTTP_200_OK)
-async def get_season(user: user_dependency, db: db_dependency):
-
-    get_user_exception(user)
-    auth_exception(user.get('user_role'))
-
-    result = await db.execute(select(Users).filter(Users.id == user.get('id')))
-    user_model = result.scalars().first()
-
-    return {"user_season": user_model.released_season}
 
 # 개인학습 or 그룹학습 선택
 @router.post("/select/solo_or_group", status_code = status.HTTP_200_OK)
@@ -102,7 +90,6 @@ async def read_connect_parent(user: user_dependency, db: db_dependency):
 
     return {"parents": [{"name": parent.name} for parent in parent.student_teachers]}
 
-
 # 학생 보유한 시즌 정보 반환
 @router.get("/season_info", status_code=status.HTTP_200_OK)
 async def read_user_season(user: user_dependency, db:db_dependency):
@@ -116,13 +103,12 @@ async def read_user_season(user: user_dependency, db:db_dependency):
         raise http_exception()
     if user_model.released_season == '':
         raise http_exception()
-    
+
     seasons = json.loads(user_model.released_season)
     if seasons["seasons"] == []:
         raise http_exception()
-    
-    return {"seasons":seasons["seasons"]}
 
+    return {"seasons":seasons["seasons"]}
 
 # 학생 정보 반환
 @router.get("/info", status_code = status.HTTP_200_OK)

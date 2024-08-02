@@ -10,10 +10,11 @@ import app.src.models
 from fastapi import FastAPI, File, Form, UploadFile, WebSocket, WebSocketDisconnect
 import json
 from game.schemas import Room, CreateRoomRequest, JoinRoomRequest, GetStudentScoreRequest, GetGameAgainRequest, ConnectionManager, rooms, roomProblem
-from game.utils import create_pin_number
+from game.utils import create_pin_number, list_problems_correct_cnt
 from game.exceptions import room_exception, participant_exception, host_exception, host_exception1, host_exception2, participant_exception1, participant_exception2, participant_exception3, participant_exception4, room_exception2
 from game.dependencies import db_dependency
 from game.constants import PROBLEM_OFFSET
+from game.service import select_random_problems
 
 router = APIRouter(
     prefix="/game",
@@ -23,17 +24,33 @@ router = APIRouter(
 
 manager = ConnectionManager()
 
-# 테스트용 임시 딕셔너리
-custom_problem = { 
-    "312321": ["I am pretty.", "I am cow.", "I am pig."],
-    "543533": ["I am pretty.", "I am pretty.", "I am pretty."],
-    "123232": ["I am pretty.", "I am pretty.", "I am pretty."]
-}
+@router.post("/result")
+async def participant_action(room_id: str, client_id: str):
+    room = rooms.get(room_id)
+    room_exception(room)
+    cnt = 0
+    rank_cnt = 0
+    if client_id == room.host_id: # 호스트일 때
+        return {'result':list_problems_correct_cnt(room.participants_bonus)}
+    else: # 학생 개인의 결과
+        participant_exception(client_id, room.participants)
+        for value in room.participants_bonus[client_id]:
+            if value == 1: # 맞은 문제 수
+                cnt += 1 
+
+        sorted_rank = dict(sorted(room.participants.items(), key=lambda item: item[1], reverse=True)) # 
+        for key in sorted_rank:
+            rank_cnt += 1
+            if key == client_id:
+                self_rank = rank_cnt
+                break
+
+        return {"rank": self_rank, "score": room.participants[client_id], "correct_problems": cnt}
 
 def reset_room(room: Room) -> None:
     for participant in room.participants:
         room.participants[participant] = 0  # 참여자 리스트의 값만 0으로 초기화
-    room.participants_bonus = {}  # 참여자 문제 정답 배열 초기화
+        room.participants_bonus[participant] = []  # 참여자 문제 정답 배열 초기화
     room.InGame = False # 인게임 아님
 
 # 같은 인원, 같은 핀번호로 게임 이어서 하기 + 추가 입장도 되도록
@@ -43,25 +60,12 @@ async def get_student_score(db: db_dependency, request: GetGameAgainRequest):
     room_exception(room)
     reset_room(room)
 
-    if room.room_max < request.room_max: # 인원 늘리기만 가능
+    if room.room_max <= request.room_max: # 인원 같거나 늘리기만 가능
         room.room_max = request.room_max 
     else:
-        room_exception2()
-    total_count = await db.scalar(select(func.count()).select_from(Problems).filter(Problems.level == request.choiceLevel).filter(Problems.type == "ai"))
-    random_offset = random.randint(0, max(0, total_count - PROBLEM_OFFSET))
-
-    # PROBLEM_OFFSET개의 데이터 가져오기
-    result = await db.execute(
-        select(Problems)
-        .filter(Problems.level == request.choiceLevel)
-        .filter(Problems.type == "ai")
-        .offset(random_offset)
-        .limit(PROBLEM_OFFSET)
-    )
-
-    # 무작위로 n개 선택
-    random_problems = result.scalars().all()
-    final_problems = random.sample(random_problems, min(request.problemsCount, len(random_problems)))
+        raise room_exception2()
+    
+    final_problems = await select_random_problems(request.choiceLevel,request.problemsCount, db)
 
     problems = []
     pnum = 0
@@ -73,34 +77,48 @@ async def get_student_score(db: db_dependency, request: GetGameAgainRequest):
 
     return {"pin_number": request.room_id, "problems": problems} 
 
-# 게임방 호스트가 참여자의 모든 누적 점수 요청
+# 게임방 호스트가 참여자의 모든 누적 점수 요청 (내림차순 정렬)
 @router.post("/super/student_score")
 async def get_student_score(request: GetStudentScoreRequest):
     room = rooms.get(request.room_id)
     room_exception(room)
-    return room.participants
+    sorted_rank = dict(sorted(room.participants.items(), key=lambda item: item[1], reverse=True))
+    return sorted_rank
 
-# 선생님이 게임 시작할 때
+# Top3 유저 이름 출력
+@router.post("/super/ranking_top3")
+async def get_student_score(request: GetStudentScoreRequest):
+    room = rooms.get(request.room_id)
+    room_exception(room)
+    sorted_rank = dict(sorted(room.participants.items(), key=lambda item: item[1], reverse=True))
+    sorted_rank_list = list(sorted_rank.keys())
+    result = {}
+    if len(sorted_rank_list) >= 1:
+        result["1등"] = sorted_rank_list[0]
+    if len(sorted_rank_list) >= 2:
+        result["2등"] = sorted_rank_list[1] 
+    if len(sorted_rank_list) >= 3:
+        result["3등"] = sorted_rank_list[2]
+    return result
+
+# 선생님이 게임 시작할 때, 시작 후 참여 방어 안됨
 @router.post("/super/game_start")
 async def participant_action(request: GetStudentScoreRequest):
-    
     room = rooms.get(request.room_id)
     room_exception(room)
     if room.host_websocket:
         room.InGame = True
         for participant_id, participant_ws in manager.active_connections[request.room_id].items(): # 이렇게 써도 되는지 모르겠네 gpt는 된다는데
                 await manager.send_personal_message({"client_id": participant_id, "message": "GameStart"}, participant_ws)
-        # for participant in room.participants:
-        #     await manager.send_personal_message({"participant_id": participant, "InGame": room.InGame}, room.host_websocket) # True 라는 메세지를 보냄.
     else:
-        host_exception()
+        raise host_exception()
 
 
 # 게임에서 학생이 정답을 제출할 때
 @router.post("/student_solve")
 async def participant_action(room_id: str = Form(...),
         participant_id: str = Form(...),
-        pnum: int = Form(...), # 몇번째 문제인지? 0부터 시작
+        pnum: int = Form(...), # 몇번째 문제인지? 0부터 시작. 이 부분 조금 보완
         file: UploadFile = File(...)):
     
     room = rooms.get(room_id)
@@ -143,21 +161,7 @@ async def create_room(db: db_dependency, request: CreateRoomRequest):
         pin_number = create_pin_number()
     rooms[pin_number] = Room(pin_number, request.host_id, request.room_max) # 방 생성
 
-    total_count = await db.scalar(select(func.count()).select_from(Problems).filter(Problems.level == request.choiceLevel).filter(Problems.type == "ai"))
-    random_offset = random.randint(0, max(0, total_count - PROBLEM_OFFSET))
-
-    # PROBLEM_OFFSET개의 데이터 가져오기
-    result = await db.execute(
-        select(Problems)
-        .filter(Problems.level == request.choiceLevel)
-        .filter(Problems.type == "ai")
-        .offset(random_offset)
-        .limit(PROBLEM_OFFSET)
-    )
-
-    # 무작위로 n개 선택
-    random_problems = result.scalars().all()
-    final_problems = random.sample(random_problems, min(request.problemsCount, len(random_problems)))
+    final_problems = await select_random_problems(request.choiceLevel,request.problemsCount, db)
 
     problems = []
     pnum = 0
@@ -175,20 +179,16 @@ async def create_room(db: db_dependency, request: CreateRoomRequest):
 @router.post("/join_room")
 async def join_room(request: JoinRoomRequest):
     room = rooms.get(request.room_id)
+    
     room_exception(room)
     participant_exception1(request.participant_id, room.participants)
+    participant_exception2(len(room.participants), room.room_max)
     participant_exception4(room.InGame)
-    if len(room.participants) < room.room_max:
-    # room.participants.append(request.participant_id) # 방 리스트에 추가. 
-        room.participants[request.participant_id] = 0 # 방 딕셔너리에 참여자 추가 및 초기값 0 설정 
-        room.participants_bonus[request.participant_id] = []
-    else:
-        raise participant_exception4()
+
+    room.participants[request.participant_id] = 0 # 방 딕셔너리에 참여자 추가 및 초기값 0 설정 
+    room.participants_bonus[request.participant_id] = []
     
-    # Notify the host if the host is connected
-    if room.host_websocket: # 호스트 웹소켓이 존재하고 (= 호스트가 방을 만들고, 웹소켓으로 연결된 상태이면)
-        # await ? 뒤의 작업이 완료될 때 까지 대기함. 
-        # await manager.send_personal_message(f"Participant {request.participant_id} has joined the room: {request.room_id}", room.host_websocket)
+    if room.host_websocket:
         await manager.send_personal_message({"participant_id": request.participant_id, "joined_room_id": request.room_id}, room.host_websocket)
     return {"detail": "Joined room successfully"}
 
@@ -226,6 +226,7 @@ async def websocket_endpoint(websocket: WebSocket, room_id: str, client_id: str)
                     await manager.send_personal_message({"client_id": client_id, "message": message_text}, participant_ws)
     except WebSocketDisconnect:
         manager.disconnect(room_id, client_id)
+        await manager.send_personal_message({"disconnect_room": room_id, "client_id": client_id}, room.host_websocket)
         if client_id in room.participants: # 리스트에 참여자가 있다면
             room.participants.pop(client_id) # 참여자 딕셔너리에서 삭제
             del room.participants_bonus[client_id] # 보너스 점수도 삭제
