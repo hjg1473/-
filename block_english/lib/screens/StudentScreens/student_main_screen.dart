@@ -70,7 +70,8 @@ class StudentMainScreen extends ConsumerWidget {
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 IconButton(
-                  onPressed: () {},
+                  onPressed: () =>
+                      Navigator.of(context).pushNamed('/setting_screen'),
                   icon: SvgPicture.asset(
                     'assets/cards/student_main_1.svg',
                     width: 230 * DeviceScale.scaleWidth(context),
