@@ -6,6 +6,7 @@ from sqlalchemy import select
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))))
 from app.src.models import Users
 from auth.constants import SECRET_KEY, ALGORITHM
+from auth.schemas import CustomResponseException
 from auth.exceptions import get_user_exception
 from passlib.context import CryptContext
 from jose import jwt, JWTError
@@ -32,10 +33,10 @@ async def authenticate_user(username: str, password: str, db):
     result = await db.execute(select(Users).filter(Users.username == username))
     user = result.scalars().first()
     if not user:
-        return False
+        raise CustomResponseException(code=200, content={"username_correct": False, "password_correct": False})
     password_vaild = await verify_password(password, user.hashed_password)
     if not password_vaild:
-        return False
+        raise CustomResponseException(code=200, content={"username_correct": True, "password_correct": False})
     return user
 
 def decode_token(token: str):
