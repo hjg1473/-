@@ -124,9 +124,9 @@ async def read_level_and_step_all(user: user_dependency, db: db_dependency):
     return {'current_level': currentLevel, 'current_step': currentStep, 'levels' : result }
 
 
-# 레벨과 스텝 정보 반환
-@router.get("/practice/info", status_code = status.HTTP_200_OK)
-async def read_level_and_step_all(user: user_dependency, db: db_dependency):
+# 연습문제: 레벨과 스텝 정보 반환
+@router.get("/practice/info/season={season}", status_code = status.HTTP_200_OK)
+async def practice_read_level_and_step(season:str, user: user_dependency, db: db_dependency):
 
     get_user_exception(user)
 
@@ -135,7 +135,7 @@ async def read_level_and_step_all(user: user_dependency, db: db_dependency):
     currentLevel = studyinfo_model.releasedLevel
     currentStep = studyinfo_model.releasedStep
 
-    result = await db.execute(select(Problems).filter(Problems.type == 'normal'))
+    result = await db.execute(select(Problems).filter(Problems.type == 'normal', Problems.season == season))
     problem_model = result.scalars().all()
 
 
@@ -159,9 +159,9 @@ async def read_level_and_step_all(user: user_dependency, db: db_dependency):
     return {'current_level': currentLevel, 'current_step': currentStep, 'levels' : result }
 
 
-# 확장 문제: 레벨, 난이도, 스텝 정보 반환
-@router.get("/expert/info/level={level}/difficulty={difficulty}", status_code = status.HTTP_200_OK)
-async def read_level_and_step_expert(level:int, difficulty:int, user: user_dependency, db: db_dependency):
+# 확장 문제: 스텝 정보 반환
+@router.get("/expert/info/season={season}/level={level}/difficulty={difficulty}", status_code = status.HTTP_200_OK)
+async def read_level_and_step_expert(season:str, level:int, difficulty:int, user: user_dependency, db: db_dependency):
     get_user_exception(user)
 
     result = await db.execute(select(StudyInfo).filter(StudyInfo.owner_id == user.get("id")))
@@ -169,7 +169,7 @@ async def read_level_and_step_expert(level:int, difficulty:int, user: user_depen
     currentLevel = studyinfo_model.releasedLevel
     currentStep = studyinfo_model.releasedStep
 
-    result = await db.execute(select(Problems).filter(Problems.type == 'ai').filter(Problems.level == level, Problems.difficulty == difficulty))
+    result = await db.execute(select(Problems).filter(Problems.type == 'ai', Problems.season == season).filter(Problems.level == level, Problems.difficulty == difficulty))
     problem_model = result.scalars().all()
     problem_model = list(problem_model)
     tail_step = problem_model[0].step
@@ -187,11 +187,11 @@ async def read_level_and_step_expert(level:int, difficulty:int, user: user_depen
 
 
 # 연습 문제 반환
-@router.get("/practice_set/level={level}/step={step}", status_code = status.HTTP_200_OK)
-async def read_problem_all(level:int, step:int, user: user_dependency, db: db_dependency):
+@router.get("/practice/set/season={season}/level={level}/step={step}", status_code = status.HTTP_200_OK)
+async def read_problem_all(season:str, level:int, step:int, user: user_dependency, db: db_dependency):
     get_user_exception(user)
     
-    result = await db.execute(select(Problems).filter(Problems.level == level).filter(Problems.step == step).filter(Problems.type == "normal"))
+    result = await db.execute(select(Problems).filter(Problems.level == level, Problems.season == season).filter(Problems.step == step).filter(Problems.type == "normal"))
     stepinfo_model = result.scalars().all()
 
     get_problem_exception(stepinfo_model)
@@ -252,11 +252,11 @@ async def set_season(update_level:int, user:user_dependency, db:db_dependency):
     # return {"b":base_p, "len":len_ps}
 
 # 확장 문제 반환
-@router.get("/expert/level={level}/step={step}", status_code = status.HTTP_200_OK)
-async def read_problem_all(level:int, step:int, user: user_dependency, db: db_dependency):
+@router.get("/expert/set/season={season}/level={level}/step={step}", status_code = status.HTTP_200_OK)
+async def read_problem_all(season:str, level:int, step:int, user: user_dependency, db: db_dependency):
     get_user_exception(user)
     
-    result = await db.execute(select(Problems).filter(Problems.level == level).filter(Problems.step == step).filter(Problems.type == "ai"))
+    result = await db.execute(select(Problems).filter(Problems.level == level, Problems.season == season).filter(Problems.step == step).filter(Problems.type == "ai"))
     stepinfo_model = result.scalars().all()
 
     get_problem_exception(stepinfo_model)
@@ -270,15 +270,14 @@ async def read_problem_all(level:int, step:int, user: user_dependency, db: db_de
         for word in p_list:
             result = await db.execute(select(Words).filter(Words.words == word))
             word_model = result.scalars().first()
-            
             result = await db.execute(select(Blocks).filter(Blocks.id == word_model.block_id))
             block_model = result.scalars().first()
             p_colors.append(block_model.color)
 
         problem.append({'id': p.id, 'englishProblem': p.englishProblem, 'blockColors':p_colors})
-
+    
     return {'problems': problem}
-
+    
 
 # # 푼 문제 학습 정보 업데이트
 # @router.post("/update_study_data", status_code = status.HTTP_200_OK)
