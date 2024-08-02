@@ -9,6 +9,7 @@ from user.dependencies import user_dependency, db_dependency
 from user.schemas import UserQuitVerification, UserVerification, User_info, User_season
 from user.utils import bcrypt_context
 from user.exceptions import successful_response, http_exception, email_exception, password_exception, user_exception
+from user.utils import *
 
 router = APIRouter(
     prefix='/users', 
@@ -58,8 +59,17 @@ async def update_user_season(user: user_dependency, db: db_dependency, user_info
 
     http_exception(user_model)
 
-    user_model.released_season=user_info.season
-
+    if user_model.released_season is None:
+        user_model.released_season = '{"seasons":[]}'
+    season_json = get_string_to_json(user_model.released_season)
+    if dict(season_json).get("seasons") != None:
+        if user_info.season not in season_json["seasons"]:
+            season_json["seasons"].append(user_info.season)
+        else:
+            season_json["seasons"].remove(user_info.season)
+    else:
+        season_json["seasons"] = [user_info.season]
+    user_model.released_season = get_json_to_string(season_json)
     db.add(user_model)
     await db.commit()
     return successful_response(200)
