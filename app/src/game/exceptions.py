@@ -5,6 +5,9 @@ def room_exception(room):
     if not room:  # 방이 없으면
         raise HTTPException(status_code=404, detail="Not found")
 
+def room_exception2():
+    return HTTPException(status_code=403, detail="인원을 줄일 수 없습니다.")
+
 def participant_exception(participant_id, room_participants):
     if participant_id not in room_participants:  # 방에 참여자가 없으면
         raise HTTPException(status_code=404, detail="Participant not in the room")
@@ -20,8 +23,12 @@ def participant_exception2(participants_len, room_max):
 def participant_exception3():
     return HTTPException(status_code=400, detail="미등록된 참여자입니다.")
 
-def participant_exception4():
-    return HTTPException(status_code=404, detail="Room is full!")
+def participant_exception3():
+    return HTTPException(status_code=400, detail="미등록된 참여자입니다.")
+
+def participant_exception4(room):
+    if room:
+        return HTTPException(status_code=404, detail="해당 방은 게임 진행 중입니다.")
 
 def host_exception():
     return HTTPException(status_code=404, detail="host not in the room")
@@ -37,3 +44,4 @@ def host_exception2(room_list, pin_number):
             return True
         else:
             return False
+        

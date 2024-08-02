@@ -1,5 +1,5 @@
 import enum
-from sqlalchemy import Boolean, Column, Integer, String, ForeignKey, Table
+from sqlalchemy import JSON, Boolean, Column, Integer, String, ForeignKey, Table
 from sqlalchemy.orm import relationship
 from sqlalchemy.ext.declarative import declarative_base
 
@@ -45,14 +45,14 @@ class Users(Base):
     role = Column(String, index=True)  # Role (super or student or parent)
     question = Column(String)
     questionType = Column(Integer)
-    released_season = Column(String)  # Unique token (teachers only) > released_season
+    released_season = Column(JSON)  # Unique token (teachers only) > released_season
 
     # Relationship with Groups
     team_id = Column(Integer, ForeignKey("groups.id"), nullable=True) # FK, team (student only)
     team = relationship("Groups", foreign_keys=[team_id], back_populates="members")
 
     # Relationship with StudyInfo
-    studyInfos = relationship("StudyInfo", back_populates="owner")
+    studyInfos = relationship("StudyInfo", back_populates="owner",cascade='delete')
 
     # Many-to-many relationship between students and teachers
     student_teachers = relationship(
@@ -78,8 +78,8 @@ class Groups(Base):
     __tablename__ = "groups"
 
     id = Column(Integer, primary_key=True, index=True)
-    name = Column(String(100))
-    grade = Column(String(100))
+    name = Column(String)
+    grade = Column(String)
     releasedLevel = Column(Integer, default=1)
     releasedStep = Column(Integer, default=1)
     admin_id = Column(Integer, ForeignKey("users.id")) # FK, teacher_id
@@ -113,7 +113,7 @@ class Problems(Base):  # Problems
     __tablename__ = "problems"
 
     id = Column(Integer, primary_key=True, index=True)  # PK
-    season = Column(String(100))  # Season
+    season = Column(String)  # Season
     level = Column(Integer)  # Type >> level
     step = Column(Integer)  # Problem level (1-3)>> step
     koreaProblem = Column(String)  # Korean sentence
@@ -140,7 +140,7 @@ class Problems(Base):  # Problems
 #     __tablename__ = "customProblemSet"
 
 #     id = Column(Integer, primary_key=True, index=True)  # PK
-#     name = Column(String(100))
+#     name = Column(String)
 
 #     # Relationship
 #     problems = relationship("Problems", back_populates="custom_problem_set")
@@ -149,9 +149,9 @@ class Blocks(Base):
     __tablename__ = "blocks"
 
     id = Column(Integer, primary_key=True, index=True)  # PK
-    color = Column(String(100))      # color: skyblue, pink, green, yellow, purple
+    color = Column(String)      # color: skyblue, pink, green, yellow, purple
 
-    word = relationship("Words", back_populates="block")
+    word = relationship("Words", back_populates="block")#,cascade='delete')
 
 class Words(Base):
     __tablename__ = "words"
@@ -160,4 +160,4 @@ class Words(Base):
     block_id = Column(Integer, ForeignKey("blocks.id"))  # FK
     block = relationship("Blocks", back_populates="word")
     
-    words = Column(String(100))      # word value: I, me, dog, ...
+    words = Column(String)      # word value: I, me, dog, ...

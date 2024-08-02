@@ -19,7 +19,8 @@ router = APIRouter(
     responses={404: {"description": "Not found"}}
 )
 
-@router.get("/get_season", status_code = status.HTTP_200_OK)
+# 가진 시즌'들' 조회
+@router.get("/season_info", status_code = status.HTTP_200_OK)
 async def get_season(user: user_dependency, db: db_dependency):
 
     get_user_exception(user)
@@ -30,7 +31,7 @@ async def get_season(user: user_dependency, db: db_dependency):
 
     return {"user_season": user_model.released_season}
 
-
+# 개인학습 or 그룹학습 선택
 @router.post("/select/solo_or_group", status_code = status.HTTP_200_OK)
 async def select_mode(soloGroup: SoloGroup,
                             user: user_dependency,

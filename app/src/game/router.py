@@ -9,9 +9,9 @@ from app.src.models import Users, StudyInfo, Groups, Problems
 import app.src.models
 from fastapi import FastAPI, File, Form, UploadFile, WebSocket, WebSocketDisconnect
 import json
-from game.schemas import Room, CreateRoomRequest, JoinRoomRequest, GetStudentScoreRequest, ParticipantSolveRequest, ConnectionManager, rooms, roomProblem
+from game.schemas import Room, CreateRoomRequest, JoinRoomRequest, GetStudentScoreRequest, GetGameAgainRequest, ConnectionManager, rooms, roomProblem
 from game.utils import create_pin_number
-from game.exceptions import room_exception, participant_exception, host_exception1, host_exception2, participant_exception1, participant_exception2, participant_exception3, participant_exception4
+from game.exceptions import room_exception, participant_exception, host_exception, host_exception1, host_exception2, participant_exception1, participant_exception2, participant_exception3, participant_exception4, room_exception2
 from game.dependencies import db_dependency
 from game.constants import PROBLEM_OFFSET
 
@@ -30,12 +30,70 @@ custom_problem = {
     "123232": ["I am pretty.", "I am pretty.", "I am pretty."]
 }
 
+def reset_room(room: Room) -> None:
+    for participant in room.participants:
+        room.participants[participant] = 0  # 참여자 리스트의 값만 0으로 초기화
+    room.participants_bonus = {}  # 참여자 문제 정답 배열 초기화
+    room.InGame = False # 인게임 아님
+
+# 같은 인원, 같은 핀번호로 게임 이어서 하기 + 추가 입장도 되도록
+@router.post("/super/game_again")
+async def get_student_score(db: db_dependency, request: GetGameAgainRequest):
+    room = rooms.get(request.room_id)
+    room_exception(room)
+    reset_room(room)
+
+    if room.room_max < request.room_max: # 인원 늘리기만 가능
+        room.room_max = request.room_max 
+    else:
+        room_exception2()
+    total_count = await db.scalar(select(func.count()).select_from(Problems).filter(Problems.level == request.choiceLevel).filter(Problems.type == "ai"))
+    random_offset = random.randint(0, max(0, total_count - PROBLEM_OFFSET))
+
+    # PROBLEM_OFFSET개의 데이터 가져오기
+    result = await db.execute(
+        select(Problems)
+        .filter(Problems.level == request.choiceLevel)
+        .filter(Problems.type == "ai")
+        .offset(random_offset)
+        .limit(PROBLEM_OFFSET)
+    )
+
+    # 무작위로 n개 선택
+    random_problems = result.scalars().all()
+    final_problems = random.sample(random_problems, min(request.problemsCount, len(random_problems)))
+
+    problems = []
+    pnum = 0
+    roomProblem[request.room_id] = {}
+    for problem in final_problems:
+        problems.append({"problem_id": problem.id, "koreaProblem": problem.koreaProblem})
+        roomProblem[request.room_id][pnum] = problem.englishProblem
+        pnum += 1
+
+    return {"pin_number": request.room_id, "problems": problems} 
+
 # 게임방 호스트가 참여자의 모든 누적 점수 요청
 @router.post("/super/student_score")
 async def get_student_score(request: GetStudentScoreRequest):
     room = rooms.get(request.room_id)
     room_exception(room)
     return room.participants
+
+# 선생님이 게임 시작할 때
+@router.post("/super/game_start")
+async def participant_action(request: GetStudentScoreRequest):
+    
+    room = rooms.get(request.room_id)
+    room_exception(room)
+    if room.host_websocket:
+        room.InGame = True
+        for participant_id, participant_ws in manager.active_connections[request.room_id].items(): # 이렇게 써도 되는지 모르겠네 gpt는 된다는데
+                await manager.send_personal_message({"client_id": participant_id, "message": "GameStart"}, participant_ws)
+        # for participant in room.participants:
+        #     await manager.send_personal_message({"participant_id": participant, "InGame": room.InGame}, room.host_websocket) # True 라는 메세지를 보냄.
+    else:
+        host_exception()
 
 
 # 게임에서 학생이 정답을 제출할 때
@@ -113,13 +171,13 @@ async def create_room(db: db_dependency, request: CreateRoomRequest):
 
 
 # 게임방 참가 api
-# 방에 참가한 상태로 다른 방으로 참가하는 것도 막아야됨
+# 방에 참가한 상태로 다른 방으로 참가하는 것도 막아야됨 + 중도 참가도 막아야됨
 @router.post("/join_room")
 async def join_room(request: JoinRoomRequest):
     room = rooms.get(request.room_id)
     room_exception(room)
     participant_exception1(request.participant_id, room.participants)
-    
+    participant_exception4(room.InGame)
     if len(room.participants) < room.room_max:
     # room.participants.append(request.participant_id) # 방 리스트에 추가. 
         room.participants[request.participant_id] = 0 # 방 딕셔너리에 참여자 추가 및 초기값 0 설정 

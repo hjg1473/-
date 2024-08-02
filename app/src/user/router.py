@@ -58,7 +58,8 @@ async def update_user_season(user: user_dependency, db: db_dependency, user_info
 
     http_exception(user_model)
 
-    user_model.released_season=user_info.season
+    if user_model:
+        user_model.released_season = user_info.season
 
     db.add(user_model)
     await db.commit()

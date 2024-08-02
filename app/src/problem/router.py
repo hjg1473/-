@@ -436,17 +436,7 @@ async def send_problems_data(user: user_dependency, db: db_dependency):
 #     return {'isAnswer' : problem.englishProblem, 'user_answer': user_string, 'false_location': false_location}
 
 
-# 학생이 문제를 풀었을 때, 일단 임시로 맞았다고 처리 (33초) (31초) -> (6~7초)
-@router.post("/solve_OCR", status_code = status.HTTP_200_OK)
-async def user_solve_problem(user: user_dependency, db: db_dependency, 
-                             file: UploadFile = File(...)):
-    get_user_exception(user)
-    
-    # img_binary = await file.read()
-    # image = await asyncio.to_thread(Image.open,io.BytesIO(img_binary))
-    # # image = Image.open(io.BytesIO(img_binary))
-    # img_array = np.array(image)
-
+async def ocr(file):
     img_binary = await file.read()
     image = await asyncio.to_thread(Image.open, io.BytesIO(img_binary))
 
@@ -489,6 +479,22 @@ async def user_solve_problem(user: user_dependency, db: db_dependency,
                 low_y = block[0][3][1]
                 high_y = block[0][0][1]
                 word_list.insert(0,block[1])
+    
+    return word_list
+
+
+# 학생이 문제를 풀었을 때, 일단 임시로 맞았다고 처리 (33초) (31초) -> (6~7초)
+@router.post("/solve_OCR", status_code = status.HTTP_200_OK)
+async def user_solve_problem(user: user_dependency, db: db_dependency, 
+                             file: UploadFile = File(...)):
+    get_user_exception(user)
+    
+    # img_binary = await file.read()
+    # image = await asyncio.to_thread(Image.open,io.BytesIO(img_binary))
+    # # image = Image.open(io.BytesIO(img_binary))
+    # img_array = np.array(image)
+
+    word_list = ocr(file)
     
     user_string = ' '.join(word_list)
 
