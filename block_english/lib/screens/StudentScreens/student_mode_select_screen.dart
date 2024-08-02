@@ -1,8 +1,8 @@
 import 'package:block_english/utils/constants.dart';
-import 'package:block_english/utils/device_scale.dart';
 import 'package:block_english/utils/status.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 class StudentModeSelectScreen extends ConsumerWidget {
@@ -15,28 +15,32 @@ class StudentModeSelectScreen extends ConsumerWidget {
         child: Column(
           children: [
             Padding(
-              padding: const EdgeInsets.all(30),
+              padding: EdgeInsets.only(
+                top: 32.h,
+              ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   Column(
                     children: [
-                      const Text(
+                      Text(
                         '학습 모드를 선택해줘!',
                         style: TextStyle(
-                          fontSize: 20,
+                          fontSize: 20.sp,
                           fontWeight: FontWeight.w600,
                         ),
                       ),
                       Text(
                         '혼자 하고 싶어? 같이 하고 싶어?',
                         style: TextStyle(
-                          fontSize: 14,
-                          color: Colors.grey[600],
+                          fontSize: 14.sp,
+                          fontWeight: FontWeight.w500,
+                          color: const Color(0xFF888888),
                         ),
                       ),
                     ],
                   ),
+                  SizedBox(height: 42.h),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
@@ -50,14 +54,14 @@ class StudentModeSelectScreen extends ConsumerWidget {
                                 .pushNamed('/stud_season_select_screen');
                           },
                           icon: SvgPicture.asset(
-                            width: 180 * DeviceScale.scaleWidth(context),
-                            height: 206 * DeviceScale.scaleHeight(context),
+                            width: 180.r,
+                            height: 206.r,
                             'assets/cards/180_206_card.svg',
                           ),
                         ),
                       ),
                       SizedBox(
-                        width: 70 * DeviceScale.scaleWidth(context),
+                        width: 70.r,
                       ),
                       SizedBox(
                         child: IconButton(
@@ -69,8 +73,8 @@ class StudentModeSelectScreen extends ConsumerWidget {
                                 .pushNamed('/stud_season_select_screen');
                           },
                           icon: SvgPicture.asset(
-                            width: 180 * DeviceScale.scaleWidth(context),
-                            height: 206 * DeviceScale.scaleHeight(context),
+                            width: 180.r,
+                            height: 206.r,
                             'assets/cards/180_206_card.svg',
                           ),
                         ),
