@@ -257,17 +257,22 @@ async def send_problems_data(user: user_dependency, db: db_dependency):
     problems_info = result.scalars().all()
 
     study_info.wrong_letter += tempUserProblem.totalIncorrectLetter
-    study_info.wrong_punc += tempUserProblem.totalIncorrectPunc
+    study_info.wrong_punctuation += tempUserProblem.totalIncorrectPunc
     study_info.wrong_block += tempUserProblem.totalIncorrectBlock
     study_info.wrong_order += tempUserProblem.totalIncorrectOrder
     study_info.wrong_word += tempUserProblem.totalIncorrectWords
-        
+    
     # return problems_info
     for problem in problems_info:
         if problem not in study_info.correct_problems: # 문제 리스트 검사. 없다면 추가. 근데 매번 해야됨? ..
             study_info.correct_problems.append(problem)
         if problem not in study_info.incorrect_problems:
             study_info.incorrect_problems.append(problem)
+    
+    result = await db.execute(select(Problems).filter(Problems.step > problem.step))
+    next_problems = result.scalars().all()
+    # if next_problems is None:
+
 
     for problem_id, incorrect_count in tempUserProblem.problem_incorrect_count.items():
         await increment_correct_problem_count(study_info.id, problem_id, 1, db)
