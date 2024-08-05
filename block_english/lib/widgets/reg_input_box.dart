@@ -1,6 +1,6 @@
+import 'package:block_english/utils/size_config.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class RegInputBox extends StatelessWidget {
   final double width;
@@ -39,27 +39,25 @@ class RegInputBox extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: width.r,
-      height: height.r,
+      width: width * SizeConfig.scales,
+      height: height * SizeConfig.scales,
       decoration: BoxDecoration(
         color: const Color(0xFFF0F0F0),
         borderRadius: BorderRadius.circular(8),
         border: Border.all(color: Colors.transparent),
       ),
       padding: EdgeInsets.symmetric(
-        horizontal: 12.r,
-        vertical: 8.r,
+        horizontal: 12 * SizeConfig.scales,
+        vertical: 8 * SizeConfig.scales,
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           SizedBox(
-            width: doubleCheck || verify
-                ? (width - 40) * 0.71
-                : (width - 40) * 0.9,
+            width: (width - 36 - 71) * SizeConfig.scales,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -67,25 +65,25 @@ class RegInputBox extends StatelessWidget {
                     Text(
                       labelText,
                       style: TextStyle(
-                        fontSize: 13.sp,
+                        fontSize: 13 * SizeConfig.scales,
                         fontWeight: FontWeight.w700,
                       ),
                     ),
                     errorMessage != ''
                         ? Row(
                             children: [
-                              SizedBox(width: 10.w),
+                              SizedBox(width: 10 * SizeConfig.scales),
                               Icon(
                                 Icons.error_outline,
                                 color: success ? Colors.green : Colors.red,
-                                size: 12.r,
+                                size: 12 * SizeConfig.scales,
                               ),
-                              SizedBox(width: 6.w),
+                              SizedBox(width: 6 * SizeConfig.scales),
                               Text(
                                 errorMessage,
                                 style: TextStyle(
                                   color: success ? Colors.green : Colors.red,
-                                  fontSize: 11.sp,
+                                  fontSize: 11 * SizeConfig.scales,
                                 ),
                               ),
                             ],
@@ -98,13 +96,14 @@ class RegInputBox extends StatelessWidget {
                   obscureText: isSelected,
                   obscuringCharacter: '*',
                   controller: controller,
-                  cursorHeight: 20,
+                  cursorHeight: 13,
                   cursorColor: Colors.grey,
                   decoration: InputDecoration(
                     isCollapsed: true,
                     hintText: hintText,
-                    hintStyle:
-                        TextStyle(fontSize: 14.sp, fontWeight: FontWeight.w400),
+                    hintStyle: TextStyle(
+                        fontSize: 13 * SizeConfig.scales,
+                        fontWeight: FontWeight.w400),
                     border: const OutlineInputBorder(
                       borderSide: BorderSide.none,
                     ),
@@ -113,20 +112,22 @@ class RegInputBox extends StatelessWidget {
               ],
             ),
           ),
-          doubleCheck || verify
+          doubleCheck
               ? FilledButton(
                   onPressed: onCheckPressed,
                   style: FilledButton.styleFrom(
+                    minimumSize:
+                        Size(71 * SizeConfig.scales, 36 * SizeConfig.scales),
                     padding: EdgeInsets.symmetric(
-                      horizontal: 10.r,
-                      vertical: 10.r,
+                      horizontal: 10 * SizeConfig.scales,
+                      vertical: 10 * SizeConfig.scales,
                     ),
                     backgroundColor: const Color(0xFF5D5D5D),
                   ),
                   child: Text(
-                    doubleCheck ? '중복확인' : '인증번호 확인',
+                    '중복확인',
                     style: TextStyle(
-                      fontSize: 12.sp,
+                      fontSize: 14 * SizeConfig.scales,
                       fontWeight: FontWeight.w700,
                       color: Colors.white,
                     ),
@@ -134,13 +135,13 @@ class RegInputBox extends StatelessWidget {
                 )
               : obscureText
                   ? SizedBox(
-                      width: 25.r,
+                      width: 25 * SizeConfig.scales,
                       child: IconButton(
                         padding: EdgeInsets.zero,
                         icon: isSelected
                             ? const Icon(Icons.visibility_off_outlined)
                             : const Icon(Icons.visibility),
-                        iconSize: 25.r,
+                        iconSize: 25 * SizeConfig.scales,
                         color: const Color(0xFF585858),
                         onPressed: onEyePressed,
                       ),

@@ -1,10 +1,10 @@
 import 'package:block_english/services/auth_service.dart';
+import 'package:block_english/utils/size_config.dart';
 import 'package:block_english/utils/storage.dart';
 import 'package:block_english/widgets/square_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
@@ -118,20 +118,20 @@ class _LoginState extends ConsumerState<LoginScreen> {
             child: Row(
               children: [
                 Container(
-                  width: 396.w,
-                  height: 1.sh,
+                  width: 396 * SizeConfig.scaleWidth,
+                  height: SizeConfig.fullHeight,
                   color: Colors.lightBlue[100],
                 ),
                 SizedBox(
-                  width: 416.w,
-                  height: 1.sh,
+                  width: 416 * SizeConfig.scaleWidth,
+                  height: SizeConfig.fullHeight,
                   child: Column(
                     children: [
                       Padding(
                         padding: EdgeInsets.only(
-                          top: 38.r,
-                          left: 42.r,
-                          right: 42.r,
+                          top: 38 * SizeConfig.scaleHeight,
+                          left: 42 * SizeConfig.scaleWidth,
+                          right: 42 * SizeConfig.scaleWidth,
                         ),
                         child: Column(
                           children: [
@@ -142,7 +142,7 @@ class _LoginState extends ConsumerState<LoginScreen> {
                                 Text(
                                   '로그인',
                                   style: TextStyle(
-                                    fontSize: 22.sp,
+                                    fontSize: 22 * SizeConfig.scales,
                                     fontWeight: FontWeight.w800,
                                   ),
                                 ),
@@ -157,14 +157,14 @@ class _LoginState extends ConsumerState<LoginScreen> {
                                       borderRadius: BorderRadius.circular(45),
                                     ),
                                     padding: EdgeInsets.symmetric(
-                                      horizontal: 20.r,
-                                      vertical: 12.r,
+                                      horizontal: 20 * SizeConfig.scales,
+                                      vertical: 12 * SizeConfig.scales,
                                     ),
                                   ),
                                   child: Text(
                                     '회원가입',
                                     style: TextStyle(
-                                      fontSize: 16.sp,
+                                      fontSize: 16 * SizeConfig.scales,
                                       fontWeight: FontWeight.w700,
                                       color: Colors.white,
                                     ),
@@ -173,7 +173,7 @@ class _LoginState extends ConsumerState<LoginScreen> {
                               ],
                             ),
                             SizedBox(
-                              height: 18.r,
+                              height: 18 * SizeConfig.scales,
                             ),
                             Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
@@ -183,7 +183,7 @@ class _LoginState extends ConsumerState<LoginScreen> {
                                     Text(
                                       '아이디',
                                       style: TextStyle(
-                                        fontSize: 16.sp,
+                                        fontSize: 16 * SizeConfig.scales,
                                         fontWeight: FontWeight.w700,
                                         color: const Color(0xFF555555),
                                       ),
@@ -191,18 +191,22 @@ class _LoginState extends ConsumerState<LoginScreen> {
                                     usernameError
                                         ? Row(
                                             children: [
-                                              SizedBox(width: 10.w),
+                                              SizedBox(
+                                                  width:
+                                                      10 * SizeConfig.scales),
                                               Icon(
                                                 Icons.error_outline,
                                                 color: Colors.red,
-                                                size: 12.r,
+                                                size: 12 * SizeConfig.scales,
                                               ),
-                                              SizedBox(width: 6.w),
+                                              SizedBox(
+                                                  width: 6 * SizeConfig.scales),
                                               Text(
                                                 usernameErrorMsg,
                                                 style: TextStyle(
                                                   color: Colors.red,
-                                                  fontSize: 11.sp,
+                                                  fontSize:
+                                                      11 * SizeConfig.scales,
                                                 ),
                                               ),
                                             ],
@@ -211,7 +215,7 @@ class _LoginState extends ConsumerState<LoginScreen> {
                                   ],
                                 ),
                                 SizedBox(
-                                  height: 6.r,
+                                  height: 6 * SizeConfig.scales,
                                 ),
                                 TextField(
                                   inputFormatters: [
@@ -221,13 +225,13 @@ class _LoginState extends ConsumerState<LoginScreen> {
                                   ],
                                   decoration: InputDecoration(
                                     contentPadding: EdgeInsets.symmetric(
-                                      horizontal: 16.r,
-                                      vertical: 12.r,
+                                      horizontal: 16 * SizeConfig.scales,
+                                      vertical: 12 * SizeConfig.scales,
                                     ),
                                     hintText: '전화번호 또는 이메일을 입력해 주세요',
                                     hintStyle: TextStyle(
                                       color: const Color(0xFFA3A3A3),
-                                      fontSize: 16.sp,
+                                      fontSize: 16 * SizeConfig.scales,
                                       fontWeight: FontWeight.w700,
                                     ),
                                     filled: true,
@@ -242,7 +246,7 @@ class _LoginState extends ConsumerState<LoginScreen> {
                                 ),
                               ],
                             ),
-                            SizedBox(height: 12.r),
+                            SizedBox(height: 12 * SizeConfig.scales),
                             Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
@@ -251,7 +255,7 @@ class _LoginState extends ConsumerState<LoginScreen> {
                                     Text(
                                       '비밀번호',
                                       style: TextStyle(
-                                        fontSize: 16.sp,
+                                        fontSize: 16 * SizeConfig.scales,
                                         fontWeight: FontWeight.w700,
                                         color: const Color(0xFF555555),
                                       ),
@@ -259,18 +263,22 @@ class _LoginState extends ConsumerState<LoginScreen> {
                                     passwordError
                                         ? Row(
                                             children: [
-                                              SizedBox(width: 10.w),
+                                              SizedBox(
+                                                  width:
+                                                      10 * SizeConfig.scales),
                                               Icon(
                                                 Icons.error_outline,
                                                 color: Colors.red,
-                                                size: 12.r,
+                                                size: 12 * SizeConfig.scales,
                                               ),
-                                              SizedBox(width: 6.w),
+                                              SizedBox(
+                                                  width: 6 * SizeConfig.scales),
                                               Text(
                                                 passwordErrorMsg,
                                                 style: TextStyle(
                                                   color: Colors.red,
-                                                  fontSize: 11.sp,
+                                                  fontSize:
+                                                      11 * SizeConfig.scales,
                                                 ),
                                               ),
                                             ],
@@ -279,7 +287,7 @@ class _LoginState extends ConsumerState<LoginScreen> {
                                   ],
                                 ),
                                 SizedBox(
-                                  height: 6.r,
+                                  height: 6 * SizeConfig.scales,
                                 ),
                                 TextField(
                                   inputFormatters: [
@@ -291,13 +299,13 @@ class _LoginState extends ConsumerState<LoginScreen> {
                                   obscuringCharacter: '*',
                                   decoration: InputDecoration(
                                     contentPadding: EdgeInsets.symmetric(
-                                      horizontal: 16.r,
-                                      vertical: 12.r,
+                                      horizontal: 16 * SizeConfig.scales,
+                                      vertical: 12 * SizeConfig.scales,
                                     ),
                                     hintText: '비밀번호를 입력해주세요',
                                     hintStyle: TextStyle(
                                       color: const Color(0xFFA3A3A3),
-                                      fontSize: 16.sp,
+                                      fontSize: 16 * SizeConfig.scales,
                                       fontWeight: FontWeight.w700,
                                     ),
                                     suffixIcon: IconButton(
@@ -326,7 +334,7 @@ class _LoginState extends ConsumerState<LoginScreen> {
                               ],
                             ),
                             SizedBox(
-                              height: 10.r,
+                              height: 10 * SizeConfig.scales,
                             ),
                             Row(
                               mainAxisAlignment: MainAxisAlignment.end,
@@ -342,7 +350,7 @@ class _LoginState extends ConsumerState<LoginScreen> {
                                   child: Text(
                                     '비밀번호 찾기',
                                     style: TextStyle(
-                                      fontSize: 14.sp,
+                                      fontSize: 14 * SizeConfig.scales,
                                       fontWeight: FontWeight.w700,
                                       color: const Color(0xFFA3A3A3),
                                     ),
