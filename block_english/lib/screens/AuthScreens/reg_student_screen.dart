@@ -5,15 +5,16 @@ import 'package:block_english/widgets/square_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 class RegStudentScreen extends ConsumerStatefulWidget {
   const RegStudentScreen({super.key});
 
   @override
-  ConsumerState<RegStudentScreen> createState() => _StudState();
+  ConsumerState<RegStudentScreen> createState() => _RegStudentScreenState();
 }
 
-class _StudState extends ConsumerState<RegStudentScreen> {
+class _RegStudentScreenState extends ConsumerState<RegStudentScreen> {
   String name = '';
   String username = '';
   String password = '';
@@ -29,20 +30,83 @@ class _StudState extends ConsumerState<RegStudentScreen> {
   String passwordError = '';
   String password2Error = '';
 
-  bool disable = true;
-  bool isChecked = false;
+  bool nextDisable = true;
+
+  bool dupCheckDisable = true;
+  bool dupChecked = false;
+  bool nameChecked = false;
+  bool passwordChecked = false;
   bool isObsecure = false;
   bool isObsecure2 = false;
 
-  onDupCheckChanged() {
-    username = usernameController.text;
-    if (username.length < 6) {
+  onNameChanged() {
+    name = nameController.text;
+    if (name.isNotEmpty) {
       setState(() {
-        disable = true;
+        nameChecked = true;
+        if (passwordChecked && dupChecked) {
+          nextDisable = false;
+        }
       });
     } else {
       setState(() {
-        disable = false;
+        nameChecked = false;
+        nextDisable = true;
+      });
+    }
+  }
+
+  onPasswordChanged() {
+    password = passwordController.text;
+    password2 = password2Controller.text;
+
+    if (password.length > 7 && password2.isNotEmpty) {
+      if (password == password2) {
+        setState(() {
+          password2Error = '';
+          passwordChecked = true;
+          if (nameChecked && dupChecked) {
+            nextDisable = false;
+          }
+        });
+      } else {
+        setState(() {
+          password2Error = '비밀번호가 일치하지 않습니다';
+          passwordChecked = false;
+          nextDisable = true;
+        });
+      }
+    } else if (password2.isEmpty) {
+      setState(() {
+        password2Error = '';
+        passwordChecked = false;
+        nextDisable = true;
+      });
+    } else {
+      setState(() {
+        passwordChecked = false;
+        nextDisable = true;
+      });
+    }
+  }
+
+  onDupCheckChanged() {
+    if (dupChecked && username != usernameController.text) {
+      setState(() {
+        dupChecked = false;
+        usernameError = '중복확인을 다시 해 주세요';
+        nextDisable = true;
+      });
+      return;
+    }
+    username = usernameController.text;
+    if (username.length < 6) {
+      setState(() {
+        dupCheckDisable = true;
+      });
+    } else {
+      setState(() {
+        dupCheckDisable = false;
       });
     }
   }
@@ -64,12 +128,15 @@ class _StudState extends ConsumerState<RegStudentScreen> {
     }, (dupResponseModel) {
       if (dupResponseModel.available == 1) {
         setState(() {
-          isChecked = true;
+          dupChecked = true;
           usernameError = '사용 가능한 아이디입니다';
+          if (nameChecked && passwordChecked) {
+            nextDisable = false;
+          }
         });
       } else {
         setState(() {
-          isChecked = false;
+          dupChecked = false;
           usernameError = '이미 사용중인 아이디입니다';
         });
       }
@@ -88,51 +155,13 @@ class _StudState extends ConsumerState<RegStudentScreen> {
     });
   }
 
+  onNextPressed() {
+    Navigator.of(context).pushNamed(
+      '/reg_pw_question_screen',
+    );
+  }
+
   onRegisterPressed() async {
-    bool onError = false;
-
-    name = nameController.text;
-    password = passwordController.text;
-    password2 = password2Controller.text;
-
-    if (name == '') {
-      setState(() {
-        nameError = '이름을 입력해 주세요';
-      });
-      onError = true;
-    }
-
-    if (!isChecked) {
-      setState(() {
-        usernameError = '중복확인을 해 주세요';
-      });
-      onError = true;
-    }
-
-    if (password == '') {
-      setState(() {
-        passwordError = '비밀번호를 입력해 주세요';
-      });
-      onError = true;
-    } else if (password.length < 8) {
-      setState(() {
-        passwordError = '8자 이상 입력해주세요';
-      });
-      onError = true;
-    }
-
-    if (password != password2) {
-      setState(() {
-        password2Error = '비밀번호가 일치하지 않습니다';
-        password2Controller.clear();
-      });
-      onError = true;
-    }
-
-    if (onError) {
-      return;
-    }
-
     final result = await ref
         .watch(authServiceProvider)
         .postAuthRegister(name, username, password, 'student', 0, '', []);
@@ -184,28 +213,13 @@ class _StudState extends ConsumerState<RegStudentScreen> {
                       children: [
                         Stack(
                           children: [
-                            FilledButton.icon(
-                              icon: Icon(
-                                Icons.arrow_back_ios,
-                                size: 16 * SizeConfig.scales,
-                              ),
-                              onPressed: () {
-                                Navigator.pop(context);
-                              },
-                              label: Text(
-                                '돌아가기',
-                                style: TextStyle(
-                                  fontSize: 16 * SizeConfig.scales,
-                                  fontWeight: FontWeight.w400,
-                                ),
-                              ),
-                              style: FilledButton.styleFrom(
-                                padding: EdgeInsets.symmetric(
-                                  horizontal: 20 * SizeConfig.scales,
-                                  vertical: 10 * SizeConfig.scales,
-                                ),
-                                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                                backgroundColor: Colors.black,
+                            IconButton(
+                              padding: EdgeInsets.zero,
+                              onPressed: () => Navigator.of(context).pop(),
+                              icon: SvgPicture.asset(
+                                'assets/buttons/round_back_button.svg',
+                                width: 48 * SizeConfig.scales,
+                                height: 48 * SizeConfig.scales,
                               ),
                             ),
                             Center(
@@ -247,10 +261,11 @@ class _StudState extends ConsumerState<RegStudentScreen> {
                                   ],
                                   errorMessage: usernameError,
                                   dupCheck: true,
-                                  onCheckChanged: onDupCheckChanged,
-                                  onCheckPressed:
-                                      disable ? null : onDupCheckPressed,
-                                  success: isChecked,
+                                  onChanged: onDupCheckChanged,
+                                  onCheckPressed: dupCheckDisable
+                                      ? null
+                                      : onDupCheckPressed,
+                                  success: dupChecked,
                                 ),
                                 SizedBox(width: 20 * SizeConfig.scales),
                                 RegInputBox(
@@ -262,6 +277,7 @@ class _StudState extends ConsumerState<RegStudentScreen> {
                                         RegExp(r'[a-zA-Zㄱ-ㅎ가-힣]')),
                                   ],
                                   errorMessage: nameError,
+                                  onChanged: onNameChanged,
                                 ),
                               ],
                             ),
@@ -279,6 +295,7 @@ class _StudState extends ConsumerState<RegStudentScreen> {
                                     ),
                                   ],
                                   errorMessage: passwordError,
+                                  onChanged: onPasswordChanged,
                                   obscureText: true,
                                   isSelected: !isObsecure,
                                   onEyePressed: onEyePressed,
@@ -294,6 +311,7 @@ class _StudState extends ConsumerState<RegStudentScreen> {
                                     ),
                                   ],
                                   errorMessage: password2Error,
+                                  onChanged: onPasswordChanged,
                                   obscureText: true,
                                   isSelected: !isObsecure2,
                                   onEyePressed: onEye2Pressed,
@@ -307,10 +325,9 @@ class _StudState extends ConsumerState<RegStudentScreen> {
                     ),
                   ),
                 ),
-                //TODO: disable button if conditions are not satisfied
                 SquareButton(
                   text: '다음으로',
-                  onPressed: onRegisterPressed,
+                  onPressed: nextDisable ? null : onNextPressed,
                 ),
               ],
             ),

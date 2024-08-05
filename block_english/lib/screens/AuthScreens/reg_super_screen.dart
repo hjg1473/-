@@ -31,20 +31,83 @@ class _RegSuperScreenState extends ConsumerState<RegSuperScreen> {
   String passwordError = '';
   String password2Error = '';
 
-  bool disable = true;
-  bool isChecked = false;
+  bool nextDisable = true;
+
+  bool dupCheckDisable = true;
+  bool dupChecked = false;
+  bool nameChecked = false;
+  bool passwordChecked = false;
   bool isObsecure = false;
   bool isObsecure2 = false;
 
-  onDupCheckChanged() {
-    username = usernameController.text;
-    if (username.length < 6) {
+  onNameChanged() {
+    name = nameController.text;
+    if (name.isNotEmpty) {
       setState(() {
-        disable = true;
+        nameChecked = true;
+        if (passwordChecked && dupChecked) {
+          nextDisable = false;
+        }
       });
     } else {
       setState(() {
-        disable = false;
+        nameChecked = false;
+        nextDisable = true;
+      });
+    }
+  }
+
+  onPasswordChanged() {
+    password = passwordController.text;
+    password2 = password2Controller.text;
+
+    if (password.length > 7 && password2.isNotEmpty) {
+      if (password == password2) {
+        setState(() {
+          password2Error = '';
+          passwordChecked = true;
+          if (nameChecked && dupChecked) {
+            nextDisable = false;
+          }
+        });
+      } else {
+        setState(() {
+          password2Error = '비밀번호가 일치하지 않습니다';
+          passwordChecked = false;
+          nextDisable = true;
+        });
+      }
+    } else if (password2.isEmpty) {
+      setState(() {
+        password2Error = '';
+        passwordChecked = false;
+        nextDisable = true;
+      });
+    } else {
+      setState(() {
+        passwordChecked = false;
+        nextDisable = true;
+      });
+    }
+  }
+
+  onDupCheckChanged() {
+    if (dupChecked && username != usernameController.text) {
+      setState(() {
+        dupChecked = false;
+        usernameError = '중복확인을 다시 해 주세요';
+        nextDisable = true;
+      });
+      return;
+    }
+    username = usernameController.text;
+    if (username.length < 6) {
+      setState(() {
+        dupCheckDisable = true;
+      });
+    } else {
+      setState(() {
+        dupCheckDisable = false;
       });
     }
   }
@@ -66,12 +129,15 @@ class _RegSuperScreenState extends ConsumerState<RegSuperScreen> {
     }, (dupResponseModel) {
       if (dupResponseModel.available == 1) {
         setState(() {
-          isChecked = true;
+          dupChecked = true;
           usernameError = '사용 가능한 아이디입니다';
+          if (nameChecked && passwordChecked) {
+            nextDisable = false;
+          }
         });
       } else {
         setState(() {
-          isChecked = false;
+          dupChecked = false;
           usernameError = '이미 사용중인 아이디입니다';
         });
       }
@@ -97,50 +163,6 @@ class _RegSuperScreenState extends ConsumerState<RegSuperScreen> {
   }
 
   onRegisterPressed() async {
-    bool onError = false;
-
-    name = nameController.text;
-    password = passwordController.text;
-    password2 = password2Controller.text;
-
-    if (name == '') {
-      setState(() {
-        nameError = '이름을 입력해 주세요';
-      });
-      onError = true;
-    }
-
-    if (!isChecked) {
-      setState(() {
-        usernameError = '중복확인을 해 주세요';
-      });
-      onError = true;
-    }
-
-    if (password == '') {
-      setState(() {
-        passwordError = '비밀번호를 입력해 주세요';
-      });
-      onError = true;
-    } else if (password.length < 8) {
-      setState(() {
-        passwordError = '8자 이상 입력해주세요';
-      });
-      onError = true;
-    }
-
-    if (password != password2) {
-      setState(() {
-        password2Error = '비밀번호가 일치하지 않습니다';
-        password2Controller.clear();
-      });
-      onError = true;
-    }
-
-    if (onError) {
-      return;
-    }
-
     final result = await ref
         .watch(authServiceProvider)
         .postAuthRegister(name, username, password, role, 0, '', []);
@@ -241,10 +263,11 @@ class _RegSuperScreenState extends ConsumerState<RegSuperScreen> {
                                   ],
                                   errorMessage: usernameError,
                                   dupCheck: true,
-                                  onCheckChanged: onDupCheckChanged,
-                                  onCheckPressed:
-                                      disable ? null : onDupCheckPressed,
-                                  success: isChecked,
+                                  onChanged: onDupCheckChanged,
+                                  onCheckPressed: dupCheckDisable
+                                      ? null
+                                      : onDupCheckPressed,
+                                  success: dupChecked,
                                 ),
                                 SizedBox(width: 20 * SizeConfig.scales),
                                 RegInputBox(
@@ -256,6 +279,7 @@ class _RegSuperScreenState extends ConsumerState<RegSuperScreen> {
                                         RegExp(r'[a-zA-Zㄱ-ㅎ가-힣]')),
                                   ],
                                   errorMessage: nameError,
+                                  onChanged: onNameChanged,
                                 ),
                               ],
                             ),
@@ -273,6 +297,7 @@ class _RegSuperScreenState extends ConsumerState<RegSuperScreen> {
                                     ),
                                   ],
                                   errorMessage: passwordError,
+                                  onChanged: onPasswordChanged,
                                   obscureText: true,
                                   isSelected: !isObsecure,
                                   onEyePressed: onEyePressed,
@@ -288,6 +313,7 @@ class _RegSuperScreenState extends ConsumerState<RegSuperScreen> {
                                     ),
                                   ],
                                   errorMessage: password2Error,
+                                  onChanged: onPasswordChanged,
                                   obscureText: true,
                                   isSelected: !isObsecure2,
                                   onEyePressed: onEye2Pressed,
@@ -301,10 +327,9 @@ class _RegSuperScreenState extends ConsumerState<RegSuperScreen> {
                     ),
                   ),
                 ),
-                //TODO: disable button if conditions are not satisfied
                 SquareButton(
                   text: '다음으로',
-                  onPressed: onNextPressed,
+                  onPressed: nextDisable ? null : onNextPressed,
                 ),
               ],
             ),

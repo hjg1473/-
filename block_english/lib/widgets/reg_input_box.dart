@@ -14,6 +14,7 @@ class RegInputBox extends StatelessWidget {
   final bool verify;
   final bool obscureText;
   final bool isSelected;
+  final VoidCallback? onChanged;
   final VoidCallback? onCheckChanged;
   final VoidCallback? onCheckPressed;
   final VoidCallback? onEyePressed;
@@ -32,6 +33,7 @@ class RegInputBox extends StatelessWidget {
     this.verify = false,
     this.obscureText = false,
     this.isSelected = false,
+    this.onChanged,
     this.onCheckChanged,
     this.onCheckPressed,
     this.onEyePressed,
@@ -95,8 +97,8 @@ class RegInputBox extends StatelessWidget {
                 ),
                 TextField(
                   onChanged: (value) {
-                    if (onCheckChanged != null) {
-                      onCheckChanged!();
+                    if (onChanged != null) {
+                      onChanged!();
                     }
                   },
                   inputFormatters: inputFormatters,

@@ -1,6 +1,4 @@
-import 'package:block_english/models/AuthModel/get_number_response_model.dart';
 import 'package:block_english/models/AuthModel/username_dupcheck_response_model.dart';
-import 'package:block_english/models/AuthModel/verify_response_model.dart';
 import 'package:block_english/models/model.dart';
 import 'package:block_english/utils/constants.dart';
 import 'package:block_english/utils/dio.dart';
@@ -17,8 +15,6 @@ AuthService authService(AuthServiceRef ref) {
 
 class AuthService {
   static const String _auth = "auth";
-  static const String _username_phone = "username_phone";
-  static const String _verify = "verify";
   static const String _register = "register";
   static const String _token = "token";
   static const String _access = "access";
