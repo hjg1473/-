@@ -214,43 +214,6 @@ async def read_problem_all(season:str, level:int, step:int, user: user_dependenc
 
     return {'problems': problem}
 
-
-@router.post("/expert/set_season", status_code = status.HTTP_200_OK)
-async def set_season(user:user_dependency, db:db_dependency):
-    get_user_exception(user)
-    await db.execute(update(Problems).where(Problems.season == None).values(season="1"))
-    result = await db.execute(select(Problems))
-    all_problems = result.scalars().all()
-    # # all_problems = list(all_problems)
-    # for p in all_problems:
-    #     p.season = '1'
-    # await db.add(all_problems)
-    await db.commit()
-    return {"problems:":all_problems[70:140]}
-
-
-@router.post("/expert/set_difficulty", status_code = status.HTTP_200_OK)
-async def set_season(update_level:int, user:user_dependency, db:db_dependency):
-    get_user_exception(user)
-    result = await db.execute(select(Problems).filter(Problems.level==update_level, Problems.type=='ai'))
-    level_problems = result.scalars().all()
-    len_ps = len(level_problems)
-    base_p = (level_problems[0]).step
-    top_p = (level_problems[len_ps-1]).step
-    len_ps = top_p - base_p
-    await db.execute(update(Problems).where(Problems.level==update_level).where(Problems.type=='ai').where(Problems.step < (base_p + int(len_ps/3))).values(difficulty=1))
-    await db.execute(update(Problems).where(Problems.level==update_level, Problems.type=='ai', Problems.step <= (base_p + int(2 * len_ps/3)), Problems.step > (base_p + int(len_ps/3))).values(difficulty=2))
-    await db.execute(update(Problems).where(Problems.level==update_level).where(Problems.type=='ai').where(Problems.step <= (base_p + int(len_ps))).where(Problems.step > (base_p + int(2*len_ps/3))).values(difficulty=3))
-    result = await db.execute(select(Problems).filter(Problems.level==update_level, Problems.type=='ai'))
-    all_problems = result.scalars().all()
-    # # all_problems = list(all_problems)
-    # for p in all_problems:
-    #     p.season = '1'
-    # await db.add(all_problems)
-    await db.commit()
-    return {"problems:":all_problems}
-    # return {"b":base_p, "len":len_ps}
-
 # 확장 문제 반환
 @router.get("/expert/set/season={season}/level={level}/step={step}", status_code = status.HTTP_200_OK)
 async def read_problem_all(season:str, level:int, step:int, user: user_dependency, db: db_dependency):
@@ -278,85 +241,6 @@ async def read_problem_all(season:str, level:int, step:int, user: user_dependenc
         problem.append({'id': p.id, 'englishProblem': p.englishProblem, 'blockColors':p_colors})
 
     return {'problems': problem}
-
-
-# # 푼 문제 학습 정보 업데이트
-# @router.post("/update_study_data", status_code = status.HTTP_200_OK)
-# async def send_problems_data(user: user_dependency, db: db_dependency, answer: Answer):
-
-#     get_user_exception(user)
-
-#     # study info 가져오기
-#     temp_result = await db.execute(select(StudyInfo).options(joinedload(StudyInfo.correct_problems)).options(joinedload(StudyInfo.incorrect_problems)).filter(StudyInfo.owner_id == user.get("id")))
-#     study_info = temp_result.scalars().first()
-
-#     # 문제 id로 문제 가져오기
-#     temp_result = await db.execute(select(Problems).filter(Problems.id == problem_id))
-#     problem_model = temp_result.scalars().first()
-#     problem = problem_model.englishProblem
-#     problem_parse = parse_sentence(problem)
-
-#     # OCR로 response 읽어오기
-#     img_binary = await file.read()
-#     image = await asyncio.to_thread(Image.open,io.BytesIO(img_binary))
-#     # image = Image.open(io.BytesIO(img_binary))
-#     img_array = np.array(image)
-#     from app.src.main import reader
-#     result = await asyncio.to_thread(reader.readtext, img_array, allowlist='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz!,?.', text_threshold=0.4,low_text=0.3)
-
-#     # 1. 각 사각형의 높이 구하기
-#     heights = []
-#     for item in result:
-#         coords = item[0]
-#         y_values = [point[1] for point in coords]
-#         height = max(y_values) - min(y_values)
-#         heights.append(height)
-
-#     # 높이의 최댓값 구하기
-#     max_height = max(heights)
-
-#     # 2. 높이의 최댓값의 0.7배 이하 무시하기
-#     threshold = max_height * 0.7
-#     filtered_data = [item for item, height in zip(result, heights) if height > threshold]
-
-#     # 3. 남은 단어들을 x축 오름차순으로 정렬해서 단어 리스트 만들기
-#     sorted_data = sorted(filtered_data, key=lambda item: min(point[0] for point in item[0]))
-#     response_parse = [item[1] for item in sorted_data]
-
-#     # 채점
-#     isAnswer, false_location = check_answer(problem_parse, response_parse)
-
-#     if isAnswer:
-#         study_info.correct_problems.append(problem_model)
-#         await increment_correct_problem_count(study_info.id, problem_id, db)
-#         count = await get_correct_problem_count(study_info.id, problem_id, db)
-#         db.add(study_info)
-#         await db.commit()
-#         result = {"you did good job":True, "correct_problems":count}
-#     else:
-#         study_info.incorrect_problems.append(problem_model)
-#         result = await calculate_wrong_info(problem_parse, response_parse, db)
-#         await increment_incorrect_problem_count(study_info.id, problem_id, db)
-#         count = await get_incorrect_problem_count(study_info.id, problem_id, db)
-#         result["incorrect_problems"] = count
-#         db.add(study_info)
-#         await db.commit()
-#     return result    
-
-# # 푼 문제 학습 정보 업데이트
-# @router.post("/update_study_data", status_code = status.HTTP_200_OK)
-# async def send_problems_data(user: user_dependency, db: db_dependency, answer: Answer):
-
-#     get_user_exception(user)
-#     tempUserProblem = TempUserProblems.get(user.get("id")) # 정답 반환할 때.
-#     tempUserProblem.totalFullStop += 1 # 알고리즘 따라서 어느걸 틀렸는지.
-#     if answer.problem_id in tempUserProblem.problem_incorrect_count:
-#         tempUserProblem.problem_incorrect_count[answer.problem_id] += 1
-#     else:
-#         tempUserProblem.problem_incorrect_count[answer.problem_id] = 1
-#     for problem_id, incorrect_count in tempUserProblem.problem_incorrect_count.items():
-#         print(f"Problem ID: {problem_id}, Incorrect Count: {incorrect_count}")
-#     return tempUserProblem
 
 # 스텝 끝날때 마지막에 문제 저장
 @router.post("/send_problems_data", status_code = status.HTTP_200_OK)
@@ -391,49 +275,6 @@ async def send_problems_data(user: user_dependency, db: db_dependency):
     db.add(study_info)
     await db.commit()
     return {"detail": "저장되었습니다."}
-
-
-# # 학생이 문제를 풀었을 때, 일단 임시로 맞았다고 처리 
-# @router.post("/solve", status_code = status.HTTP_200_OK)
-# async def user_solve_problem(user: user_dependency, db: db_dependency, problem_id: int = Form(...), file: UploadFile = File(...)):
-#     get_user_exception(user)
-#     user_instance = db.query(Users).filter(Users.id == user.get("id")).first()
-
-#     study_info = db.query(StudyInfo).filter(StudyInfo.owner_id == user.get("id")).first()
-#     if study_info is None:
-#         raise http_exception()
-
-#     # 학생이 제시받은 문제 id와 문제 id 비교해서 문제 찾아냄.
-#     problem = db.query(Problems)\
-#         .filter(Problems.id == problem_id)\
-#         .first()
-#     temp_result = await db.execute(select(Problems).filter(Problems.id == problem_id))
-#     problem_model = temp_result.scalars().first()
-    
-#     # 학생이 제출한 답변을 OCR을 돌리고 있는 GPU 환경으로 전송 및 단어를 순서대로 배열로 받음.
-#     GPU_SERVER_URL = "http://146.148.75.252:8000/ocr/" 
-    
-#     img_binary = await file.read()
-#     file.filename = "img.png"
-#     files = {"file": (file.filename, img_binary)}
-#     user_word_list = requests.post(GPU_SERVER_URL, files=files)
-    
-#     user_string = " ".join(user_word_list.json())
-
-#     #answer = problem.englishProblem
-#     answer = "I am pretty"
-    
-#     # 문제를 맞춘 경우, correct_problems에 추가. id 만 추가. > 하고 싶은데 안되서 일단 problem 전체 저장함.
-#     # 일단 정답인 경우만 구현, 문장이 다르면 오답처리
-#     isAnswer, false_location = check_answer(answer, user_string)
-#     if isAnswer:
-#         study_info.correct_problems.append(problem)
-#     else:
-#         study_info.incorrect_problems.append(problem)
-#     db.add(study_info)
-#     db.commit()
-
-#     return {'isAnswer' : problem.englishProblem, 'user_answer': user_string, 'false_location': false_location}
 
 
 async def ocr(file):

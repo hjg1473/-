@@ -56,7 +56,7 @@ async def user_solve_problem(pin_number: PinNumber,
     return {'detail' : '연결되었습니다.'}
 
 # 학생과 학부모 연결, 학부모 -> 학생(teachers_students) # wireframe 나오면 고도화.
-@router.get("/connect/parent", tags=["parent"], status_code = status.HTTP_200_OK)
+@router.get("/connect/parent", status_code = status.HTTP_200_OK)
 async def connect_teacher(user_id: int, user: user_dependency, db: db_dependency):
 
     get_user_exception(user)

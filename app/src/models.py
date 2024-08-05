@@ -18,21 +18,15 @@ incorrect_problem_table = Table('incorrect_problem', Base.metadata,
     Column('count', Integer, nullable=False, default=1)
 )
 
-correct_problem_table_group = Table('correct_problem_group', Base.metadata,
-    Column('study_info_id', Integer, ForeignKey('studyInfo.id')),
-    Column('problem_id', Integer, ForeignKey('problems.id')),
-    Column('count', Integer, nullable=False, default=1)
-)
-
-incorrect_problem_table_group = Table('incorrect_problem_group', Base.metadata,
-    Column('study_info_id', Integer, ForeignKey('studyInfo.id')),
-    Column('problem_id', Integer, ForeignKey('problems.id')),
-    Column('count', Integer, nullable=False, default=1)
-)
 # Association table for many-to-many relationship between students and teachers
 student_teacher_table = Table('student_teacher', Base.metadata,
     Column('teacher_id', Integer, ForeignKey('users.id')),
     Column('student_id', Integer, ForeignKey('users.id'))
+)
+
+teacher_group_table = Table('teacher_group', Base.metadata,
+    Column('teacher_id', Integer, ForeignKey('users.id')),
+    Column('group_id', Integer, ForeignKey('groups.id'))
 )
 
 class Users(Base):
@@ -82,13 +76,13 @@ class Groups(Base):
     grade = Column(String)
     releasedLevel = Column(Integer, default=1)
     releasedStep = Column(Integer, default=1)
-    admin_id = Column(Integer, ForeignKey("users.id")) # FK, teacher_id
+    # admin_id = Column(Integer, ForeignKey("users.id")) # FK, teacher_id
 
-    owner = relationship("Users", foreign_keys=[admin_id], back_populates="managed_groups")
+    # owner = relationship("Users", foreign_keys=[admin_id], back_populates="managed_groups")
     members = relationship("Users", foreign_keys=[Users.team_id], back_populates="team")
 
 # Relationship definition in Users for Groups
-Users.managed_groups = relationship("Groups", foreign_keys=[Groups.admin_id], back_populates="owner")
+# Users.managed_groups = relationship("Groups", foreign_keys=[Groups.admin_id], back_populates="owner")
 
 class StudyInfo(Base):  # Study information
     __tablename__ = "studyInfo"
@@ -102,12 +96,8 @@ class StudyInfo(Base):  # Study information
 
     # Relationships
     owner = relationship("Users", back_populates="studyInfos")
-    # correct_problems = relationship("Problems", foreign_keys='Problems.TStudyInfo_id', back_populates="correct_study_info")
-    # incorrect_problems = relationship("Problems", foreign_keys='Problems.FStudyInfo_id', back_populates="incorrect_study_info")
     correct_problems = relationship("Problems", secondary=correct_problem_table, back_populates="correct_study_infos")
     incorrect_problems = relationship("Problems", secondary=incorrect_problem_table, back_populates="incorrect_study_infos")
-    correct_problems_group = relationship("Problems", secondary=correct_problem_table_group, back_populates="correct_study_infos_group")
-    incorrect_problems_group = relationship("Problems", secondary=incorrect_problem_table_group, back_populates="incorrect_study_infos_group")
 
 class Problems(Base):  # Problems
     __tablename__ = "problems"
@@ -121,29 +111,10 @@ class Problems(Base):  # Problems
     img_path = Column(String)  # Problem image (optional)
     type = Column(String) # normal or ai
     difficulty = Column(Integer)
-    # StudyInfo_id 가 갖는 id 값은 StudyInfo.id 값.
-    # 동일 문제에서, 민수(id=1)도 이 문제를 맞추고, 철수(id=2)도 이 문제를 맞추면 TStudyInfo_id 에는 [1, 2] 가 들어가야 됨.
-    # TStudyInfo_id = Column(Integer, ForeignKey("studyInfo.id"))  # FK to correct study info 
-    # FStudyInfo_id = Column(Integer, ForeignKey("studyInfo.id"))  # FK to incorrect study info
-    # cproblem_id = Column(Integer, ForeignKey("customProblemSet.id"))  # FK to custom problem set
 
-    # # Relationships
-    # correct_study_info = relationship("StudyInfo", foreign_keys=[TStudyInfo_id], back_populates="correct_problems")
-    # incorrect_study_info = relationship("StudyInfo", foreign_keys=[FStudyInfo_id], back_populates="incorrect_problems")
+    # Relationships
     correct_study_infos = relationship("StudyInfo", secondary=correct_problem_table, back_populates="correct_problems")
     incorrect_study_infos = relationship("StudyInfo", secondary=incorrect_problem_table, back_populates="incorrect_problems")
-    correct_study_infos_group = relationship("StudyInfo", secondary=correct_problem_table, back_populates="correct_problems_group")
-    incorrect_study_infos_group = relationship("StudyInfo", secondary=incorrect_problem_table, back_populates="incorrect_problems_group")
-    # custom_problem_set = relationship("CustomProblemSet", foreign_keys=[cproblem_id], back_populates="problems")
-
-# class CustomProblemSet(Base):  # Custom problem set
-#     __tablename__ = "customProblemSet"
-
-#     id = Column(Integer, primary_key=True, index=True)  # PK
-#     name = Column(String)
-
-#     # Relationship
-#     problems = relationship("Problems", back_populates="custom_problem_set")
 
 class Blocks(Base):
     __tablename__ = "blocks"
