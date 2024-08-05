@@ -1,8 +1,8 @@
 import 'package:block_english/utils/constants.dart';
+import 'package:block_english/utils/size_config.dart';
 import 'package:block_english/utils/status.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class StudentSeasonSelectScreen extends ConsumerWidget {
   const StudentSeasonSelectScreen({super.key});
@@ -17,13 +17,13 @@ class StudentSeasonSelectScreen extends ConsumerWidget {
               alignment: Alignment.topLeft,
               child: Padding(
                 padding: EdgeInsets.only(
-                  top: 31.r,
-                  left: 64.r,
+                  top: 31 * SizeConfig.scales,
+                  left: 64 * SizeConfig.scales,
                 ),
                 child: FilledButton.icon(
                   icon: Icon(
                     Icons.arrow_back_ios,
-                    size: 16.r,
+                    size: 16 * SizeConfig.scales,
                   ),
                   onPressed: () {
                     Navigator.pop(context);
@@ -31,14 +31,14 @@ class StudentSeasonSelectScreen extends ConsumerWidget {
                   label: Text(
                     '돌아가기',
                     style: TextStyle(
-                      fontSize: 16.sp,
+                      fontSize: 16 * SizeConfig.scales,
                       fontWeight: FontWeight.w400,
                     ),
                   ),
                   style: FilledButton.styleFrom(
                     padding: EdgeInsets.symmetric(
-                      horizontal: 20.r,
-                      vertical: 10.r,
+                      horizontal: 20 * SizeConfig.scales,
+                      vertical: 10 * SizeConfig.scales,
                     ),
                     tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                     backgroundColor: Colors.black,
@@ -57,8 +57,8 @@ class StudentSeasonSelectScreen extends ConsumerWidget {
                     },
                     child: Container(
                       alignment: Alignment.center,
-                      height: 156.r,
-                      width: 156.r,
+                      height: 156 * SizeConfig.scales,
+                      width: 156 * SizeConfig.scales,
                       decoration: const BoxDecoration(
                         color: Color.fromARGB(178, 0, 0, 0),
                         shape: BoxShape.circle,
@@ -67,7 +67,7 @@ class StudentSeasonSelectScreen extends ConsumerWidget {
                         '시즌1',
                         style: TextStyle(
                           color: Colors.white,
-                          fontSize: 30.sp,
+                          fontSize: 30 * SizeConfig.scales,
                         ),
                       ),
                     ),
@@ -78,15 +78,15 @@ class StudentSeasonSelectScreen extends ConsumerWidget {
             Align(
               alignment: const Alignment(-0.1, -0.7),
               child: Container(
-                height: 156.r,
-                width: 156.r,
+                height: 156 * SizeConfig.scales,
+                width: 156 * SizeConfig.scales,
                 decoration: const BoxDecoration(
                   color: Color.fromARGB(178, 0, 0, 0),
                   shape: BoxShape.circle,
                 ),
                 child: Icon(
                   Icons.question_mark_rounded,
-                  size: 60.r,
+                  size: 60 * SizeConfig.scales,
                   color: Colors.white,
                 ),
               ),
@@ -94,15 +94,15 @@ class StudentSeasonSelectScreen extends ConsumerWidget {
             Align(
               alignment: const Alignment(0.5, 0.7),
               child: Container(
-                height: 156.r,
-                width: 156.r,
+                height: 156 * SizeConfig.scales,
+                width: 156 * SizeConfig.scales,
                 decoration: const BoxDecoration(
                   color: Color.fromARGB(178, 0, 0, 0),
                   shape: BoxShape.circle,
                 ),
                 child: Icon(
                   Icons.question_mark_rounded,
-                  size: 60.r,
+                  size: 60 * SizeConfig.scales,
                   color: Colors.white,
                 ),
               ),
@@ -110,15 +110,15 @@ class StudentSeasonSelectScreen extends ConsumerWidget {
             Align(
               alignment: const Alignment(1.1, -0.7),
               child: Container(
-                height: 156.r,
-                width: 156.r,
+                height: 156 * SizeConfig.scales,
+                width: 156 * SizeConfig.scales,
                 decoration: const BoxDecoration(
                   color: Color.fromARGB(178, 0, 0, 0),
                   shape: BoxShape.circle,
                 ),
                 child: Icon(
                   Icons.question_mark_rounded,
-                  size: 60.r,
+                  size: 60 * SizeConfig.scales,
                   color: Colors.white,
                 ),
               ),
