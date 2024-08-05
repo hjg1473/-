@@ -1,3 +1,4 @@
+import 'package:block_english/utils/size_config.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -79,8 +80,8 @@ class RegSelectRoleScreen extends StatelessWidget {
                         Navigator.pushNamed(context, '/reg_student_screen');
                       },
                       icon: SvgPicture.asset(
-                        width: 180.r,
-                        height: 206.r,
+                        width: 180 * SizeConfig.scales,
+                        height: 206 * SizeConfig.scales,
                         'assets/cards/sign_in_user.svg',
                       ),
                     ),
@@ -94,8 +95,8 @@ class RegSelectRoleScreen extends StatelessWidget {
                         Navigator.pushNamed(context, '/reg_super_screen');
                       },
                       icon: SvgPicture.asset(
-                        width: 180.r,
-                        height: 206.r,
+                        width: 180 * SizeConfig.scales,
+                        height: 206 * SizeConfig.scales,
                         'assets/cards/sign_in_manager.svg',
                       ),
                     ),
