@@ -142,9 +142,9 @@ async def calculate_wrong_info(problem_parse:list, response_parse:list, tempUser
         else:
             word_wrong += 1    
     
-    tempUserProblem.totalFullStop += letter_wrong 
-    tempUserProblem.totalTextType += punc_wrong
-    tempUserProblem.totalIncorrectCompose += block_wrong
+    tempUserProblem.totalIncorrectLetter += letter_wrong 
+    tempUserProblem.totalIncorrectPunc += punc_wrong
+    tempUserProblem.totalIncorrectBlock += block_wrong
     tempUserProblem.totalIncorrectWords += word_wrong
     tempUserProblem.totalIncorrectOrder += order_wrong
 

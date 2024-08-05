@@ -94,6 +94,12 @@ class StudyInfo(Base):  # Study information
     releasedStep = Column(Integer, default=1)
     owner_id = Column(Integer, ForeignKey("users.id"))  # FK to users
 
+    wrong_letter = Column(Integer, default=0)
+    wrong_punctuation = Column(Integer, default=0)
+    wrong_block = Column(Integer, default=0)
+    wrong_order = Column(Integer, default=0)
+    wrong_word = Column(Integer, default=0)
+
     # Relationships
     owner = relationship("Users", back_populates="studyInfos")
     correct_problems = relationship("Problems", secondary=correct_problem_table, back_populates="correct_study_infos")

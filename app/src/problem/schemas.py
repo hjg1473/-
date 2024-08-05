@@ -27,11 +27,11 @@ class UserProblems(BaseModel):
     problems: List[Problems]  
 
 class TempUserProblem:
-    def __init__(self, totalFullStop: int, totalTextType: int, totalIncorrectCompose: int, 
+    def __init__(self, totalIncorrectLetter: int, totalIncorrectPunc: int, totalIncorrectBlock: int, 
                  totalIncorrectWords: int, totalIncorrectOrder: int):
-        self.totalFullStop = totalFullStop
-        self.totalTextType = totalTextType
-        self.totalIncorrectCompose = totalIncorrectCompose
+        self.totalIncorrectLetter = totalIncorrectLetter
+        self.totalIncorrectPunc = totalIncorrectPunc
+        self.totalIncorrectBlock = totalIncorrectBlock
         self.totalIncorrectWords = totalIncorrectWords
         self.totalIncorrectOrder = totalIncorrectOrder
         self.problem_incorrect_count: Dict[int, int] = {} # 문제 리스트 -> 딕셔너리 (횟수 계산용)

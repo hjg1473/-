@@ -255,6 +255,13 @@ async def send_problems_data(user: user_dependency, db: db_dependency):
     problem_ids = list(tempUserProblem.problem_incorrect_count.keys())
     result = await db.execute(select(Problems).filter(Problems.id.in_(problem_ids)))
     problems_info = result.scalars().all()
+
+    study_info.wrong_letter += tempUserProblem.totalIncorrectLetter
+    study_info.wrong_punc += tempUserProblem.totalIncorrectPunc
+    study_info.wrong_block += tempUserProblem.totalIncorrectBlock
+    study_info.wrong_order += tempUserProblem.totalIncorrectOrder
+    study_info.wrong_word += tempUserProblem.totalIncorrectWords
+        
     # return problems_info
     for problem in problems_info:
         if problem not in study_info.correct_problems: # 문제 리스트 검사. 없다면 추가. 근데 매번 해야됨? ..
