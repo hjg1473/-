@@ -1,10 +1,10 @@
 import 'package:block_english/services/auth_service.dart';
+import 'package:block_english/utils/size_config.dart';
 import 'package:block_english/widgets/reg_input_box.dart';
 import 'package:block_english/widgets/square_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class RegSuperScreen extends ConsumerStatefulWidget {
   const RegSuperScreen({super.key});
@@ -140,16 +140,16 @@ class _SuperState extends ConsumerState<RegSuperScreen> {
         bottom: false,
         child: SingleChildScrollView(
           child: SizedBox(
-            height: 1.sh,
+            height: SizeConfig.fullHeight,
             child: Column(
               children: [
                 SizedBox(
-                  height: 307.h,
+                  height: 307 * SizeConfig.scales,
                   child: Padding(
                     padding: EdgeInsets.only(
-                      top: 32.h,
-                      left: 64.w,
-                      right: 64.w,
+                      top: 32 * SizeConfig.scales,
+                      left: 64 * SizeConfig.scales,
+                      right: 64 * SizeConfig.scales,
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.center,
@@ -159,7 +159,7 @@ class _SuperState extends ConsumerState<RegSuperScreen> {
                             FilledButton.icon(
                               icon: Icon(
                                 Icons.arrow_back_ios,
-                                size: 16.r,
+                                size: 16 * SizeConfig.scales,
                               ),
                               onPressed: () {
                                 Navigator.pop(context);
@@ -167,14 +167,14 @@ class _SuperState extends ConsumerState<RegSuperScreen> {
                               label: Text(
                                 '돌아가기',
                                 style: TextStyle(
-                                  fontSize: 16.sp,
+                                  fontSize: 16 * SizeConfig.scales,
                                   fontWeight: FontWeight.w400,
                                 ),
                               ),
                               style: FilledButton.styleFrom(
                                 padding: EdgeInsets.symmetric(
-                                  horizontal: 20.r,
-                                  vertical: 10.r,
+                                  horizontal: 20 * SizeConfig.scales,
+                                  vertical: 10 * SizeConfig.scales,
                                 ),
                                 tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                                 backgroundColor: Colors.black,
@@ -186,14 +186,14 @@ class _SuperState extends ConsumerState<RegSuperScreen> {
                                   Text(
                                     '관리자 회원가입',
                                     style: TextStyle(
-                                      fontSize: 22.sp,
+                                      fontSize: 22 * SizeConfig.scales,
                                       fontWeight: FontWeight.w800,
                                     ),
                                   ),
                                   Text(
                                     '이름과 이메일을 알맞게 입력해주세요',
                                     style: TextStyle(
-                                      fontSize: 14.sp,
+                                      fontSize: 14 * SizeConfig.scales,
                                       fontWeight: FontWeight.w700,
                                       color: const Color(0x88000000),
                                     ),
@@ -219,7 +219,7 @@ class _SuperState extends ConsumerState<RegSuperScreen> {
                                   ],
                                   errorMessage: nameError,
                                 ),
-                                SizedBox(width: 20.w),
+                                SizedBox(width: 20 * SizeConfig.scales),
                                 RegInputBox(
                                   labelText: '이메일',
                                   hintText: '사용할 이메일을 입력해주세요',
@@ -235,7 +235,7 @@ class _SuperState extends ConsumerState<RegSuperScreen> {
                                 ),
                               ],
                             ),
-                            SizedBox(height: 16.h),
+                            SizedBox(height: 16 * SizeConfig.scaleHeight),
                             Row(
                               children: [
                                 RegInputBox(
@@ -252,7 +252,7 @@ class _SuperState extends ConsumerState<RegSuperScreen> {
                                   isSelected: !isObsecure,
                                   onEyePressed: onEyePressed,
                                 ),
-                                SizedBox(width: 20.w),
+                                SizedBox(width: 20 * SizeConfig.scales),
                                 RegInputBox(
                                   labelText: '비밀번호 확인',
                                   hintText: '비밀번호를 다시 입력해주세요',
@@ -424,16 +424,16 @@ class _RegSuperNextScreenState extends ConsumerState<RegSuperNextScreen> {
     return Scaffold(
       body: SingleChildScrollView(
         child: SizedBox(
-          height: 1.sh,
+          height: SizeConfig.fullHeight,
           child: Column(
             children: [
               SizedBox(
-                height: 307.h,
+                height: 307 * SizeConfig.scaleHeight,
                 child: Padding(
                   padding: EdgeInsets.only(
-                    top: 32.h,
-                    left: 64.w,
-                    right: 64.w,
+                    top: 32 * SizeConfig.scales,
+                    left: 64 * SizeConfig.scales,
+                    right: 64 * SizeConfig.scales,
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.center,
@@ -443,7 +443,7 @@ class _RegSuperNextScreenState extends ConsumerState<RegSuperNextScreen> {
                           FilledButton.icon(
                             icon: Icon(
                               Icons.arrow_back_ios,
-                              size: 16.r,
+                              size: 16 * SizeConfig.scales,
                             ),
                             onPressed: () {
                               Navigator.pop(context);
@@ -451,14 +451,14 @@ class _RegSuperNextScreenState extends ConsumerState<RegSuperNextScreen> {
                             label: Text(
                               '돌아가기',
                               style: TextStyle(
-                                fontSize: 16.sp,
+                                fontSize: 16 * SizeConfig.scales,
                                 fontWeight: FontWeight.w400,
                               ),
                             ),
                             style: FilledButton.styleFrom(
                               padding: EdgeInsets.symmetric(
-                                horizontal: 20.r,
-                                vertical: 10.r,
+                                horizontal: 20 * SizeConfig.scales,
+                                vertical: 10 * SizeConfig.scales,
                               ),
                               tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                               backgroundColor: Colors.black,
@@ -470,14 +470,14 @@ class _RegSuperNextScreenState extends ConsumerState<RegSuperNextScreen> {
                                 Text(
                                   '관리자 회원가입',
                                   style: TextStyle(
-                                    fontSize: 20.sp,
+                                    fontSize: 20 * SizeConfig.scales,
                                     fontWeight: FontWeight.w800,
                                   ),
                                 ),
                                 Text(
                                   '전화번호를 인증해주세요',
                                   style: TextStyle(
-                                    fontSize: 14.sp,
+                                    fontSize: 14 * SizeConfig.scales,
                                     fontWeight: FontWeight.w700,
                                     color: const Color(0x88000000),
                                   ),
@@ -494,7 +494,7 @@ class _RegSuperNextScreenState extends ConsumerState<RegSuperNextScreen> {
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               RegInputBox(
-                                width: 510.r,
+                                width: 510 * SizeConfig.scales,
                                 labelText: '전화번호',
                                 hintText: '- 없이 숫자만 입력해주세요',
                                 controller: phonenumberController,
@@ -506,7 +506,8 @@ class _RegSuperNextScreenState extends ConsumerState<RegSuperNextScreen> {
                               ),
                               FilledButton(
                                 style: FilledButton.styleFrom(
-                                  fixedSize: Size(158.r, 64.r),
+                                  fixedSize: Size(158 * SizeConfig.scales,
+                                      64 * SizeConfig.scales),
                                   backgroundColor: Colors.black,
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(8),
@@ -516,16 +517,16 @@ class _RegSuperNextScreenState extends ConsumerState<RegSuperNextScreen> {
                                 child: Text(
                                   '인증번호 전송',
                                   style: TextStyle(
-                                    fontSize: 18.sp,
+                                    fontSize: 18 * SizeConfig.scales,
                                     fontWeight: FontWeight.w400,
                                   ),
                                 ),
                               ),
                             ],
                           ),
-                          SizedBox(height: 16.h),
+                          SizedBox(height: 16 * SizeConfig.scales),
                           RegInputBox(
-                            width: 684.r,
+                            width: 684 * SizeConfig.scales,
                             labelText: '인증번호',
                             hintText: '인증번호 N자리를 정확히 입력해 주세요',
                             controller: verifynumberController,

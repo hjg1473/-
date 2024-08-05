@@ -1,6 +1,5 @@
 import 'package:block_english/utils/size_config.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 class RegSelectRoleScreen extends StatelessWidget {
@@ -11,21 +10,22 @@ class RegSelectRoleScreen extends StatelessWidget {
     return Scaffold(
         backgroundColor: Colors.grey[300],
         body: SafeArea(
+          bottom: false,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               Padding(
                 padding: EdgeInsets.only(
-                  top: 32.h,
-                  left: 64.w,
-                  right: 64.w,
+                  top: 32 * SizeConfig.scales,
+                  left: 64 * SizeConfig.scales,
+                  right: 64 * SizeConfig.scales,
                 ),
                 child: Stack(
                   children: [
                     FilledButton.icon(
                       icon: Icon(
                         Icons.arrow_back_ios,
-                        size: 16.r,
+                        size: 16 * SizeConfig.scales,
                       ),
                       onPressed: () {
                         Navigator.pop(context);
@@ -33,14 +33,14 @@ class RegSelectRoleScreen extends StatelessWidget {
                       label: Text(
                         '로그인',
                         style: TextStyle(
-                          fontSize: 16.sp,
+                          fontSize: 16 * SizeConfig.scales,
                           fontWeight: FontWeight.w700,
                         ),
                       ),
                       style: FilledButton.styleFrom(
                         padding: EdgeInsets.symmetric(
-                          horizontal: 20.r,
-                          vertical: 10.r,
+                          horizontal: 20 * SizeConfig.scales,
+                          vertical: 10 * SizeConfig.scales,
                         ),
                         tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                         backgroundColor: Colors.black,
@@ -52,14 +52,14 @@ class RegSelectRoleScreen extends StatelessWidget {
                           Text(
                             '나는 어떤 사용자인가요?',
                             style: TextStyle(
-                              fontSize: 22.sp,
+                              fontSize: 22 * SizeConfig.scales,
                               fontWeight: FontWeight.w800,
                             ),
                           ),
                           Text(
                             '본인의 신분에 맞게 선택해주세요',
                             style: TextStyle(
-                              fontSize: 14.sp,
+                              fontSize: 14 * SizeConfig.scales,
                               fontWeight: FontWeight.w700,
                               color: const Color(0x88000000),
                             ),
@@ -87,7 +87,7 @@ class RegSelectRoleScreen extends StatelessWidget {
                     ),
                   ),
                   SizedBox(
-                    width: 70.w,
+                    width: 70 * SizeConfig.scales,
                   ),
                   SizedBox(
                     child: IconButton(
