@@ -1,5 +1,5 @@
 import 'package:block_english/utils/constants.dart';
-import 'package:block_english/utils/device_scale.dart';
+import 'package:block_english/utils/size_config.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -23,21 +23,21 @@ class _StudentStepSelectScreenState
         child: Stack(
           children: [
             Positioned(
-              top: 32 * DeviceScale.scaleHeight(context),
-              left: 44 * DeviceScale.scaleWidth(context),
+              top: 32 * SizeConfig.scales,
+              left: 44 * SizeConfig.scales,
               child: IconButton(
                 padding: EdgeInsets.zero,
                 onPressed: () => Navigator.of(context).pop(),
                 icon: SvgPicture.asset(
-                  'assets/buttons/backbutton_label.svg',
-                  width: 133 * DeviceScale.scaleWidth(context),
-                  height: 44 * DeviceScale.scaleHeight(context),
+                  'assets/buttons/labeled_back_button.svg',
+                  width: 133 * SizeConfig.scales,
+                  height: 44 * SizeConfig.scales,
                 ),
               ),
             ),
             Positioned(
-              top: 36 * DeviceScale.scaleHeight(context),
-              left: 324 * DeviceScale.scaleWidth(context),
+              top: 36 * SizeConfig.scales,
+              left: 324 * SizeConfig.scales,
               child: Row(
                 children: [
                   Container(
@@ -46,31 +46,34 @@ class _StudentStepSelectScreenState
                       borderRadius: BorderRadius.circular(40.0),
                     ),
                     padding: EdgeInsets.symmetric(
-                      horizontal: 12.0 * DeviceScale.scaleWidth(context),
-                      vertical: 10.0 * DeviceScale.scaleHeight(context),
+                      horizontal: 12.0 * SizeConfig.scales,
+                      vertical: 10.0 * SizeConfig.scales,
                     ),
                     child: Text(
                       levellist[selectedLevel],
-                      style: const TextStyle(
-                        fontSize: 14,
+                      style: TextStyle(
+                        fontSize: 14 * SizeConfig.scales,
                         fontWeight: FontWeight.w700,
                         color: Colors.white,
                       ),
                     ),
                   ),
                   SizedBox(
-                    width: 10 * DeviceScale.scaleWidth(context),
+                    width: 10 * SizeConfig.scales,
                   ),
                   Text(
                     'Level ${selectedLevel + 1}',
-                    style: const TextStyle(
-                      fontSize: 22,
+                    style: TextStyle(
+                      fontSize: 22 * SizeConfig.scales,
                       fontWeight: FontWeight.w800,
                     ),
                   ),
                 ],
               ),
-            )
+            ),
+            const Center(
+              child: Text('data'),
+            ),
           ],
         ),
       ),

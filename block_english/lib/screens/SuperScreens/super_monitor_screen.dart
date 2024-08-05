@@ -216,7 +216,7 @@ class _SuperMonitorScreenState extends ConsumerState<SuperMonitorScreen> {
                 children: [
                   IconButton(
                     padding: EdgeInsets.zero,
-                    onPressed: () {},
+                    onPressed: () => Navigator.of(context).pop(),
                     icon: SvgPicture.asset(
                       'assets/buttons/round_back_button.svg',
                       width: 48 * SizeConfig.scales,

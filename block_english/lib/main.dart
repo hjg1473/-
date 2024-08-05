@@ -10,6 +10,7 @@ import 'package:block_english/screens/SuperScreens/super_group_create_screen.dar
 import 'package:block_english/screens/SuperScreens/super_game_code_screen.dart';
 import 'package:block_english/screens/SuperScreens/super_game_screen.dart';
 import 'package:block_english/screens/SuperScreens/super_main_screen.dart';
+import 'package:block_english/screens/SuperScreens/super_monitor_screen.dart';
 import 'package:block_english/screens/loading_screen.dart';
 import 'package:block_english/screens/setting_screen.dart';
 import 'package:block_english/utils/size_config.dart';
@@ -57,6 +58,7 @@ class MyApp extends StatelessWidget {
         '/stud_step_select_screen': (context) =>
             const StudentStepSelectScreen(),
         '/super_main_screen': (context) => const SuperMainScreen(),
+        '/super_monitor_screen': (context) => const SuperMonitorScreen(),
         '/super_group_create_screen': (context) =>
             const SuperGroupCreateScreen(),
         '/super_game_code_screen': (context) => const SuperGameCodeScreen(),

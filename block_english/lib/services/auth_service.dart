@@ -3,6 +3,7 @@ import 'package:block_english/models/AuthModel/verify_response_model.dart';
 import 'package:block_english/models/model.dart';
 import 'package:block_english/utils/constants.dart';
 import 'package:block_english/utils/dio.dart';
+import 'package:block_english/utils/status.dart';
 import 'package:dartz/dartz.dart';
 import 'package:dio/dio.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
@@ -158,6 +159,22 @@ class AuthService {
           'password': password,
         },
       );
+
+      if (response.data['username_correct'] == false ||
+          response.data['password_correct'] == false) {
+        throw DioException(
+            requestOptions: response.requestOptions, response: response);
+      }
+
+      _ref.watch(statusProvider).setName(response.data['name']);
+
+      if (response.data['role'] == 'student') {
+        _ref.watch(statusProvider).setStudentStatus(
+              response.data['released'],
+              response.data['team_id'],
+            );
+      }
+
       return Right(LoginResponseModel.fromJson(response.data));
     } on DioException catch (e) {
       return Left(FailureModel(
