@@ -229,7 +229,6 @@ class _StudState extends ConsumerState<RegStudentScreen> {
                                 ],
                               ),
                             ),
-                            //TODO: add id check
                           ],
                         ),
                         const Spacer(),

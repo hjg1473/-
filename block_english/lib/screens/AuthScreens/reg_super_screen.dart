@@ -217,7 +217,6 @@ class _RegSuperScreenState extends ConsumerState<RegSuperScreen> {
                                 ],
                               ),
                             ),
-                            //TODO: add id check
                           ],
                         ),
                         const Spacer(),

@@ -1,5 +1,5 @@
 import 'package:block_english/models/AuthModel/get_number_response_model.dart';
-import 'package:block_english/models/AuthModel/username_duplication_response_model.dart';
+import 'package:block_english/models/AuthModel/username_dupcheck_response_model.dart';
 import 'package:block_english/models/AuthModel/verify_response_model.dart';
 import 'package:block_english/models/model.dart';
 import 'package:block_english/utils/constants.dart';
@@ -30,7 +30,7 @@ class AuthService {
     _ref = ref;
   }
 
-  Future<Either<FailureModel, UsernameDuplicationResponseModel>>
+  Future<Either<FailureModel, UsernameDupCheckResponseModel>>
       postAuthUsernameDuplication(String username) async {
     final dio = _ref.watch(dioProvider);
     try {
@@ -45,7 +45,7 @@ class AuthService {
         },
       );
 
-      return Right(UsernameDuplicationResponseModel.fromJson(response.data));
+      return Right(UsernameDupCheckResponseModel.fromJson(response.data));
     } on DioException catch (e) {
       return Left(FailureModel(
         statusCode: e.response?.statusCode ?? 0,
