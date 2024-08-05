@@ -1,6 +1,6 @@
 from super.dependencies import db_dependency
-from app.src.models import Users, Groups, Problems
-from sqlalchemy import select, delete
+from app.src.models import Users, Groups, Problems, teacher_group_table
+from sqlalchemy import select, delete, insert
 
 # async def get_problemset(problemset, db: db_dependency):
 #     result = await db.execute(select(CustomProblemSet).where(CustomProblemSet.name == problemset.name))
@@ -48,12 +48,23 @@ from sqlalchemy import select, delete
 #     await db.commit()
 
 async def get_group_list(admin_id, db: db_dependency):
-    result = await db.execute(select(Groups).where(Groups.admin_id == admin_id))
-    group_list = result.scalars().all()
+    result = await db.execute(select(teacher_group_table).where(teacher_group_table.c.teacher_id == admin_id))
+    groups = result.fetchall()
+    group_ids = []
+    for row in groups:
+        print(f"teacher_id: {row[0]}, group_id: {row[1]}")
+        group_ids.append(row[1])
+    result2 = await db.execute(select(Groups).where(Groups.id.in_(group_ids)))
+    group_list = result2.scalars().all()
     return group_list
 
 async def get_group_name(name, admin_id, db: db_dependency):
-    result = await db.execute(select(Groups).where(Groups.name == name, Groups.admin_id == admin_id))
+    stmt = (
+        select(Groups)
+        .join(teacher_group_table, teacher_group_table.c.group_id == Groups.id)
+        .where(Groups.name == name, teacher_group_table.c.teacher_id == admin_id)
+    )
+    result = await db.execute(stmt)
     group_name = result.scalars().first()
     return group_name
 
@@ -61,9 +72,12 @@ async def update_new_group(addgroup, admin_id, db: db_dependency):
     group_model = Groups()
     group_model.name = addgroup.name
     group_model.grade = addgroup.grade
-    group_model.admin_id = admin_id
 
     db.add(group_model)
+    await db.commit()
+    await db.refresh(group_model)
+    stmt = insert(teacher_group_table).values({'teacher_id': admin_id, 'group_id': group_model.id})
+    await db.execute(stmt)
     await db.commit()
 
 async def get_std_info(group_id, db: db_dependency):

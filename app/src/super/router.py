@@ -51,7 +51,7 @@ async def create_group(addgroup: AddGroup,
                             user: user_dependency, db: db_dependency):
     
     super_authenticate_exception(user)
-    # await existing_name_exception(addgroup.name, user.get('id'), db)
+    await existing_name_exception(addgroup.name, user.get('id'), db)
 
     await update_new_group(addgroup, user.get('id'), db)
 
