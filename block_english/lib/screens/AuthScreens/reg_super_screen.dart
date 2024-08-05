@@ -30,8 +30,8 @@ class _SuperState extends ConsumerState<RegSuperScreen> {
   String password2Error = '';
 
   bool isChecked = false;
-  bool isObsecure = true;
-  bool isObsecure2 = true;
+  bool isObsecure = false;
+  bool isObsecure2 = false;
 
   onDoubleCheckPressed() {
     username = usernameController.text;
@@ -137,6 +137,7 @@ class _SuperState extends ConsumerState<RegSuperScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: SafeArea(
+        bottom: false,
         child: SingleChildScrollView(
           child: SizedBox(
             height: 1.sh,
@@ -247,7 +248,7 @@ class _SuperState extends ConsumerState<RegSuperScreen> {
                                     ),
                                   ],
                                   errorMessage: passwordError,
-                                  obscureText: isObsecure,
+                                  obscureText: true,
                                   isSelected: !isObsecure,
                                   onEyePressed: onEyePressed,
                                 ),
@@ -262,7 +263,7 @@ class _SuperState extends ConsumerState<RegSuperScreen> {
                                     ),
                                   ],
                                   errorMessage: password2Error,
-                                  obscureText: isObsecure2,
+                                  obscureText: true,
                                   isSelected: !isObsecure2,
                                   onEyePressed: onEye2Pressed,
                                 ),
@@ -421,133 +422,131 @@ class _RegSuperNextScreenState extends ConsumerState<RegSuperNextScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: SafeArea(
-        child: SingleChildScrollView(
-          child: SizedBox(
-            height: 1.sh,
-            child: Column(
-              children: [
-                SizedBox(
-                  height: 307.h,
-                  child: Padding(
-                    padding: EdgeInsets.only(
-                      top: 32.h,
-                      left: 64.w,
-                      right: 64.w,
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        Stack(
-                          children: [
-                            FilledButton.icon(
-                              icon: Icon(
-                                Icons.arrow_back_ios,
-                                size: 16.r,
-                              ),
-                              onPressed: () {
-                                Navigator.pop(context);
-                              },
-                              label: Text(
-                                '돌아가기',
-                                style: TextStyle(
-                                  fontSize: 16.sp,
-                                  fontWeight: FontWeight.w400,
-                                ),
-                              ),
-                              style: FilledButton.styleFrom(
-                                padding: EdgeInsets.symmetric(
-                                  horizontal: 20.r,
-                                  vertical: 10.r,
-                                ),
-                                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                                backgroundColor: Colors.black,
+      body: SingleChildScrollView(
+        child: SizedBox(
+          height: 1.sh,
+          child: Column(
+            children: [
+              SizedBox(
+                height: 307.h,
+                child: Padding(
+                  padding: EdgeInsets.only(
+                    top: 32.h,
+                    left: 64.w,
+                    right: 64.w,
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Stack(
+                        children: [
+                          FilledButton.icon(
+                            icon: Icon(
+                              Icons.arrow_back_ios,
+                              size: 16.r,
+                            ),
+                            onPressed: () {
+                              Navigator.pop(context);
+                            },
+                            label: Text(
+                              '돌아가기',
+                              style: TextStyle(
+                                fontSize: 16.sp,
+                                fontWeight: FontWeight.w400,
                               ),
                             ),
-                            Center(
-                              child: Column(
-                                children: [
-                                  Text(
-                                    '관리자 회원가입',
-                                    style: TextStyle(
-                                      fontSize: 20.sp,
-                                      fontWeight: FontWeight.w800,
-                                    ),
-                                  ),
-                                  Text(
-                                    '전화번호를 인증해주세요',
-                                    style: TextStyle(
-                                      fontSize: 14.sp,
-                                      fontWeight: FontWeight.w700,
-                                      color: const Color(0x88000000),
-                                    ),
-                                  ),
-                                ],
+                            style: FilledButton.styleFrom(
+                              padding: EdgeInsets.symmetric(
+                                horizontal: 20.r,
+                                vertical: 10.r,
                               ),
+                              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                              backgroundColor: Colors.black,
                             ),
-                          ],
-                        ),
-                        const Spacer(),
-                        Column(
-                          children: [
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          ),
+                          Center(
+                            child: Column(
                               children: [
-                                RegInputBox(
-                                  width: 510.r,
-                                  labelText: '전화번호',
-                                  hintText: '- 없이 숫자만 입력해주세요',
-                                  controller: phonenumberController,
-                                  inputFormatters: [
-                                    FilteringTextInputFormatter.allow(
-                                        RegExp(r'[0-9]')),
-                                  ],
-                                  errorMessage: phoneNumberError,
-                                ),
-                                FilledButton(
-                                  style: FilledButton.styleFrom(
-                                    fixedSize: Size(158.r, 64.r),
-                                    backgroundColor: Colors.black,
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(8),
-                                    ),
+                                Text(
+                                  '관리자 회원가입',
+                                  style: TextStyle(
+                                    fontSize: 20.sp,
+                                    fontWeight: FontWeight.w800,
                                   ),
-                                  onPressed: onSendPressed,
-                                  child: Text(
-                                    '인증번호 전송',
-                                    style: TextStyle(
-                                      fontSize: 18.sp,
-                                      fontWeight: FontWeight.w400,
-                                    ),
+                                ),
+                                Text(
+                                  '전화번호를 인증해주세요',
+                                  style: TextStyle(
+                                    fontSize: 14.sp,
+                                    fontWeight: FontWeight.w700,
+                                    color: const Color(0x88000000),
                                   ),
                                 ),
                               ],
                             ),
-                            SizedBox(height: 16.h),
-                            RegInputBox(
-                              width: 684.r,
-                              labelText: '인증번호',
-                              hintText: '인증번호 N자리를 정확히 입력해 주세요',
-                              controller: verifynumberController,
-                              inputFormatters: [
-                                FilteringTextInputFormatter.allow(
-                                    RegExp(r'[0-9]')),
-                              ],
-                              errorMessage: verifyNumberError,
-                              verify: true,
-                              onCheckPressed: onCheckPressed,
-                              success: isChecked,
-                            ),
-                          ],
-                        ),
-                        const Spacer(),
-                      ],
-                    ),
+                          ),
+                        ],
+                      ),
+                      const Spacer(),
+                      Column(
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              RegInputBox(
+                                width: 510.r,
+                                labelText: '전화번호',
+                                hintText: '- 없이 숫자만 입력해주세요',
+                                controller: phonenumberController,
+                                inputFormatters: [
+                                  FilteringTextInputFormatter.allow(
+                                      RegExp(r'[0-9]')),
+                                ],
+                                errorMessage: phoneNumberError,
+                              ),
+                              FilledButton(
+                                style: FilledButton.styleFrom(
+                                  fixedSize: Size(158.r, 64.r),
+                                  backgroundColor: Colors.black,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                ),
+                                onPressed: onSendPressed,
+                                child: Text(
+                                  '인증번호 전송',
+                                  style: TextStyle(
+                                    fontSize: 18.sp,
+                                    fontWeight: FontWeight.w400,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          SizedBox(height: 16.h),
+                          RegInputBox(
+                            width: 684.r,
+                            labelText: '인증번호',
+                            hintText: '인증번호 N자리를 정확히 입력해 주세요',
+                            controller: verifynumberController,
+                            inputFormatters: [
+                              FilteringTextInputFormatter.allow(
+                                  RegExp(r'[0-9]')),
+                            ],
+                            errorMessage: verifyNumberError,
+                            verify: true,
+                            onCheckPressed: onCheckPressed,
+                            success: isChecked,
+                          ),
+                        ],
+                      ),
+                      const Spacer(),
+                    ],
                   ),
                 ),
-                SquareButton(text: '회원가입', onPressed: onRegisterPressed),
-              ],
-            ),
+              ),
+              SquareButton(text: '회원가입', onPressed: onRegisterPressed),
+            ],
           ),
         ),
       ),
