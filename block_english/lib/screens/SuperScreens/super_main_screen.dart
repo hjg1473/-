@@ -1,59 +1,75 @@
-import 'package:block_english/screens/SuperScreens/super_game_setting_screen.dart';
-import 'package:block_english/screens/SuperScreens/super_monitor_screen.dart';
-import 'package:block_english/screens/SuperScreens/super_my_page.dart';
 import 'package:block_english/utils/size_config.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
-class SuperMainScreen extends StatefulWidget {
+class SuperMainScreen extends StatelessWidget {
   const SuperMainScreen({super.key});
 
-  @override
-  State<SuperMainScreen> createState() => _SuperMainScreenState();
-}
-
-class _SuperMainScreenState extends State<SuperMainScreen> {
-  int _selectedIndex = 0;
-
-  final List<Widget> _widgetOptions = <Widget>[
-    const SuperMonitorScreen(),
-    const SuperGameSettingScreen(),
-    const SuperMyPage(),
-  ];
-
-  void _onItemTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
-  }
-
-  // 메인 위젯
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: SafeArea(
-        child: _widgetOptions.elementAt(_selectedIndex),
-      ),
-      bottomNavigationBar: BottomNavigationBar(
-        items: <BottomNavigationBarItem>[
-          BottomNavigationBarItem(
-            icon: Icon(Icons.monitor_rounded, size: 40 * SizeConfig.scales),
-            label: '모니터링',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.category_rounded, size: 40 * SizeConfig.scales),
-            label: '게임 관리',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.account_circle_outlined,
-                size: 40 * SizeConfig.scales),
-            label: '마이 페이지',
-          ),
-        ],
-        currentIndex: _selectedIndex,
-        selectedItemColor: Colors.white,
-        unselectedItemColor: const Color(0xFFa2a2a2),
-        backgroundColor: const Color(0xFF565656),
-        onTap: _onItemTapped,
+        bottom: false,
+        child: Stack(
+          children: [
+            Align(
+              alignment: Alignment.topCenter,
+              child: Padding(
+                padding: EdgeInsets.only(top: 33 * SizeConfig.scales),
+                child: SvgPicture.asset('assets/images/LOGO.svg'),
+              ),
+            ),
+            Align(
+              alignment: Alignment.topRight,
+              child: Padding(
+                padding: EdgeInsets.only(
+                  top: 23 * SizeConfig.scales,
+                  right: 44 * SizeConfig.scales,
+                ),
+                child: const SizedBox(
+                  height: 60,
+                  width: 128,
+                  child: Row(
+                    children: [
+                      Text('안녕하세요!'),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            Align(
+              alignment: const Alignment(0, 0.35),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  IconButton(
+                    padding: EdgeInsets.zero,
+                    onPressed: () => Navigator.of(context)
+                        .pushNamed('/super_monitor_screen'),
+                    icon: SvgPicture.asset(
+                      'assets/cards/super_main_1.svg',
+                      width: 326 * SizeConfig.scales,
+                      height: 207 * SizeConfig.scales,
+                    ),
+                  ),
+                  SizedBox(
+                    width: 12 * SizeConfig.scales,
+                  ),
+                  IconButton(
+                    padding: EdgeInsets.zero,
+                    onPressed: () =>
+                        Navigator.of(context).pushNamed('/setting_screen'),
+                    icon: SvgPicture.asset(
+                      'assets/cards/super_main_2.svg',
+                      width: 326 * SizeConfig.scales,
+                      height: 207 * SizeConfig.scales,
+                    ),
+                  ),
+                ],
+              ),
+            )
+          ],
+        ),
       ),
     );
   }

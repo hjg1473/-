@@ -76,13 +76,22 @@ flutter:
   assets:
     - assets/images/test.png
     - assets/images/season_block.svg
+    - assets/images/LOGO.svg
+
     - assets/cards/sign_in_manager.svg
     - assets/cards/sign_in_user.svg
+
     - assets/cards/student_main_1.svg
     - assets/cards/student_main_2.svg
     - assets/cards/student_main_3.svg
     - assets/cards/180_206_card.svg
+
+    - assets/cards/super_main_1.svg
+    - assets/cards/super_main_2.svg
+
     - assets/buttons/round_back_button.svg
+    - assets/buttons/labeled_back_button.svg
+
   # To add assets to your application, add an assets section, like this:
   # assets:
   #   - images/a_dot_burr.jpeg

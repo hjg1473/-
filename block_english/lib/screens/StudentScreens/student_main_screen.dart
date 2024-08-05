@@ -65,8 +65,8 @@ class StudentMainScreen extends ConsumerWidget {
                 children: [
                   IconButton(
                     padding: EdgeInsets.zero,
-                    onPressed: () =>
-                        Navigator.of(context).pushNamed('/setting_screen'),
+                    onPressed: () => Navigator.of(context)
+                        .pushNamed('/stud_step_select_screen'),
                     icon: SvgPicture.asset(
                       'assets/cards/student_main_1.svg',
                       width: 230 * SizeConfig.scales,
@@ -78,7 +78,8 @@ class StudentMainScreen extends ConsumerWidget {
                   ),
                   IconButton(
                     padding: EdgeInsets.zero,
-                    onPressed: () {},
+                    onPressed: () =>
+                        Navigator.of(context).pushNamed('/setting_screen'),
                     icon: SvgPicture.asset(
                       'assets/cards/student_main_2.svg',
                       width: 205 * SizeConfig.scales,
