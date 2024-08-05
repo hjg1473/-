@@ -1,3 +1,4 @@
+import 'package:block_english/utils/size_config.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -19,8 +20,8 @@ class RegInputBox extends StatelessWidget {
 
   const RegInputBox({
     super.key,
-    this.width = 300,
-    this.height = 70,
+    this.width = 332,
+    this.height = 64,
     required this.labelText,
     required this.hintText,
     required this.controller,
@@ -38,101 +39,115 @@ class RegInputBox extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: width,
-      height: height,
+      width: width * SizeConfig.scales,
+      height: height * SizeConfig.scales,
       decoration: BoxDecoration(
-        color: Colors.grey[200],
-        borderRadius: BorderRadius.circular(10),
+        color: const Color(0xFFF0F0F0),
+        borderRadius: BorderRadius.circular(8),
         border: Border.all(color: Colors.transparent),
       ),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            SizedBox(
-              width: doubleCheck || verify
-                  ? (width - 40) * 0.71
-                  : (width - 40) * 0.9,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(labelText),
-                      errorMessage != ''
-                          ? Row(
-                              children: [
-                                const SizedBox(width: 5),
-                                Icon(
-                                  Icons.error_outline,
-                                  color: success ? Colors.blue : Colors.red,
-                                  size: 13,
-                                ),
-                                const SizedBox(width: 3),
-                                Text(
-                                  errorMessage,
-                                  style: TextStyle(
-                                      color: success ? Colors.blue : Colors.red,
-                                      fontSize: 11),
-                                ),
-                              ],
-                            )
-                          : const SizedBox(width: 1),
-                    ],
-                  ),
-                  TextField(
-                    inputFormatters: inputFormatters,
-                    obscureText: obscureText,
-                    controller: controller,
-                    cursorHeight: 20,
-                    cursorColor: Colors.grey,
-                    decoration: InputDecoration(
-                      isCollapsed: true,
-                      hintText: hintText,
-                      border: const OutlineInputBorder(
-                        borderSide: BorderSide.none,
+      padding: EdgeInsets.symmetric(
+        horizontal: 12 * SizeConfig.scales,
+        vertical: 8 * SizeConfig.scales,
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          SizedBox(
+            width: (width - 36 - 71) * SizeConfig.scales,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      labelText,
+                      style: TextStyle(
+                        fontSize: 13 * SizeConfig.scales,
+                        fontWeight: FontWeight.w700,
                       ),
                     ),
+                    errorMessage != ''
+                        ? Row(
+                            children: [
+                              SizedBox(width: 10 * SizeConfig.scales),
+                              Icon(
+                                Icons.error_outline,
+                                color: success ? Colors.green : Colors.red,
+                                size: 12 * SizeConfig.scales,
+                              ),
+                              SizedBox(width: 6 * SizeConfig.scales),
+                              Text(
+                                errorMessage,
+                                style: TextStyle(
+                                  color: success ? Colors.green : Colors.red,
+                                  fontSize: 11 * SizeConfig.scales,
+                                ),
+                              ),
+                            ],
+                          )
+                        : const SizedBox(width: 1),
+                  ],
+                ),
+                TextField(
+                  inputFormatters: inputFormatters,
+                  obscureText: isSelected,
+                  obscuringCharacter: '*',
+                  controller: controller,
+                  cursorHeight: 13,
+                  cursorColor: Colors.grey,
+                  decoration: InputDecoration(
+                    isCollapsed: true,
+                    hintText: hintText,
+                    hintStyle: TextStyle(
+                        fontSize: 13 * SizeConfig.scales,
+                        fontWeight: FontWeight.w400),
+                    border: const OutlineInputBorder(
+                      borderSide: BorderSide.none,
+                    ),
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
-            doubleCheck || verify
-                ? FilledButton(
-                    onPressed: onCheckPressed,
-                    style: FilledButton.styleFrom(
-                      minimumSize: const Size(double.minPositive, 35),
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 10, vertical: 0),
-                      backgroundColor: Colors.grey[600],
+          ),
+          doubleCheck
+              ? FilledButton(
+                  onPressed: onCheckPressed,
+                  style: FilledButton.styleFrom(
+                    minimumSize:
+                        Size(71 * SizeConfig.scales, 36 * SizeConfig.scales),
+                    padding: EdgeInsets.symmetric(
+                      horizontal: 10 * SizeConfig.scales,
+                      vertical: 10 * SizeConfig.scales,
                     ),
-                    child: Text(
-                      doubleCheck ? '중복확인' : '인증번호 확인',
-                      style: const TextStyle(
-                        fontSize: 12,
-                        color: Colors.white,
+                    backgroundColor: const Color(0xFF5D5D5D),
+                  ),
+                  child: Text(
+                    '중복확인',
+                    style: TextStyle(
+                      fontSize: 14 * SizeConfig.scales,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.white,
+                    ),
+                  ),
+                )
+              : obscureText
+                  ? SizedBox(
+                      width: 25 * SizeConfig.scales,
+                      child: IconButton(
+                        padding: EdgeInsets.zero,
+                        icon: isSelected
+                            ? const Icon(Icons.visibility_off_outlined)
+                            : const Icon(Icons.visibility),
+                        iconSize: 25 * SizeConfig.scales,
+                        color: const Color(0xFF585858),
+                        onPressed: onEyePressed,
                       ),
-                    ),
-                  )
-                : labelText == '비밀번호' || labelText == '비밀번호 확인'
-                    ? SizedBox(
-                        width: 25,
-                        child: IconButton(
-                          padding: const EdgeInsets.all(0),
-                          isSelected: isSelected,
-                          icon: const Icon(Icons.visibility_off_outlined),
-                          selectedIcon: const Icon(Icons.visibility_outlined),
-                          iconSize: 25,
-                          color: Colors.grey,
-                          onPressed: onEyePressed,
-                        ),
-                      )
-                    : const SizedBox(width: 1),
-          ],
-        ),
+                    )
+                  : const SizedBox(width: 1),
+        ],
       ),
     );
   }
