@@ -4,7 +4,7 @@ from sqlalchemy import select
 from auth.constants import ALGORITHM, SECRET_KEY
 import sys, os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))))
-from app.src.models import Users, StudyInfo
+from app.src.models import Users, StudyInfo, Released
 from auth.schemas import CreateUser
 from auth.utils import get_password_hash
 from auth.dependencies import db_dependency
@@ -43,11 +43,20 @@ async def create_study_info(db: db_dependency, user_id: int):
     study_info = StudyInfo(
         owner_id=user_id,
         totalStudyTime=0,
-        streamStudyDay=0,
-        releasedLevel=1,
-        releasedStep=1
+        streamStudyDay=0
     )
     db.add(study_info)
+    await db.commit()
+
+async def create_released(db, user_id: int, seasons: list):
+    for season in seasons:
+        released = Released(
+            owner_id=user_id,
+            released_season=season,
+            released_level=1,
+            released_step=1
+        )
+        db.add(released)
     await db.commit()
 
 async def get_user_to_username(username: str, db: db_dependency):

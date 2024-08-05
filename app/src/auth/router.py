@@ -6,10 +6,10 @@ from datetime import timedelta
 import sys, os
 from sqlalchemy import select
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))))
-from app.src.models import Users
+from app.src.models import Users, Released
 from auth.schemas import CreateUser, Message, Username, FindPassword, UpdatePassword
 from auth.utils import authenticate_user, decode_token, validate_token_payload
-from auth.service import create_access_token, create_user_in_db, create_study_info, get_user_to_username
+from auth.service import create_access_token, create_user_in_db, create_study_info, get_user_to_username, create_released
 from auth.dependencies import db_dependency
 from auth.exceptions import login_exception, get_user_exception, token_exception1, token_exception2, username_exception, username2_exception, password_verify_exception, get_password_exception
 from auth.constants import REFRESH_TOKEN_EXPIRE_DAYS, ACCESS_TOKEN_EXPIRE_MINUTES
@@ -41,6 +41,7 @@ async def create_new_user(db: db_dependency, create_user: CreateUser):
     await username_exception(create_user.username, db)
     user = await create_user_in_db(db, create_user)
     await create_study_info(db, user.id)
+    await create_released(db, user.id, create_user.seasons)
     logger = logger_setup.get_logger(user.id)
     logger.info("--- Register ---")
     return {'detail': '성공적으로 회원가입되었습니다.'}
@@ -99,11 +100,17 @@ async def first_login_for_access_token(form_data: Annotated[OAuth2PasswordReques
 
     redis_client.close()
     await redis_client.wait_closed()
-    return {'access_token' : access_token, 'token_type' : 'bearer', 'role': user.role, 'refresh_token' : refresh_token, 'team_id': user.team_id, 'name': user.name, "username_correct": True, "password_correct": True}
+    result = await db.execute(select(Released).filter(Released.owner_id == user.id))
+    released_model = result.scalars().all()
+    released = []
+    for r in released_model:
+        released.append({'season':r.released_season, 'level':r.released_level, 'step':r.released_step})
+
+    return {'access_token' : access_token, 'token_type' : 'bearer', 'role': user.role, 'refresh_token' : refresh_token, 'team_id': user.team_id, 'name': user.name, "username_correct": True, "password_correct": True, "released": released}
 
 # Access Token 유효성 검사
 @router.post("/access", status_code=status.HTTP_200_OK, responses={401: {"model": Message}})
-async def login_for_access_token(access_token: Annotated[str, Depends(oauth2_bearer)]):
+async def login_for_access_token(access_token: Annotated[str, Depends(oauth2_bearer)], db: db_dependency):
     payload = decode_token(access_token)
     token_exception1(payload)
     username, user_id, user_role = validate_token_payload(payload)
@@ -111,8 +118,17 @@ async def login_for_access_token(access_token: Annotated[str, Depends(oauth2_bea
     redis_client = await aioredis.create_redis_pool('redis://localhost')
     stored_access_token = await redis_client.get(f"{username}_access")
     token_exception2(stored_access_token, access_token)
-    
-    return {'detail': 'Token Valid', 'role': user_role}
+
+
+    result = await db.execute(select(Users).filter(Users.id == user_id))
+    user = result.scalars().all()
+    result2 = await db.execute(select(Released).filter(Released.owner_id == user_id))
+    released_model = result2.scalars().all()
+    released = []
+    for r in released_model:
+        released.append({'season':r.released_season, 'level':r.released_level, 'step':r.released_step})
+
+    return {'detail': 'Token Valid', 'role': user_role, 'team_id': user.team_id, 'name': user.name, "username_correct": True, "password_correct": True, "released": released}
 
 # Refresh Token 유효성 검사
 @router.post("/refresh", responses={401: {"model": Message}})
