@@ -1,5 +1,5 @@
+import 'package:block_english/utils/size_config.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class SquareButton extends StatelessWidget {
   final String text;
@@ -16,8 +16,8 @@ class SquareButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      width: 1.sw,
-      height: 68.h,
+      width: SizeConfig.fullWidth,
+      height: 68 * SizeConfig.scales,
       child: FilledButton(
         onPressed: onPressed,
         style: FilledButton.styleFrom(
