@@ -1,4 +1,4 @@
-import 'package:block_english/utils/device_scale.dart';
+import 'package:block_english/utils/size_config.dart';
 import 'package:flutter/material.dart';
 
 class SquareButton extends StatelessWidget {
@@ -15,17 +15,19 @@ class SquareButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return FilledButton(
-      onPressed: onPressed,
-      style: FilledButton.styleFrom(
-        minimumSize:
-            Size(double.infinity, DeviceScale.squareButtonHeight(context)),
-        backgroundColor: backgroundColor,
-        shape: const BeveledRectangleBorder(),
-      ),
-      child: Text(
-        text,
-        style: const TextStyle(fontSize: 18),
+    return SizedBox(
+      width: SizeConfig.fullWidth,
+      height: 68 * SizeConfig.scales,
+      child: FilledButton(
+        onPressed: onPressed,
+        style: FilledButton.styleFrom(
+          backgroundColor: backgroundColor,
+          shape: const BeveledRectangleBorder(),
+        ),
+        child: Text(
+          text,
+          style: const TextStyle(fontSize: 18),
+        ),
       ),
     );
   }

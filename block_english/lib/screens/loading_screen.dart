@@ -30,7 +30,7 @@ class LoadingScreen extends ConsumerWidget {
                       case 'student':
                         WidgetsBinding.instance.addPostFrameCallback((_) =>
                             Navigator.of(context).pushNamedAndRemoveUntil(
-                              '/stud_main_screen',
+                              '/stud_mode_select_screen',
                               (Route<dynamic> route) => false,
                             ));
                       case 'super':

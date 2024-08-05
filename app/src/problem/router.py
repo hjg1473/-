@@ -75,12 +75,6 @@ async def study_end(user: user_dependency, db: db_dependency):
 
     return {"detail":"학습을 마쳤습니다.",'study_time(minutes)': int(seconds_difference)}
 
-# @router.post("/create")
-# async def create_problem(problem: Problem, user: user_dependency, db: db_dependency):
-#     get_user_exception(user)
-#     await create_problem_in_db(db, problem)
-#     return successful_response(201)
-
 @router.get("/test_info", status_code = status.HTTP_200_OK)
 async def read_problem_all(user: user_dependency, db: db_dependency):
     get_user_exception(user)
@@ -89,7 +83,7 @@ async def read_problem_all(user: user_dependency, db: db_dependency):
     # 모든 문제 정보 반환 (일단)
 
 
-# 레벨과 스텝 정보 반환
+# 레벨과 스텝 정보 반환 >> 바꿔야됨
 @router.get("/info", status_code = status.HTTP_200_OK)
 async def read_level_and_step_all(user: user_dependency, db: db_dependency):
 
@@ -120,7 +114,6 @@ async def read_level_and_step_all(user: user_dependency, db: db_dependency):
                     problem_step.add(problem.step) 
         result.append({'level_name': level, 'steps': list(problem_step)})
         
-    # 학생 정보 테이블에 current_level, current_step 추가.
     return {'current_level': currentLevel, 'current_step': currentStep, 'levels' : result }
 
 
@@ -155,7 +148,6 @@ async def practice_read_level_and_step(season:str, user: user_dependency, db: db
                     problem_step.add(problem.step) 
         result.append({'level_name': level, 'steps': list(problem_step)})
         
-    # 학생 정보 테이블에 current_level, current_step 추가.
     return {'current_level': currentLevel, 'current_step': currentStep, 'levels' : result }
 
 

@@ -1,4 +1,3 @@
-import 'package:block_english/screens/AuthScreens/init_screen.dart';
 import 'package:block_english/screens/AuthScreens/login_screen.dart';
 import 'package:block_english/screens/AuthScreens/reg_select_role_screen.dart';
 import 'package:block_english/screens/AuthScreens/reg_student_screen.dart';
@@ -12,27 +11,26 @@ import 'package:block_english/screens/SuperScreens/super_game_screen.dart';
 import 'package:block_english/screens/SuperScreens/super_main_screen.dart';
 import 'package:block_english/screens/loading_screen.dart';
 import 'package:block_english/screens/setting_screen.dart';
+import 'package:block_english/utils/size_config.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 void main() {
-  WidgetsFlutterBinding.ensureInitialized();
-  SystemChrome.setPreferredOrientations([
-    DeviceOrientation.landscapeLeft,
-    DeviceOrientation.landscapeRight,
-  ]);
   runApp(const ProviderScope(child: MyApp()));
 }
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
-
   @override
   Widget build(BuildContext context) {
-    SystemChrome.setPreferredOrientations([DeviceOrientation.landscapeLeft]);
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.landscapeLeft,
+      DeviceOrientation.landscapeRight,
+    ]);
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
+
+    SizeConfig().init(context);
 
     return MaterialApp(
       theme: ThemeData(
@@ -46,7 +44,6 @@ class MyApp extends StatelessWidget {
       initialRoute: '/loading_screen',
       routes: {
         '/loading_screen': (context) => const LoadingScreen(),
-        '/init': (context) => const InitScreen(),
         '/login_screen': (context) => const LoginScreen(),
         '/reg_select_role_screen': (context) => const RegSelectRoleScreen(),
         '/reg_student_screen': (context) => const RegStudentScreen(),

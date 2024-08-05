@@ -1,5 +1,5 @@
 import 'package:block_english/utils/constants.dart';
-import 'package:block_english/utils/device_scale.dart';
+import 'package:block_english/utils/size_config.dart';
 import 'package:block_english/utils/status.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -11,98 +11,95 @@ class StudentMainScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
-      body: Stack(
-        children: [
-          Align(
-            alignment: Alignment.topLeft,
-            child: Padding(
-              padding: EdgeInsets.only(
-                top: 20.0 * DeviceScale.scaleHeight(context),
-                left: 50.0 * DeviceScale.scaleWidth(context),
-              ),
-              child: ClipOval(
-                child: Material(
-                  color: const Color(0xFF5D5D5D),
-                  child: InkWell(
-                    onTap: () => Navigator.of(context).pop(),
-                    child: SizedBox(
-                      width: 48 * DeviceScale.scaleWidth(context),
-                      height: 48 * DeviceScale.scaleHeight(context),
-                      child: const Icon(
-                        Icons.arrow_back_ios_rounded,
-                        color: Colors.white,
-                      ),
-                    ),
+      body: SafeArea(
+        bottom: false,
+        child: Stack(
+          children: [
+            Align(
+              alignment: Alignment.topLeft,
+              child: Padding(
+                padding: EdgeInsets.only(
+                  top: 32 * SizeConfig.scales,
+                  left: 44 * SizeConfig.scales,
+                ),
+                child: IconButton(
+                  padding: EdgeInsets.zero,
+                  onPressed: () => Navigator.of(context).pop(),
+                  icon: SvgPicture.asset(
+                    'assets/buttons/round_back_button.svg',
+                    width: 48 * SizeConfig.scales,
+                    height: 48 * SizeConfig.scales,
                   ),
                 ),
               ),
             ),
-          ),
-          Align(
-            alignment: Alignment.topCenter,
-            child: Container(
-              padding:
-                  EdgeInsets.only(top: 20.0 * DeviceScale.scaleHeight(context)),
+            Container(
+              padding: EdgeInsets.only(
+                top: 32 * SizeConfig.scales,
+                left: 342 * SizeConfig.scales,
+              ),
               child: Stack(
-                alignment: Alignment.center,
+                alignment: const Alignment(0.3, 0),
                 children: [
                   SvgPicture.asset(
                     'assets/images/season_block.svg',
-                    height: 45 * DeviceScale.scaleHeight(context),
-                    width: 128 * DeviceScale.scaleWidth(context),
+                    height: 45 * SizeConfig.scales,
+                    width: 128 * SizeConfig.scales,
                   ),
                   Text(
                     seasonToString(ref.watch(statusProvider).season),
                     style: TextStyle(
                       color: Colors.white,
-                      fontSize: 18 * DeviceScale.scaleHeight(context),
+                      fontSize: 18 * SizeConfig.scales,
                       fontWeight: FontWeight.w800,
                     ),
                   ),
                 ],
               ),
             ),
-          ),
-          Align(
-            alignment: const Alignment(0, 0.3),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                IconButton(
-                  onPressed: () {},
-                  icon: SvgPicture.asset(
-                    'assets/cards/student_main_1.svg',
-                    width: 230 * DeviceScale.scaleWidth(context),
-                    height: 207 * DeviceScale.scaleHeight(context),
+            Padding(
+              padding: EdgeInsets.only(top: 115 * SizeConfig.scales),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  IconButton(
+                    padding: EdgeInsets.zero,
+                    onPressed: () =>
+                        Navigator.of(context).pushNamed('/setting_screen'),
+                    icon: SvgPicture.asset(
+                      'assets/cards/student_main_1.svg',
+                      width: 230 * SizeConfig.scales,
+                      height: 207 * SizeConfig.scales,
+                    ),
                   ),
-                ),
-                SizedBox(
-                  width: 6 * DeviceScale.scaleWidth(context),
-                ),
-                IconButton(
-                  onPressed: () {},
-                  icon: SvgPicture.asset(
-                    'assets/cards/student_main_2.svg',
-                    width: 205 * DeviceScale.scaleWidth(context),
-                    height: 207 * DeviceScale.scaleHeight(context),
+                  SizedBox(
+                    width: 6 * SizeConfig.scales,
                   ),
-                ),
-                SizedBox(
-                  width: 6 * DeviceScale.scaleWidth(context),
-                ),
-                IconButton(
-                  onPressed: () {},
-                  icon: SvgPicture.asset(
-                    'assets/cards/student_main_3.svg',
-                    width: 205 * DeviceScale.scaleWidth(context),
-                    height: 207 * DeviceScale.scaleHeight(context),
+                  IconButton(
+                    padding: EdgeInsets.zero,
+                    onPressed: () {},
+                    icon: SvgPicture.asset(
+                      'assets/cards/student_main_2.svg',
+                      width: 205 * SizeConfig.scales,
+                      height: 207 * SizeConfig.scales,
+                    ),
                   ),
-                ),
-              ],
-            ),
-          )
-        ],
+                  SizedBox(
+                    width: 6 * SizeConfig.scales,
+                  ),
+                  IconButton(
+                    padding: EdgeInsets.zero,
+                    onPressed: () {},
+                    icon: SvgPicture.asset('assets/cards/student_main_3.svg',
+                        width: 205 * SizeConfig.scales,
+                        height: 207 * SizeConfig.scales),
+                  ),
+                ],
+              ),
+            )
+          ],
+        ),
       ),
     );
   }
