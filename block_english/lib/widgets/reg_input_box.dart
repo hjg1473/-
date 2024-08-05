@@ -10,7 +10,7 @@ class RegInputBox extends StatelessWidget {
   final TextEditingController controller;
   final List<TextInputFormatter>? inputFormatters;
   final String errorMessage;
-  final bool doubleCheck;
+  final bool dupCheck;
   final bool disable;
   final bool verify;
   final bool obscureText;
@@ -29,7 +29,7 @@ class RegInputBox extends StatelessWidget {
     required this.controller,
     this.inputFormatters,
     this.errorMessage = '',
-    this.doubleCheck = false,
+    this.dupCheck = false,
     this.disable = true,
     this.verify = false,
     this.obscureText = false,
@@ -121,7 +121,7 @@ class RegInputBox extends StatelessWidget {
               ],
             ),
           ),
-          doubleCheck
+          dupCheck
               ? FilledButton(
                   onPressed: disable ? null : onCheckPressed,
                   style: FilledButton.styleFrom(

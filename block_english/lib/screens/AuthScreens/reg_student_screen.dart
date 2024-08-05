@@ -29,30 +29,51 @@ class _StudState extends ConsumerState<RegStudentScreen> {
   String passwordError = '';
   String password2Error = '';
 
+  bool disable = true;
   bool isChecked = false;
   bool isObsecure = false;
   bool isObsecure2 = false;
 
-  onDoubleCheckPressed() {
+  onDupCheckChanged() {
     username = usernameController.text;
-    if (username == '') {
-      setState(() {
-        usernameError = '아이디를 입력해 주세요';
-        isChecked = false;
-      });
-      return;
-    }
-
     if (username.length < 6) {
       setState(() {
-        usernameError = '6자 이상 입력해 주세요';
-        isChecked = false;
+        disable = true;
       });
-      return;
+    } else {
+      setState(() {
+        disable = false;
+      });
     }
+  }
 
-    //TODO: double check
-    isChecked = true;
+  onDupCheckPressed() async {
+    username = usernameController.text;
+
+    final response = await ref
+        .watch(authServiceProvider)
+        .postAuthUsernameDuplication(username);
+    response.fold((failure) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('아이디 중복확인 실패'),
+          ),
+        );
+      }
+    }, (dupResponseModel) {
+      if (dupResponseModel.available == 1) {
+        setState(() {
+          isChecked = true;
+          usernameError = '사용 가능한 아이디입니다';
+        });
+      } else {
+        setState(() {
+          isChecked = false;
+          usernameError = '이미 사용중인 아이디입니다';
+        });
+      }
+    });
   }
 
   onEyePressed() {
@@ -142,7 +163,7 @@ class _StudState extends ConsumerState<RegStudentScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.amber,
+      backgroundColor: const Color(0xFFD1FCFE),
       body: SafeArea(
         bottom: false,
         child: SingleChildScrollView(
@@ -198,7 +219,7 @@ class _StudState extends ConsumerState<RegStudentScreen> {
                                     ),
                                   ),
                                   Text(
-                                    '이름과 전화번호를 알맞게 입력해주세요',
+                                    '아이디와 비밀번호를 설정해 주세요',
                                     style: TextStyle(
                                       fontSize: 14 * SizeConfig.scales,
                                       fontWeight: FontWeight.w700,
@@ -208,30 +229,7 @@ class _StudState extends ConsumerState<RegStudentScreen> {
                                 ],
                               ),
                             ),
-                            //TODO: add email check
-
-                            // Positioned(
-                            //   right: 0,
-                            //   child: FilledButton(
-                            //     onPressed: () {},
-                            //     style: FilledButton.styleFrom(
-                            //       padding: EdgeInsets.symmetric(
-                            //         horizontal: 20.r,
-                            //         vertical: 10.r,
-                            //       ),
-                            //       tapTargetSize:
-                            //           MaterialTapTargetSize.shrinkWrap,
-                            //       backgroundColor: const Color(0xFFB132FE),
-                            //     ),
-                            //     child: Text(
-                            //       '이메일 회원가입',
-                            //       style: TextStyle(
-                            //         fontSize: 16.sp,
-                            //         fontWeight: FontWeight.w400,
-                            //       ),
-                            //     ),
-                            //   ),
-                            // ),
+                            //TODO: add id check
                           ],
                         ),
                         const Spacer(),
@@ -249,8 +247,11 @@ class _StudState extends ConsumerState<RegStudentScreen> {
                                         RegExp(r'[a-zA-Z0-9]')),
                                   ],
                                   errorMessage: usernameError,
-                                  doubleCheck: true,
-                                  onCheckPressed: onDoubleCheckPressed,
+                                  dupCheck: true,
+                                  disable: disable,
+                                  onCheckChanged: onDupCheckChanged,
+                                  onCheckPressed: onDupCheckPressed,
+                                  success: isChecked,
                                 ),
                                 SizedBox(width: 20 * SizeConfig.scales),
                                 RegInputBox(
@@ -307,9 +308,11 @@ class _StudState extends ConsumerState<RegStudentScreen> {
                     ),
                   ),
                 ),
+                //TODO: disable button if conditions are not satisfied
                 SquareButton(
-                  text: '회원가입',
+                  text: '다음으로',
                   onPressed: onRegisterPressed,
+                  disable: false,
                 ),
               ],
             ),
