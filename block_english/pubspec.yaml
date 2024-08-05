@@ -37,7 +37,6 @@ dependencies:
   dartz: ^0.10.1
   flutter_svg: ^2.0.10+1
   debounce_throttle: ^2.0.0
-  flutter_screenutil: ^5.9.3
 
   flutter:
     sdk: flutter
