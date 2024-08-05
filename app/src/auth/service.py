@@ -29,11 +29,10 @@ async def create_user_in_db(db: db_dependency, create_user: CreateUser) -> Users
     new_user = Users(
         username=create_user.username,
         name=create_user.name,
-        age=create_user.age,
         role=create_user.role,
-        email=create_user.email,
-        hashed_password=hashed_password,
-        phone_number=create_user.phone_number
+        question=create_user.question,
+        questionType=create_user.questionType,
+        hashed_password=hashed_password
     )
     db.add(new_user)
     await db.commit()
@@ -44,15 +43,13 @@ async def create_study_info(db: db_dependency, user_id: int):
     study_info = StudyInfo(
         owner_id=user_id,
         totalStudyTime=0,
-        streamStudyDay=0
+        streamStudyDay=0,
+        releasedLevel=1,
+        releasedStep=1
     )
     db.add(study_info)
     await db.commit()
 
 async def get_user_to_username(username: str, db: db_dependency):
     result = await db.execute(select(Users).filter(Users.username == username))
-    return result.scalars().first()
-
-async def get_user_to_phone_number(phone_number: str, db: db_dependency):
-    result = await db.execute(select(Users).filter(Users.phone_number == phone_number))
     return result.scalars().first()

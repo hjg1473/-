@@ -24,3 +24,7 @@ def password_exception(password, hashed_password):
 def user_exception(user):
     if user is None:
         raise HTTPException(status_code=404, detail='Authentication Failed')
+    
+def group_exception(group):
+    if group:
+        raise HTTPException(status_code=409, detail='반을 먼저 삭제해주세요!')

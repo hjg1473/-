@@ -17,12 +17,6 @@ def parse_sentence(sentence:str):
 
         else:
             parsed.append(word)
-
-    if 'dog' in parsed:
-        dog_index = parsed.index('dog')
-        if dog_index > 0 and parsed[dog_index -1] in ['a', 'A']:
-            parsed[dog_index -1] = ' '.join(parsed[dog_index-1:dog_index+1])
-            parsed.remove('dog')
     return parsed
 
 
@@ -35,6 +29,7 @@ def combine_sentence(sentence:list):
         else:
             combined += ' ' + word
     
+    print(combined)
     return combined
 
 
@@ -59,34 +54,33 @@ def check_answer(problem:list, response:list):
     if problem == response:
         isAnswer = True
 
-    # pLen = len(problem)
-    # rLen = len(response)
+    pLen = len(problem)
+    rLen = len(response)
 
-    # expResponse = response.copy()
-    # if rLen < pLen:
-    #     expResponse += [''] * (pLen - rLen)
+    expResponse = response.copy()
+    if rLen < pLen:
+        expResponse += [''] * (pLen - rLen)
     
-    # erLen = len(expResponse)
-    # problem_copy = problem.copy()
+    erLen = len(expResponse)
+    problem_copy = problem.copy()
 
-    # # starts with all Red.
-    # false_check = ['Red'] * erLen
+    # starts with all Red.
+    false_check = ['Red'] * erLen
 
-    # # check green -- correct answer. If one word is already checked, than it will never be checked again.
-    # for i in range(pLen):
-    #     if problem[i] == expResponse[i]:
-    #         false_check[i] = 'Green'
-    #         problem_copy[i] = 0
+    # check green -- correct answer. If one word is already checked, than it will never be checked again.
+    for i in range(pLen):
+        if problem[i] == expResponse[i]:
+            false_check[i] = 'Green'
+            problem_copy[i] = 0
     
-    # # check yellow -- 
-    # for i in expResponse:
-    #     if i in problem_copy:
-    #         false_check[expResponse.index(i)] = 'Yellow'
-    #         problem_copy[problem_copy.index(i)] = 0
+    # check yellow -- 
+    for i in expResponse:
+        if i in problem_copy:
+            false_check[expResponse.index(i)] = 'Yellow'
+            problem_copy[problem_copy.index(i)] = 0
 
-    # return isAnswer, false_check
+    return isAnswer, false_check
 
-    return isAnswer
 
 def punctuation_filter(problem:str, response:str):
     punc_wrong = 0
@@ -97,6 +91,7 @@ def punctuation_filter(problem:str, response:str):
     for item in p_parse:
         if item in punctuations:
             p_puncs.append(item)
+    # 두 케이스 중복되는거 해결해야됨?
     # 없어야 하는데 있는 구두점
     punc_list = []
     for item in r_parse:

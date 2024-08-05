@@ -1,3 +1,4 @@
+from typing import List
 from pydantic import BaseModel, Field\
 
 
@@ -9,9 +10,7 @@ class UserQuitVerification(BaseModel):
     password: str
 
 class User_info(BaseModel):
-    name: str
-    phone_number: str
-    email: str
+    season: List
 
 class User_season(BaseModel):
     season: str

@@ -1,3 +1,4 @@
+import json
 import aioredis
 from sqlalchemy import select
 from sqlalchemy.orm import joinedload
@@ -19,18 +20,7 @@ router = APIRouter(
     responses={404: {"description": "Not found"}}
 )
 
-@router.get("/get_season", status_code = status.HTTP_200_OK)
-async def get_season(user: user_dependency, db: db_dependency):
-
-    get_user_exception(user)
-    auth_exception(user.get('user_role'))
-
-    result = await db.execute(select(Users).filter(Users.id == user.get('id')))
-    user_model = result.scalars().first()
-
-    return {"user_season": user_model.released_season}
-
-
+# 개인학습 or 그룹학습 선택
 @router.post("/select/solo_or_group", status_code = status.HTTP_200_OK)
 async def select_mode(soloGroup: SoloGroup,
                             user: user_dependency,
@@ -65,32 +55,31 @@ async def user_solve_problem(pin_number: PinNumber,
 
     return {'detail' : '연결되었습니다.'}
 
-# 학생과 학부모 연결, 학생 -> 학부모(student_teachers) / 학부모 -> 학생(teachers_students) ?
-@router.get("/connecting", status_code = status.HTTP_200_OK)
-async def connect_teacher(teacher_id: int, user: user_dependency, db: db_dependency):
+# 학생과 학부모 연결, 학부모 -> 학생(teachers_students) # wireframe 나오면 고도화.
+@router.get("/connect/parent", status_code = status.HTTP_200_OK)
+async def connect_teacher(user_id: int, user: user_dependency, db: db_dependency):
 
     get_user_exception(user)
-    auth_exception(user.get('user_role'))
 
     result = await db.execute(select(Users).options(joinedload(Users.student_teachers)).filter(Users.id == user.get('id')))
-    student = result.scalars().first()
+    parent = result.scalars().first()
     
-    get_user_exception2(student)
-    select_exception1(teacher_id, user.get("id"))
+    get_user_exception2(parent)
+    select_exception1(user_id, user.get("id"))
     
-    result2 = await db.execute(select(Users).filter(Users.id == teacher_id))
-    teacher = result2.scalars().first()
+    result2 = await db.execute(select(Users).filter(Users.id == user_id))
+    student = result2.scalars().first()
 
-    select_exception2(teacher)
-    select_exception3(teacher, student.student_teachers)
+    select_exception2(student)
+    select_exception3(student, parent.student_teachers)
 
-    student.student_teachers.append(teacher)
+    parent.student_teachers.append(student)
     await db.commit()
-    return {"detail": "Connected successfully", "teacher_id": teacher.id, "teacher_username": teacher.username}
+    return {"detail": "Connected successfully", "student_id": student.id, "student_username": student.username}
 
 
 # 학생(self)과 연결된 학부모의 아이디 반환
-@router.get("/connect_parent", status_code = status.HTTP_200_OK)
+@router.get("/connect_parent_info", status_code = status.HTTP_200_OK)
 async def read_connect_parent(user: user_dependency, db: db_dependency):
 
     get_user_exception(user)
@@ -101,6 +90,25 @@ async def read_connect_parent(user: user_dependency, db: db_dependency):
 
     return {"parents": [{"name": parent.name} for parent in parent.student_teachers]}
 
+# 학생 보유한 시즌 정보 반환
+@router.get("/season_info", status_code=status.HTTP_200_OK)
+async def read_user_season(user: user_dependency, db:db_dependency):
+    get_user_exception(user)
+    auth_exception(user.get('user_role'))
+
+    result = await db.execute(select(Users).filter(Users.id == user.get('id')))
+    user_model = result.scalars().first()
+
+    if user_model.released_season is None:
+        raise http_exception()
+    if user_model.released_season == '':
+        raise http_exception()
+
+    seasons = json.loads(user_model.released_season)
+    if seasons["seasons"] == []:
+        raise http_exception()
+
+    return {"seasons":seasons["seasons"]}
 
 # 학생 정보 반환
 @router.get("/info", status_code = status.HTTP_200_OK)

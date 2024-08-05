@@ -1,5 +1,5 @@
 import 'package:block_english/services/auth_service.dart';
-import 'package:block_english/utils/device_scale.dart';
+import 'package:block_english/utils/size_config.dart';
 import 'package:block_english/utils/storage.dart';
 import 'package:block_english/widgets/square_button.dart';
 import 'package:flutter/material.dart';
@@ -14,13 +14,48 @@ class LoginScreen extends ConsumerStatefulWidget {
 }
 
 class _LoginState extends ConsumerState<LoginScreen> {
-  final formkey = GlobalKey<FormState>();
-
   String username = '';
   String password = '';
 
+  bool usernameError = false;
+  bool passwordError = false;
+
+  String usernameErrorMsg = '';
+  String passwordErrorMsg = '';
+
+  bool passwordObsecured = true;
+
+  validateUsername(String value) {
+    if (value.isEmpty) {
+      usernameErrorMsg = '아이디를 입력해 주세요';
+      return true;
+    }
+    if (value.length < 6) {
+      usernameErrorMsg = '아이디가 너무 짧습니다';
+      return true;
+    }
+    return false;
+  }
+
+  validatePassword(String value) {
+    if (value.isEmpty) {
+      passwordErrorMsg = '비밀번호를 입력해주세요';
+      return true;
+    }
+    if (value.length < 8) {
+      passwordErrorMsg = '비밀번호가 너무 짧습니다';
+      return true;
+    }
+    return false;
+  }
+
   onLoginPressed() async {
-    if (!formkey.currentState!.validate()) {
+    setState(() {
+      usernameError = validateUsername(username);
+      passwordError = validatePassword(password);
+    });
+
+    if (usernameError || passwordError) {
       return;
     }
 
@@ -73,192 +108,271 @@ class _LoginState extends ConsumerState<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
-    Size screenSize = MediaQuery.of(context).size;
-    var verArea = screenSize.height - DeviceScale.squareButtonHeight(context);
-
-    double horPadding;
-    if (screenSize.width < 700) {
-      horPadding = 30 * DeviceScale.scaleWidth(context);
-    } else {
-      horPadding = 55 * DeviceScale.scaleWidth(context);
-    }
-
     return Scaffold(
-      body: Row(
-        children: [
-          Container(
-            width: 396 * DeviceScale.scaleWidth(context),
-            height: screenSize.height,
-            color: Colors.grey[200],
-          ),
-          SingleChildScrollView(
-            child: SizedBox(
-              width: screenSize.width - 396 * DeviceScale.scaleWidth(context),
-              height: screenSize.height,
-              child: Form(
-                key: formkey,
-                child: Column(
-                  children: [
-                    SizedBox(
-                      height: verArea,
-                      child: Padding(
-                        padding: EdgeInsets.fromLTRB(
-                            horPadding,
-                            DeviceScale.verticalPadding(context),
-                            horPadding,
-                            0),
+      backgroundColor: Colors.black,
+      body: SafeArea(
+        bottom: false,
+        child: SingleChildScrollView(
+          child: Container(
+            color: Colors.white,
+            child: Row(
+              children: [
+                Container(
+                  width: 396 * SizeConfig.scaleWidth,
+                  height: SizeConfig.fullHeight,
+                  color: Colors.lightBlue[100],
+                ),
+                SizedBox(
+                  width: 416 * SizeConfig.scaleWidth,
+                  height: SizeConfig.fullHeight,
+                  child: Column(
+                    children: [
+                      Padding(
+                        padding: EdgeInsets.only(
+                          top: 38 * SizeConfig.scaleHeight,
+                          left: 42 * SizeConfig.scaleWidth,
+                          right: 42 * SizeConfig.scaleWidth,
+                        ),
                         child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              crossAxisAlignment: CrossAxisAlignment.center,
                               children: [
-                                const Text('로그인',
-                                    style: TextStyle(
-                                      fontSize: 24,
-                                      fontWeight: FontWeight.w600,
-                                    )),
+                                Text(
+                                  '로그인',
+                                  style: TextStyle(
+                                    fontSize: 22 * SizeConfig.scales,
+                                    fontWeight: FontWeight.w800,
+                                  ),
+                                ),
                                 FilledButton(
                                   onPressed: () {
                                     Navigator.of(context)
                                         .pushNamed('/reg_select_role_screen');
                                   },
                                   style: FilledButton.styleFrom(
-                                    minimumSize:
-                                        const Size(double.minPositive, 40),
-                                    backgroundColor: Colors.grey[700],
+                                    backgroundColor: const Color(0xFFB132FE),
                                     shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(50),
+                                      borderRadius: BorderRadius.circular(45),
+                                    ),
+                                    padding: EdgeInsets.symmetric(
+                                      horizontal: 20 * SizeConfig.scales,
+                                      vertical: 12 * SizeConfig.scales,
                                     ),
                                   ),
-                                  child: const Text(
+                                  child: Text(
                                     '회원가입',
                                     style: TextStyle(
-                                      fontSize: 16,
+                                      fontSize: 16 * SizeConfig.scales,
+                                      fontWeight: FontWeight.w700,
                                       color: Colors.white,
                                     ),
                                   ),
                                 ),
                               ],
                             ),
-                            const Spacer(),
-                            Text(
-                              '아이디',
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w600,
-                                color: Colors.grey[700],
-                              ),
+                            SizedBox(
+                              height: 18 * SizeConfig.scales,
                             ),
-                            TextFormField(
-                              inputFormatters: [
-                                FilteringTextInputFormatter.allow(
-                                  RegExp(r'[a-zA-Z0-9]'),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  children: [
+                                    Text(
+                                      '아이디',
+                                      style: TextStyle(
+                                        fontSize: 16 * SizeConfig.scales,
+                                        fontWeight: FontWeight.w700,
+                                        color: const Color(0xFF555555),
+                                      ),
+                                    ),
+                                    usernameError
+                                        ? Row(
+                                            children: [
+                                              SizedBox(
+                                                  width:
+                                                      10 * SizeConfig.scales),
+                                              Icon(
+                                                Icons.error_outline,
+                                                color: Colors.red,
+                                                size: 12 * SizeConfig.scales,
+                                              ),
+                                              SizedBox(
+                                                  width: 6 * SizeConfig.scales),
+                                              Text(
+                                                usernameErrorMsg,
+                                                style: TextStyle(
+                                                  color: Colors.red,
+                                                  fontSize:
+                                                      11 * SizeConfig.scales,
+                                                ),
+                                              ),
+                                            ],
+                                          )
+                                        : const SizedBox(width: 1),
+                                  ],
+                                ),
+                                SizedBox(
+                                  height: 6 * SizeConfig.scales,
+                                ),
+                                TextField(
+                                  inputFormatters: [
+                                    FilteringTextInputFormatter.allow(
+                                      RegExp(r'[a-zA-Z0-9]'),
+                                    ),
+                                  ],
+                                  decoration: InputDecoration(
+                                    contentPadding: EdgeInsets.symmetric(
+                                      horizontal: 16 * SizeConfig.scales,
+                                      vertical: 12 * SizeConfig.scales,
+                                    ),
+                                    hintText: '전화번호 또는 이메일을 입력해 주세요',
+                                    hintStyle: TextStyle(
+                                      color: const Color(0xFFA3A3A3),
+                                      fontSize: 16 * SizeConfig.scales,
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                    filled: true,
+                                    fillColor: const Color(0xFFF0F0F0),
+                                    border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(8),
+                                      borderSide: BorderSide.none,
+                                    ),
+                                  ),
+                                  onChanged: (value) =>
+                                      setState(() => username = value),
                                 ),
                               ],
-                              decoration: InputDecoration(
-                                contentPadding:
-                                    const EdgeInsets.symmetric(horizontal: 20),
-                                hintText: '전화번호 또는 이메일을 입력해 주세요',
-                                hintStyle: TextStyle(
-                                  color: Colors.grey[500],
-                                  fontSize: 16,
-                                ),
-                                filled: true,
-                                fillColor: Colors.grey[200],
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(10),
-                                  borderSide: BorderSide.none,
-                                ),
-                              ),
-                              onChanged: (value) =>
-                                  setState(() => username = value),
-                              validator: (value) {
-                                if (value == null || value.isEmpty) {
-                                  return '아이디를 입력해 주세요';
-                                }
-                                if (value.length < 6) {
-                                  return '아이디가 너무 짧습니다';
-                                }
-                                return null;
-                              },
                             ),
-                            const SizedBox(height: 20),
-                            Text(
-                              '비밀번호',
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w600,
-                                color: Colors.grey[700],
-                              ),
-                            ),
-                            TextFormField(
-                              inputFormatters: [
-                                FilteringTextInputFormatter.allow(
-                                  RegExp(r'[a-zA-Z0-9]'),
+                            SizedBox(height: 12 * SizeConfig.scales),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  children: [
+                                    Text(
+                                      '비밀번호',
+                                      style: TextStyle(
+                                        fontSize: 16 * SizeConfig.scales,
+                                        fontWeight: FontWeight.w700,
+                                        color: const Color(0xFF555555),
+                                      ),
+                                    ),
+                                    passwordError
+                                        ? Row(
+                                            children: [
+                                              SizedBox(
+                                                  width:
+                                                      10 * SizeConfig.scales),
+                                              Icon(
+                                                Icons.error_outline,
+                                                color: Colors.red,
+                                                size: 12 * SizeConfig.scales,
+                                              ),
+                                              SizedBox(
+                                                  width: 6 * SizeConfig.scales),
+                                              Text(
+                                                passwordErrorMsg,
+                                                style: TextStyle(
+                                                  color: Colors.red,
+                                                  fontSize:
+                                                      11 * SizeConfig.scales,
+                                                ),
+                                              ),
+                                            ],
+                                          )
+                                        : const SizedBox(width: 1),
+                                  ],
+                                ),
+                                SizedBox(
+                                  height: 6 * SizeConfig.scales,
+                                ),
+                                TextField(
+                                  inputFormatters: [
+                                    FilteringTextInputFormatter.allow(
+                                      RegExp(r'[a-zA-Z0-9]'),
+                                    ),
+                                  ],
+                                  obscureText: passwordObsecured,
+                                  obscuringCharacter: '*',
+                                  decoration: InputDecoration(
+                                    contentPadding: EdgeInsets.symmetric(
+                                      horizontal: 16 * SizeConfig.scales,
+                                      vertical: 12 * SizeConfig.scales,
+                                    ),
+                                    hintText: '비밀번호를 입력해주세요',
+                                    hintStyle: TextStyle(
+                                      color: const Color(0xFFA3A3A3),
+                                      fontSize: 16 * SizeConfig.scales,
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                    suffixIcon: IconButton(
+                                      icon: Icon(
+                                        passwordObsecured
+                                            ? Icons.visibility_off_outlined
+                                            : Icons.visibility_rounded,
+                                      ),
+                                      onPressed: () {
+                                        setState(() {
+                                          passwordObsecured =
+                                              !passwordObsecured;
+                                        });
+                                      },
+                                    ),
+                                    filled: true,
+                                    fillColor: const Color(0xFFF0F0F0),
+                                    border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(8),
+                                      borderSide: BorderSide.none,
+                                    ),
+                                  ),
+                                  onChanged: (value) =>
+                                      setState(() => password = value),
                                 ),
                               ],
-                              obscureText: true,
-                              decoration: InputDecoration(
-                                contentPadding:
-                                    const EdgeInsets.symmetric(horizontal: 20),
-                                hintText: '영문/숫자 조합, 8자 이상 입력해주세요',
-                                hintStyle: TextStyle(
-                                  color: Colors.grey[500],
-                                  fontSize: 16,
-                                ),
-                                filled: true,
-                                fillColor: Colors.grey[200],
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(10),
-                                  borderSide: BorderSide.none,
-                                ),
-                              ),
-                              onChanged: (value) =>
-                                  setState(() => password = value),
-                              validator: (value) {
-                                if (value == null || value.isEmpty) {
-                                  return '비밀번호를 입력해주세요';
-                                }
-                                if (value.length < 8) {
-                                  return '비밀번호가 너무 짧습니다';
-                                }
-                                return null;
-                              },
+                            ),
+                            SizedBox(
+                              height: 10 * SizeConfig.scales,
                             ),
                             Row(
+                              mainAxisAlignment: MainAxisAlignment.end,
                               children: [
-                                const Spacer(),
-                                SizedBox(
-                                  height: 35,
-                                  child: TextButton(
-                                    onPressed: () {},
-                                    style: TextButton.styleFrom(),
-                                    child: Text(
-                                      '비밀번호 찾기',
-                                      style: TextStyle(
-                                          fontSize: 13,
-                                          color: Colors.grey[500]),
+                                TextButton(
+                                  onPressed: () {},
+                                  style: TextButton.styleFrom(
+                                    padding: EdgeInsets.zero,
+                                    minimumSize: Size.zero,
+                                    tapTargetSize:
+                                        MaterialTapTargetSize.shrinkWrap,
+                                  ),
+                                  child: Text(
+                                    '비밀번호 찾기',
+                                    style: TextStyle(
+                                      fontSize: 14 * SizeConfig.scales,
+                                      fontWeight: FontWeight.w700,
+                                      color: const Color(0xFFA3A3A3),
                                     ),
                                   ),
                                 ),
                               ],
                             ),
-                            const Spacer(),
                           ],
                         ),
                       ),
-                    ),
-                    SquareButton(
-                      text: '로그인',
-                      onPressed: onLoginPressed,
-                    ),
-                  ],
+                      const Spacer(),
+                      SquareButton(
+                        text: '로그인',
+                        onPressed: onLoginPressed,
+                      ),
+                    ],
+                  ),
                 ),
-              ),
+              ],
             ),
           ),
-        ],
+        ),
       ),
     );
   }
