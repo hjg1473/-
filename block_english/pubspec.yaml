@@ -78,6 +78,8 @@ flutter:
     - assets/images/season_block.svg
     - assets/cards/sign_in_manager.svg
     - assets/cards/sign_in_user.svg
+    - assets/cards/sign_in_teacher.svg
+    - assets/cards/sign_in_parent.svg
     - assets/cards/student_main_1.svg
     - assets/cards/student_main_2.svg
     - assets/cards/student_main_3.svg

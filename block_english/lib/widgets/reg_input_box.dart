@@ -11,9 +11,11 @@ class RegInputBox extends StatelessWidget {
   final List<TextInputFormatter>? inputFormatters;
   final String errorMessage;
   final bool doubleCheck;
+  final bool disable;
   final bool verify;
   final bool obscureText;
   final bool isSelected;
+  final VoidCallback? onCheckChanged;
   final VoidCallback? onCheckPressed;
   final VoidCallback? onEyePressed;
   final bool success;
@@ -28,9 +30,11 @@ class RegInputBox extends StatelessWidget {
     this.inputFormatters,
     this.errorMessage = '',
     this.doubleCheck = false,
+    this.disable = true,
     this.verify = false,
     this.obscureText = false,
     this.isSelected = false,
+    this.onCheckChanged,
     this.onCheckPressed,
     this.onEyePressed,
     this.success = false,
@@ -42,7 +46,7 @@ class RegInputBox extends StatelessWidget {
       width: width * SizeConfig.scales,
       height: height * SizeConfig.scales,
       decoration: BoxDecoration(
-        color: const Color(0xFFF0F0F0),
+        color: Colors.white,
         borderRadius: BorderRadius.circular(8),
         border: Border.all(color: Colors.transparent),
       ),
@@ -92,6 +96,11 @@ class RegInputBox extends StatelessWidget {
                   ],
                 ),
                 TextField(
+                  onChanged: (value) {
+                    if (onCheckChanged != null) {
+                      onCheckChanged!();
+                    }
+                  },
                   inputFormatters: inputFormatters,
                   obscureText: isSelected,
                   obscuringCharacter: '*',
@@ -114,7 +123,7 @@ class RegInputBox extends StatelessWidget {
           ),
           doubleCheck
               ? FilledButton(
-                  onPressed: onCheckPressed,
+                  onPressed: disable ? null : onCheckPressed,
                   style: FilledButton.styleFrom(
                     minimumSize:
                         Size(71 * SizeConfig.scales, 36 * SizeConfig.scales),
@@ -122,7 +131,8 @@ class RegInputBox extends StatelessWidget {
                       horizontal: 10 * SizeConfig.scales,
                       vertical: 10 * SizeConfig.scales,
                     ),
-                    backgroundColor: const Color(0xFF5D5D5D),
+                    backgroundColor: Colors.black,
+                    disabledBackgroundColor: const Color(0xFFAFAFAF),
                   ),
                   child: Text(
                     '중복확인',

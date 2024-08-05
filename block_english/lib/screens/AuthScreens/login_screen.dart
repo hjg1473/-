@@ -39,7 +39,7 @@ class _LoginState extends ConsumerState<LoginScreen> {
 
   validatePassword(String value) {
     if (value.isEmpty) {
-      passwordErrorMsg = '비밀번호를 입력해주세요';
+      passwordErrorMsg = '비밀번호를 입력해 주세요';
       return true;
     }
     if (value.length < 8) {
@@ -228,7 +228,7 @@ class _LoginState extends ConsumerState<LoginScreen> {
                                       horizontal: 16 * SizeConfig.scales,
                                       vertical: 12 * SizeConfig.scales,
                                     ),
-                                    hintText: '전화번호 또는 이메일을 입력해 주세요',
+                                    hintText: '아이디를 입력해 주세요',
                                     hintStyle: TextStyle(
                                       color: const Color(0xFFA3A3A3),
                                       fontSize: 16 * SizeConfig.scales,
@@ -302,7 +302,7 @@ class _LoginState extends ConsumerState<LoginScreen> {
                                       horizontal: 16 * SizeConfig.scales,
                                       vertical: 12 * SizeConfig.scales,
                                     ),
-                                    hintText: '비밀번호를 입력해주세요',
+                                    hintText: '비밀번호를 입력해 주세요',
                                     hintStyle: TextStyle(
                                       color: const Color(0xFFA3A3A3),
                                       fontSize: 16 * SizeConfig.scales,
