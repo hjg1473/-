@@ -2,6 +2,7 @@ import 'package:block_english/screens/SuperScreens/super_game_setting_screen.dar
 import 'package:block_english/screens/SuperScreens/super_monitor_screen.dart';
 import 'package:block_english/screens/SuperScreens/super_my_page.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class SuperMainScreen extends StatefulWidget {
   const SuperMainScreen({super.key});
@@ -33,17 +34,17 @@ class _SuperMainScreenState extends State<SuperMainScreen> {
         child: _widgetOptions.elementAt(_selectedIndex),
       ),
       bottomNavigationBar: BottomNavigationBar(
-        items: const <BottomNavigationBarItem>[
+        items: <BottomNavigationBarItem>[
           BottomNavigationBarItem(
-            icon: Icon(Icons.monitor_rounded, size: 40),
+            icon: Icon(Icons.monitor_rounded, size: 40.r),
             label: '모니터링',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.category_rounded, size: 40),
+            icon: Icon(Icons.category_rounded, size: 40.r),
             label: '게임 관리',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.account_circle_outlined, size: 40),
+            icon: Icon(Icons.account_circle_outlined, size: 40.r),
             label: '마이 페이지',
           ),
         ],
