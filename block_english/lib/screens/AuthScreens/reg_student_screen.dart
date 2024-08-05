@@ -30,8 +30,8 @@ class _StudState extends ConsumerState<RegStudentScreen> {
   String password2Error = '';
 
   bool isChecked = false;
-  bool isObsecure = true;
-  bool isObsecure2 = true;
+  bool isObsecure = false;
+  bool isObsecure2 = false;
 
   onDoubleCheckPressed() {
     username = usernameController.text;
@@ -135,6 +135,7 @@ class _StudState extends ConsumerState<RegStudentScreen> {
     return Scaffold(
       backgroundColor: Colors.amber,
       body: SafeArea(
+        bottom: false,
         child: SingleChildScrollView(
           child: SizedBox(
             height: 1.sh,
@@ -269,7 +270,7 @@ class _StudState extends ConsumerState<RegStudentScreen> {
                                     ),
                                   ],
                                   errorMessage: passwordError,
-                                  obscureText: isObsecure,
+                                  obscureText: true,
                                   isSelected: !isObsecure,
                                   onEyePressed: onEyePressed,
                                 ),
@@ -284,7 +285,7 @@ class _StudState extends ConsumerState<RegStudentScreen> {
                                     ),
                                   ],
                                   errorMessage: password2Error,
-                                  obscureText: isObsecure2,
+                                  obscureText: true,
                                   isSelected: !isObsecure2,
                                   onEyePressed: onEye2Pressed,
                                 ),

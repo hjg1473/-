@@ -95,7 +95,8 @@ class RegInputBox extends StatelessWidget {
                 ),
                 TextField(
                   inputFormatters: inputFormatters,
-                  obscureText: obscureText,
+                  obscureText: isSelected,
+                  obscuringCharacter: '*',
                   controller: controller,
                   cursorHeight: 20,
                   cursorColor: Colors.grey,
@@ -136,9 +137,9 @@ class RegInputBox extends StatelessWidget {
                       width: 25.r,
                       child: IconButton(
                         padding: EdgeInsets.zero,
-                        isSelected: isSelected,
-                        icon: const Icon(Icons.visibility_off_outlined),
-                        selectedIcon: const Icon(Icons.visibility_outlined),
+                        icon: isSelected
+                            ? const Icon(Icons.visibility_off_outlined)
+                            : const Icon(Icons.visibility),
                         iconSize: 25.r,
                         color: const Color(0xFF585858),
                         onPressed: onEyePressed,

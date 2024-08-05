@@ -1,4 +1,5 @@
 import 'package:block_english/services/auth_service.dart';
+import 'package:block_english/utils/device_scale.dart';
 import 'package:block_english/utils/storage.dart';
 import 'package:block_english/widgets/square_button.dart';
 import 'package:flutter/material.dart';
