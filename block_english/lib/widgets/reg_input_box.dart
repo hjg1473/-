@@ -11,7 +11,6 @@ class RegInputBox extends StatelessWidget {
   final List<TextInputFormatter>? inputFormatters;
   final String errorMessage;
   final bool dupCheck;
-  final bool disable;
   final bool verify;
   final bool obscureText;
   final bool isSelected;
@@ -30,7 +29,6 @@ class RegInputBox extends StatelessWidget {
     this.inputFormatters,
     this.errorMessage = '',
     this.dupCheck = false,
-    this.disable = true,
     this.verify = false,
     this.obscureText = false,
     this.isSelected = false,
@@ -123,7 +121,7 @@ class RegInputBox extends StatelessWidget {
           ),
           dupCheck
               ? FilledButton(
-                  onPressed: disable ? null : onCheckPressed,
+                  onPressed: onCheckPressed,
                   style: FilledButton.styleFrom(
                     minimumSize:
                         Size(71 * SizeConfig.scales, 36 * SizeConfig.scales),

@@ -54,93 +54,15 @@ class AuthService {
     }
   }
 
-  Future<Either<FailureModel, ExistCheckModel>> postAuthExistVerify(
-      String username, String phonenumber) async {
-    final dio = _ref.watch(dioProvider);
-
-    try {
-      final response = await dio.post(
-        '/$_auth/$_username_phone/$_verify',
-        options: Options(
-          contentType: Headers.jsonContentType,
-          headers: {'accept': 'application/json'},
-        ),
-        data: {
-          'username': username,
-          'phone_number': phonenumber,
-        },
-      );
-
-      return Right(ExistCheckModel.fromJson(response.data));
-    } on DioException catch (e) {
-      return Left(FailureModel(
-        statusCode: e.response?.statusCode ?? 0,
-        detail: e.response?.data['detail'] ?? "",
-      ));
-    }
-  }
-
-  Future<Either<FailureModel, GetNumberResponseModel>> postAuthGetNumber(
-    String phonenumber,
-  ) async {
-    final dio = _ref.watch(dioProvider);
-
-    try {
-      final response = await dio.post(
-        '/$_auth/get_number',
-        options: Options(
-          contentType: Headers.jsonContentType,
-          headers: {'accept': 'application/json'},
-        ),
-        data: {
-          'phone_number': phonenumber,
-        },
-      );
-
-      return Right(GetNumberResponseModel.fromJson(response.data));
-    } on DioException catch (e) {
-      return Left(FailureModel(
-        statusCode: e.response?.statusCode ?? 0,
-        detail: e.response?.data['detail'] ?? "",
-      ));
-    }
-  }
-
-  Future<Either<FailureModel, VerifyResponseModel>> postAuthVerifyNumber(
-    String phonenumber,
-    String verifynumber,
-  ) async {
-    final dio = _ref.watch(dioProvider);
-
-    try {
-      final response = await dio.post(
-        '/$_auth/verify_number',
-        options: Options(
-          contentType: Headers.jsonContentType,
-          headers: {'accept': 'application/json'},
-        ),
-        data: {
-          'phone_number': phonenumber,
-          'verify_number': verifynumber,
-        },
-      );
-
-      return Right(VerifyResponseModel.fromJson(response.data));
-    } on DioException catch (e) {
-      return Left(FailureModel(
-        statusCode: e.response?.statusCode ?? 0,
-        detail: e.response?.data['detail'] ?? "",
-      ));
-    }
-  }
-
   // TODO: Update Reg Request
   Future<Either<FailureModel, RegResponseModel>> postAuthRegister(
     String name,
     String username,
     String password,
-    int age,
     String role,
+    int questiontype,
+    String question,
+    List<int> seasons,
   ) async {
     final dio = _ref.watch(dioProvider);
     try {
@@ -153,8 +75,10 @@ class AuthService {
           'name': name,
           'username': username,
           'password': password,
-          'age': age,
           'role': role,
+          'questiontype': questiontype,
+          'question': question,
+          'seasons': seasons,
         },
       );
       return Right(RegResponseModel.fromJson(response.data));

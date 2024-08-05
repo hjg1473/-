@@ -5,14 +5,12 @@ class SquareButton extends StatelessWidget {
   final String text;
   final Color? backgroundColor;
   final VoidCallback? onPressed;
-  final bool disable;
 
   const SquareButton({
     super.key,
     required this.text,
     this.backgroundColor = Colors.black,
     this.onPressed,
-    this.disable = true,
   });
 
   @override
@@ -21,7 +19,7 @@ class SquareButton extends StatelessWidget {
       width: SizeConfig.fullWidth,
       height: 68 * SizeConfig.scaleHeight,
       child: FilledButton(
-        onPressed: disable ? null : onPressed,
+        onPressed: onPressed,
         style: FilledButton.styleFrom(
           disabledBackgroundColor: const Color(0xFF727272),
           backgroundColor: backgroundColor,

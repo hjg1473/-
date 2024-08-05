@@ -135,7 +135,7 @@ class _StudState extends ConsumerState<RegStudentScreen> {
 
     final result = await ref
         .watch(authServiceProvider)
-        .postAuthRegister(name, username, password, 1, 'student');
+        .postAuthRegister(name, username, password, 'student', 0, '', []);
 
     result.fold((failure) {
       if (mounted) {
@@ -247,9 +247,9 @@ class _StudState extends ConsumerState<RegStudentScreen> {
                                   ],
                                   errorMessage: usernameError,
                                   dupCheck: true,
-                                  disable: disable,
                                   onCheckChanged: onDupCheckChanged,
-                                  onCheckPressed: onDupCheckPressed,
+                                  onCheckPressed:
+                                      disable ? null : onDupCheckPressed,
                                   success: isChecked,
                                 ),
                                 SizedBox(width: 20 * SizeConfig.scales),
@@ -311,7 +311,6 @@ class _StudState extends ConsumerState<RegStudentScreen> {
                 SquareButton(
                   text: '다음으로',
                   onPressed: onRegisterPressed,
-                  disable: false,
                 ),
               ],
             ),

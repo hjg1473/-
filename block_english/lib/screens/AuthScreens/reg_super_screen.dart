@@ -90,6 +90,12 @@ class _RegSuperScreenState extends ConsumerState<RegSuperScreen> {
     });
   }
 
+  onNextPressed() {
+    Navigator.of(context).pushNamed(
+      '/reg_pw_question_screen',
+    );
+  }
+
   onRegisterPressed() async {
     bool onError = false;
 
@@ -137,7 +143,7 @@ class _RegSuperScreenState extends ConsumerState<RegSuperScreen> {
 
     final result = await ref
         .watch(authServiceProvider)
-        .postAuthRegister(name, username, password, 1, 'student');
+        .postAuthRegister(name, username, password, role, 0, '', []);
 
     result.fold((failure) {
       if (mounted) {
@@ -235,9 +241,9 @@ class _RegSuperScreenState extends ConsumerState<RegSuperScreen> {
                                   ],
                                   errorMessage: usernameError,
                                   dupCheck: true,
-                                  disable: disable,
                                   onCheckChanged: onDupCheckChanged,
-                                  onCheckPressed: onDupCheckPressed,
+                                  onCheckPressed:
+                                      disable ? null : onDupCheckPressed,
                                   success: isChecked,
                                 ),
                                 SizedBox(width: 20 * SizeConfig.scales),
@@ -298,8 +304,7 @@ class _RegSuperScreenState extends ConsumerState<RegSuperScreen> {
                 //TODO: disable button if conditions are not satisfied
                 SquareButton(
                   text: '다음으로',
-                  onPressed: onRegisterPressed,
-                  disable: false,
+                  onPressed: onNextPressed,
                 ),
               ],
             ),
