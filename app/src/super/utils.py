@@ -9,12 +9,12 @@ from super.schemas import ProblemSet, AddGroup, GroupStep
 from super.exceptions import *
 from starlette import status
 from app.src.models import Users, StudyInfo, Problems, correct_problem_table, Groups
-from app.src.problem.service import get_correct_problem_count
+from app.src.problem.service import get_correct_problem_count, get_incorrect_problem_count
 from sqlalchemy.orm import joinedload
 
 
 
-async def user_step_problem_count(user_id, step, level, attribute_name, db):
+async def user_step_problem_count(user_id, season, level, attribute_name, db):
 
     result2 = await db.execute(select(Users).filter(Users.id == user_id))
     students = result2.scalars().all()
@@ -24,7 +24,7 @@ async def user_step_problem_count(user_id, step, level, attribute_name, db):
     for s in students:
         result = await db.execute(select(StudyInfo).options(joinedload(StudyInfo.correct_problems)).options(joinedload(StudyInfo.incorrect_problems)).filter(StudyInfo.owner_id == s.id))
         study_info = result.scalars().first()
-        studyinfo.append(study_info) # 맞은+틀린 문제들만 저장. 
+        studyinfo.append(study_info) # 맞은+틀린 문제들 저장. 
 
     # if study_info is None:
     #     raise http_exception()
@@ -33,7 +33,7 @@ async def user_step_problem_count(user_id, step, level, attribute_name, db):
     # return studyinfo # 특정 학생의 학습 정보
     for item in studyinfo:
         # correct_problem_ids = [{"id": problem.id} for problem in item.correct_problems if problem.type == step]
-        correct_problem_ids = [{"id": problem.id} for problem in getattr(item, attribute_name) if problem.step == step and problem.level == level]
+        correct_problem_ids = [{"id": problem.id} for problem in getattr(item, attribute_name) if problem.season == season and problem.level == level]
         result_item = {
             "id": item.id,
             attribute_name: correct_problem_ids
@@ -45,7 +45,10 @@ async def user_step_problem_count(user_id, step, level, attribute_name, db):
     for item in result:
         if item[attribute_name]:
             for p in item[attribute_name]:
-                count += await get_correct_problem_count(item["id"], p["id"], db)
+                if attribute_name == "correct_problems":
+                    count += await get_correct_problem_count(item["id"], p["id"], db)
+                else:
+                    count += await get_incorrect_problem_count(item["id"], p["id"], db)
     
     # db.add(study_info)
     # await db.commit()
