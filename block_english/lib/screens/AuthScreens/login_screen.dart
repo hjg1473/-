@@ -124,15 +124,16 @@ class _LoginState extends ConsumerState<LoginScreen> {
                 width: 416.w,
                 height: 1.sh,
                 child: Column(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Padding(
-                      padding: EdgeInsets.only(
-                        top: 38.r,
-                        left: 42.r,
-                        right: 42.r,
-                      ),
+                      padding: const EdgeInsets.only(
+                        top: 38,
+                        left: 42,
+                        right: 64,
+                      ).r,
                       child: SizedBox(
-                        height: 307.r - 38.r,
+                        height: 269.r,
                         child: Column(
                           children: [
                             Row(
@@ -154,12 +155,12 @@ class _LoginState extends ConsumerState<LoginScreen> {
                                   style: FilledButton.styleFrom(
                                     backgroundColor: const Color(0xFFB132FE),
                                     shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(45).w,
+                                      borderRadius: BorderRadius.circular(45).r,
                                     ),
-                                    padding: EdgeInsets.symmetric(
-                                      horizontal: 20.r,
-                                      vertical: 12.r,
-                                    ),
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 20,
+                                      vertical: 12,
+                                    ).r,
                                   ),
                                   child: Text(
                                     '회원가입',
@@ -217,10 +218,10 @@ class _LoginState extends ConsumerState<LoginScreen> {
                                     ),
                                   ],
                                   decoration: InputDecoration(
-                                    contentPadding: EdgeInsets.symmetric(
-                                      horizontal: 16.r,
-                                      vertical: 12.r,
-                                    ),
+                                    contentPadding: const EdgeInsets.symmetric(
+                                      horizontal: 16,
+                                      vertical: 12,
+                                    ).r,
                                     hintText: '아이디를 입력해 주세요',
                                     hintStyle: TextStyle(
                                       color: const Color(0xFFA3A3A3),
@@ -282,10 +283,10 @@ class _LoginState extends ConsumerState<LoginScreen> {
                                   obscureText: passwordObsecured,
                                   obscuringCharacter: '*',
                                   decoration: InputDecoration(
-                                    contentPadding: EdgeInsets.symmetric(
-                                      horizontal: 16.r,
-                                      vertical: 12.r,
-                                    ),
+                                    contentPadding: const EdgeInsets.symmetric(
+                                      horizontal: 16,
+                                      vertical: 12,
+                                    ).r,
                                     hintText: '비밀번호를 입력해 주세요',
                                     hintStyle: TextStyle(
                                       color: const Color(0xFFA3A3A3),
