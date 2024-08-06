@@ -24,7 +24,7 @@ class Status {
     this.name = name;
   }
 
-  setStudentStatus(List<Map<String, dynamic>> released, int? teamId) {
+  setStudentStatus(List<dynamic> released, int? teamId) {
     for (Map<String, dynamic> data in released) {
       releaseStatus
           .add(ReleaseStatus(data['season'], data['level'], data['step']));
