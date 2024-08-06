@@ -1,4 +1,3 @@
-import 'package:block_english/utils/size_config.dart';
 import 'package:block_english/widgets/square_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
