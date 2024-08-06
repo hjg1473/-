@@ -9,7 +9,7 @@ from fastapi import APIRouter, BackgroundTasks
 from starlette import status
 import sys, os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))))
-from app.src.models import Users, StudyInfo, Problems, correct_problem_table, Words, Blocks
+from app.src.models import Users, StudyInfo, Problems, correct_problem_table, Words, Blocks, Released
 from fastapi import requests, UploadFile, File, Form
 import requests
 from problem.dependencies import user_dependency, db_dependency
@@ -18,7 +18,6 @@ from problem.exceptions import http_exception, successful_response, get_user_exc
 from problem.service import *
 from problem.utils import check_answer, search_log_timestamp
 from problem.constants import INDEX, QUERY_MATCH_ALL
-import re
 from elasticsearch import AsyncElasticsearch
 from datetime import datetime, timezone
 import logging
@@ -289,16 +288,21 @@ async def send_problems_data(user: user_dependency, db: db_dependency):
     wrong_type.wrong_order += tempUserProblem.totalIncorrectOrder
     wrong_type.wrong_word += tempUserProblem.totalIncorrectWords
     db.add(wrong_type)
-    await db.commit()
 
-    # 개인 학습 --> 다음 스텝 or 레벨 해금
-    if isGroup == 0:
-        result = await db.execute(select(Problems.step, Problems.level).filter(Problems.season == solved_season, Problems.type==solved_type))
-        all_steps = result.all()
-        # max_step = max(all_steps)
-        # if max_step == solved_step:
-        #     if solved_level == 
-
+    # 개인 학습 and 연습 문제 다 풀었음--> 다음 스텝 or 레벨 해금
+    if isGroup == 0 and solved_type == 'normal':
+        result = await db.execute(select(Released).filter(Released.owner_id == user.get("id")))
+        released_model = result.scalars().first()
+        result = await db.execute(select(Problems.step).filter(Problems.season == solved_season, Problems.type==solved_type, Problems.level == solved_level))
+        all_steps = result.scalars().all()
+        max_step = max(all_steps)
+        if max_step == solved_step:
+            if solved_level < 3:    # 한 시즌 당 레벨은 3까지만 있다고 가정...
+                released_model.released_level += 1
+                released_model.released_step = 1
+        else:
+            released_model.released_step += 1
+        db.add(released_model)
 
 
     # return problems_info
@@ -321,7 +325,7 @@ async def send_problems_data(user: user_dependency, db: db_dependency):
                 
     db.add(study_info)
     await db.commit()
-    return {"detail": "저장되었습니다.", "sp":all_steps}
+    return {"detail": "저장되었습니다."}
 
 
 async def ocr(file):
