@@ -1,3 +1,4 @@
+import 'package:block_english/models/AuthModel/reg_info_model.dart';
 import 'package:block_english/widgets/square_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -11,8 +12,10 @@ class RegPwQuestionScreen extends StatefulWidget {
 }
 
 class _RegPwQuestionScreenState extends State<RegPwQuestionScreen> {
+  late RegInfoModel regInfo;
   @override
   Widget build(BuildContext context) {
+    regInfo = ModalRoute.of(context)!.settings.arguments as RegInfoModel;
     return Scaffold(
         backgroundColor: const Color(0xFFD1FCFE),
         body: SingleChildScrollView(
@@ -24,11 +27,11 @@ class _RegPwQuestionScreenState extends State<RegPwQuestionScreen> {
                 SizedBox(
                   height: 307.r,
                   child: Padding(
-                    padding: EdgeInsets.only(
-                      top: 32.r,
-                      left: 64.r,
-                      right: 64.r,
-                    ),
+                    padding: const EdgeInsets.only(
+                      top: 32,
+                      left: 64,
+                      right: 64,
+                    ).r,
                     child: Column(
                       children: [
                         Stack(

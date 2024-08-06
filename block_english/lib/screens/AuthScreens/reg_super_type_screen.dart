@@ -13,11 +13,11 @@ class RegSuperTypeScreen extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             Padding(
-              padding: EdgeInsets.only(
-                top: 32.r,
-                left: 64.r,
-                right: 64.r,
-              ),
+              padding: const EdgeInsets.only(
+                top: 32,
+                left: 64,
+                right: 64,
+              ).r,
               child: Stack(
                 children: [
                   IconButton(
@@ -60,7 +60,7 @@ class RegSuperTypeScreen extends StatelessWidget {
                 SizedBox(
                   child: IconButton(
                     onPressed: () {
-                      Navigator.pushNamed(context, '/reg_super_screen',
+                      Navigator.pushNamed(context, '/reg_get_info_screen',
                           arguments: 'parent');
                     },
                     icon: SvgPicture.asset(
@@ -77,7 +77,7 @@ class RegSuperTypeScreen extends StatelessWidget {
                 SizedBox(
                   child: IconButton(
                     onPressed: () {
-                      Navigator.pushNamed(context, '/reg_super_screen',
+                      Navigator.pushNamed(context, '/reg_get_info_screen',
                           arguments: 'teacher');
                     },
                     icon: SvgPicture.asset(

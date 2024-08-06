@@ -203,11 +203,11 @@ class _RegSuperScreenState extends ConsumerState<RegSuperScreen> {
               SizedBox(
                 height: 307.r,
                 child: Padding(
-                  padding: EdgeInsets.only(
-                    top: 32.r,
-                    left: 64.r,
-                    right: 64.r,
-                  ),
+                  padding: const EdgeInsets.only(
+                    top: 32,
+                    left: 64,
+                    right: 64,
+                  ).r,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [

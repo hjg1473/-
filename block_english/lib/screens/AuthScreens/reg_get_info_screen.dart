@@ -1,3 +1,4 @@
+import 'package:block_english/models/AuthModel/reg_info_model.dart';
 import 'package:block_english/services/auth_service.dart';
 import 'package:block_english/widgets/reg_input_box.dart';
 import 'package:block_english/widgets/square_button.dart';
@@ -7,14 +8,15 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
-class RegStudentScreen extends ConsumerStatefulWidget {
-  const RegStudentScreen({super.key});
+class RegGetInfoScreen extends ConsumerStatefulWidget {
+  const RegGetInfoScreen({super.key});
 
   @override
-  ConsumerState<RegStudentScreen> createState() => _RegStudentScreenState();
+  ConsumerState<RegGetInfoScreen> createState() => _RegStudentScreenState();
 }
 
-class _RegStudentScreenState extends ConsumerState<RegStudentScreen> {
+class _RegStudentScreenState extends ConsumerState<RegGetInfoScreen> {
+  String role = '';
   String name = '';
   String username = '';
   String password = '';
@@ -158,6 +160,14 @@ class _RegStudentScreenState extends ConsumerState<RegStudentScreen> {
   onNextPressed() {
     Navigator.of(context).pushNamed(
       '/reg_pw_question_screen',
+      arguments: RegInfoModel(
+        name: name,
+        username: username,
+        password: password,
+        role: role,
+        questionType: 0,
+        question: "",
+      ),
     );
   }
 
@@ -191,6 +201,7 @@ class _RegStudentScreenState extends ConsumerState<RegStudentScreen> {
 
   @override
   Widget build(BuildContext context) {
+    role = ModalRoute.of(context)!.settings.arguments as String;
     return Scaffold(
       backgroundColor: const Color(0xFFD1FCFE),
       body: SingleChildScrollView(
@@ -201,11 +212,11 @@ class _RegStudentScreenState extends ConsumerState<RegStudentScreen> {
               SizedBox(
                 height: 307.r,
                 child: Padding(
-                  padding: EdgeInsets.only(
-                    top: 32.r,
-                    left: 64.r,
-                    right: 64.r,
-                  ),
+                  padding: const EdgeInsets.only(
+                    top: 32,
+                    left: 64,
+                    right: 64,
+                  ).r,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
@@ -224,7 +235,7 @@ class _RegStudentScreenState extends ConsumerState<RegStudentScreen> {
                             child: Column(
                               children: [
                                 Text(
-                                  '학습자 회원가입',
+                                  role == 'student' ? '학습자 회원가입' : '관리자 회원가입',
                                   style: TextStyle(
                                     fontSize: 22.sp,
                                     fontWeight: FontWeight.w800,
