@@ -9,7 +9,7 @@ class Status {
   String name = '';
 
   // Student's fields
-  List<ReleaseStatus> releaseStatus = [];
+  Map<Season, ReleaseStatus> releaseStatus = {};
   int? teamId;
 
   setStudentMode(StudentMode mode) {
@@ -24,22 +24,20 @@ class Status {
     this.name = name;
   }
 
-  setStudentStatus(List<dynamic> released, int? teamId) {
-    for (Map<String, dynamic> data in released) {
-      releaseStatus
-          .add(ReleaseStatus(data['season'], data['level'], data['step']));
-    }
+  setStudentStatus(Season season, ReleaseStatus released) {
+    releaseStatus[season] = released;
+  }
 
+  setTeamId(int? teamId) {
     teamId = teamId;
   }
 }
 
 class ReleaseStatus {
-  final int currentSeason;
   final int currentLevel;
   final int currentStep;
 
-  ReleaseStatus(this.currentSeason, this.currentLevel, this.currentStep);
+  ReleaseStatus(this.currentLevel, this.currentStep);
 }
 
 @Riverpod(keepAlive: true)

@@ -14,6 +14,7 @@ ProblemService problemService(ProblemServiceRef ref) {
 
 class ProblemService {
   static const String _problem = 'problem';
+  static const String _practice = 'practice';
   static const String _info = 'info';
 
   static late final ProblemServiceRef _ref;
@@ -22,12 +23,14 @@ class ProblemService {
     _ref = ref;
   }
 
-  Future<Either<FailureModel, ProblemInfoModel>> getProblemInfo() async {
+  Future<Either<FailureModel, ProblemPracticeInfoModel>> getProblemInfo(
+      int season) async {
     final dio = _ref.watch(dioProvider);
 
     try {
       final response = await dio.get(
-        '/$_problem/$_info',
+        '/$_problem/$_practice/$_info',
+        queryParameters: {'season': season},
         options: Options(
           headers: {
             'accept': 'application/json',
@@ -35,7 +38,7 @@ class ProblemService {
           },
         ),
       );
-      return Right(ProblemInfoModel.fromJson(response.data));
+      return Right(ProblemPracticeInfoModel.fromJson(response.data));
     } on DioException catch (e) {
       return Left(
         FailureModel(

@@ -114,10 +114,13 @@ class AuthService {
       _ref.watch(statusProvider).setName(response.data['name']);
 
       if (response.data['role'] == 'student') {
-        _ref.watch(statusProvider).setStudentStatus(
-              response.data['released'],
-              response.data['team_id'],
-            );
+        for (Map<String, dynamic> info in response.data['released']) {
+          _ref.watch(statusProvider).setStudentStatus(
+                intToSeason(info['season']),
+                ReleaseStatus(info['level'], info['step']),
+              );
+        }
+        _ref.watch(statusProvider).setTeamId(response.data['team_id']);
       }
 
       return Right(LoginResponseModel.fromJson(response.data));
@@ -143,10 +146,13 @@ class AuthService {
       _ref.watch(statusProvider).setName(response.data['name']);
 
       if (response.data['role'] == 'student') {
-        _ref.watch(statusProvider).setStudentStatus(
-              response.data['released'],
-              response.data['team_id'],
-            );
+        for (Map<String, dynamic> info in response.data['released']) {
+          _ref.watch(statusProvider).setStudentStatus(
+                intToSeason(info['season']),
+                ReleaseStatus(info['level'], info['step']),
+              );
+        }
+        _ref.watch(statusProvider).setTeamId(response.data['team_id']);
       }
 
       return Right(AccessReponseModel.fromJson(response.data));

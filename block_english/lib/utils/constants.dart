@@ -30,6 +30,24 @@ enum Season {
   SEASON1,
 }
 
+int seasonToInt(Season season) {
+  switch (season) {
+    case Season.NONE:
+      return 0;
+    case Season.SEASON1:
+      return 1;
+  }
+}
+
+Season intToSeason(int intSeason) {
+  switch (intSeason) {
+    case 1:
+      return Season.SEASON1;
+    default:
+      return Season.NONE;
+  }
+}
+
 String seasonToString(Season season) {
   switch (season) {
     case Season.NONE:
