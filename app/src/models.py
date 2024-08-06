@@ -104,10 +104,25 @@ class Groups(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String)
-    detail = Column(String)
-    releasedLevel = Column(Integer, default=1)
-    releasedStep = Column(Integer, default=1)
+    grade = Column(String)
     members = relationship("Users", foreign_keys=[Users.team_id], back_populates="team")
+
+class WrongType(Base):
+    __tablename__ = "wrongType"
+
+    id = Column(Integer, primary_key=True, index=True)
+    season = Column(Integer)
+    level = Column(Integer)
+
+    wrong_letter = Column(Integer, default=0)
+    wrong_punctuation = Column(Integer, default=0)
+    wrong_block = Column(Integer, default=0)
+    wrong_order = Column(Integer, default=0)
+    wrong_word = Column(Integer, default=0)
+
+    info_id = Column(Integer, ForeignKey("studyInfo.id"))  # FK to study Info
+    info = relationship("StudyInfo", back_populates="wrong_types", cascade="delete") # 1:M to study info
+
 
 class StudyInfo(Base):  # Study information
     __tablename__ = "studyInfo"
@@ -118,10 +133,10 @@ class StudyInfo(Base):  # Study information
     owner_id = Column(Integer, ForeignKey("users.id"))  # FK to users
 
     # Relationships
-    # owner2 = relationship("Types", back_populates="owner", cascade='delete')
-    owner = relationship("Users", back_populates="studyInfos")
+    owner = relationship("Users", back_populates="studyInfos", cascade="delete")
     correct_problems = relationship("Problems", secondary=correct_problem_table, back_populates="correct_study_infos")
     incorrect_problems = relationship("Problems", secondary=incorrect_problem_table, back_populates="incorrect_study_infos")
+    wrong_types = relationship("WrongType", back_populates="info", cascade="delete")
 
 class Problems(Base):  # Problems
     __tablename__ = "problems"

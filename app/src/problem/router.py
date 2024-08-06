@@ -1,5 +1,5 @@
 import asyncio
-import time
+import aioredis
 import numpy as np
 from PIL import Image
 import io
@@ -10,6 +10,7 @@ from starlette import status
 import sys, os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))))
 from app.src.models import Users, StudyInfo, Problems, correct_problem_table, Words, Blocks, Released
+from app.src.models import Users, StudyInfo, Problems, correct_problem_table, Words, Blocks, Released
 from fastapi import requests, UploadFile, File, Form
 import requests
 from problem.dependencies import user_dependency, db_dependency
@@ -18,7 +19,6 @@ from problem.exceptions import http_exception, successful_response, get_user_exc
 from problem.service import *
 from problem.utils import check_answer, search_log_timestamp
 from problem.constants import INDEX, QUERY_MATCH_ALL
-import re
 from elasticsearch import AsyncElasticsearch
 from datetime import datetime, timezone
 import logging
@@ -172,6 +172,12 @@ async def read_problem_all(season:int, level:int, step:int, user: user_dependenc
     result = await db.execute(select(Problems).filter(Problems.level == level, Problems.season == season).filter(Problems.step == step).filter(Problems.type == "normal"))
     stepinfo_model = result.scalars().all()
 
+    tempUserProblem = TempUserProblems.get(user.get("id"))
+    tempUserProblem.solved_season = season
+    tempUserProblem.solved_level = level
+    tempUserProblem.solved_step = step
+    tempUserProblem.solved_type = 'normal'
+
     get_problem_exception(stepinfo_model)
 
     problem = []
@@ -197,6 +203,15 @@ async def read_problem_all(season:int, level:int, step:int, user: user_dependenc
 @router.post("/send_problems_data", status_code = status.HTTP_200_OK)
 async def send_problems_data(user: user_dependency, db: db_dependency):
     get_user_exception(user)
+
+    # isGroup 확인
+    redis_client = await aioredis.create_redis_pool('redis://localhost')
+    key = f"{user.get('id')}_mode"
+    mode_str = await redis_client.get(key)
+    isGroup = 0
+    if mode_str == 'group':
+        isGroup = 1
+
     result2 = await db.execute(select(StudyInfo).options(joinedload(StudyInfo.correct_problems)).options(joinedload(StudyInfo.incorrect_problems)).filter(StudyInfo.owner_id == user.get("id")))
     study_info = result2.scalars().first()
     if study_info is None:
@@ -206,19 +221,58 @@ async def send_problems_data(user: user_dependency, db: db_dependency):
     problem_ids = list(tempUserProblem.problem_incorrect_count.keys())
     result = await db.execute(select(Problems).filter(Problems.id.in_(problem_ids)))
     problems_info = result.scalars().all()
+
+    solved_season = tempUserProblem.solved_season
+    solved_level = tempUserProblem.solved_level
+    solved_step = tempUserProblem.solved_step
+    solved_type = tempUserProblem.solved_type
+
+    # 푼 시즌-레벨의 wrong type 객체가 있는 지 조회하고, 없으면 만듦
+    result = await db.execute(select(WrongType).filter(WrongType.info_id == study_info.id, WrongType.season == solved_season, WrongType.level == solved_level))
+    wrong_type = result.scalars().first()
+    if wrong_type is None:
+        await create_wrong_type(solved_season, solved_level, study_info.id, db)
+        result = await db.execute(select(WrongType).filter(WrongType.info_id == study_info.id, WrongType.season == solved_season, WrongType.level == solved_level))
+        wrong_type = result.scalars().first()
+
+    # update wrong type
+    wrong_type.wrong_letter += tempUserProblem.totalIncorrectLetter
+    wrong_type.wrong_punctuation += tempUserProblem.totalIncorrectPunc
+    wrong_type.wrong_block += tempUserProblem.totalIncorrectBlock
+    wrong_type.wrong_order += tempUserProblem.totalIncorrectOrder
+    wrong_type.wrong_word += tempUserProblem.totalIncorrectWords
+    db.add(wrong_type)
+
+    # 개인 학습 and 연습 문제 다 풀었음--> 다음 스텝 or 레벨 해금
+    if isGroup == 0 and solved_type == 'normal':
+        result = await db.execute(select(Released).filter(Released.owner_id == user.get("id")))
+        released_model = result.scalars().first()
+        result = await db.execute(select(Problems.step).filter(Problems.season == solved_season, Problems.type==solved_type, Problems.level == solved_level))
+        all_steps = result.scalars().all()
+        max_step = max(all_steps)
+        if max_step == solved_step:
+            if solved_level < 3:    # 한 시즌 당 레벨은 3까지만 있다고 가정...
+                released_model.released_level += 1
+                released_model.released_step = 1
+        else:
+            released_model.released_step += 1
+        db.add(released_model)
+
+
     # return problems_info
     for problem in problems_info:
         if problem not in study_info.correct_problems: # 문제 리스트 검사. 없다면 추가.
             study_info.correct_problems.append(problem)
         if problem not in study_info.incorrect_problems:
             study_info.incorrect_problems.append(problem)
+    
 
     for problem_id, incorrect_count in tempUserProblem.problem_incorrect_count.items():
         print("problem_id",problem_id)
         print("incorrect_count",incorrect_count)
-        await increment_correct_problem_count(study_info.id, problem_id, 1, db)
+        await increment_correct_problem_count(study_info.id, problem_id, 1, isGroup, db)
         if incorrect_count != 0:
-            await increment_incorrect_problem_count(study_info.id, problem_id, incorrect_count, db)
+            await increment_incorrect_problem_count(study_info.id, problem_id, incorrect_count, isGroup, db)
 
     # for problem in user_problems.problems:
     #         await increment_correct_problem_count(study_info.id, problem.problem_id, 1, db)
