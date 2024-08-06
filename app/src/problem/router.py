@@ -117,6 +117,12 @@ async def read_problem_all(season:int, level:int, step:int, user: user_dependenc
 
     get_problem_exception(stepinfo_model)
 
+    tempUserProblem = TempUserProblems.get(user.get("id"))
+    tempUserProblem.solved_season = season
+    tempUserProblem.solved_level = level
+    tempUserProblem.solved_step = step
+    tempUserProblem.solved_type = 'ai'
+
     problem = []
     for p in stepinfo_model:
         p_str = p.englishProblem
@@ -250,13 +256,15 @@ async def send_problems_data(user: user_dependency, db: db_dependency):
         result = await db.execute(select(Problems.step).filter(Problems.season == solved_season, Problems.type==solved_type, Problems.level == solved_level))
         all_steps = result.scalars().all()
         max_step = max(all_steps)
-        if max_step == solved_step:
-            if solved_level < 3:    # 한 시즌 당 레벨은 3까지만 있다고 가정...
-                released_model.released_level += 1
-                released_model.released_step = 1
-        else:
-            released_model.released_step += 1
-        db.add(released_model)
+        # released_level && released_step에 해당하는 문제를 풀어야 다음거 해금
+        if released_model.released_level == solved_level and released_model.released_step == solved_step:
+            if max_step == solved_step:
+                if solved_level < 3:    # 한 시즌 당 레벨은 3까지만 있다고 가정...
+                    released_model.released_level += 1
+                    released_model.released_step = 1
+            else:
+                released_model.released_step += 1
+            db.add(released_model)
 
 
     # return problems_info
