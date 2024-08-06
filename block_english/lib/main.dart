@@ -15,7 +15,6 @@ import 'package:block_english/screens/SuperScreens/super_main_screen.dart';
 import 'package:block_english/screens/SuperScreens/super_monitor_screen.dart';
 import 'package:block_english/screens/loading_screen.dart';
 import 'package:block_english/screens/setting_screen.dart';
-import 'package:block_english/utils/size_config.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -33,8 +32,6 @@ class MyApp extends StatelessWidget {
       DeviceOrientation.landscapeRight,
     ]);
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
-
-    SizeConfig().init(context);
 
     return ScreenUtilInit(
       designSize: const Size(812, 375),

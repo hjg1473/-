@@ -1,9 +1,9 @@
 import 'package:block_english/services/super_service.dart';
-import 'package:block_english/utils/size_config.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 class SuperGroupCreateScreen extends ConsumerStatefulWidget {
@@ -68,9 +68,9 @@ class _SuperGroupCreateScreenState
         children: [
           Padding(
             padding: EdgeInsets.only(
-              top: 32 * SizeConfig.scales,
-              left: 64 * SizeConfig.scales,
-              right: 64 * SizeConfig.scales,
+              top: 32.r,
+              left: 64.r,
+              right: 64.r,
             ),
             child: Stack(
               children: [
@@ -81,18 +81,18 @@ class _SuperGroupCreateScreenState
                     onPressed: () => Navigator.of(context).pop(),
                     icon: SvgPicture.asset(
                       'assets/buttons/round_back_button.svg',
-                      width: 48 * SizeConfig.scales,
-                      height: 48 * SizeConfig.scales,
+                      width: 48.r,
+                      height: 48.r,
                     ),
                   ),
                 ),
                 SizedBox(
-                  height: 48 * SizeConfig.scales,
+                  height: 48.r,
                   child: Center(
                     child: Text(
                       '그룹 생성',
                       style: TextStyle(
-                        fontSize: 22 * SizeConfig.scales,
+                        fontSize: 22.sp,
                         fontWeight: FontWeight.w800,
                       ),
                     ),
@@ -103,7 +103,7 @@ class _SuperGroupCreateScreenState
           ),
           Padding(
             padding: EdgeInsets.symmetric(
-              horizontal: 64 * SizeConfig.scales,
+              horizontal: 64.r,
             ),
             child: Center(
               child: Row(
@@ -114,14 +114,14 @@ class _SuperGroupCreateScreenState
                     mainAxisAlignment: MainAxisAlignment.center,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text.rich(
+                      Text.rich(
                         TextSpan(
                           text: '학습 그룹명 ',
                           style: TextStyle(
-                            fontSize: 18,
+                            fontSize: 18.sp,
                             fontWeight: FontWeight.w800,
                           ),
-                          children: [
+                          children: const [
                             TextSpan(
                               text: '*',
                               style: TextStyle(
@@ -132,11 +132,11 @@ class _SuperGroupCreateScreenState
                         ),
                       ),
                       SizedBox(
-                        height: 10 * SizeConfig.scales,
+                        height: 10.r,
                       ),
                       Container(
-                        width: 326 * SizeConfig.scales,
-                        height: 48 * SizeConfig.scales,
+                        width: 326.r,
+                        height: 48.r,
                         decoration: BoxDecoration(
                           boxShadow: [
                             BoxShadow(
@@ -152,19 +152,19 @@ class _SuperGroupCreateScreenState
                           decoration: InputDecoration(
                             border: OutlineInputBorder(
                               borderSide: BorderSide.none,
-                              borderRadius: BorderRadius.circular(8.0),
+                              borderRadius: BorderRadius.circular(8.0).w,
                             ),
                             hintText: '그룹의 이름을 설정해주세요',
-                            hintStyle: const TextStyle(
-                              fontSize: 16,
+                            hintStyle: TextStyle(
+                              fontSize: 16.sp,
                               fontWeight: FontWeight.w700,
-                              color: Color(0xFFD6D6D6),
+                              color: const Color(0xFFD6D6D6),
                             ),
                             suffixIcon: IconButton(
                               icon: SvgPicture.asset(
                                 'assets/buttons/rounded_save_button.svg',
-                                width: 49 * SizeConfig.scales,
-                                height: 29 * SizeConfig.scales,
+                                width: 49.r,
+                                height: 29.r,
                               ),
                               //TODO: complete onPressed
                               onPressed: () {},
@@ -180,19 +180,19 @@ class _SuperGroupCreateScreenState
                     mainAxisAlignment: MainAxisAlignment.center,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
+                      Text(
                         '상세정보',
                         style: TextStyle(
-                          fontSize: 18,
+                          fontSize: 18.sp,
                           fontWeight: FontWeight.w800,
                         ),
                       ),
                       SizedBox(
-                        height: 10 * SizeConfig.scales,
+                        height: 10.r,
                       ),
                       Container(
-                        width: 326 * SizeConfig.scales,
-                        height: 48 * SizeConfig.scales,
+                        width: 326.r,
+                        height: 48.r,
                         decoration: BoxDecoration(
                           boxShadow: [
                             BoxShadow(
@@ -208,19 +208,19 @@ class _SuperGroupCreateScreenState
                           decoration: InputDecoration(
                             border: OutlineInputBorder(
                               borderSide: BorderSide.none,
-                              borderRadius: BorderRadius.circular(8.0),
+                              borderRadius: BorderRadius.circular(8.0).w,
                             ),
                             hintText: 'Ex) 빅드림 초등학교',
-                            hintStyle: const TextStyle(
-                              fontSize: 16,
+                            hintStyle: TextStyle(
+                              fontSize: 16.sp,
                               fontWeight: FontWeight.w700,
-                              color: Color(0xFFD6D6D6),
+                              color: const Color(0xFFD6D6D6),
                             ),
                             suffixIcon: IconButton(
                               icon: SvgPicture.asset(
                                 'assets/buttons/rounded_save_button.svg',
-                                width: 49 * SizeConfig.scales,
-                                height: 29 * SizeConfig.scales,
+                                width: 49.r,
+                                height: 29.r,
                               ),
                               //TODO: complete onPressed
                               onPressed: () {},
@@ -246,15 +246,15 @@ class _SuperGroupCreateScreenState
                   },
                   child: Container(
                     alignment: Alignment.center,
-                    width: SizeConfig.fullWidth / 2,
-                    height: 68 * SizeConfig.scales,
+                    width: 0.5.sw,
+                    height: 68.r,
                     color: const Color(
                       0xFF6F6F6F,
                     ),
-                    child: const Text(
+                    child: Text(
                       '핀코드 바로 생성하기',
                       style: TextStyle(
-                        fontSize: 16,
+                        fontSize: 16.sp,
                         fontWeight: FontWeight.w700,
                         color: Colors.white,
                       ),
@@ -265,15 +265,15 @@ class _SuperGroupCreateScreenState
                   onTap: onCreateGroup,
                   child: Container(
                     alignment: Alignment.center,
-                    width: SizeConfig.fullWidth / 2,
-                    height: 68 * SizeConfig.scales,
+                    width: 0.5.sw,
+                    height: 68.r,
                     color: const Color(
                       0xFF2C2C2C,
                     ),
-                    child: const Text(
+                    child: Text(
                       '그룹 생성하기',
                       style: TextStyle(
-                        fontSize: 16,
+                        fontSize: 16.sp,
                         fontWeight: FontWeight.w700,
                         color: Colors.white,
                       ),
