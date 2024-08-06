@@ -1,10 +1,10 @@
 import 'package:block_english/services/auth_service.dart';
-import 'package:block_english/utils/size_config.dart';
 import 'package:block_english/widgets/reg_input_box.dart';
 import 'package:block_english/widgets/square_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 class RegSuperScreen extends ConsumerStatefulWidget {
@@ -195,144 +195,140 @@ class _RegSuperScreenState extends ConsumerState<RegSuperScreen> {
     role = ModalRoute.of(context)?.settings.arguments as String;
     return Scaffold(
       backgroundColor: const Color(0xFFD1FCFE),
-      body: SafeArea(
-        bottom: false,
-        child: SingleChildScrollView(
-          child: SizedBox(
-            height: SizeConfig.fullHeight,
-            child: Column(
-              children: [
-                SizedBox(
-                  height: 307 * SizeConfig.scaleHeight,
-                  child: Padding(
-                    padding: EdgeInsets.only(
-                      top: 32 * SizeConfig.scales,
-                      left: 64 * SizeConfig.scales,
-                      right: 64 * SizeConfig.scales,
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        Stack(
-                          children: [
-                            IconButton(
-                              padding: EdgeInsets.zero,
-                              onPressed: () => Navigator.of(context).pop(),
-                              icon: SvgPicture.asset(
-                                'assets/buttons/round_back_button.svg',
-                                width: 48 * SizeConfig.scales,
-                                height: 48 * SizeConfig.scales,
-                              ),
+      body: SingleChildScrollView(
+        child: SizedBox(
+          height: 1.sh,
+          child: Column(
+            children: [
+              SizedBox(
+                height: 307.r,
+                child: Padding(
+                  padding: EdgeInsets.only(
+                    top: 32.r,
+                    left: 64.r,
+                    right: 64.r,
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Stack(
+                        children: [
+                          IconButton(
+                            padding: EdgeInsets.zero,
+                            onPressed: () => Navigator.of(context).pop(),
+                            icon: SvgPicture.asset(
+                              'assets/buttons/round_back_button.svg',
+                              width: 48.r,
+                              height: 48.r,
                             ),
-                            Center(
-                              child: Column(
-                                children: [
-                                  Text(
-                                    '관리자 회원가입',
-                                    style: TextStyle(
-                                      fontSize: 22 * SizeConfig.scales,
-                                      fontWeight: FontWeight.w800,
-                                    ),
+                          ),
+                          Center(
+                            child: Column(
+                              children: [
+                                Text(
+                                  '관리자 회원가입',
+                                  style: TextStyle(
+                                    fontSize: 22.sp,
+                                    fontWeight: FontWeight.w800,
                                   ),
-                                  Text(
-                                    '아이디와 비밀번호를 설정해 주세요',
-                                    style: TextStyle(
-                                      fontSize: 14 * SizeConfig.scales,
-                                      fontWeight: FontWeight.w700,
-                                      color: const Color(0x88000000),
-                                    ),
+                                ),
+                                Text(
+                                  '아이디와 비밀번호를 설정해 주세요',
+                                  style: TextStyle(
+                                    fontSize: 14.sp,
+                                    fontWeight: FontWeight.w700,
+                                    color: const Color(0x88000000),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                      const Spacer(),
+                      Column(
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              RegInputBox(
+                                labelText: '아이디',
+                                hintText: '영문/숫자 조합, 6자 이상 입력해 주세요',
+                                controller: usernameController,
+                                inputFormatters: [
+                                  FilteringTextInputFormatter.allow(
+                                      RegExp(r'[a-zA-Z0-9]')),
+                                ],
+                                errorMessage: usernameError,
+                                dupCheck: true,
+                                onChanged: onDupCheckChanged,
+                                onCheckPressed:
+                                    dupCheckDisable ? null : onDupCheckPressed,
+                                success: dupChecked,
+                              ),
+                              SizedBox(width: 20.r),
+                              RegInputBox(
+                                labelText: '이름',
+                                hintText: '실명으로 입력해 주세요',
+                                controller: nameController,
+                                inputFormatters: [
+                                  FilteringTextInputFormatter.allow(
+                                      RegExp(r'[a-zA-Zㄱ-ㅎ가-힣]')),
+                                ],
+                                errorMessage: nameError,
+                                onChanged: onNameChanged,
+                              ),
+                            ],
+                          ),
+                          SizedBox(height: 16.r),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              RegInputBox(
+                                labelText: '비밀번호',
+                                hintText: '영문/숫자 조합, 8자 이상 입력해 주세요',
+                                controller: passwordController,
+                                inputFormatters: [
+                                  FilteringTextInputFormatter.allow(
+                                    RegExp(r'[a-zA-Z0-9]'),
                                   ),
                                 ],
+                                errorMessage: passwordError,
+                                onChanged: onPasswordChanged,
+                                obscureText: true,
+                                isSelected: !isObsecure,
+                                onEyePressed: onEyePressed,
                               ),
-                            ),
-                          ],
-                        ),
-                        const Spacer(),
-                        Column(
-                          children: [
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                RegInputBox(
-                                  labelText: '아이디',
-                                  hintText: '영문/숫자 조합, 6자 이상 입력해 주세요',
-                                  controller: usernameController,
-                                  inputFormatters: [
-                                    FilteringTextInputFormatter.allow(
-                                        RegExp(r'[a-zA-Z0-9]')),
-                                  ],
-                                  errorMessage: usernameError,
-                                  dupCheck: true,
-                                  onChanged: onDupCheckChanged,
-                                  onCheckPressed: dupCheckDisable
-                                      ? null
-                                      : onDupCheckPressed,
-                                  success: dupChecked,
-                                ),
-                                SizedBox(width: 20 * SizeConfig.scales),
-                                RegInputBox(
-                                  labelText: '이름',
-                                  hintText: '실명으로 입력해 주세요',
-                                  controller: nameController,
-                                  inputFormatters: [
-                                    FilteringTextInputFormatter.allow(
-                                        RegExp(r'[a-zA-Zㄱ-ㅎ가-힣]')),
-                                  ],
-                                  errorMessage: nameError,
-                                  onChanged: onNameChanged,
-                                ),
-                              ],
-                            ),
-                            SizedBox(height: 16 * SizeConfig.scales),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                RegInputBox(
-                                  labelText: '비밀번호',
-                                  hintText: '영문/숫자 조합, 8자 이상 입력해 주세요',
-                                  controller: passwordController,
-                                  inputFormatters: [
-                                    FilteringTextInputFormatter.allow(
-                                      RegExp(r'[a-zA-Z0-9]'),
-                                    ),
-                                  ],
-                                  errorMessage: passwordError,
-                                  onChanged: onPasswordChanged,
-                                  obscureText: true,
-                                  isSelected: !isObsecure,
-                                  onEyePressed: onEyePressed,
-                                ),
-                                SizedBox(width: 20 * SizeConfig.scales),
-                                RegInputBox(
-                                  labelText: '비밀번호 확인',
-                                  hintText: '비밀번호를 다시 입력해 주세요',
-                                  controller: password2Controller,
-                                  inputFormatters: [
-                                    FilteringTextInputFormatter.allow(
-                                      RegExp(r'[a-zA-Z0-9]'),
-                                    ),
-                                  ],
-                                  errorMessage: password2Error,
-                                  onChanged: onPasswordChanged,
-                                  obscureText: true,
-                                  isSelected: !isObsecure2,
-                                  onEyePressed: onEye2Pressed,
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                        const Spacer(),
-                      ],
-                    ),
+                              SizedBox(width: 20.r),
+                              RegInputBox(
+                                labelText: '비밀번호 확인',
+                                hintText: '비밀번호를 다시 입력해 주세요',
+                                controller: password2Controller,
+                                inputFormatters: [
+                                  FilteringTextInputFormatter.allow(
+                                    RegExp(r'[a-zA-Z0-9]'),
+                                  ),
+                                ],
+                                errorMessage: password2Error,
+                                onChanged: onPasswordChanged,
+                                obscureText: true,
+                                isSelected: !isObsecure2,
+                                onEyePressed: onEye2Pressed,
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                      const Spacer(),
+                    ],
                   ),
                 ),
-                SquareButton(
-                  text: '다음으로',
-                  onPressed: nextDisable ? null : onNextPressed,
-                ),
-              ],
-            ),
+              ),
+              SquareButton(
+                text: '다음으로',
+                onPressed: nextDisable ? null : onNextPressed,
+              ),
+            ],
           ),
         ),
       ),
