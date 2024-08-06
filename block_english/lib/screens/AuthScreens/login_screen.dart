@@ -1,10 +1,10 @@
 import 'package:block_english/services/auth_service.dart';
-import 'package:block_english/utils/size_config.dart';
 import 'package:block_english/utils/storage.dart';
 import 'package:block_english/widgets/square_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
@@ -116,247 +116,235 @@ class _LoginState extends ConsumerState<LoginScreen> {
           child: Row(
             children: [
               Container(
-                width: 396 * SizeConfig.scaleWidth,
-                height: SizeConfig.fullHeight,
+                width: 396.w,
+                height: 1.sh,
                 color: Colors.lightBlue[100],
               ),
               SizedBox(
-                width: 416 * SizeConfig.scaleWidth,
-                height: SizeConfig.fullHeight,
+                width: 416.w,
+                height: 1.sh,
                 child: Column(
                   children: [
                     Padding(
                       padding: EdgeInsets.only(
-                        top: 38 * SizeConfig.scaleHeight,
-                        left: 42 * SizeConfig.scaleWidth,
-                        right: 42 * SizeConfig.scaleWidth,
+                        top: 38.r,
+                        left: 42.r,
+                        right: 42.r,
                       ),
-                      child: Column(
-                        children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              Text(
-                                '로그인',
-                                style: TextStyle(
-                                  fontSize: 22 * SizeConfig.scales,
-                                  fontWeight: FontWeight.w800,
-                                ),
-                              ),
-                              FilledButton(
-                                onPressed: () {
-                                  Navigator.of(context)
-                                      .pushNamed('/reg_select_role_screen');
-                                },
-                                style: FilledButton.styleFrom(
-                                  backgroundColor: const Color(0xFFB132FE),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(45),
-                                  ),
-                                  padding: EdgeInsets.symmetric(
-                                    horizontal: 20 * SizeConfig.scales,
-                                    vertical: 12 * SizeConfig.scales,
-                                  ),
-                                ),
-                                child: Text(
-                                  '회원가입',
+                      child: SizedBox(
+                        height: 307.r - 38.r,
+                        child: Column(
+                          children: [
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                Text(
+                                  '로그인',
                                   style: TextStyle(
-                                    fontSize: 16 * SizeConfig.scales,
-                                    fontWeight: FontWeight.w700,
-                                    color: Colors.white,
+                                    fontSize: 22.sp,
+                                    fontWeight: FontWeight.w800,
                                   ),
                                 ),
-                              ),
-                            ],
-                          ),
-                          SizedBox(
-                            height: 18 * SizeConfig.scales,
-                          ),
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                children: [
-                                  Text(
-                                    '아이디',
+                                FilledButton(
+                                  onPressed: () {
+                                    Navigator.of(context)
+                                        .pushNamed('/reg_select_role_screen');
+                                  },
+                                  style: FilledButton.styleFrom(
+                                    backgroundColor: const Color(0xFFB132FE),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(45).w,
+                                    ),
+                                    padding: EdgeInsets.symmetric(
+                                      horizontal: 20.r,
+                                      vertical: 12.r,
+                                    ),
+                                  ),
+                                  child: Text(
+                                    '회원가입',
                                     style: TextStyle(
-                                      fontSize: 16 * SizeConfig.scales,
+                                      fontSize: 16.sp,
                                       fontWeight: FontWeight.w700,
-                                      color: const Color(0xFF555555),
+                                      color: Colors.white,
                                     ),
                                   ),
-                                  usernameError
-                                      ? Row(
-                                          children: [
-                                            SizedBox(
-                                                width: 10 * SizeConfig.scales),
-                                            Icon(
-                                              Icons.error_outline,
-                                              color: Colors.red,
-                                              size: 12 * SizeConfig.scales,
-                                            ),
-                                            SizedBox(
-                                                width: 6 * SizeConfig.scales),
-                                            Text(
-                                              usernameErrorMsg,
-                                              style: TextStyle(
-                                                color: Colors.red,
-                                                fontSize:
-                                                    11 * SizeConfig.scales,
-                                              ),
-                                            ),
-                                          ],
-                                        )
-                                      : const SizedBox(width: 1),
-                                ],
-                              ),
-                              SizedBox(
-                                height: 6 * SizeConfig.scales,
-                              ),
-                              TextField(
-                                inputFormatters: [
-                                  FilteringTextInputFormatter.allow(
-                                    RegExp(r'[a-zA-Z0-9]'),
-                                  ),
-                                ],
-                                decoration: InputDecoration(
-                                  contentPadding: EdgeInsets.symmetric(
-                                    horizontal: 16 * SizeConfig.scales,
-                                    vertical: 12 * SizeConfig.scales,
-                                  ),
-                                  hintText: '아이디를 입력해 주세요',
-                                  hintStyle: TextStyle(
-                                    color: const Color(0xFFA3A3A3),
-                                    fontSize: 16 * SizeConfig.scales,
-                                    fontWeight: FontWeight.w700,
-                                  ),
-                                  filled: true,
-                                  fillColor: const Color(0xFFF0F0F0),
-                                  border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(8),
-                                    borderSide: BorderSide.none,
-                                  ),
                                 ),
-                                onChanged: (value) =>
-                                    setState(() => username = value),
-                              ),
-                            ],
-                          ),
-                          SizedBox(height: 12 * SizeConfig.scales),
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                children: [
-                                  Text(
-                                    '비밀번호',
-                                    style: TextStyle(
-                                      fontSize: 16 * SizeConfig.scales,
+                              ],
+                            ),
+                            const Spacer(flex: 2),
+                            Column(
+                              children: [
+                                Row(
+                                  children: [
+                                    Text(
+                                      '아이디',
+                                      style: TextStyle(
+                                        fontSize: 16.sp,
+                                        fontWeight: FontWeight.w700,
+                                        color: const Color(0xFF555555),
+                                      ),
+                                    ),
+                                    usernameError
+                                        ? Row(
+                                            children: [
+                                              SizedBox(width: 10.r),
+                                              Icon(
+                                                Icons.error_outline,
+                                                color: Colors.red,
+                                                size: 12.r,
+                                              ),
+                                              SizedBox(width: 6.r),
+                                              Text(
+                                                usernameErrorMsg,
+                                                style: TextStyle(
+                                                  color: Colors.red,
+                                                  fontSize: 11.sp,
+                                                ),
+                                              ),
+                                            ],
+                                          )
+                                        : const SizedBox(width: 1),
+                                  ],
+                                ),
+                                SizedBox(
+                                  height: 6.r,
+                                ),
+                                TextField(
+                                  inputFormatters: [
+                                    FilteringTextInputFormatter.allow(
+                                      RegExp(r'[a-zA-Z0-9]'),
+                                    ),
+                                  ],
+                                  decoration: InputDecoration(
+                                    contentPadding: EdgeInsets.symmetric(
+                                      horizontal: 16.r,
+                                      vertical: 12.r,
+                                    ),
+                                    hintText: '아이디를 입력해 주세요',
+                                    hintStyle: TextStyle(
+                                      color: const Color(0xFFA3A3A3),
+                                      fontSize: 16.sp,
                                       fontWeight: FontWeight.w700,
-                                      color: const Color(0xFF555555),
+                                    ),
+                                    filled: true,
+                                    fillColor: const Color(0xFFF0F0F0),
+                                    border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(8).w,
+                                      borderSide: BorderSide.none,
                                     ),
                                   ),
-                                  passwordError
-                                      ? Row(
-                                          children: [
-                                            SizedBox(
-                                                width: 10 * SizeConfig.scales),
-                                            Icon(
-                                              Icons.error_outline,
-                                              color: Colors.red,
-                                              size: 12 * SizeConfig.scales,
-                                            ),
-                                            SizedBox(
-                                                width: 6 * SizeConfig.scales),
-                                            Text(
-                                              passwordErrorMsg,
-                                              style: TextStyle(
+                                  onChanged: (value) =>
+                                      setState(() => username = value),
+                                ),
+                                SizedBox(height: 12.r),
+                                Row(
+                                  children: [
+                                    Text(
+                                      '비밀번호',
+                                      style: TextStyle(
+                                        fontSize: 16.r,
+                                        fontWeight: FontWeight.w700,
+                                        color: const Color(0xFF555555),
+                                      ),
+                                    ),
+                                    passwordError
+                                        ? Row(
+                                            children: [
+                                              SizedBox(width: 10.r),
+                                              Icon(
+                                                Icons.error_outline,
                                                 color: Colors.red,
-                                                fontSize:
-                                                    11 * SizeConfig.scales,
+                                                size: 12.r,
                                               ),
-                                            ),
-                                          ],
-                                        )
-                                      : const SizedBox(width: 1),
-                                ],
-                              ),
-                              SizedBox(
-                                height: 6 * SizeConfig.scales,
-                              ),
-                              TextField(
-                                inputFormatters: [
-                                  FilteringTextInputFormatter.allow(
-                                    RegExp(r'[a-zA-Z0-9]'),
-                                  ),
-                                ],
-                                obscureText: passwordObsecured,
-                                obscuringCharacter: '*',
-                                decoration: InputDecoration(
-                                  contentPadding: EdgeInsets.symmetric(
-                                    horizontal: 16 * SizeConfig.scales,
-                                    vertical: 12 * SizeConfig.scales,
-                                  ),
-                                  hintText: '비밀번호를 입력해 주세요',
-                                  hintStyle: TextStyle(
-                                    color: const Color(0xFFA3A3A3),
-                                    fontSize: 16 * SizeConfig.scales,
-                                    fontWeight: FontWeight.w700,
-                                  ),
-                                  suffixIcon: IconButton(
-                                    icon: Icon(
-                                      passwordObsecured
-                                          ? Icons.visibility_off_outlined
-                                          : Icons.visibility_rounded,
+                                              SizedBox(width: 6.r),
+                                              Text(
+                                                passwordErrorMsg,
+                                                style: TextStyle(
+                                                  color: Colors.red,
+                                                  fontSize: 11.sp,
+                                                ),
+                                              ),
+                                            ],
+                                          )
+                                        : const SizedBox(width: 1),
+                                  ],
+                                ),
+                                SizedBox(
+                                  height: 6.r,
+                                ),
+                                TextField(
+                                  inputFormatters: [
+                                    FilteringTextInputFormatter.allow(
+                                      RegExp(r'[a-zA-Z0-9]'),
                                     ),
-                                    onPressed: () {
-                                      setState(() {
-                                        passwordObsecured = !passwordObsecured;
-                                      });
-                                    },
+                                  ],
+                                  obscureText: passwordObsecured,
+                                  obscuringCharacter: '*',
+                                  decoration: InputDecoration(
+                                    contentPadding: EdgeInsets.symmetric(
+                                      horizontal: 16.r,
+                                      vertical: 12.r,
+                                    ),
+                                    hintText: '비밀번호를 입력해 주세요',
+                                    hintStyle: TextStyle(
+                                      color: const Color(0xFFA3A3A3),
+                                      fontSize: 16.sp,
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                    suffixIcon: IconButton(
+                                      icon: Icon(
+                                        passwordObsecured
+                                            ? Icons.visibility_off_outlined
+                                            : Icons.visibility_rounded,
+                                      ),
+                                      onPressed: () {
+                                        setState(() {
+                                          passwordObsecured =
+                                              !passwordObsecured;
+                                        });
+                                      },
+                                    ),
+                                    filled: true,
+                                    fillColor: const Color(0xFFF0F0F0),
+                                    border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(8).w,
+                                      borderSide: BorderSide.none,
+                                    ),
                                   ),
-                                  filled: true,
-                                  fillColor: const Color(0xFFF0F0F0),
-                                  border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(8),
-                                    borderSide: BorderSide.none,
-                                  ),
+                                  onChanged: (value) =>
+                                      setState(() => password = value),
                                 ),
-                                onChanged: (value) =>
-                                    setState(() => password = value),
-                              ),
-                            ],
-                          ),
-                          SizedBox(
-                            height: 10 * SizeConfig.scales,
-                          ),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.end,
-                            children: [
-                              TextButton(
-                                onPressed: () {},
-                                style: TextButton.styleFrom(
-                                  padding: EdgeInsets.zero,
-                                  minimumSize: Size.zero,
-                                  tapTargetSize:
-                                      MaterialTapTargetSize.shrinkWrap,
+                                SizedBox(height: 10.r),
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.end,
+                                  children: [
+                                    TextButton(
+                                      onPressed: () {},
+                                      style: TextButton.styleFrom(
+                                        padding: EdgeInsets.zero,
+                                        minimumSize: Size.zero,
+                                        tapTargetSize:
+                                            MaterialTapTargetSize.shrinkWrap,
+                                      ),
+                                      child: Text(
+                                        '비밀번호 찾기',
+                                        style: TextStyle(
+                                          fontSize: 14.sp,
+                                          fontWeight: FontWeight.w700,
+                                          color: const Color(0xFFA3A3A3),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
                                 ),
-                                child: Text(
-                                  '비밀번호 찾기',
-                                  style: TextStyle(
-                                    fontSize: 14 * SizeConfig.scales,
-                                    fontWeight: FontWeight.w700,
-                                    color: const Color(0xFFA3A3A3),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
+                              ],
+                            ),
+                            const Spacer(flex: 3),
+                          ],
+                        ),
                       ),
                     ),
-                    const Spacer(),
                     SquareButton(
                       text: '로그인',
                       onPressed: onLoginPressed,

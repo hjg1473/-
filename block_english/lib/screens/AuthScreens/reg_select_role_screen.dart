@@ -1,5 +1,5 @@
-import 'package:block_english/utils/size_config.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 class RegSelectRoleScreen extends StatelessWidget {
@@ -9,105 +9,102 @@ class RegSelectRoleScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
         backgroundColor: const Color(0xFFD1FCFE),
-        body: SafeArea(
-          bottom: false,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Padding(
-                padding: EdgeInsets.only(
-                  top: 32 * SizeConfig.scales,
-                  left: 64 * SizeConfig.scales,
-                  right: 64 * SizeConfig.scales,
-                ),
-                child: Stack(
-                  children: [
-                    FilledButton.icon(
-                      icon: Icon(
-                        Icons.arrow_back_ios,
-                        size: 16 * SizeConfig.scales,
-                      ),
-                      onPressed: () {
-                        Navigator.pop(context);
-                      },
-                      label: Text(
-                        '로그인',
-                        style: TextStyle(
-                          fontSize: 16 * SizeConfig.scales,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                      style: FilledButton.styleFrom(
-                        padding: EdgeInsets.symmetric(
-                          horizontal: 20 * SizeConfig.scales,
-                          vertical: 10 * SizeConfig.scales,
-                        ),
-                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                        backgroundColor: Colors.black,
-                      ),
-                    ),
-                    Center(
-                      child: Column(
-                        children: [
-                          Text(
-                            '나는 어떤 사용자인가요?',
-                            style: TextStyle(
-                              fontSize: 22 * SizeConfig.scales,
-                              fontWeight: FontWeight.w800,
-                            ),
-                          ),
-                          Text(
-                            '본인의 신분에 맞게 선택해주세요',
-                            style: TextStyle(
-                              fontSize: 14 * SizeConfig.scales,
-                              fontWeight: FontWeight.w700,
-                              color: const Color(0x88000000),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
+        body: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Padding(
+              padding: EdgeInsets.only(
+                top: 32.r,
+                left: 64.r,
+                right: 64.r,
               ),
-              const Spacer(),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
+              child: Stack(
                 children: [
-                  SizedBox(
-                    child: IconButton(
-                      onPressed: () {
-                        Navigator.pushNamed(context, '/reg_student_screen');
-                      },
-                      icon: SvgPicture.asset(
-                        width: 180 * SizeConfig.scales,
-                        height: 206 * SizeConfig.scales,
-                        'assets/cards/sign_in_user.svg',
+                  FilledButton.icon(
+                    icon: Icon(
+                      Icons.arrow_back_ios,
+                      size: 16.r,
+                    ),
+                    onPressed: () {
+                      Navigator.pop(context);
+                    },
+                    label: Text(
+                      '로그인',
+                      style: TextStyle(
+                        fontSize: 16.sp,
+                        fontWeight: FontWeight.w700,
                       ),
-                      highlightColor: Colors.transparent,
+                    ),
+                    style: FilledButton.styleFrom(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 20.r,
+                        vertical: 10.r,
+                      ),
+                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      backgroundColor: Colors.black,
                     ),
                   ),
-                  SizedBox(
-                    width: 70 * SizeConfig.scales,
-                  ),
-                  SizedBox(
-                    child: IconButton(
-                      onPressed: () {
-                        Navigator.pushNamed(context, '/reg_super_type_screen');
-                      },
-                      icon: SvgPicture.asset(
-                        width: 180 * SizeConfig.scales,
-                        height: 206 * SizeConfig.scales,
-                        'assets/cards/sign_in_manager.svg',
-                      ),
-                      highlightColor: Colors.transparent,
+                  Center(
+                    child: Column(
+                      children: [
+                        Text(
+                          '나는 어떤 사용자인가요?',
+                          style: TextStyle(
+                            fontSize: 22.sp,
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                        Text(
+                          '사용자를 선택해 주세요',
+                          style: TextStyle(
+                            fontSize: 14.sp,
+                            fontWeight: FontWeight.w700,
+                            color: const Color(0x88000000),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ],
               ),
-              const Spacer(),
-            ],
-          ),
+            ),
+            const Spacer(),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                SizedBox(
+                  child: IconButton(
+                    onPressed: () {
+                      Navigator.pushNamed(context, '/reg_student_screen');
+                    },
+                    icon: SvgPicture.asset(
+                      width: 180.r,
+                      height: 206.r,
+                      'assets/cards/sign_in_user.svg',
+                    ),
+                    highlightColor: Colors.transparent,
+                  ),
+                ),
+                SizedBox(
+                  width: 70.r,
+                ),
+                SizedBox(
+                  child: IconButton(
+                    onPressed: () {
+                      Navigator.pushNamed(context, '/reg_super_type_screen');
+                    },
+                    icon: SvgPicture.asset(
+                      width: 180.r,
+                      height: 206.r,
+                      'assets/cards/sign_in_manager.svg',
+                    ),
+                    highlightColor: Colors.transparent,
+                  ),
+                ),
+              ],
+            ),
+            const Spacer(),
+          ],
         ));
   }
 }
