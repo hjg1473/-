@@ -4,7 +4,7 @@ async def username_exception(username: str, db):
     from auth.service import get_user_to_username
     user = await get_user_to_username(username, db)
     if user:
-        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="중복된 아이디입니다.")
+        raise HTTPException(status_code=status.HTTP_200_OK, detail="중복된 아이디입니다.")
 
 async def username2_exception(username: str, db):
     from auth.service import get_user_to_username

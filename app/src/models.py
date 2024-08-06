@@ -71,6 +71,22 @@ class Users(Base):
     )
 
 
+# class Types(Base):  # Study information
+#     __tablename__ = "types"
+
+#     id = Column(Integer, primary_key=True, index=True)  # PK
+    # season = Column(Integer, default=1)
+    # level = Column(Integer, default=1)
+    # punctuation = Column(Integer, default=0)
+    # letter = Column(Integer, default=0)
+    # block = Column(Integer, default=0)
+    # word = Column(Integer, default=0)
+    # order = Column(Integer, default=0)
+#     owner_id = Column(Integer, ForeignKey("studyInfo.id"))  # FK to users
+
+#     # Relationships
+#     owner = relationship("StudyInfo", back_populates="owner2")
+
 class Released(Base):  # Study information
     __tablename__ = "released"
 
@@ -88,7 +104,7 @@ class Groups(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String)
-    grade = Column(String)
+    detail = Column(String)
     releasedLevel = Column(Integer, default=1)
     releasedStep = Column(Integer, default=1)
     members = relationship("Users", foreign_keys=[Users.team_id], back_populates="team")
@@ -99,18 +115,10 @@ class StudyInfo(Base):  # Study information
     id = Column(Integer, primary_key=True, index=True)  # PK
     totalStudyTime = Column(Integer)  # Student Type1 level >> stream_study_day
     streamStudyDay = Column(Integer)  # Student Type2 level >> total_study_time
-
-    punctuation = Column(Integer)
-    letter = Column(Integer)
-    block = Column(Integer)
-    word = Column(Integer)
-    order = Column(Integer)
-
-    releasedLevel = Column(Integer, default=1)  # Student Type3 level >> released_level, the highest level that the student can solve.
-    releasedStep = Column(Integer, default=1)
     owner_id = Column(Integer, ForeignKey("users.id"))  # FK to users
 
     # Relationships
+    # owner2 = relationship("Types", back_populates="owner", cascade='delete')
     owner = relationship("Users", back_populates="studyInfos")
     correct_problems = relationship("Problems", secondary=correct_problem_table, back_populates="correct_study_infos")
     incorrect_problems = relationship("Problems", secondary=incorrect_problem_table, back_populates="incorrect_study_infos")
@@ -119,7 +127,7 @@ class Problems(Base):  # Problems
     __tablename__ = "problems"
 
     id = Column(Integer, primary_key=True, index=True)  # PK
-    season = Column(String)  # Season
+    season = Column(Integer)  # Season
     level = Column(Integer)  # Type >> level
     step = Column(Integer)  # Problem level (1-3)>> step
     koreaProblem = Column(String)  # Korean sentence

@@ -2,7 +2,7 @@ from typing import Dict, List, Optional
 from pydantic import BaseModel
 
 class Problem(BaseModel):
-    season: str
+    season: int
     level: int
     step: int
     koreaProblem: str

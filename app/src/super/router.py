@@ -41,7 +41,7 @@ async def read_group_info(user: user_dependency, db: db_dependency):
     
     group_list = await get_group_list(user.get("id"), db)
     
-    result = {'groups': [{'id': u.id, 'name': u.name, 'count': await get_std_group_count(u.id, db)} for u in group_list]}
+    result = {'groups': [{'id': u.id, 'name': u.name, 'detail': u.detail, 'count': await get_std_group_count(u.id, db)} for u in group_list]}
     
     return result
 
@@ -70,15 +70,16 @@ async def read_group_student_info(group_id: int,
     
     return result
 
-# 특정 그룹 이름 업데이트
-@router.put("/group_name_update", status_code = status.HTTP_200_OK)
-async def group_name_update(group: GroupName,
+# 특정 그룹 업데이트
+@router.put("/group_update", status_code = status.HTTP_200_OK)
+async def group_update(group: GroupName,
                             user: user_dependency,
                             db: db_dependency):
     super_authenticate_exception(user)
+    await existing_name_exception(group.group_name, user.get('id'), db)
     await super_group_exception(user.get("id"), group.group_id, db)
     await find_group_exception(group.group_id, db)
-    await update_group_name(group.group_id, group.group_name, db)
+    await update_group_name(group.group_id, group.group_name, group.group_detail, db)
 
     return {'detail' : 'Success'}
 
@@ -186,7 +187,7 @@ async def read_user_weak_problem(userStep: UserStep, user: user_dependency, db: 
 
     return await user_worst_problem(userStep.user_id, "incorrect_problems", db)
 
-# 특정 유저의 특정 레벨-스텝의 오답률 정보 조회
+# 특정 유저의 특정 시즌-레벨의 오답률 정보 조회
 @router.post("/user_answer_rate_info", status_code = status.HTTP_200_OK)
 async def read_user_answerRate(userStep: UserStep2, user: user_dependency, db: db_dependency):
     
@@ -196,9 +197,8 @@ async def read_user_answerRate(userStep: UserStep2, user: user_dependency, db: d
     std_team_id = await get_std_team_id(userStep.user_id, db)
     group_list = await get_group_list(user.get("id"), db)
     std_access_exception(group_list, std_team_id)
-
-    correct_count = await user_step_problem_count(userStep.user_id, userStep.step, userStep.level, "correct_problems", db)
-    incorrect_count = await user_step_problem_count(userStep.user_id, userStep.step, userStep.level, "incorrect_problems", db)
+    correct_count = await user_step_problem_count(userStep.user_id, userStep.season, userStep.level, "correct_problems", db)
+    incorrect_count = await user_step_problem_count(userStep.user_id, userStep.season, userStep.level, "incorrect_problems", db)
     user_level_step_incorrect_answer_rate = 0
     get_studyInfo_exception(correct_count, incorrect_count)
     user_level_step_incorrect_answer_rate = f"{incorrect_count / (correct_count + incorrect_count):.2f}"
@@ -296,98 +296,3 @@ async def read_group_avgSentence(groupStep: GroupLevelStep, user: user_dependenc
     await find_group_exception(groupStep.group_id, db)
     return await group_avg_student_problem(groupStep.group_id, groupStep.step, groupStep.level, db)
 
-# 선생님이 커스텀 문제 생성
-# @router.post("/create/custom_problems")
-# async def create_problem(user: user_dependency, db:db_dependency, problemset: ProblemSet):
-    
-#     super_authenticate_exception(user)
-
-#     problem_exists_exception(problemset, db)
-
-#     await update_cproblem(problemset, db)
-
-#     return {'detail': '성공적으로 생성되었습니다!'}
-
-# # 만들어진 커스텀 문제 세트의 목록 조회
-# @router.get("/custom_problem_set/info", status_code = status.HTTP_200_OK)
-# async def read_group_info(user: user_dependency, db: db_dependency):
-    
-#     super_authenticate_exception(user)
-    
-#     custom_problem_set_list = await get_cproblem_list(db)
-    
-#     result = {'custom_problem_set':[{'name': name} for name in custom_problem_set_list]}
-    
-#     return result
-
-
-# # 만들어진 커스텀 문제 세트 조회
-# @router.get("/custom_problem_info/{set_name}", status_code = status.HTTP_200_OK)
-# async def read_group_info(set_name: str, user: user_dependency, db: db_dependency):
-
-#     super_authenticate_exception(user)
-
-#     custom_problems = await get_cproblems(set_name, db)
-
-#     return custom_problems
-
-# @router.delete("/custom_problem_set_delete/{set_name}", status_code=status.HTTP_200_OK)
-# async def delete_user(set_name: str, user: user_dependency, db: db_dependency):
-
-#     super_authenticate_exception(user)
-    
-#     await delete_cproblem(set_name, db)
-
-#     return {"detail": '성공적으로 삭제되었습니다.'}
-
-# # 선생님이 학생 개인의 정보를 살펴볼 때
-# @router.get("/searchStudyinfo/{user_id}", status_code = status.HTTP_200_OK)
-# async def read_select_user_studyInfo(user: user_dependency, db: db_dependency, user_id : int):
-    
-#     super_authenticate_exception(user)
-
-#     user_model = db.query(Users.id, Users.username, Users.age).filter(Users.id == user_id).first()
-    
-#     if user_model is None:
-#         raise http_exception()
-
-#     study_info = db.query(StudyInfo).options(
-#         joinedload(StudyInfo.correct_problems),
-#         joinedload(StudyInfo.incorrect_problems)
-#     ).filter(StudyInfo.id == user_id).first()
-
-#     # 초기화
-#     correct_problems_type1_count = 0
-#     correct_problems_type2_count = 0
-#     correct_problems_type3_count = 0
-#     incorrect_problems_type1_count = 0
-#     incorrect_problems_type2_count = 0
-#     incorrect_problems_type3_count = 0
-
-#     # 조금 수정을 원해, 매번 확인한다? 조금 그렇긴 해
-#     for problem in study_info.correct_problems:
-#         if problem.type == '부정문':
-#             correct_problems_type1_count += 1
-#         elif problem.type == '의문문':
-#             correct_problems_type2_count += 1
-#         elif problem.type == '단어와품사':
-#             correct_problems_type3_count += 1
-
-#     for problem in study_info.incorrect_problems:
-#         if problem.type == '부정문':
-#             incorrect_problems_type1_count += 1
-#         elif problem.type == '의문문':
-#             incorrect_problems_type2_count += 1
-#         elif problem.type == '단어와품사':
-#             incorrect_problems_type3_count += 1
-
-#     return {
-#         'user_id': user_model[0],
-#         'name': user_model[1],
-#         'age': user_model[2],
-#         'type1_True_cnt' : correct_problems_type1_count,
-#         'type2_True_cnt' : correct_problems_type2_count,
-#         'type3_True_cnt' : correct_problems_type3_count,
-#         'type1_False_cnt' : incorrect_problems_type1_count,
-#         'type2_False_cnt' : incorrect_problems_type2_count,
-#         'type3_False_cnt' : incorrect_problems_type3_count }
