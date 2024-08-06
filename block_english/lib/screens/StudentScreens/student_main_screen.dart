@@ -14,6 +14,60 @@ class StudentMainScreen extends ConsumerWidget {
       body: Stack(
         children: [
           Align(
+            alignment: Alignment.topRight,
+            child: Padding(
+              padding: EdgeInsets.only(
+                top: 24.r,
+                right: 44.r,
+              ),
+              child: SizedBox(
+                height: 60.r,
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        SizedBox(height: 10.r),
+                        Text(
+                          '${ref.watch(statusProvider).name}님,',
+                          style: TextStyle(
+                            fontFamily: 'Pretendard',
+                            fontSize: 15.sp,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        Text(
+                          '반가워요.',
+                          style: TextStyle(
+                            fontFamily: 'Pretendard',
+                            fontSize: 15.sp,
+                            fontWeight: FontWeight.w500,
+                            color: const Color(0x88000000),
+                          ),
+                        ),
+                      ],
+                    ),
+                    SizedBox(
+                      width: 11.r,
+                    ),
+                    IconButton(
+                      padding: EdgeInsets.zero,
+                      onPressed: () =>
+                          Navigator.of(context).pushNamed('/setting_screen'),
+                      icon: SvgPicture.asset(
+                        'assets/images/student_character.svg',
+                        width: 46.63.r,
+                        height: 60.r,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          Align(
             alignment: Alignment.topLeft,
             child: Padding(
               padding: EdgeInsets.only(
@@ -89,7 +143,8 @@ class StudentMainScreen extends ConsumerWidget {
                 ),
                 IconButton(
                   padding: EdgeInsets.zero,
-                  onPressed: () {},
+                  onPressed: () =>
+                      Navigator.of(context).pushNamed('/stud_profile_screen'),
                   icon: SvgPicture.asset('assets/cards/student_main_3.svg',
                       width: 205.r, height: 207.r),
                 ),
