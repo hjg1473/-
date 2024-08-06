@@ -38,7 +38,6 @@ class StudentProfileScreen extends StatelessWidget {
                       return error.isEmpty
                           ? StudentProfileCard(
                               name: studentInfo.name,
-                              age: studentInfo.age,
                             )
                           : // TODO: Error handling
                           Text(error);

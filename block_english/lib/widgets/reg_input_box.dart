@@ -1,6 +1,6 @@
-import 'package:block_english/utils/size_config.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class RegInputBox extends StatelessWidget {
   final double width;
@@ -10,10 +10,11 @@ class RegInputBox extends StatelessWidget {
   final TextEditingController controller;
   final List<TextInputFormatter>? inputFormatters;
   final String errorMessage;
-  final bool doubleCheck;
-  final bool verify;
+  final bool dupCheck;
   final bool obscureText;
   final bool isSelected;
+  final VoidCallback? onChanged;
+  final VoidCallback? onCheckChanged;
   final VoidCallback? onCheckPressed;
   final VoidCallback? onEyePressed;
   final bool success;
@@ -27,10 +28,11 @@ class RegInputBox extends StatelessWidget {
     required this.controller,
     this.inputFormatters,
     this.errorMessage = '',
-    this.doubleCheck = false,
-    this.verify = false,
+    this.dupCheck = false,
     this.obscureText = false,
     this.isSelected = false,
+    this.onChanged,
+    this.onCheckChanged,
     this.onCheckPressed,
     this.onEyePressed,
     this.success = false,
@@ -39,22 +41,22 @@ class RegInputBox extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: width * SizeConfig.scales,
-      height: height * SizeConfig.scales,
+      width: width.r,
+      height: height.r,
       decoration: BoxDecoration(
-        color: const Color(0xFFF0F0F0),
-        borderRadius: BorderRadius.circular(8),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(8).w,
         border: Border.all(color: Colors.transparent),
       ),
       padding: EdgeInsets.symmetric(
-        horizontal: 12 * SizeConfig.scales,
-        vertical: 8 * SizeConfig.scales,
+        horizontal: 12.r,
+        vertical: 8.r,
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           SizedBox(
-            width: (width - 36 - 71) * SizeConfig.scales,
+            width: dupCheck ? (width - 36 - 71).r : (width - 36 - 25).r,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -65,25 +67,25 @@ class RegInputBox extends StatelessWidget {
                     Text(
                       labelText,
                       style: TextStyle(
-                        fontSize: 13 * SizeConfig.scales,
+                        fontSize: 13.sp,
                         fontWeight: FontWeight.w700,
                       ),
                     ),
                     errorMessage != ''
                         ? Row(
                             children: [
-                              SizedBox(width: 10 * SizeConfig.scales),
+                              SizedBox(width: 10.r),
                               Icon(
                                 Icons.error_outline,
                                 color: success ? Colors.green : Colors.red,
-                                size: 12 * SizeConfig.scales,
+                                size: 12.r,
                               ),
-                              SizedBox(width: 6 * SizeConfig.scales),
+                              SizedBox(width: 6.r),
                               Text(
                                 errorMessage,
                                 style: TextStyle(
                                   color: success ? Colors.green : Colors.red,
-                                  fontSize: 11 * SizeConfig.scales,
+                                  fontSize: 11.r,
                                 ),
                               ),
                             ],
@@ -92,6 +94,11 @@ class RegInputBox extends StatelessWidget {
                   ],
                 ),
                 TextField(
+                  onChanged: (value) {
+                    if (onChanged != null) {
+                      onChanged!();
+                    }
+                  },
                   inputFormatters: inputFormatters,
                   obscureText: isSelected,
                   obscuringCharacter: '*',
@@ -102,8 +109,9 @@ class RegInputBox extends StatelessWidget {
                     isCollapsed: true,
                     hintText: hintText,
                     hintStyle: TextStyle(
-                        fontSize: 13 * SizeConfig.scales,
-                        fontWeight: FontWeight.w400),
+                      fontSize: 13.sp,
+                      fontWeight: FontWeight.w400,
+                    ),
                     border: const OutlineInputBorder(
                       borderSide: BorderSide.none,
                     ),
@@ -112,22 +120,22 @@ class RegInputBox extends StatelessWidget {
               ],
             ),
           ),
-          doubleCheck
+          dupCheck
               ? FilledButton(
                   onPressed: onCheckPressed,
                   style: FilledButton.styleFrom(
-                    minimumSize:
-                        Size(71 * SizeConfig.scales, 36 * SizeConfig.scales),
+                    minimumSize: Size(71.r, 36.r),
                     padding: EdgeInsets.symmetric(
-                      horizontal: 10 * SizeConfig.scales,
-                      vertical: 10 * SizeConfig.scales,
+                      horizontal: 10.r,
+                      vertical: 10.r,
                     ),
-                    backgroundColor: const Color(0xFF5D5D5D),
+                    backgroundColor: Colors.black,
+                    disabledBackgroundColor: const Color(0xFFAFAFAF),
                   ),
                   child: Text(
                     '중복확인',
                     style: TextStyle(
-                      fontSize: 14 * SizeConfig.scales,
+                      fontSize: 14.sp,
                       fontWeight: FontWeight.w700,
                       color: Colors.white,
                     ),
@@ -135,13 +143,13 @@ class RegInputBox extends StatelessWidget {
                 )
               : obscureText
                   ? SizedBox(
-                      width: 25 * SizeConfig.scales,
+                      width: 25.r,
                       child: IconButton(
                         padding: EdgeInsets.zero,
                         icon: isSelected
                             ? const Icon(Icons.visibility_off_outlined)
                             : const Icon(Icons.visibility),
-                        iconSize: 25 * SizeConfig.scales,
+                        iconSize: 25.r,
                         color: const Color(0xFF585858),
                         onPressed: onEyePressed,
                       ),

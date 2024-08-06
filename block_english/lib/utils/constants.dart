@@ -5,13 +5,12 @@ enum ButtonType {
   OUTLINED,
 }
 
-const List<String> gradelist = [
-  "1학년",
-  "2학년",
-  "3학년",
-  "4학년",
-  "5학년",
-  "6학년",
+const List<String> questionList = [
+  "좋아하는 색깔은?",
+  "좋아하는 음식은?",
+  "제일 처음 한 게임 이름은?",
+  "내 별명은?",
+  "우리 집 어른 이름은?",
 ];
 
 const List<String> levellist = [

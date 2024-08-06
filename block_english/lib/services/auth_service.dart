@@ -1,5 +1,4 @@
-import 'package:block_english/models/AuthModel/get_number_response_model.dart';
-import 'package:block_english/models/AuthModel/verify_response_model.dart';
+import 'package:block_english/models/AuthModel/username_dupcheck_response_model.dart';
 import 'package:block_english/models/model.dart';
 import 'package:block_english/utils/constants.dart';
 import 'package:block_english/utils/dio.dart';
@@ -17,8 +16,6 @@ AuthService authService(AuthServiceRef ref) {
 
 class AuthService {
   static const String _auth = "auth";
-  static const String _username_phone = "username_phone";
-  static const String _verify = "verify";
   static const String _register = "register";
   static const String _token = "token";
   static const String _access = "access";
@@ -30,78 +27,22 @@ class AuthService {
     _ref = ref;
   }
 
-  Future<Either<FailureModel, ExistCheckModel>> postAuthExistVerify(
-      String username, String phonenumber) async {
+  Future<Either<FailureModel, UsernameDupCheckResponseModel>>
+      postAuthUsernameDuplication(String username) async {
     final dio = _ref.watch(dioProvider);
-
     try {
       final response = await dio.post(
-        '/$_auth/$_username_phone/$_verify',
+        '/$_auth/username_duplication',
         options: Options(
           contentType: Headers.jsonContentType,
           headers: {'accept': 'application/json'},
         ),
         data: {
           'username': username,
-          'phone_number': phonenumber,
         },
       );
 
-      return Right(ExistCheckModel.fromJson(response.data));
-    } on DioException catch (e) {
-      return Left(FailureModel(
-        statusCode: e.response?.statusCode ?? 0,
-        detail: e.response?.data['detail'] ?? "",
-      ));
-    }
-  }
-
-  Future<Either<FailureModel, GetNumberResponseModel>> postAuthGetNumber(
-    String phonenumber,
-  ) async {
-    final dio = _ref.watch(dioProvider);
-
-    try {
-      final response = await dio.post(
-        '/$_auth/get_number',
-        options: Options(
-          contentType: Headers.jsonContentType,
-          headers: {'accept': 'application/json'},
-        ),
-        data: {
-          'phone_number': phonenumber,
-        },
-      );
-
-      return Right(GetNumberResponseModel.fromJson(response.data));
-    } on DioException catch (e) {
-      return Left(FailureModel(
-        statusCode: e.response?.statusCode ?? 0,
-        detail: e.response?.data['detail'] ?? "",
-      ));
-    }
-  }
-
-  Future<Either<FailureModel, VerifyResponseModel>> postAuthVerifyNumber(
-    String phonenumber,
-    String verifynumber,
-  ) async {
-    final dio = _ref.watch(dioProvider);
-
-    try {
-      final response = await dio.post(
-        '/$_auth/verify_number',
-        options: Options(
-          contentType: Headers.jsonContentType,
-          headers: {'accept': 'application/json'},
-        ),
-        data: {
-          'phone_number': phonenumber,
-          'verify_number': verifynumber,
-        },
-      );
-
-      return Right(VerifyResponseModel.fromJson(response.data));
+      return Right(UsernameDupCheckResponseModel.fromJson(response.data));
     } on DioException catch (e) {
       return Left(FailureModel(
         statusCode: e.response?.statusCode ?? 0,
@@ -115,8 +56,10 @@ class AuthService {
     String name,
     String username,
     String password,
-    int age,
     String role,
+    int questiontype,
+    String question,
+    List<int> seasons,
   ) async {
     final dio = _ref.watch(dioProvider);
     try {
@@ -129,8 +72,10 @@ class AuthService {
           'name': name,
           'username': username,
           'password': password,
-          'age': age,
           'role': role,
+          'questiontype': questiontype,
+          'question': question,
+          'seasons': seasons,
         },
       );
       return Right(RegResponseModel.fromJson(response.data));

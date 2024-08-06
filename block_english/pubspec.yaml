@@ -47,6 +47,7 @@ dependencies:
   riverpod_annotation: ^2.3.5
   percent_indicator: ^4.2.3
   wolt_modal_sheet: ^0.7.1
+  flutter_screenutil: ^5.9.3
 
 dev_dependencies:
   flutter_test:
@@ -80,6 +81,8 @@ flutter:
 
     - assets/cards/sign_in_manager.svg
     - assets/cards/sign_in_user.svg
+    - assets/cards/sign_in_teacher.svg
+    - assets/cards/sign_in_parent.svg
 
     - assets/cards/student_main_1.svg
     - assets/cards/student_main_2.svg
@@ -91,6 +94,7 @@ flutter:
 
     - assets/buttons/round_back_button.svg
     - assets/buttons/labeled_back_button.svg
+    - assets/buttons/rounded_save_button.svg
 
   # To add assets to your application, add an assets section, like this:
   # assets:
@@ -119,6 +123,36 @@ flutter:
   #       - asset: fonts/TrajanPro.ttf
   #       - asset: fonts/TrajanPro_Bold.ttf
   #         weight: 700
-  #
+  fonts:
+    - family: Pretendard
+      fonts:
+        - asset: assets/fonts/Pretendard-Thin.ttf
+          weight: 100
+        - asset: assets/fonts/Pretendard-ExtraLight.ttf
+          weight: 200
+        - asset: assets/fonts/Pretendard-Light.ttf
+          weight: 300
+        - asset: assets/fonts/Pretendard-Regular.ttf
+          weight: 400
+        - asset: assets/fonts/Pretendard-Medium.ttf
+          weight: 500
+        - asset: assets/fonts/Pretendard-SemiBold.ttf
+          weight: 600
+        - asset: assets/fonts/Pretendard-Bold.ttf
+          weight: 700
+        - asset: assets/fonts/Pretendard-ExtraBold.ttf
+          weight: 800
+        - asset: assets/fonts/Pretendard-Black.ttf
+          weight: 900
+    - family: NanumSquareRound
+      fonts:
+        - asset: assets/fonts/NanumSquareRoundL.ttf
+          weight: 300
+        - asset: assets/fonts/NanumSquareRoundR.ttf
+          weight: 400
+        - asset: assets/fonts/NanumSquareRoundEB.ttf
+          weight: 800
+        - asset: assets/fonts/NanumSquareRoundB.ttf
+          weight: 900
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/custom-fonts/#from-packages
