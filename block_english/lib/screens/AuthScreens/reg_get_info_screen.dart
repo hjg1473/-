@@ -165,38 +165,8 @@ class _RegStudentScreenState extends ConsumerState<RegGetInfoScreen> {
         username: username,
         password: password,
         role: role,
-        questionType: 0,
-        question: "",
       ),
     );
-  }
-
-  onRegisterPressed() async {
-    final result = await ref
-        .watch(authServiceProvider)
-        .postAuthRegister(name, username, password, 'student', 0, '', []);
-
-    result.fold((failure) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('가입 다시해'),
-          ),
-        );
-        setState(() {
-          nameError = '';
-          passwordError = '';
-          password2Error = '';
-        });
-      }
-    }, (regResponseModel) {
-      if (mounted) {
-        Navigator.of(context).pushNamedAndRemoveUntil(
-          '/login_screen',
-          (Route<dynamic> route) => false,
-        );
-      }
-    });
   }
 
   @override

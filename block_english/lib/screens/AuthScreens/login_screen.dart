@@ -73,11 +73,14 @@ class _LoginState extends ConsumerState<LoginScreen> {
     }, (loginResponseModel) async {
       var role = loginResponseModel.role;
 
-      if (role != 'student' && role != 'super') {
+      if (role != 'student' &&
+          role != 'parent' &&
+          role != 'teacher' &&
+          role != 'super') {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
-              content: Text('로그인 다시해'),
+              content: Text('잘못된 권한입니다'),
             ),
           );
         }
@@ -96,7 +99,7 @@ class _LoginState extends ConsumerState<LoginScreen> {
             '/stud_mode_select_screen',
             (Route<dynamic> route) => false,
           );
-        } else if (role == 'super') {
+        } else {
           Navigator.of(context).pushNamedAndRemoveUntil(
             '/super_main_screen',
             (Route<dynamic> route) => false,

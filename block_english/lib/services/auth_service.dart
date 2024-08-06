@@ -59,7 +59,6 @@ class AuthService {
     String role,
     int questiontype,
     String question,
-    List<int> seasons,
   ) async {
     final dio = _ref.watch(dioProvider);
     try {
@@ -73,9 +72,8 @@ class AuthService {
           'username': username,
           'password': password,
           'role': role,
-          'questiontype': questiontype,
+          'questionType': questiontype,
           'question': question,
-          'seasons': seasons,
         },
       );
       return Right(RegResponseModel.fromJson(response.data));
