@@ -1,6 +1,6 @@
 import json
 import aioredis
-from sqlalchemy import select
+from sqlalchemy import delete, select
 from sqlalchemy.orm import joinedload
 from fastapi import APIRouter
 from starlette import status
@@ -8,10 +8,10 @@ from starlette import status
 import sys, os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))))
 
-from app.src.models import Users, StudyInfo
+from app.src.models import Users, StudyInfo, Released
 from student.dependencies import user_dependency, db_dependency
 from student.exceptions import get_user_exception, get_user_exception2, auth_exception, http_exception, select_exception1, select_exception2, select_exception3
-from student.schemas import PinNumber, SoloGroup
+from student.schemas import PinNumber, SoloGroup, SeasonList
 from app.src.super.exceptions import find_student_exception, find_group_exception
 from app.src.super.service import update_std_group
 router = APIRouter( 
@@ -20,20 +20,47 @@ router = APIRouter(
     responses={404: {"description": "Not found"}}
 )
 
-# 개인학습 or 그룹학습 선택
-@router.post("/select/solo_or_group", status_code = status.HTTP_200_OK)
-async def select_mode(soloGroup: SoloGroup,
-                            user: user_dependency,
-                            db: db_dependency):
 
-    redis_client = await aioredis.create_redis_pool('redis://localhost')
-    key = f"{user.get('id')}_mode"
-    await redis_client.set(key, soloGroup.mode)
+# 학생 보유한 시즌 정보 반환
+@router.get("/season_info", status_code=status.HTTP_200_OK)
+async def user_season_info(user: user_dependency, db:db_dependency):
+    get_user_exception(user)
+    auth_exception(user.get('user_role'))
 
-    redis_client.close()
-    await redis_client.wait_closed()
+    result2 = await db.execute(select(Released).filter(Released.owner_id == user.get('id')))
+    released_model = result2.scalars().all()
+
+    seasons = [item.released_season for item in released_model]
+
+    return {"seasons" : seasons}
+
+# 시즌 업데이트
+@router.put("/update_season", status_code=status.HTTP_200_OK)
+async def update_user_season(user: user_dependency, db: db_dependency, season: SeasonList):
+    get_user_exception(user)
+
+    result2 = await db.execute(select(Released).filter(Released.owner_id == user.get('id')))
+    released_model = result2.scalars().all()
+    # List {id, season, level, step, owner_id} 
+    seasons = [item.released_season for item in released_model]
     
-    return {'mode' : soloGroup.mode}
+    # 가진 것 [1, 3] - [1, 2] = ? or [1, 2, 3] - [4, 5]
+    difference = list(set(seasons) - set(season.season))# 유저가 가진 시즌 - 새로 입력한 시즌
+    for sz in difference:
+        await db.execute(delete(Released).filter(Released.owner_id == user.get('id')).filter(Released.released_season == sz))
+    await db.commit()
+    # [4, 5] - [1, 2, 3]
+    difference = list(set(season.season) - set(seasons))# 새로 입력한 시즌 - 유저가 가진 시즌
+    for sz in difference:
+        released = Released(
+            owner_id=user.get('id'),
+            released_season=sz,
+            released_level=1,
+            released_step=1
+        )
+        db.add(released)
+    await db.commit()
+    return {'detail': '수정되었습니다.'}
 
 @router.post("/group/enter", status_code = status.HTTP_200_OK)
 async def user_solve_problem(pin_number: PinNumber,
@@ -90,26 +117,6 @@ async def read_connect_parent(user: user_dependency, db: db_dependency):
 
     return {"parents": [{"name": parent.name} for parent in parent.student_teachers]}
 
-# 학생 보유한 시즌 정보 반환
-@router.get("/season_info", status_code=status.HTTP_200_OK)
-async def read_user_season(user: user_dependency, db:db_dependency):
-    get_user_exception(user)
-    auth_exception(user.get('user_role'))
-
-    result = await db.execute(select(Users).filter(Users.id == user.get('id')))
-    user_model = result.scalars().first()
-
-    if user_model.released_season is None:
-        raise http_exception()
-    if user_model.released_season == '':
-        raise http_exception()
-
-    seasons = json.loads(user_model.released_season)
-    if seasons["seasons"] == []:
-        raise http_exception()
-
-    return {"seasons":seasons["seasons"]}
-
 # 학생 정보 반환
 @router.get("/info", status_code = status.HTTP_200_OK)
 async def read_user_info(user: user_dependency, db: db_dependency):
@@ -120,7 +127,7 @@ async def read_user_info(user: user_dependency, db: db_dependency):
     result = await db.execute(select(Users).filter(Users.id == user.get('id')))
     user_model = result.scalars().first()
 
-    return {'name': user_model.name, 'age': user_model.age, 'team_id': user_model.team_id, 'released_season': user_model.released_season}
+    return {'name': user_model.name, 'team_id': user_model.team_id}
 
 # 사용자의 프로필 반환
 @router.get("/profile_info", status_code = status.HTTP_200_OK)
@@ -142,4 +149,4 @@ async def read_user_studyinfo(user: user_dependency, db: db_dependency):
     auth_exception(user.get('user_role'))
     #로그를 보여주자. 학습 기록 처럼. ex) 7/18 - step1 완료, 7/19 - step2 완료 ... 등등
     
-    return 
+    return {'detail':'미완'}

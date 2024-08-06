@@ -1,10 +1,10 @@
 import 'package:block_english/services/auth_service.dart';
-import 'package:block_english/utils/size_config.dart';
 import 'package:block_english/utils/storage.dart';
 import 'package:block_english/widgets/square_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
@@ -39,7 +39,7 @@ class _LoginState extends ConsumerState<LoginScreen> {
 
   validatePassword(String value) {
     if (value.isEmpty) {
-      passwordErrorMsg = '비밀번호를 입력해주세요';
+      passwordErrorMsg = '비밀번호를 입력해 주세요';
       return true;
     }
     if (value.length < 8) {
@@ -73,11 +73,14 @@ class _LoginState extends ConsumerState<LoginScreen> {
     }, (loginResponseModel) async {
       var role = loginResponseModel.role;
 
-      if (role != 'student' && role != 'super') {
+      if (role != 'student' &&
+          role != 'parent' &&
+          role != 'teacher' &&
+          role != 'super') {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
-              content: Text('로그인 다시해'),
+              content: Text('잘못된 권한입니다'),
             ),
           );
         }
@@ -96,7 +99,7 @@ class _LoginState extends ConsumerState<LoginScreen> {
             '/stud_mode_select_screen',
             (Route<dynamic> route) => false,
           );
-        } else if (role == 'super') {
+        } else {
           Navigator.of(context).pushNamedAndRemoveUntil(
             '/super_main_screen',
             (Route<dynamic> route) => false,
@@ -109,30 +112,30 @@ class _LoginState extends ConsumerState<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.black,
-      body: SafeArea(
-        bottom: false,
-        child: SingleChildScrollView(
-          child: Container(
-            color: Colors.white,
-            child: Row(
-              children: [
-                Container(
-                  width: 396 * SizeConfig.scaleWidth,
-                  height: SizeConfig.fullHeight,
-                  color: Colors.lightBlue[100],
-                ),
-                SizedBox(
-                  width: 416 * SizeConfig.scaleWidth,
-                  height: SizeConfig.fullHeight,
-                  child: Column(
-                    children: [
-                      Padding(
-                        padding: EdgeInsets.only(
-                          top: 38 * SizeConfig.scaleHeight,
-                          left: 42 * SizeConfig.scaleWidth,
-                          right: 42 * SizeConfig.scaleWidth,
-                        ),
+      backgroundColor: Colors.white,
+      body: SingleChildScrollView(
+        child: Container(
+          color: Colors.white,
+          child: Row(
+            children: [
+              Container(
+                width: 396.w,
+                height: 1.sh,
+                color: Colors.lightBlue[100],
+              ),
+              SizedBox(
+                width: 416.w,
+                height: 1.sh,
+                child: Column(
+                  children: [
+                    Padding(
+                      padding: EdgeInsets.only(
+                        top: 38.r,
+                        left: 42.r,
+                        right: 42.r,
+                      ),
+                      child: SizedBox(
+                        height: 307.r - 38.r,
                         child: Column(
                           children: [
                             Row(
@@ -142,7 +145,7 @@ class _LoginState extends ConsumerState<LoginScreen> {
                                 Text(
                                   '로그인',
                                   style: TextStyle(
-                                    fontSize: 22 * SizeConfig.scales,
+                                    fontSize: 22.sp,
                                     fontWeight: FontWeight.w800,
                                   ),
                                 ),
@@ -154,17 +157,17 @@ class _LoginState extends ConsumerState<LoginScreen> {
                                   style: FilledButton.styleFrom(
                                     backgroundColor: const Color(0xFFB132FE),
                                     shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(45),
+                                      borderRadius: BorderRadius.circular(45).w,
                                     ),
                                     padding: EdgeInsets.symmetric(
-                                      horizontal: 20 * SizeConfig.scales,
-                                      vertical: 12 * SizeConfig.scales,
+                                      horizontal: 20.r,
+                                      vertical: 12.r,
                                     ),
                                   ),
                                   child: Text(
                                     '회원가입',
                                     style: TextStyle(
-                                      fontSize: 16 * SizeConfig.scales,
+                                      fontSize: 16.sp,
                                       fontWeight: FontWeight.w700,
                                       color: Colors.white,
                                     ),
@@ -172,18 +175,15 @@ class _LoginState extends ConsumerState<LoginScreen> {
                                 ),
                               ],
                             ),
-                            SizedBox(
-                              height: 18 * SizeConfig.scales,
-                            ),
+                            const Spacer(flex: 2),
                             Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Row(
                                   children: [
                                     Text(
                                       '아이디',
                                       style: TextStyle(
-                                        fontSize: 16 * SizeConfig.scales,
+                                        fontSize: 16.sp,
                                         fontWeight: FontWeight.w700,
                                         color: const Color(0xFF555555),
                                       ),
@@ -191,22 +191,18 @@ class _LoginState extends ConsumerState<LoginScreen> {
                                     usernameError
                                         ? Row(
                                             children: [
-                                              SizedBox(
-                                                  width:
-                                                      10 * SizeConfig.scales),
+                                              SizedBox(width: 10.r),
                                               Icon(
                                                 Icons.error_outline,
                                                 color: Colors.red,
-                                                size: 12 * SizeConfig.scales,
+                                                size: 12.r,
                                               ),
-                                              SizedBox(
-                                                  width: 6 * SizeConfig.scales),
+                                              SizedBox(width: 6.r),
                                               Text(
                                                 usernameErrorMsg,
                                                 style: TextStyle(
                                                   color: Colors.red,
-                                                  fontSize:
-                                                      11 * SizeConfig.scales,
+                                                  fontSize: 11.sp,
                                                 ),
                                               ),
                                             ],
@@ -215,7 +211,7 @@ class _LoginState extends ConsumerState<LoginScreen> {
                                   ],
                                 ),
                                 SizedBox(
-                                  height: 6 * SizeConfig.scales,
+                                  height: 6.r,
                                 ),
                                 TextField(
                                   inputFormatters: [
@@ -225,37 +221,32 @@ class _LoginState extends ConsumerState<LoginScreen> {
                                   ],
                                   decoration: InputDecoration(
                                     contentPadding: EdgeInsets.symmetric(
-                                      horizontal: 16 * SizeConfig.scales,
-                                      vertical: 12 * SizeConfig.scales,
+                                      horizontal: 16.r,
+                                      vertical: 12.r,
                                     ),
-                                    hintText: '전화번호 또는 이메일을 입력해 주세요',
+                                    hintText: '아이디를 입력해 주세요',
                                     hintStyle: TextStyle(
                                       color: const Color(0xFFA3A3A3),
-                                      fontSize: 16 * SizeConfig.scales,
+                                      fontSize: 16.sp,
                                       fontWeight: FontWeight.w700,
                                     ),
                                     filled: true,
                                     fillColor: const Color(0xFFF0F0F0),
                                     border: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(8),
+                                      borderRadius: BorderRadius.circular(8).w,
                                       borderSide: BorderSide.none,
                                     ),
                                   ),
                                   onChanged: (value) =>
                                       setState(() => username = value),
                                 ),
-                              ],
-                            ),
-                            SizedBox(height: 12 * SizeConfig.scales),
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
+                                SizedBox(height: 12.r),
                                 Row(
                                   children: [
                                     Text(
                                       '비밀번호',
                                       style: TextStyle(
-                                        fontSize: 16 * SizeConfig.scales,
+                                        fontSize: 16.r,
                                         fontWeight: FontWeight.w700,
                                         color: const Color(0xFF555555),
                                       ),
@@ -263,22 +254,18 @@ class _LoginState extends ConsumerState<LoginScreen> {
                                     passwordError
                                         ? Row(
                                             children: [
-                                              SizedBox(
-                                                  width:
-                                                      10 * SizeConfig.scales),
+                                              SizedBox(width: 10.r),
                                               Icon(
                                                 Icons.error_outline,
                                                 color: Colors.red,
-                                                size: 12 * SizeConfig.scales,
+                                                size: 12.r,
                                               ),
-                                              SizedBox(
-                                                  width: 6 * SizeConfig.scales),
+                                              SizedBox(width: 6.r),
                                               Text(
                                                 passwordErrorMsg,
                                                 style: TextStyle(
                                                   color: Colors.red,
-                                                  fontSize:
-                                                      11 * SizeConfig.scales,
+                                                  fontSize: 11.sp,
                                                 ),
                                               ),
                                             ],
@@ -287,7 +274,7 @@ class _LoginState extends ConsumerState<LoginScreen> {
                                   ],
                                 ),
                                 SizedBox(
-                                  height: 6 * SizeConfig.scales,
+                                  height: 6.r,
                                 ),
                                 TextField(
                                   inputFormatters: [
@@ -299,13 +286,13 @@ class _LoginState extends ConsumerState<LoginScreen> {
                                   obscuringCharacter: '*',
                                   decoration: InputDecoration(
                                     contentPadding: EdgeInsets.symmetric(
-                                      horizontal: 16 * SizeConfig.scales,
-                                      vertical: 12 * SizeConfig.scales,
+                                      horizontal: 16.r,
+                                      vertical: 12.r,
                                     ),
-                                    hintText: '비밀번호를 입력해주세요',
+                                    hintText: '비밀번호를 입력해 주세요',
                                     hintStyle: TextStyle(
                                       color: const Color(0xFFA3A3A3),
-                                      fontSize: 16 * SizeConfig.scales,
+                                      fontSize: 16.sp,
                                       fontWeight: FontWeight.w700,
                                     ),
                                     suffixIcon: IconButton(
@@ -324,53 +311,51 @@ class _LoginState extends ConsumerState<LoginScreen> {
                                     filled: true,
                                     fillColor: const Color(0xFFF0F0F0),
                                     border: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(8),
+                                      borderRadius: BorderRadius.circular(8).w,
                                       borderSide: BorderSide.none,
                                     ),
                                   ),
                                   onChanged: (value) =>
                                       setState(() => password = value),
                                 ),
-                              ],
-                            ),
-                            SizedBox(
-                              height: 10 * SizeConfig.scales,
-                            ),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.end,
-                              children: [
-                                TextButton(
-                                  onPressed: () {},
-                                  style: TextButton.styleFrom(
-                                    padding: EdgeInsets.zero,
-                                    minimumSize: Size.zero,
-                                    tapTargetSize:
-                                        MaterialTapTargetSize.shrinkWrap,
-                                  ),
-                                  child: Text(
-                                    '비밀번호 찾기',
-                                    style: TextStyle(
-                                      fontSize: 14 * SizeConfig.scales,
-                                      fontWeight: FontWeight.w700,
-                                      color: const Color(0xFFA3A3A3),
+                                SizedBox(height: 10.r),
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.end,
+                                  children: [
+                                    TextButton(
+                                      onPressed: () {},
+                                      style: TextButton.styleFrom(
+                                        padding: EdgeInsets.zero,
+                                        minimumSize: Size.zero,
+                                        tapTargetSize:
+                                            MaterialTapTargetSize.shrinkWrap,
+                                      ),
+                                      child: Text(
+                                        '비밀번호 찾기',
+                                        style: TextStyle(
+                                          fontSize: 14.sp,
+                                          fontWeight: FontWeight.w700,
+                                          color: const Color(0xFFA3A3A3),
+                                        ),
+                                      ),
                                     ),
-                                  ),
+                                  ],
                                 ),
                               ],
                             ),
+                            const Spacer(flex: 3),
                           ],
                         ),
                       ),
-                      const Spacer(),
-                      SquareButton(
-                        text: '로그인',
-                        onPressed: onLoginPressed,
-                      ),
-                    ],
-                  ),
+                    ),
+                    SquareButton(
+                      text: '로그인',
+                      onPressed: onLoginPressed,
+                    ),
+                  ],
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       ),

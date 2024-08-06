@@ -3,9 +3,40 @@ from sqlalchemy.dialects.mysql import insert
 from sqlalchemy import select, update
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))))
 from app.src.models import Problems, correct_problem_table, incorrect_problem_table, Words
-from problem.schemas import Problem
+from problem.schemas import Problem, TempUserProblem
 from problem.dependencies import db_dependency
 from problem.utils import *
+
+
+
+# async def create_Types_in_db(id, db: db_dependency, tempUserProblem: TempUserProblem) -> Types:
+#     print(type(tempUserProblem.totalFullStop))
+#     new_Types = Types(
+#         punctuation=tempUserProblem.totalFullStop,
+#         letter=tempUserProblem.totalTextType,
+#         block=tempUserProblem.totalIncorrectCompose,
+#         word=tempUserProblem.totalIncorrectWords,
+#         order=tempUserProblem.totalIncorrectOrder,
+#         owner_id = id
+#     )
+#     db.add(new_Types)
+#     await db.commit()
+#     await db.refresh(new_Types)
+#     return 
+
+# async def update_Types_in_db(model, db: db_dependency, tempUserProblem: TempUserProblem) -> Types:
+
+#     model.punctuation=tempUserProblem.totalFullStop
+#     model.letter=tempUserProblem.totalTextType
+#     model.block=tempUserProblem.totalIncorrectCompose
+#     model.word=tempUserProblem.totalIncorrectWords
+#     model.order=tempUserProblem.totalIncorrectOrder
+
+#     db.add(model)
+#     await db.commit()
+#     await db.refresh(model)
+#     return 
+
 
 async def create_problem_in_db(db: db_dependency, problem: Problem) -> Problems:
     new_problem = Problems(
@@ -70,7 +101,7 @@ async def get_incorrect_problem_count(study_info_id: int, problem_id: int, db):
     count = result.scalar()
     return count
 
-async def calculate_wrong_info(problem_parse:list, response_parse:list, tempUserProblem, db=db_dependency):
+async def calculate_wrong_info(problem_id, problem_parse:list, response_parse:list, tempUserProblem, db=db_dependency):
     problem = combine_sentence(problem_parse)
 
     # 0. response의 단어들이 블록에 있는 단어인지 검사    

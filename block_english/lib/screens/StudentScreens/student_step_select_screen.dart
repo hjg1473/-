@@ -1,7 +1,7 @@
 import 'package:block_english/utils/constants.dart';
-import 'package:block_english/utils/size_config.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 class StudentStepSelectScreen extends ConsumerStatefulWidget {
@@ -19,63 +19,61 @@ class _StudentStepSelectScreenState
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: SafeArea(
-        child: Stack(
-          children: [
-            Positioned(
-              top: 32 * SizeConfig.scales,
-              left: 44 * SizeConfig.scales,
-              child: IconButton(
-                padding: EdgeInsets.zero,
-                onPressed: () => Navigator.of(context).pop(),
-                icon: SvgPicture.asset(
-                  'assets/buttons/labeled_back_button.svg',
-                  width: 133 * SizeConfig.scales,
-                  height: 44 * SizeConfig.scales,
-                ),
+      body: Stack(
+        children: [
+          Positioned(
+            top: 32.r,
+            left: 44.r,
+            child: IconButton(
+              padding: EdgeInsets.zero,
+              onPressed: () => Navigator.of(context).pop(),
+              icon: SvgPicture.asset(
+                'assets/buttons/labeled_back_button.svg',
+                width: 133.r,
+                height: 44.r,
               ),
             ),
-            Positioned(
-              top: 36 * SizeConfig.scales,
-              left: 324 * SizeConfig.scales,
-              child: Row(
-                children: [
-                  Container(
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF93E54C),
-                      borderRadius: BorderRadius.circular(40.0),
-                    ),
-                    padding: EdgeInsets.symmetric(
-                      horizontal: 12.0 * SizeConfig.scales,
-                      vertical: 10.0 * SizeConfig.scales,
-                    ),
-                    child: Text(
-                      levellist[selectedLevel],
-                      style: TextStyle(
-                        fontSize: 14 * SizeConfig.scales,
-                        fontWeight: FontWeight.w700,
-                        color: Colors.white,
-                      ),
-                    ),
+          ),
+          Positioned(
+            top: 36.r,
+            left: 324.r,
+            child: Row(
+              children: [
+                Container(
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF93E54C),
+                    borderRadius: BorderRadius.circular(40.0).w,
                   ),
-                  SizedBox(
-                    width: 10 * SizeConfig.scales,
+                  padding: EdgeInsets.symmetric(
+                    horizontal: 12.r,
+                    vertical: 10.r,
                   ),
-                  Text(
-                    'Level ${selectedLevel + 1}',
+                  child: Text(
+                    levellist[selectedLevel],
                     style: TextStyle(
-                      fontSize: 22 * SizeConfig.scales,
-                      fontWeight: FontWeight.w800,
+                      fontSize: 14.sp,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.white,
                     ),
                   ),
-                ],
-              ),
+                ),
+                SizedBox(
+                  width: 10.r,
+                ),
+                Text(
+                  'Level ${selectedLevel + 1}',
+                  style: TextStyle(
+                    fontSize: 22.r,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+              ],
             ),
-            const Center(
-              child: Text('data'),
-            ),
-          ],
-        ),
+          ),
+          const Center(
+            child: Text('data'),
+          ),
+        ],
       ),
     );
   }
