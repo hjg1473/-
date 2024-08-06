@@ -1,3 +1,4 @@
+import 'package:block_english/models/AuthModel/reg_info_model.dart';
 import 'package:block_english/services/auth_service.dart';
 import 'package:block_english/widgets/reg_input_box.dart';
 import 'package:block_english/widgets/square_button.dart';
@@ -7,19 +8,19 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
-class RegSuperScreen extends ConsumerStatefulWidget {
-  const RegSuperScreen({super.key});
+class RegGetInfoScreen extends ConsumerStatefulWidget {
+  const RegGetInfoScreen({super.key});
 
   @override
-  ConsumerState<RegSuperScreen> createState() => _RegSuperScreenState();
+  ConsumerState<RegGetInfoScreen> createState() => _RegStudentScreenState();
 }
 
-class _RegSuperScreenState extends ConsumerState<RegSuperScreen> {
+class _RegStudentScreenState extends ConsumerState<RegGetInfoScreen> {
+  String role = '';
   String name = '';
   String username = '';
   String password = '';
   String password2 = '';
-  String role = '';
 
   TextEditingController nameController = TextEditingController();
   TextEditingController usernameController = TextEditingController();
@@ -159,40 +160,18 @@ class _RegSuperScreenState extends ConsumerState<RegSuperScreen> {
   onNextPressed() {
     Navigator.of(context).pushNamed(
       '/reg_pw_question_screen',
+      arguments: RegInfoModel(
+        name: name,
+        username: username,
+        password: password,
+        role: role,
+      ),
     );
-  }
-
-  onRegisterPressed() async {
-    final result = await ref
-        .watch(authServiceProvider)
-        .postAuthRegister(name, username, password, role, 0, '', []);
-
-    result.fold((failure) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('가입 다시해'),
-          ),
-        );
-        setState(() {
-          nameError = '';
-          passwordError = '';
-          password2Error = '';
-        });
-      }
-    }, (regResponseModel) {
-      if (mounted) {
-        Navigator.of(context).pushNamedAndRemoveUntil(
-          '/login_screen',
-          (Route<dynamic> route) => false,
-        );
-      }
-    });
   }
 
   @override
   Widget build(BuildContext context) {
-    role = ModalRoute.of(context)?.settings.arguments as String;
+    role = ModalRoute.of(context)!.settings.arguments as String;
     return Scaffold(
       backgroundColor: const Color(0xFFD1FCFE),
       body: SingleChildScrollView(
@@ -203,11 +182,11 @@ class _RegSuperScreenState extends ConsumerState<RegSuperScreen> {
               SizedBox(
                 height: 307.r,
                 child: Padding(
-                  padding: EdgeInsets.only(
-                    top: 32.r,
-                    left: 64.r,
-                    right: 64.r,
-                  ),
+                  padding: const EdgeInsets.only(
+                    top: 32,
+                    left: 64,
+                    right: 64,
+                  ).r,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
@@ -226,7 +205,7 @@ class _RegSuperScreenState extends ConsumerState<RegSuperScreen> {
                             child: Column(
                               children: [
                                 Text(
-                                  '관리자 회원가입',
+                                  role == 'student' ? '학습자 회원가입' : '관리자 회원가입',
                                   style: TextStyle(
                                     fontSize: 22.sp,
                                     fontWeight: FontWeight.w800,
