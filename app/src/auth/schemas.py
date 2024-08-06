@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import List, Optional
 from pydantic import BaseModel
 
 class CreateUser(BaseModel):
@@ -8,6 +8,7 @@ class CreateUser(BaseModel):
     role: str
     questionType: int
     question: str
+    seasons: List[int]
     
 class Username(BaseModel):
     username: str

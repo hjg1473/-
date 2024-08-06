@@ -9,13 +9,15 @@ Base = declarative_base()
 correct_problem_table = Table('correct_problem', Base.metadata,
     Column('study_info_id', Integer, ForeignKey('studyInfo.id')),
     Column('problem_id', Integer, ForeignKey('problems.id')),
-    Column('count', Integer, nullable=False, default=1)
+    Column('count', Integer, nullable=False, default=1),
+    Column('isGroup', Integer, nullable=False, default=0)
 )
 
 incorrect_problem_table = Table('incorrect_problem', Base.metadata,
     Column('study_info_id', Integer, ForeignKey('studyInfo.id')),
     Column('problem_id', Integer, ForeignKey('problems.id')),
-    Column('count', Integer, nullable=False, default=1)
+    Column('count', Integer, nullable=False, default=1),
+    Column('isGroup', Integer, nullable=False, default=0)
 )
 
 # Association table for many-to-many relationship between students and teachers
@@ -47,7 +49,7 @@ class Users(Base):
 
     # Relationship with StudyInfo
     studyInfos = relationship("StudyInfo", back_populates="owner",cascade='delete')
-
+    released = relationship("Released", back_populates="owner",cascade='delete')
     # Many-to-many relationship between students and teachers
     student_teachers = relationship(
         "Users",
@@ -68,6 +70,19 @@ class Users(Base):
         lazy='subquery'
     )
 
+
+class Released(Base):  # Study information
+    __tablename__ = "released"
+
+    id = Column(Integer, primary_key=True, index=True)  # PK
+    released_season = Column(Integer, default=1)
+    released_level = Column(Integer, default=1)
+    released_step = Column(Integer, default=1)
+    owner_id = Column(Integer, ForeignKey("users.id"))  # FK to users
+
+    # Relationships
+    owner = relationship("Users", back_populates="released")
+
 class Groups(Base):
     __tablename__ = "groups"
 
@@ -76,13 +91,7 @@ class Groups(Base):
     grade = Column(String)
     releasedLevel = Column(Integer, default=1)
     releasedStep = Column(Integer, default=1)
-    # admin_id = Column(Integer, ForeignKey("users.id")) # FK, teacher_id
-
-    # owner = relationship("Users", foreign_keys=[admin_id], back_populates="managed_groups")
     members = relationship("Users", foreign_keys=[Users.team_id], back_populates="team")
-
-# Relationship definition in Users for Groups
-# Users.managed_groups = relationship("Groups", foreign_keys=[Groups.admin_id], back_populates="owner")
 
 class StudyInfo(Base):  # Study information
     __tablename__ = "studyInfo"
@@ -90,6 +99,13 @@ class StudyInfo(Base):  # Study information
     id = Column(Integer, primary_key=True, index=True)  # PK
     totalStudyTime = Column(Integer)  # Student Type1 level >> stream_study_day
     streamStudyDay = Column(Integer)  # Student Type2 level >> total_study_time
+
+    punctuation = Column(Integer)
+    letter = Column(Integer)
+    block = Column(Integer)
+    word = Column(Integer)
+    order = Column(Integer)
+
     releasedLevel = Column(Integer, default=1)  # Student Type3 level >> released_level, the highest level that the student can solve.
     releasedStep = Column(Integer, default=1)
     owner_id = Column(Integer, ForeignKey("users.id"))  # FK to users

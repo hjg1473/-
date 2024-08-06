@@ -194,6 +194,16 @@ class AuthService {
           headers: {TOKENVALIDATE: 'true'},
         ),
       );
+
+      _ref.watch(statusProvider).setName(response.data['name']);
+
+      if (response.data['role'] == 'student') {
+        _ref.watch(statusProvider).setStudentStatus(
+              response.data['released'],
+              response.data['team_id'],
+            );
+      }
+
       return Right(AccessReponseModel.fromJson(response.data));
     } on DioException catch (e) {
       return Left(FailureModel(

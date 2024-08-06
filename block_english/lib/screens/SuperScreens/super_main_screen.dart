@@ -1,12 +1,14 @@
 import 'package:block_english/utils/size_config.dart';
+import 'package:block_english/utils/status.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
-class SuperMainScreen extends StatelessWidget {
+class SuperMainScreen extends ConsumerWidget {
   const SuperMainScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
       body: SafeArea(
         bottom: false,
@@ -23,17 +25,48 @@ class SuperMainScreen extends StatelessWidget {
               alignment: Alignment.topRight,
               child: Padding(
                 padding: EdgeInsets.only(
-                  top: 23 * SizeConfig.scales,
+                  top: 29 * SizeConfig.scales,
                   right: 44 * SizeConfig.scales,
                 ),
-                child: const SizedBox(
-                  height: 60,
-                  width: 128,
-                  child: Row(
-                    children: [
-                      Text('안녕하세요!'),
-                    ],
-                  ),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        Text(
+                          '${ref.watch(statusProvider).name} 님',
+                          style: TextStyle(
+                            fontSize: 15 * SizeConfig.scales,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        Text(
+                          '안녕하세요!',
+                          style: TextStyle(
+                            fontSize: 15 * SizeConfig.scales,
+                            fontWeight: FontWeight.w500,
+                            color: const Color(0x88000000),
+                          ),
+                        ),
+                      ],
+                    ),
+                    SizedBox(
+                      width: 11 * SizeConfig.scales,
+                    ),
+                    GestureDetector(
+                      onTap: () =>
+                          Navigator.of(context).pushNamed('/setting_screen'),
+                      child: ClipOval(
+                        child: Container(
+                          color: Colors.amber,
+                          width: 48 * SizeConfig.scales,
+                          height: 48 * SizeConfig.scales,
+                        ),
+                      ),
+                    )
+                  ],
                 ),
               ),
             ),
