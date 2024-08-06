@@ -17,16 +17,21 @@ class SquareButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return SizedBox(
       width: SizeConfig.fullWidth,
-      height: 68 * SizeConfig.scales,
+      height: 68 * SizeConfig.scaleHeight,
       child: FilledButton(
         onPressed: onPressed,
         style: FilledButton.styleFrom(
+          disabledBackgroundColor: const Color(0xFF727272),
           backgroundColor: backgroundColor,
           shape: const BeveledRectangleBorder(),
         ),
         child: Text(
           text,
-          style: const TextStyle(fontSize: 18),
+          style: const TextStyle(
+            fontSize: 16,
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+          ),
         ),
       ),
     );
