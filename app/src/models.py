@@ -35,11 +35,11 @@ class Users(Base):
     __tablename__ = "users"
 
     id = Column(Integer, primary_key=True, index=True)  # PK, auto-increment
-    username = Column(String, unique=True, index=True)  # Unique username
-    hashed_password = Column(String)  # Hashed password
-    name = Column(String)  # Real name
-    role = Column(String, index=True)  # Role (super or student or parent)
-    question = Column(String)
+    username = Column(String(100), unique=True, index=True)  # Unique username
+    hashed_password = Column(String(100))  # Hashed password
+    name = Column(String(100))  # Real name
+    role = Column(String(100), index=True)  # Role (super or student or parent)
+    question = Column(String(100))
     questionType = Column(Integer)
     released_season = Column(JSON)  # Unique token (teachers only) > released_season
 
@@ -87,28 +87,16 @@ class Groups(Base):
     __tablename__ = "groups"
 
     id = Column(Integer, primary_key=True, index=True)
-    name = Column(String)
-    grade = Column(String)
-    releasedLevel = Column(Integer, default=1)
-    releasedStep = Column(Integer, default=1)
+    name = Column(String(100))
+    grade = Column(String(100))
     members = relationship("Users", foreign_keys=[Users.team_id], back_populates="team")
 
-class StudyInfo(Base):  # Study information
-    __tablename__ = "studyInfo"
+class WrongType(Base):
+    __tablename__ = "wrongType"
 
-    id = Column(Integer, primary_key=True, index=True)  # PK
-    totalStudyTime = Column(Integer)  # Student Type1 level >> stream_study_day
-    streamStudyDay = Column(Integer)  # Student Type2 level >> total_study_time
-
-    punctuation = Column(Integer)
-    letter = Column(Integer)
-    block = Column(Integer)
-    word = Column(Integer)
-    order = Column(Integer)
-
-    releasedLevel = Column(Integer, default=1)  # Student Type3 level >> released_level, the highest level that the student can solve.
-    releasedStep = Column(Integer, default=1)
-    owner_id = Column(Integer, ForeignKey("users.id"))  # FK to users
+    id = Column(Integer, primary_key=True, index=True)
+    season = Column(Integer)
+    level = Column(Integer)
 
     wrong_letter = Column(Integer, default=0)
     wrong_punctuation = Column(Integer, default=0)
@@ -116,22 +104,35 @@ class StudyInfo(Base):  # Study information
     wrong_order = Column(Integer, default=0)
     wrong_word = Column(Integer, default=0)
 
+    info_id = Column(Integer, ForeignKey("studyInfo.id"))  # FK to study Info
+    info = relationship("StudyInfo", back_populates="wrong_types", cascade="delete") # 1:M to study info
+
+
+class StudyInfo(Base):  # Study information
+    __tablename__ = "studyInfo"
+
+    id = Column(Integer, primary_key=True, index=True)  # PK
+    totalStudyTime = Column(Integer)  # Student Type1 level >> stream_study_day
+    streamStudyDay = Column(Integer)  # Student Type2 level >> total_study_time
+    owner_id = Column(Integer, ForeignKey("users.id"))  # FK to users
+
     # Relationships
-    owner = relationship("Users", back_populates="studyInfos")
+    owner = relationship("Users", back_populates="studyInfos", cascade="delete")
     correct_problems = relationship("Problems", secondary=correct_problem_table, back_populates="correct_study_infos")
     incorrect_problems = relationship("Problems", secondary=incorrect_problem_table, back_populates="incorrect_study_infos")
+    wrong_types = relationship("WrongType", back_populates="info", cascade="delete")
 
 class Problems(Base):  # Problems
     __tablename__ = "problems"
 
     id = Column(Integer, primary_key=True, index=True)  # PK
-    season = Column(String)  # Season
+    season = Column(String(100))  # Season
     level = Column(Integer)  # Type >> level
     step = Column(Integer)  # Problem level (1-3)>> step
-    koreaProblem = Column(String)  # Korean sentence
-    englishProblem = Column(String)  # English sentence
-    img_path = Column(String)  # Problem image (optional)
-    type = Column(String) # normal or ai
+    koreaProblem = Column(String(100))  # Korean sentence
+    englishProblem = Column(String(100))  # English sentence
+    img_path = Column(String(100))  # Problem image (optional)
+    type = Column(String(100)) # normal or ai
     difficulty = Column(Integer)
 
     # Relationships
@@ -142,7 +143,7 @@ class Blocks(Base):
     __tablename__ = "blocks"
 
     id = Column(Integer, primary_key=True, index=True)  # PK
-    color = Column(String)      # color: skyblue, pink, green, yellow, purple
+    color = Column(String(100))      # color: skyblue, pink, green, yellow, purple
 
     word = relationship("Words", back_populates="block")#,cascade='delete')
 
@@ -153,4 +154,4 @@ class Words(Base):
     block_id = Column(Integer, ForeignKey("blocks.id"))  # FK
     block = relationship("Blocks", back_populates="word")
     
-    words = Column(String)      # word value: I, me, dog, ...
+    words = Column(String(100))      # word value: I, me, dog, ...

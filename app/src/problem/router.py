@@ -1,5 +1,5 @@
 import asyncio
-import time
+import aioredis
 import numpy as np
 from PIL import Image
 import io
@@ -186,6 +186,11 @@ async def read_problem_all(season:str, level:int, step:int, user: user_dependenc
     result = await db.execute(select(Problems).filter(Problems.level == level, Problems.season == season).filter(Problems.step == step).filter(Problems.type == "normal"))
     stepinfo_model = result.scalars().all()
 
+    tempUserProblem = TempUserProblems.get(user.get("id"))
+    tempUserProblem.solved_season = season
+    tempUserProblem.solved_level = level
+    tempUserProblem.solved_step = step
+
     get_problem_exception(stepinfo_model)
 
     problem = []
@@ -238,6 +243,15 @@ async def read_problem_all(season:str, level:int, step:int, user: user_dependenc
 @router.post("/send_problems_data", status_code = status.HTTP_200_OK)
 async def send_problems_data(user: user_dependency, db: db_dependency):
     get_user_exception(user)
+
+    # isGroup 확인
+    redis_client = await aioredis.create_redis_pool('redis://localhost')
+    key = f"{user.get('id')}_mode"
+    mode_str = await redis_client.get(key)
+    isGroup = 1
+    if mode_str == 'solo':
+        isGroup = 0
+
     result2 = await db.execute(select(StudyInfo).options(joinedload(StudyInfo.correct_problems)).options(joinedload(StudyInfo.incorrect_problems)).filter(StudyInfo.owner_id == user.get("id")))
     study_info = result2.scalars().first()
     if study_info is None:
@@ -248,12 +262,29 @@ async def send_problems_data(user: user_dependency, db: db_dependency):
     result = await db.execute(select(Problems).filter(Problems.id.in_(problem_ids)))
     problems_info = result.scalars().all()
 
-    study_info.wrong_letter += tempUserProblem.totalIncorrectLetter
-    study_info.wrong_punctuation += tempUserProblem.totalIncorrectPunc
-    study_info.wrong_block += tempUserProblem.totalIncorrectBlock
-    study_info.wrong_order += tempUserProblem.totalIncorrectOrder
-    study_info.wrong_word += tempUserProblem.totalIncorrectWords
-    
+    solved_season = tempUserProblem.solved_season
+    solved_level = tempUserProblem.solved_level
+    solved_step = tempUserProblem.solved_step
+
+    # 푼 시즌-레벨의 wrong type 객체가 있는 지 조회하고, 없으면 만듦
+    result = await db.execute(select(WrongType).filter(WrongType.info_id == study_info.id, WrongType.season == solved_season, WrongType.level == solved_level))
+    wrong_type = result.scalars().first()
+    if wrong_type is None:
+        await create_wrong_type(solved_season, solved_level, study_info.id, db)
+        result = await db.execute(select(WrongType).filter(WrongType.info_id == study_info.id, WrongType.season == solved_season, WrongType.level == solved_level))
+        wrong_type = result.scalars().first()
+
+    # update wrong type
+    wrong_type.wrong_letter += tempUserProblem.totalIncorrectLetter
+    wrong_type.wrong_punctuation += tempUserProblem.totalIncorrectPunc
+    wrong_type.wrong_block += tempUserProblem.totalIncorrectBlock
+    wrong_type.wrong_order += tempUserProblem.totalIncorrectOrder
+    wrong_type.wrong_word += tempUserProblem.totalIncorrectWords
+    db.add(wrong_type)
+    await db.commit()
+
+    # 개인 학습 --> 다음 스텝 or 레벨 해금
+
     # return problems_info
     for problem in problems_info:
         if problem not in study_info.correct_problems: # 문제 리스트 검사. 없다면 추가. 근데 매번 해야됨? ..
@@ -261,15 +292,11 @@ async def send_problems_data(user: user_dependency, db: db_dependency):
         if problem not in study_info.incorrect_problems:
             study_info.incorrect_problems.append(problem)
     
-    result = await db.execute(select(Problems).filter(Problems.step > problem.step))
-    next_problems = result.scalars().all()
-    # if next_problems is None:
-
 
     for problem_id, incorrect_count in tempUserProblem.problem_incorrect_count.items():
-        await increment_correct_problem_count(study_info.id, problem_id, 1, db)
+        await increment_correct_problem_count(study_info.id, problem_id, 1, isGroup, db)
         if incorrect_count != 0:
-            await increment_incorrect_problem_count(study_info.id, problem_id, incorrect_count, db)
+            await increment_incorrect_problem_count(study_info.id, problem_id, incorrect_count, isGroup, db)
 
     # for problem in user_problems.problems:
     #         await increment_correct_problem_count(study_info.id, problem.problem_id, 1, db)

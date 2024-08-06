@@ -2,7 +2,7 @@ import sys, os
 from sqlalchemy.dialects.mysql import insert
 from sqlalchemy import select, update
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))))
-from app.src.models import Problems, correct_problem_table, incorrect_problem_table, Words
+from app.src.models import Problems, correct_problem_table, incorrect_problem_table, Words, WrongType
 from problem.schemas import Problem
 from problem.dependencies import db_dependency
 from problem.utils import *
@@ -26,12 +26,22 @@ async def get_problem_info(db):
     problem_list = result.scalars().all()
     return problem_list
 
-async def increment_correct_problem_count(study_info_id: int, problem_id: int, p_count: int, db: db_dependency):
+async def create_wrong_type(season:int, level:int, studyinfo_id:int, db):
+    wrongType = WrongType(
+        info_id = studyinfo_id,
+        season = season,
+        level = level
+    )
+    db.add(wrongType)
+    await db.commit()
+
+async def increment_correct_problem_count(study_info_id: int, problem_id: int, p_count: int, isGroup:int, db: db_dependency):
     # 업데이트 문 생성
     stmt = update(correct_problem_table).\
         where(
             correct_problem_table.c.study_info_id == study_info_id,
-            correct_problem_table.c.problem_id == problem_id
+            correct_problem_table.c.problem_id == problem_id,
+            correct_problem_table.c.isGroup == isGroup
         ).\
         values(count=correct_problem_table.c.count + p_count)
 
@@ -39,12 +49,13 @@ async def increment_correct_problem_count(study_info_id: int, problem_id: int, p
     await db.execute(stmt)
     await db.commit()
 
-async def increment_incorrect_problem_count(study_info_id: int, problem_id: int, p_count: int, db: db_dependency):
+async def increment_incorrect_problem_count(study_info_id: int, problem_id: int, p_count: int, isGroup:int, db: db_dependency):
     # 업데이트 문 생성
     stmt = update(incorrect_problem_table).\
         where(
             incorrect_problem_table.c.study_info_id == study_info_id,
-            incorrect_problem_table.c.problem_id == problem_id
+            incorrect_problem_table.c.problem_id == problem_id,
+            incorrect_problem_table.c.isGroup == isGroup
         ).\
         values(count=incorrect_problem_table.c.count + p_count)
 
