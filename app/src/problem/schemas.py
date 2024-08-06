@@ -38,5 +38,6 @@ class TempUserProblem:
         self.solved_season: int
         self.solved_level: int
         self.solved_step: int
+        self.solved_type: str
 
 TempUserProblems: Dict[int, TempUserProblem] = {}

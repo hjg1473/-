@@ -190,6 +190,7 @@ async def read_problem_all(season:str, level:int, step:int, user: user_dependenc
     tempUserProblem.solved_season = season
     tempUserProblem.solved_level = level
     tempUserProblem.solved_step = step
+    tempUserProblem.solved_type = 'normal'
 
     get_problem_exception(stepinfo_model)
 
@@ -221,6 +222,12 @@ async def read_problem_all(season:str, level:int, step:int, user: user_dependenc
 
     get_problem_exception(stepinfo_model)
 
+    tempUserProblem = TempUserProblems.get(user.get("id"))
+    tempUserProblem.solved_season = season
+    tempUserProblem.solved_level = level
+    tempUserProblem.solved_step = step
+    tempUserProblem.solved_type = 'ai'
+
     problem = []
     for p in stepinfo_model:
         p_str = p.englishProblem
@@ -248,9 +255,9 @@ async def send_problems_data(user: user_dependency, db: db_dependency):
     redis_client = await aioredis.create_redis_pool('redis://localhost')
     key = f"{user.get('id')}_mode"
     mode_str = await redis_client.get(key)
-    isGroup = 1
-    if mode_str == 'solo':
-        isGroup = 0
+    isGroup = 0
+    if mode_str == 'group':
+        isGroup = 1
 
     result2 = await db.execute(select(StudyInfo).options(joinedload(StudyInfo.correct_problems)).options(joinedload(StudyInfo.incorrect_problems)).filter(StudyInfo.owner_id == user.get("id")))
     study_info = result2.scalars().first()
@@ -265,6 +272,7 @@ async def send_problems_data(user: user_dependency, db: db_dependency):
     solved_season = tempUserProblem.solved_season
     solved_level = tempUserProblem.solved_level
     solved_step = tempUserProblem.solved_step
+    solved_type = tempUserProblem.solved_type
 
     # 푼 시즌-레벨의 wrong type 객체가 있는 지 조회하고, 없으면 만듦
     result = await db.execute(select(WrongType).filter(WrongType.info_id == study_info.id, WrongType.season == solved_season, WrongType.level == solved_level))
@@ -284,6 +292,14 @@ async def send_problems_data(user: user_dependency, db: db_dependency):
     await db.commit()
 
     # 개인 학습 --> 다음 스텝 or 레벨 해금
+    if isGroup == 0:
+        result = await db.execute(select(Problems.step, Problems.level).filter(Problems.season == solved_season, Problems.type==solved_type))
+        all_steps = result.all()
+        # max_step = max(all_steps)
+        # if max_step == solved_step:
+        #     if solved_level == 
+
+
 
     # return problems_info
     for problem in problems_info:
@@ -305,7 +321,7 @@ async def send_problems_data(user: user_dependency, db: db_dependency):
                 
     db.add(study_info)
     await db.commit()
-    return {"detail": "저장되었습니다."}
+    return {"detail": "저장되었습니다.", "sp":all_steps}
 
 
 async def ocr(file):
