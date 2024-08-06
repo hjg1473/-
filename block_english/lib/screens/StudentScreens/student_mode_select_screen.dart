@@ -55,7 +55,7 @@ class StudentModeSelectScreen extends ConsumerWidget {
                       icon: SvgPicture.asset(
                         width: 180.r,
                         height: 206.r,
-                        'assets/cards/180_206_card.svg',
+                        'assets/cards/student_mode_single.svg',
                       ),
                     ),
                   ),
@@ -74,7 +74,7 @@ class StudentModeSelectScreen extends ConsumerWidget {
                       icon: SvgPicture.asset(
                         width: 180.r,
                         height: 206.r,
-                        'assets/cards/180_206_card.svg',
+                        'assets/cards/student_mode_group.svg',
                       ),
                     ),
                   ),

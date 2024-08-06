@@ -87,7 +87,8 @@ flutter:
     - assets/cards/student_main_1.svg
     - assets/cards/student_main_2.svg
     - assets/cards/student_main_3.svg
-    - assets/cards/180_206_card.svg
+    - assets/cards/student_mode_single.svg
+    - assets/cards/student_mode_group.svg
 
     - assets/cards/super_main_1.svg
     - assets/cards/super_main_2.svg
