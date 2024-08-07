@@ -93,6 +93,7 @@ flutter:
     - assets/cards/super_main_2.svg
 
     - assets/buttons/round_back_button.svg
+    - assets/buttons/round_setting_button.svg
     - assets/buttons/labeled_back_button.svg
     - assets/buttons/rounded_save_button.svg
 

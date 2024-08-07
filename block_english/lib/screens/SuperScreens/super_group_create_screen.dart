@@ -32,8 +32,9 @@ class _SuperGroupCreateScreenState
       return;
     }
 
-    final result =
-        await ref.watch(superServiceProvider).postCreateGroup(groupName);
+    final result = await ref
+        .watch(superServiceProvider)
+        .postCreateGroup(groupName, detailText);
     debugPrint('result: $result');
 
     result.fold((failure) {
@@ -47,8 +48,8 @@ class _SuperGroupCreateScreenState
     }, (success) {
       if (mounted) {
         Navigator.of(context).pushNamedAndRemoveUntil(
-          '/super_main_screen',
-          (Route<dynamic> route) => false,
+          '/super_monitor_screen',
+          ModalRoute.withName('/super_main_screen'),
         );
       }
     });
@@ -160,15 +161,6 @@ class _SuperGroupCreateScreenState
                               fontWeight: FontWeight.w700,
                               color: const Color(0xFFD6D6D6),
                             ),
-                            suffixIcon: IconButton(
-                              icon: SvgPicture.asset(
-                                'assets/buttons/rounded_save_button.svg',
-                                width: 49.r,
-                                height: 29.r,
-                              ),
-                              //TODO: complete onPressed
-                              onPressed: () {},
-                            ),
                             filled: true,
                             fillColor: Colors.white,
                           ),
@@ -215,15 +207,6 @@ class _SuperGroupCreateScreenState
                               fontSize: 16.sp,
                               fontWeight: FontWeight.w700,
                               color: const Color(0xFFD6D6D6),
-                            ),
-                            suffixIcon: IconButton(
-                              icon: SvgPicture.asset(
-                                'assets/buttons/rounded_save_button.svg',
-                                width: 49.r,
-                                height: 29.r,
-                              ),
-                              //TODO: complete onPressed
-                              onPressed: () {},
                             ),
                             filled: true,
                             fillColor: Colors.white,

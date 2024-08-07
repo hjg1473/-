@@ -1,5 +1,11 @@
 // ignore_for_file: constant_identifier_names
 
+enum UserType {
+  student,
+  teacher,
+  parent,
+}
+
 enum ButtonType {
   FILLED,
   OUTLINED,

@@ -4,7 +4,6 @@ import 'package:block_english/services/auth_service.dart';
 import 'package:block_english/utils/constants.dart';
 import 'package:block_english/widgets/square_button.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -60,6 +59,7 @@ class _RegPwQuestionScreenState extends ConsumerState<RegPwQuestionScreen> {
           child: SizedBox(
             height: 1.sh,
             child: Column(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 SizedBox(

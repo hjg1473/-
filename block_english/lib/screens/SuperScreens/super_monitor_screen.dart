@@ -4,6 +4,7 @@ import 'package:block_english/models/SuperModel/group_info_model.dart';
 import 'package:block_english/services/super_service.dart';
 import 'package:block_english/widgets/group_button.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -341,7 +342,29 @@ class _SuperMonitorScreenState extends ConsumerState<SuperMonitorScreen> {
                 : Expanded(
                     child: error.isEmpty
                         ? filteredGroups.isEmpty
-                            ? const SizedBox()
+                            ? Align(
+                                alignment: Alignment.topCenter,
+                                child: Padding(
+                                  padding:
+                                      const EdgeInsets.symmetric(vertical: 40)
+                                          .r,
+                                  child: searchValue.isEmpty
+                                      ? Text(
+                                          '관리 중인 그룹이 없습니다.',
+                                          style: TextStyle(
+                                            fontSize: 22.sp,
+                                            fontWeight: FontWeight.w700,
+                                          ),
+                                        )
+                                      : Text(
+                                          '조건에 맞는 그룹이 없습니다.',
+                                          style: TextStyle(
+                                            fontSize: 22.sp,
+                                            fontWeight: FontWeight.w700,
+                                          ),
+                                        ),
+                                ),
+                              )
                             : GridView.builder(
                                 padding: EdgeInsets.only(bottom: 10.r),
                                 gridDelegate:
@@ -358,6 +381,7 @@ class _SuperMonitorScreenState extends ConsumerState<SuperMonitorScreen> {
                                   return GroupButton(
                                     name: group.name,
                                     id: group.id,
+                                    detail: group.detail,
                                     studentNum: group.count,
                                   );
                                 },
