@@ -28,7 +28,7 @@ class _StudentStepSelectScreenState
   getProblemPracticeInfo() async {
     final result = await ref
         .watch(problemServiceProvider)
-        .getProblemInfo(seasonToInt(ref.watch(statusProvider).season));
+        .getProblemPracticeInfo(seasonToInt(ref.watch(statusProvider).season));
 
     result.fold((failure) {
       //TODO: error handling (exit)
@@ -40,6 +40,22 @@ class _StudentStepSelectScreenState
         problemFetched = true;
       });
     });
+  }
+
+  bool isLevelLocked(int level) {
+    return (ref
+            .watch(statusProvider)
+            .releaseStatus[ref.watch(statusProvider).season]!
+            .currentLevel <=
+        level);
+  }
+
+  bool isStepLocked(int step) {
+    return (ref
+            .watch(statusProvider)
+            .releaseStatus[ref.watch(statusProvider).season]!
+            .currentStep <=
+        step);
   }
 
   @override
@@ -108,7 +124,8 @@ class _StudentStepSelectScreenState
 
           // Body
           Center(
-            child: SizedBox(
+            child: Container(
+              alignment: Alignment.center,
               width: 683.r,
               height: 78.r,
               child: problemFetched
@@ -120,24 +137,45 @@ class _StudentStepSelectScreenState
                             alignment: Alignment.center,
                             width: 78.r,
                             height: 78.r,
-                            color: const Color(0xFFB132FE),
-                            child: index != numberOfSteps
-                                ? Text(
-                                    'STEP ${index + 1}',
-                                    style: TextStyle(
-                                      fontSize: 16.sp,
-                                      fontWeight: FontWeight.w700,
-                                      color: Colors.white,
-                                    ),
-                                  )
-                                : Text(
-                                    '오답',
-                                    style: TextStyle(
-                                      fontSize: 16.sp,
-                                      fontWeight: FontWeight.w700,
-                                      color: Colors.white,
+                            color: isStepLocked(index)
+                                ? const Color(0xFF999999)
+                                : const Color(0xFFB132FE),
+                            child: Stack(
+                              alignment: Alignment.center,
+                              children: [
+                                index != numberOfSteps
+                                    ? Text(
+                                        'STEP ${index + 1}',
+                                        style: TextStyle(
+                                          fontSize: 16.sp,
+                                          fontWeight: FontWeight.w700,
+                                          color: Colors.white,
+                                        ),
+                                      )
+                                    : Text(
+                                        '오답',
+                                        style: TextStyle(
+                                          fontSize: 16.sp,
+                                          fontWeight: FontWeight.w700,
+                                          color: Colors.white,
+                                        ),
+                                      ),
+                                if (isStepLocked(index))
+                                  Center(
+                                    child: Icon(
+                                      Icons.lock,
+                                      size: 28.r,
+                                      color: const Color(0xFFFFFBDA),
+                                      shadows: const [
+                                        Shadow(
+                                          color: Colors.black,
+                                          blurRadius: 10,
+                                        ),
+                                      ],
                                     ),
                                   ),
+                              ],
+                            ),
                           ),
                         );
                       },
@@ -160,6 +198,10 @@ class _StudentStepSelectScreenState
                 for (int index = 0; index < numberOfLevels; index++)
                   GestureDetector(
                     onTap: () {
+                      if (isLevelLocked(index)) {
+                        // TODO: 자물쇠 흔들리는 애니메이션이라든지
+                        return;
+                      }
                       setState(() {
                         selectedLevel = index;
                         numberOfSteps = _problems.levels[index].steps.length;
@@ -170,9 +212,11 @@ class _StudentStepSelectScreenState
                       width: 1.sw / numberOfLevels,
                       height: 68.r,
                       decoration: BoxDecoration(
-                        color: index == selectedLevel
-                            ? const Color(0xFFB132FE)
-                            : const Color(0xFF2C2C2C),
+                        color: isLevelLocked(index)
+                            ? const Color(0xFF999999)
+                            : index == selectedLevel
+                                ? const Color(0xFFB132FE)
+                                : const Color(0xFF2C2C2C),
                         border: Border.symmetric(
                           vertical: BorderSide(
                             width: 1,
@@ -192,16 +236,18 @@ class _StudentStepSelectScreenState
                               ),
                             ),
                           ),
-                          if (ref
-                                  .watch(statusProvider)
-                                  .releaseStatus[intToSeason(index)]!
-                                  .currentLevel <
-                              index)
+                          if (isLevelLocked(index))
                             Center(
                               child: Icon(
                                 Icons.lock,
                                 size: 28.r,
                                 color: const Color(0xFFFFFBDA),
+                                shadows: const [
+                                  Shadow(
+                                    color: Colors.black,
+                                    blurRadius: 10,
+                                  ),
+                                ],
                               ),
                             ),
                         ],

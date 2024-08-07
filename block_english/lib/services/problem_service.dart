@@ -23,7 +23,7 @@ class ProblemService {
     _ref = ref;
   }
 
-  Future<Either<FailureModel, ProblemPracticeInfoModel>> getProblemInfo(
+  Future<Either<FailureModel, ProblemPracticeInfoModel>> getProblemPracticeInfo(
       int season) async {
     final dio = _ref.watch(dioProvider);
 
