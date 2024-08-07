@@ -8,11 +8,40 @@ from super.service import *
 from super.schemas import ProblemSet, AddGroup, GroupStep
 from super.exceptions import *
 from starlette import status
-from app.src.models import Users, StudyInfo, Problems, correct_problem_table, Groups
+from app.src.models import Users, StudyInfo, Problems, correct_problem_table, Groups, Released, WrongType
 from app.src.problem.service import get_correct_problem_count, get_incorrect_problem_count
 from sqlalchemy.orm import joinedload
 
 
+async def user_weakest_info(user_id, db):
+    # 학생이 해금한 시즌 정보
+    result2 = await db.execute(select(Released).filter(Released.owner_id == user_id))
+    released_model = result2.scalars().all()
+    seasons = [item.released_season for item in released_model]
+
+    result = await db.execute(select(StudyInfo).filter(StudyInfo.owner_id == user_id))
+    study_info = result.scalars().first()
+    temp_result = await db.execute(select(WrongType).filter(WrongType.info_id == study_info.id).filter(WrongType.season.in_(seasons)))
+    wrongType_model = temp_result.scalars().all()
+    # return wrongType_model
+    total_wrong_punctuation=0
+    total_wrong_order=0
+    total_wrong_letter=0
+    total_wrong_block=0
+    total_wrong_word=0
+    for wrongTypes in wrongType_model:
+        # 총 wrong 타입 합계 계산
+        total_wrong_punctuation += wrongTypes.wrong_punctuation
+        total_wrong_order += wrongTypes.wrong_order
+        total_wrong_letter += wrongTypes.wrong_letter
+        total_wrong_block += wrongTypes.wrong_block
+        total_wrong_word += wrongTypes.wrong_word
+    
+    values = {'wrong_punctuation': total_wrong_punctuation, 'wrong_order': total_wrong_order, 'wrong_letter': total_wrong_letter, 'wrong_block': total_wrong_block, 'wrong_word': total_wrong_word}
+    largest_variable = max(values, key=values.get)
+
+
+    return {"weakest":f"{largest_variable}"}
 
 async def user_step_problem_count(user_id, season, level, attribute_name, db):
 
@@ -106,7 +135,7 @@ async def user_worst_problem(user_id, attribute_name, db):
 
     return {'level': highProblem.level, 'step': highProblem.step, 'id(temp)': highProblem.id} # 정보. 다만 번호는 어떻게 구현할지..
 
-async def group_step_problem_count(group_id, step, level, attribute_name, db):
+async def group_step_problem_count(group_id, season, level, attribute_name, db):
 
     result2 = await db.execute(select(Groups).filter(Groups.id == group_id))
     groups = result2.scalars().all()
@@ -129,7 +158,7 @@ async def group_step_problem_count(group_id, step, level, attribute_name, db):
     result = []
     # return studyinfo # 특정 그룹에 해당하는 모든 학생들의 학습 정보
     for item in studyinfo:
-        correct_problem_ids = [{"id": problem.id} for problem in getattr(item, attribute_name) if problem.step == step and problem.level == level]
+        correct_problem_ids = [{"id": problem.id} for problem in getattr(item, attribute_name) if problem.season == season and problem.level == level]
         result_item = {
             "id": item.id,
             attribute_name: correct_problem_ids
@@ -141,7 +170,10 @@ async def group_step_problem_count(group_id, step, level, attribute_name, db):
     for item in result:
         if item[attribute_name]:
             for p in item[attribute_name]:
-                count += await get_correct_problem_count(item["id"], p["id"], db)
+                if attribute_name == "correct_problems":
+                    count += await get_correct_problem_count(item["id"], p["id"], db)
+                else:
+                    count += await get_incorrect_problem_count(item["id"], p["id"], db)
     
     # db.add(study_info)
     # await db.commit()

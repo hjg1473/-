@@ -25,8 +25,8 @@ def user_authenticate_exception(user: user_dependency):
 def super_authenticate_exception(user):
     if user is None:
         raise HTTPException(status_code=404, detail="Could not validate credentials")
-    if user.get('user_role') != 'super':
-        raise HTTPException(status_code=401, detail='학부모 계정이 아닙니다')
+    if user.get('user_role') != 'parent' and user.get('user_role') != 'teacher':
+        raise HTTPException(status_code=401, detail='관리자 계정이 아닙니다')
     
 def problem_found_exception(target_problems):
     if target_problems is None:

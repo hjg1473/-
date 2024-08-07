@@ -5,9 +5,9 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(
 from super.constants import STUDY_PASS_STANDARD
 from super.dependencies import db_dependency, user_dependency
 from super.service import *
-from super.schemas import ProblemSet, AddGroup, GroupStep, GroupAvgTime, GroupLevelStep, GroupName, UserStep, UserStep2, GroupId
+from super.schemas import ProblemSet, AddGroup, GroupStep, GroupAvgTime, GroupLevelStep, GroupName, UserStep, UserStep2, GroupId, GroupSeasonLevel
 from super.utils import *
-from app.src.models import StudyInfo, Problems, Groups
+from app.src.models import StudyInfo, Problems, Groups, WrongType, Released, Users
 from app.src.auth.utils import create_pin_number
 import aioredis
 from super.exceptions import *
@@ -174,9 +174,9 @@ async def read_super_info(user: user_dependency, db: db_dependency):
 
     return user_model_json
 
-# 특정 유저가 가장 어려워한 문제 정보 조회
-@router.post("/user_weak_problem_info", status_code = status.HTTP_200_OK)
-async def read_user_weak_problem(userStep: UserStep, user: user_dependency, db: db_dependency):
+# 특정 유저의 시즌-레벨 별 약한 부분 TOP 3 조회 
+@router.post("/user_weak_parts_top3", status_code = status.HTTP_200_OK)
+async def read_user_weak_parts_top3(userStep: UserStep, user: user_dependency, db: db_dependency):
     
     super_authenticate_exception(user)
     await find_student_exception(userStep.user_id, db)
@@ -185,7 +185,80 @@ async def read_user_weak_problem(userStep: UserStep, user: user_dependency, db: 
     group_list = await get_group_list(user.get("id"), db)
     std_access_exception(group_list, std_team_id)
 
-    return await user_worst_problem(userStep.user_id, "incorrect_problems", db)
+    # 학생이 해금한 시즌 정보
+    result2 = await db.execute(select(Released).filter(Released.owner_id == userStep.user_id))
+    released_model = result2.scalars().all()
+    seasons = [item.released_season for item in released_model]
+
+    result = await db.execute(select(StudyInfo).filter(StudyInfo.owner_id == userStep.user_id))
+    study_info = result.scalars().first()
+    temp_result = await db.execute(select(WrongType).filter(WrongType.info_id == study_info.id).filter(WrongType.season.in_(seasons)))
+    wrongType_model = temp_result.scalars().all()
+    # return wrongType_model
+    divided_data_list = []
+
+    for wrongTypes in wrongType_model:
+        total_wrongType = (
+            wrongTypes.wrong_punctuation
+            + wrongTypes.wrong_order
+            + wrongTypes.wrong_letter
+            + wrongTypes.wrong_block
+            + wrongTypes.wrong_word
+        )
+        
+        wrong_data = {k: v for k, v in vars(wrongTypes).items() if k.startswith("wrong")}
+        
+        top3_wrong = dict(sorted(wrong_data.items(), key=lambda item: item[1], reverse=True)[:3])
+        
+        divided_data = {k: f"{v / total_wrongType:.2f}" for k, v in top3_wrong.items()}
+        divided_data["season"] = wrongTypes.season
+        divided_data["level"] = wrongTypes.level
+        divided_data_list.append(divided_data)
+
+    return divided_data_list
+
+# 특정 유저의 전 시즌-레벨 통합 가장 약한 부분 내용 조회
+@router.post("/user_weakest", status_code = status.HTTP_200_OK)
+async def read_user_weakest(userStep: UserStep, user: user_dependency, db: db_dependency):
+    
+    super_authenticate_exception(user)
+    await find_student_exception(userStep.user_id, db)
+    # 선생님이 관리하는 학생이 아니면 예외 처리
+    std_team_id = await get_std_team_id(userStep.user_id, db)
+    group_list = await get_group_list(user.get("id"), db)
+    std_access_exception(group_list, std_team_id)
+
+    return await user_weakest_info(userStep.user_id, db)
+
+# 특정 그룹의 전 시즌-레벨 통합 가장 약한 부분 내용 조회 :: 계산 최대 다수의 weakest 
+@router.post("/group_weakest", status_code = status.HTTP_200_OK)
+async def read_group_weakest(group: GroupId, user: user_dependency, db: db_dependency):
+    
+    super_authenticate_exception(user)
+    await super_group_exception(user.get("id"), group.group_id, db)
+    await find_group_exception(group.group_id, db)
+
+    result2 = await db.execute(select(Groups).filter(Groups.id == group.group_id))
+    groups = result2.scalars().all()
+    # return groups # 그룹 정보
+    students = []
+    for g in groups:
+        result3 = await db.execute(select(Users).filter(Users.team_id == g.id))
+        students_in_group = result3.scalars().all()
+        students.extend(students_in_group)
+
+    # 학생들의 id 값만 추출
+    student_ids = [student.id for student in students]
+    # return student_ids
+    values = {'wrong_punctuation': 0, 'wrong_order': 0, 'wrong_letter': 0, 'wrong_block': 0, 'wrong_word': 0}
+    
+    for student in student_ids:
+        value = await user_weakest_info(student, db)
+        if value["weakest"] in values:
+            values[value["weakest"]] += 1
+    largest_variable = max(values, key=values.get)
+    return {"weakest":f"{largest_variable}"}
+
 
 # 특정 유저의 특정 시즌-레벨의 오답률 정보 조회
 @router.post("/user_answer_rate_info", status_code = status.HTTP_200_OK)
@@ -205,19 +278,29 @@ async def read_user_answerRate(userStep: UserStep2, user: user_dependency, db: d
     return {'correct_count': correct_count, 'incorrect_count': incorrect_count, 'user_level_step_incorrect_answer_rate': user_level_step_incorrect_answer_rate}
 
 
-# 특정 반의 특정 레벨-스텝의 오답률 정보 조회
+# 특정 반의 특정 시즌-레벨의 오답률 정보 조회
 @router.post("/group_answer_rate_info", status_code = status.HTTP_200_OK)
-async def read_group_answerRate(user: user_dependency, db: db_dependency, groupStep: GroupLevelStep):
+async def read_group_answerRate(user: user_dependency, db: db_dependency, groupStep: GroupSeasonLevel):
     
     super_authenticate_exception(user)
     await super_group_exception(user.get("id"), groupStep.group_id, db)
     await find_group_exception(groupStep.group_id, db)
-    correct_count = await group_step_problem_count(groupStep.group_id, groupStep.step, groupStep.level, "correct_problems", db)
-    incorrect_count = await group_step_problem_count(groupStep.group_id, groupStep.step, groupStep.level, "incorrect_problems", db)
+    correct_count = await group_step_problem_count(groupStep.group_id, groupStep.season, groupStep.level, "correct_problems", db)
+    incorrect_count = await group_step_problem_count(groupStep.group_id, groupStep.season, groupStep.level, "incorrect_problems", db)
     group_step_incorrect_answer_rate = 0
     get_studyInfo_exception(correct_count, incorrect_count)
     group_step_incorrect_answer_rate = f"{incorrect_count / (correct_count + incorrect_count):.2f}"
     return {'correct_count': correct_count, 'incorrect_count': incorrect_count, 'group_step_incorrect_answer_rate': group_step_incorrect_answer_rate}
+
+# 특정 반의 처음부터 해금된 레벨까지의 시즌-레벨 오답률 정보 전달
+@router.post("/group_answer_rate_info", status_code = status.HTTP_200_OK)
+async def read_group_answerRate(user: user_dependency, db: db_dependency, groupStep: GroupSeasonLevel):
+
+    group_model = await get_group_to_groupid(groupStep.group_id, db)
+    current_level = group_model.releasedLevel # int 
+    for i in range(1, current_level):
+        await read_group_answerRate(user, db, groupStep)
+    return
 
 # 특정 반의 평균 학습 시간 조회
 @router.post("/group_student_avg_time", status_code = status.HTTP_200_OK)
