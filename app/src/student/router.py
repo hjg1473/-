@@ -8,7 +8,7 @@ from starlette import status
 import sys, os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))))
 
-from app.src.models import Users, StudyInfo, Released
+from app.src.models import Users, StudyInfo, Released, incorrect_problem_table, correct_problem_table
 from student.dependencies import user_dependency, db_dependency
 from student.exceptions import get_user_exception, get_user_exception2, auth_exception, http_exception, select_exception1, select_exception2, select_exception3
 from student.schemas import PinNumber, SoloGroup, SeasonList
@@ -149,4 +149,67 @@ async def read_user_studyinfo(user: user_dependency, db: db_dependency):
     auth_exception(user.get('user_role'))
     #로그를 보여주자. 학습 기록 처럼. ex) 7/18 - step1 완료, 7/19 - step2 완료 ... 등등
     
-    return {'detail':'미완'}
+    result = await db.execute(select(Released).filter(Released.owner_id == user.get("id")))
+    released_model = result.scalars().all()
+    
+    result2 = await db.execute(select(StudyInfo).options(joinedload(StudyInfo.correct_problems)).options(joinedload(StudyInfo.incorrect_problems)).filter(StudyInfo.owner_id == user.get("id")))
+    study_info = result2.scalars().first()
+    if study_info is None:
+        raise http_exception()
+    
+    # 틀린 문제 count 배열 받아오기
+    result = await db.execute(select(incorrect_problem_table.c.count).filter(incorrect_problem_table.c.study_info_id == study_info.id))
+    ic_table_count = result.scalars().all()
+
+    # 틀린 문제 id 배열 받아오기
+    result = await db.execute(select(incorrect_problem_table.c.problem_id).filter(incorrect_problem_table.c.study_info_id == study_info.id))
+    ic_table_id = result.scalars().all()
+
+    # 맞은 문제 count 배열 받아오기
+    result = await db.execute(select(correct_problem_table.c.count).filter(correct_problem_table.c.study_info_id == study_info.id))
+    c_table_count = result.scalars().all()
+
+    # 맞은 문제 id 배열 받아오기
+    result = await db.execute(select(correct_problem_table.c.problem_id).filter(correct_problem_table.c.study_info_id == study_info.id))
+    c_table_id = result.scalars().all()
+
+    information = {"seasons":[]}
+    for rm in released_model:
+        normal_corrects = [0, 0, 0]
+        ai_corrects = [0, 0, 0]
+        for item in study_info.correct_problems:
+            count = c_table_count[c_table_id.index(item.id)]
+            if item.type == "normal":
+                normal_corrects[item.level - 1] += count
+            else:
+                ai_corrects[item.level - 1] += count
+        
+        normal_incorrects = [0, 0, 0]
+        ai_incorrects = [0, 0, 0]
+        for item in study_info.incorrect_problems:
+            count = ic_table_count[ic_table_id.index(item.id)]
+            if item.type == "normal":
+                normal_incorrects[item.level - 1] += count
+            else:
+                ai_incorrects[item.level - 1] += count
+
+        normal_all = [normal_corrects[0] + normal_incorrects[0], normal_corrects[1] + normal_incorrects[1], normal_corrects[2] + normal_incorrects[2]]
+        ai_all = [ai_corrects[0] + ai_incorrects[0], ai_corrects[1] + ai_incorrects[1], ai_corrects[2] + ai_incorrects[2]]
+        
+        normal_rate = [0, 0, 0]
+        ai_rate = [0, 0, 0]
+        for i in range(3):
+            if normal_all[i] != 0:
+                normal_rate[i] = (normal_incorrects[i]/float(normal_all[i]) * 100)
+            if ai_all[i] != 0:
+                ai_rate[i] = (ai_incorrects[i]/float(ai_all[i]) * 100)
+        
+
+        information["seasons"].append({"season":rm.released_season,
+                                       "incorrect_rate_normal":normal_rate,
+                                       "incorrect_rate_ai":ai_rate,
+                                       "released_level":rm.released_level,
+                                       "released_step":rm.released_step
+                                       })
+
+    return {'detail':information}

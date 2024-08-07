@@ -40,7 +40,6 @@ async def study_start(user: user_dependency):
     get_user_exception(user)
     logger = logger_setup.get_logger(user.get("id"))
     logger.info("--- studyStart ---")
-    TempUserProblems[user.get("id")] = TempUserProblem(0, 0, 0, 0, 0) # 객체 생성. 시작할 때.
     return {"detail":"학습을 시작합니다."}
 
 @router.get("/study_end")
@@ -117,6 +116,7 @@ async def read_problem_all(season:int, level:int, step:int, user: user_dependenc
 
     get_problem_exception(stepinfo_model)
 
+    TempUserProblems[user.get("id")] = TempUserProblem(0, 0, 0, 0, 0) # 객체 생성. 시작할 때.
     tempUserProblem = TempUserProblems.get(user.get("id"))
     tempUserProblem.solved_season = season
     tempUserProblem.solved_level = level
@@ -178,6 +178,7 @@ async def read_problem_all(season:int, level:int, step:int, user: user_dependenc
     result = await db.execute(select(Problems).filter(Problems.level == level, Problems.season == season).filter(Problems.step == step).filter(Problems.type == "normal"))
     stepinfo_model = result.scalars().all()
 
+    TempUserProblems[user.get("id")] = TempUserProblem(0, 0, 0, 0, 0) # 객체 생성. 시작할 때.
     tempUserProblem = TempUserProblems.get(user.get("id"))
     tempUserProblem.solved_season = season
     tempUserProblem.solved_level = level
@@ -218,16 +219,16 @@ async def send_problems_data(user: user_dependency, db: db_dependency):
     if mode_str == 'group':
         isGroup = 1
 
+    # study info 찾아오기
     result2 = await db.execute(select(StudyInfo).options(joinedload(StudyInfo.correct_problems)).options(joinedload(StudyInfo.incorrect_problems)).filter(StudyInfo.owner_id == user.get("id")))
     study_info = result2.scalars().first()
     if study_info is None:
         raise http_exception()
     
+    # tempUserProblem 찾아오기 + 푼 문제 id 리스트
     tempUserProblem = TempUserProblems.get(user.get("id")) #
-    problem_ids = list(tempUserProblem.problem_incorrect_count.keys())
-    result = await db.execute(select(Problems).filter(Problems.id.in_(problem_ids)))
-    problems_info = result.scalars().all()
 
+    # 푼 시즌, 레벨, 스텝, 타입 정보 할당
     solved_season = tempUserProblem.solved_season
     solved_level = tempUserProblem.solved_level
     solved_step = tempUserProblem.solved_step
@@ -266,18 +267,24 @@ async def send_problems_data(user: user_dependency, db: db_dependency):
                 released_model.released_step += 1
             db.add(released_model)
 
+    # 푼 문제 id 리스트
+    solved_problem_ids = list(tempUserProblem.problem_incorrect_count.keys())
+    # 푼 문제들의 id로 문제 객체들 찾아오기
+    result = await db.execute(select(Problems).filter(Problems.id.in_(solved_problem_ids)))
+    solved_problems = result.scalars().all()
 
-    # return problems_info
-    for problem in problems_info:
-        if problem not in study_info.correct_problems: # 문제 리스트 검사. 없다면 추가.
-            study_info.correct_problems.append(problem)
-        if problem not in study_info.incorrect_problems:
-            study_info.incorrect_problems.append(problem)
+    # 푼 문제들의 정오답 여부에 따른 정오답 횟수 저장
+    for i in range(len(solved_problem_ids)):
+        # step을 모두 풀었다면, 모든 문제는 적어도 한 번은 맞은 것 --> 기존 correct_problems에 없으면 무조건 추가해야함
+        if solved_problems[i] not in study_info.correct_problems:
+            study_info.correct_problems.append(solved_problems[i])
+
+        # problem_incorrect_count != 0 --> 틀린 적이 있다, incorrect_problems에도 추가
+        if tempUserProblem.problem_incorrect_count[solved_problem_ids[i]] != 0:            
+            if solved_problems[i] not in study_info.incorrect_problems:
+                study_info.incorrect_problems.append(solved_problems[i])
     
-
     for problem_id, incorrect_count in tempUserProblem.problem_incorrect_count.items():
-        print("problem_id",problem_id)
-        print("incorrect_count",incorrect_count)
         await increment_correct_problem_count(study_info.id, problem_id, 1, isGroup, db)
         if incorrect_count != 0:
             await increment_incorrect_problem_count(study_info.id, problem_id, incorrect_count, isGroup, db)
@@ -375,15 +382,15 @@ async def user_solve_problem(background_tasks: BackgroundTasks, user_string: str
     isAnswer, false_location = check_answer(problem_parse, list(response_parse))
     tempUserProblem = TempUserProblems.get(user.get("id")) # 정답 반환할 때.
 
+    # 없으면 0으로 초기화하면서 추가
+    if not(problem_id in tempUserProblem.problem_incorrect_count):
+        tempUserProblem.problem_incorrect_count[problem_id] = 0
+
     #  조금 느리긴 함 (약 2초) > 백그라운드 실행
     if isAnswer:
         result = {"you did good job"}
     else:
         background_tasks.add_task(calculate_wrong_info, problem_id, problem_parse, response_parse, tempUserProblem, db)
-
-    if problem_id in tempUserProblem.problem_incorrect_count:
         tempUserProblem.problem_incorrect_count[problem_id] += 1
-    else:
-        tempUserProblem.problem_incorrect_count[problem_id] = 1
 
     return {"answer": correct_answer, "isAnswer": isAnswer}
