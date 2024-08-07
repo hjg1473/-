@@ -69,7 +69,8 @@ class _StudentAddSuperScreenState extends ConsumerState<StudentAddSuperScreen> {
                             children: [
                               IconButton(
                                 padding: EdgeInsets.zero,
-                                onPressed: () => Navigator.of(context).pop(),
+                                onPressed: () =>
+                                    Navigator.of(context).pop(true),
                                 icon: SvgPicture.asset(
                                   'assets/buttons/round_back_button.svg',
                                   width: 48.r,

@@ -12,6 +12,23 @@ const String info = '/';
 const String season = '/season';
 const String setting = '/setting';
 
+class CustomRoute<T> extends MaterialPageRoute<T> {
+  CustomRoute({required super.builder});
+
+  @override
+  Widget buildTransitions(BuildContext context, Animation<double> animation,
+      Animation<double> secondaryAnimation, Widget child) {
+    //return FadeTransition(opacity: animation, child: child);
+    return SlideTransition(
+      position:
+          Tween<Offset>(begin: const Offset(0, 0), end: const Offset(0, 0))
+              //.chain(CurveTween(curve: Curves.linear))
+              .animate(animation),
+      child: child,
+    );
+  }
+}
+
 class StudentProfileScreen extends ConsumerStatefulWidget {
   const StudentProfileScreen({super.key});
   @override
@@ -21,27 +38,17 @@ class StudentProfileScreen extends ConsumerStatefulWidget {
 
 class _StudentProfileScreenState extends ConsumerState<StudentProfileScreen> {
   final _navigatorKey = GlobalKey<NavigatorState>();
+  int currentPage = 1;
+  Color? unselectedFontColor = const Color(0xFF76B73D);
+  Color? selectedFontColor = const Color(0xFF58892E);
+  Color? unselectedBackgroundColor = Colors.white;
+  Color? selectedBackgroundColor = const Color(0xFFA9EA70);
+  Color selectedBorderColor = const Color(0xFF8AD24C);
 
-  MaterialPageRoute _onGenerateRoute(RouteSettings setting) {
-    if (setting.name == info) {
-      return MaterialPageRoute<dynamic>(
-          builder: (context) => Info(
-                onChangePasswordPressed: onChangePasswordPressed,
-                onAddSuperPressed: onAddSuperPressed,
-                onLogoutPressed: onLogoutPressed,
-              ),
-          settings: setting);
-    }
-    // else if (setting.name == season) {
-    //   return MaterialPageRoute<dynamic>(
-    //       builder: (context) => B(), settings: setting);
-    // } else if (setting.name == setting) {
-    //   return MaterialPageRoute<dynamic>(
-    //       builder: (context) => C(), settings: setting);
-    // }
-    else {
-      throw Exception('Unknown route: ${setting.name}');
-    }
+  onMenuPressed(String route) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _navigatorKey.currentState!.popAndPushNamed(route);
+    });
   }
 
   onChangePasswordPressed() {
@@ -149,16 +156,30 @@ class _StudentProfileScreenState extends ConsumerState<StudentProfileScreen> {
                 child: Column(
                   children: [
                     FilledButton(
-                      onPressed: () {},
+                      onPressed: () {
+                        if (currentPage != 1) {
+                          onMenuPressed(info);
+                          setState(() {
+                            currentPage = 1;
+                          });
+                        }
+                      },
                       style: FilledButton.styleFrom(
                         minimumSize: Size(302.r, 44.r),
-                        backgroundColor: const Color(0xFF93E54C),
+                        backgroundColor: currentPage == 1
+                            ? selectedBackgroundColor
+                            : unselectedBackgroundColor,
                         padding: const EdgeInsets.symmetric(
                           horizontal: 16,
                           vertical: 14,
                         ).r,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(8).r,
+                          side: currentPage == 1
+                              ? BorderSide(
+                                  color: selectedBorderColor,
+                                )
+                              : BorderSide.none,
                         ),
                         alignment: Alignment.centerLeft,
                       ),
@@ -167,21 +188,38 @@ class _StudentProfileScreenState extends ConsumerState<StudentProfileScreen> {
                         style: TextStyle(
                           fontSize: 14.sp,
                           fontWeight: FontWeight.bold,
+                          color: currentPage == 1
+                              ? selectedFontColor
+                              : unselectedFontColor,
                         ),
                       ),
                     ),
                     SizedBox(height: 8.r),
                     FilledButton(
-                      onPressed: () {},
+                      onPressed: () {
+                        if (currentPage != 2) {
+                          onMenuPressed(season);
+                          setState(() {
+                            currentPage = 2;
+                          });
+                        }
+                      },
                       style: FilledButton.styleFrom(
                         minimumSize: Size(302.r, 44.r),
-                        backgroundColor: const Color(0xFFBEEF94),
+                        backgroundColor: currentPage == 2
+                            ? selectedBackgroundColor
+                            : unselectedBackgroundColor,
                         padding: const EdgeInsets.symmetric(
                           horizontal: 16,
                           vertical: 14,
                         ).r,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(8).r,
+                          side: currentPage == 2
+                              ? BorderSide(
+                                  color: selectedBorderColor,
+                                )
+                              : BorderSide.none,
                         ),
                         alignment: Alignment.centerLeft,
                       ),
@@ -190,22 +228,38 @@ class _StudentProfileScreenState extends ConsumerState<StudentProfileScreen> {
                         style: TextStyle(
                           fontSize: 14.sp,
                           fontWeight: FontWeight.bold,
-                          color: Colors.black,
+                          color: currentPage == 2
+                              ? selectedFontColor
+                              : unselectedFontColor,
                         ),
                       ),
                     ),
                     SizedBox(height: 8.r),
                     FilledButton(
-                      onPressed: () {},
+                      onPressed: () {
+                        if (currentPage != 3) {
+                          onMenuPressed(setting);
+                          setState(() {
+                            currentPage = 3;
+                          });
+                        }
+                      },
                       style: FilledButton.styleFrom(
                         minimumSize: Size(302.r, 44.r),
-                        backgroundColor: const Color(0xFFBEEF94),
+                        backgroundColor: currentPage == 3
+                            ? selectedBackgroundColor
+                            : unselectedBackgroundColor,
                         padding: const EdgeInsets.symmetric(
                           horizontal: 16,
                           vertical: 14,
                         ),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(8).r,
+                          side: currentPage == 3
+                              ? BorderSide(
+                                  color: selectedBorderColor,
+                                )
+                              : BorderSide.none,
                         ),
                         alignment: Alignment.centerLeft,
                       ),
@@ -214,7 +268,9 @@ class _StudentProfileScreenState extends ConsumerState<StudentProfileScreen> {
                         style: TextStyle(
                           fontSize: 14.sp,
                           fontWeight: FontWeight.bold,
-                          color: Colors.black,
+                          color: currentPage == 3
+                              ? selectedFontColor
+                              : unselectedFontColor,
                         ),
                       ),
                     ),
@@ -304,7 +360,33 @@ class _StudentProfileScreenState extends ConsumerState<StudentProfileScreen> {
                   child: Navigator(
                     key: _navigatorKey,
                     initialRoute: info,
-                    onGenerateRoute: _onGenerateRoute,
+                    onGenerateRoute: (settings) {
+                      return CustomRoute(
+                        //fullscreenDialog: true,
+                        builder: (context) {
+                          switch (settings.name) {
+                            case info:
+                              return Info(
+                                onChangePasswordPressed:
+                                    onChangePasswordPressed,
+                                onAddSuperPressed: onAddSuperPressed,
+                                onLogoutPressed: onLogoutPressed,
+                              );
+                            case season:
+                              return const Season();
+                            case setting:
+                              return const Settings();
+                            default:
+                              return Info(
+                                onChangePasswordPressed:
+                                    onChangePasswordPressed,
+                                onAddSuperPressed: onAddSuperPressed,
+                                onLogoutPressed: onLogoutPressed,
+                              );
+                          }
+                        },
+                      );
+                    },
                   ),
                 ),
               ),
@@ -344,10 +426,10 @@ class _InfoState extends ConsumerState<Info> {
             fontWeight: FontWeight.w800,
           ),
         ),
-        const Spacer(flex: 8),
+        const Spacer(flex: 3),
         Container(
           width: 302.r,
-          height: 76.r,
+          height: 58.r,
           padding: const EdgeInsets.symmetric(
             horizontal: 16,
           ).r,
@@ -376,10 +458,10 @@ class _InfoState extends ConsumerState<Info> {
                 FilledButton(
                   style: FilledButton.styleFrom(
                     backgroundColor: const Color(0xFF93E54C),
-                    minimumSize: Size(91.r, 36.r),
+                    minimumSize: Size(91.r, 26.r),
                     padding: const EdgeInsets.symmetric(
                       horizontal: 14,
-                      vertical: 12,
+                      vertical: 7,
                     ).r,
                   ),
                   onPressed: widget.onChangePasswordPressed,
@@ -395,7 +477,7 @@ class _InfoState extends ConsumerState<Info> {
             ),
           ),
         ),
-        const Spacer(flex: 7),
+        const Spacer(flex: 5),
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           crossAxisAlignment: CrossAxisAlignment.center,
@@ -419,7 +501,7 @@ class _InfoState extends ConsumerState<Info> {
             ),
           ],
         ),
-        const Spacer(flex: 8),
+        const Spacer(flex: 3),
         Container(
           height: 110.r,
           padding: const EdgeInsets.symmetric(
@@ -495,7 +577,7 @@ class _InfoState extends ConsumerState<Info> {
             ],
           ),
         ),
-        const Spacer(flex: 7),
+        const Spacer(flex: 5),
         Container(
           alignment: Alignment.center,
           height: 48.r,
@@ -539,6 +621,32 @@ class _InfoState extends ConsumerState<Info> {
           ),
         ),
       ],
+    );
+  }
+}
+
+class Season extends StatelessWidget {
+  const Season({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return const Scaffold(
+      body: Center(
+        child: Text('Season'),
+      ),
+    );
+  }
+}
+
+class Settings extends StatelessWidget {
+  const Settings({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return const Scaffold(
+      body: Center(
+        child: Text('Settings'),
+      ),
     );
   }
 }
