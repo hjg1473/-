@@ -13,7 +13,6 @@ class SuperService {
   final String _group = "group";
   final String _info = "info";
   final String _getpin = "get_pin";
-  final String _remove = "remove";
   final String _groupId = "group_id";
   late final SuperServiceRef _ref;
 

@@ -53,6 +53,7 @@ class StudentMainScreen extends ConsumerWidget {
                       width: 11.r,
                     ),
                     IconButton(
+                      highlightColor: Colors.transparent,
                       padding: EdgeInsets.zero,
                       onPressed: () => Navigator.of(context)
                           .pushNamed('/stud_profile_screen'),

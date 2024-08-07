@@ -111,6 +111,8 @@ class AuthService {
 
       _ref.watch(statusProvider).setName(response.data['name']);
 
+      _ref.watch(statusProvider).setUsername(username);
+
       if (response.data['role'] == 'student') {
         _ref.watch(statusProvider).setStudentStatus(
               response.data['released'],
@@ -139,7 +141,13 @@ class AuthService {
         ),
       );
 
-      _ref.watch(statusProvider).setName(response.data['name']);
+      _ref.watch(statusProvider).setName(
+            response.data['name'],
+          );
+
+      _ref.watch(statusProvider).setUsername(
+            response.data['username'],
+          );
 
       if (response.data['role'] == 'student') {
         _ref.watch(statusProvider).setStudentStatus(

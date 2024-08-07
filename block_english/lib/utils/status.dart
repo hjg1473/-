@@ -7,6 +7,7 @@ class Status {
   StudentMode studentMode = StudentMode.NONE;
   Season season = Season.NONE;
   String name = '';
+  String username = '';
 
   // Student's fields
   List<ReleaseStatus> releaseStatus = [];
@@ -23,6 +24,10 @@ class Status {
 
   setName(String name) {
     this.name = name;
+  }
+
+  setUsername(String username) {
+    this.username = username;
   }
 
   setStudentStatus(List<dynamic> released, int? teamId, String? groupName) {
