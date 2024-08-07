@@ -115,6 +115,7 @@ class AuthService {
         _ref.watch(statusProvider).setStudentStatus(
               response.data['released'],
               response.data['team_id'],
+              response.data['group_name'],
             );
       }
 
@@ -144,6 +145,7 @@ class AuthService {
         _ref.watch(statusProvider).setStudentStatus(
               response.data['released'],
               response.data['team_id'],
+              response.data['group_name'],
             );
       }
 

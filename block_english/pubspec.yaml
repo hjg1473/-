@@ -79,6 +79,7 @@ flutter:
     - assets/images/season_block.svg
     - assets/images/LOGO.svg
     - assets/images/student_character.svg
+    - assets/images/profile_photo.svg
 
     - assets/cards/sign_in_manager.svg
     - assets/cards/sign_in_user.svg
@@ -96,6 +97,7 @@ flutter:
     - assets/buttons/round_back_button.svg
     - assets/buttons/labeled_back_button.svg
     - assets/buttons/rounded_save_button.svg
+    - assets/buttons/rounded_edit_button.svg
 
   # To add assets to your application, add an assets section, like this:
   # assets:
