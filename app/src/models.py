@@ -9,14 +9,14 @@ Base = declarative_base()
 correct_problem_table = Table('correct_problem', Base.metadata,
     Column('study_info_id', Integer, ForeignKey('studyInfo.id')),
     Column('problem_id', Integer, ForeignKey('problems.id')),
-    Column('count', Integer, nullable=False, default=1),
+    Column('count', Integer, nullable=False, default=0),
     Column('isGroup', Integer, nullable=False, default=0)
 )
 
 incorrect_problem_table = Table('incorrect_problem', Base.metadata,
     Column('study_info_id', Integer, ForeignKey('studyInfo.id')),
     Column('problem_id', Integer, ForeignKey('problems.id')),
-    Column('count', Integer, nullable=False, default=1),
+    Column('count', Integer, nullable=False, default=0),
     Column('isGroup', Integer, nullable=False, default=0)
 )
 
