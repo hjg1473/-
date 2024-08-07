@@ -48,6 +48,7 @@ dependencies:
   percent_indicator: ^4.2.3
   wolt_modal_sheet: ^0.7.1
   flutter_screenutil: ^5.9.3
+  flutter_pin_code_fields: ^2.2.0
 
 dev_dependencies:
   flutter_test:

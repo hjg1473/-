@@ -1,4 +1,4 @@
-import 'package:block_english/models/UserModel/change_password_response_model.dart';
+import 'package:block_english/models/SuccessModel/success_model.dart';
 import 'package:block_english/models/model.dart';
 import 'package:block_english/utils/constants.dart';
 import 'package:block_english/utils/dio.dart';
@@ -21,7 +21,7 @@ class UserService {
     _ref = ref;
   }
 
-  Future<Either<FailureModel, ChangePasswordResponseModel>> putUsersPassword(
+  Future<Either<FailureModel, SuccessModel>> putUsersPassword(
     String password,
     String newPassword,
   ) async {
@@ -43,7 +43,7 @@ class UserService {
         },
       );
       return Right(
-        ChangePasswordResponseModel(
+        SuccessModel(
           statusCode: response.statusCode ?? 0,
           detail: response.data['detail'] ?? "",
         ),

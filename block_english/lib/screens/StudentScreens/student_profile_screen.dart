@@ -1,4 +1,6 @@
+import 'dart:ui';
 import 'package:block_english/services/auth_service.dart';
+import 'package:block_english/services/student_service.dart';
 import 'package:block_english/utils/status.dart';
 import 'package:block_english/utils/storage.dart';
 import 'package:flutter/material.dart';
@@ -24,8 +26,9 @@ class _StudentProfileScreenState extends ConsumerState<StudentProfileScreen> {
     if (setting.name == info) {
       return MaterialPageRoute<dynamic>(
           builder: (context) => Info(
-                onLogoutPressed: onLogoutPressed,
                 onChangePasswordPressed: onChangePasswordPressed,
+                onAddSuperPressed: onAddSuperPressed,
+                onLogoutPressed: onLogoutPressed,
               ),
           settings: setting);
     }
@@ -43,6 +46,33 @@ class _StudentProfileScreenState extends ConsumerState<StudentProfileScreen> {
 
   onChangePasswordPressed() {
     Navigator.of(context).pushNamed('/user_change_password_screen');
+  }
+
+  onAddSuperPressed() async {
+    final result =
+        await Navigator.of(context).pushNamed('/stud_add_super_screen');
+    if (result == true) {
+      final response = await ref.watch(studentServiceProvider).getStudentInfo();
+      response.fold(
+        (failure) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('${failure.statusCode}: ${failure.detail}'),
+            ),
+          );
+        },
+        (success) {
+          if (mounted) {
+            setState(() {
+              ref.watch(statusProvider).setGroup(
+                    success.teamId,
+                    success.groupName,
+                  );
+            });
+          }
+        },
+      );
+    }
   }
 
   onLogoutPressed() async {
@@ -288,11 +318,13 @@ class _StudentProfileScreenState extends ConsumerState<StudentProfileScreen> {
 
 class Info extends ConsumerStatefulWidget {
   final VoidCallback onChangePasswordPressed;
+  final VoidCallback onAddSuperPressed;
   final VoidCallback onLogoutPressed;
 
   const Info({
     super.key,
     required this.onChangePasswordPressed,
+    required this.onAddSuperPressed,
     required this.onLogoutPressed,
   });
   @override
@@ -376,9 +408,7 @@ class _InfoState extends ConsumerState<Info> {
               ),
             ),
             GestureDetector(
-              onTap: () {
-                debugPrint('추가하기');
-              },
+              onTap: widget.onAddSuperPressed,
               child: Text(
                 '추가하기',
                 style: TextStyle(
@@ -423,7 +453,7 @@ class _InfoState extends ConsumerState<Info> {
                   ),
                   SizedBox(width: 21.r),
                   Text(
-                    ref.watch(statusProvider).groupName ?? '',
+                    ref.watch(statusProvider).groupName ?? '연결된 그룹이 없어요',
                     style: TextStyle(
                       fontSize: 16.sp,
                       fontWeight: FontWeight.w700,
@@ -454,7 +484,7 @@ class _InfoState extends ConsumerState<Info> {
                   SizedBox(width: 21.r),
                   // TODO: Change this to the actual name of parent
                   Text(
-                    '김관리 관리자',
+                    '연결된 관리자가 없어요',
                     style: TextStyle(
                       fontSize: 16.sp,
                       fontWeight: FontWeight.w700,

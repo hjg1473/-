@@ -30,6 +30,11 @@ class Status {
     this.username = username;
   }
 
+  setGroup(int teamId, String groupName) {
+    this.teamId = teamId;
+    this.groupName = groupName;
+  }
+
   setStudentStatus(List<dynamic> released, int? teamId, String? groupName) {
     for (Map<String, dynamic> data in released) {
       releaseStatus

@@ -1,3 +1,4 @@
+import 'package:block_english/models/SuccessModel/success_model.dart';
 import 'package:block_english/models/model.dart';
 import 'package:block_english/utils/constants.dart';
 import 'package:block_english/utils/dio.dart';
@@ -19,6 +20,36 @@ class StudentService {
 
   StudentService(StudentServiceRef ref) {
     _ref = ref;
+  }
+
+  Future<Either<FailureModel, SuccessModel>> postGroupEnter(
+    int pinNumber,
+  ) async {
+    final dio = _ref.watch(dioProvider);
+    try {
+      final response = await dio.post(
+        '/$_student/group/enter',
+        options: Options(
+          headers: {
+            'accept': 'application/json',
+            'Content-Type': 'application/json',
+            TOKENVALIDATE: 'true',
+          },
+        ),
+        data: {
+          'pin_number': pinNumber,
+        },
+      );
+      return Right(SuccessModel(
+        statusCode: response.statusCode ?? 0,
+        detail: response.data['detail'] ?? '',
+      ));
+    } on DioException catch (e) {
+      return Left(FailureModel(
+        statusCode: e.response?.statusCode ?? 0,
+        detail: e.response?.data['detail'] ?? '',
+      ));
+    }
   }
 
   Future<Either<FailureModel, StudentInfoModel>> getStudentInfo() async {

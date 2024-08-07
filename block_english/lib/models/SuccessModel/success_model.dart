@@ -1,8 +1,8 @@
-class ChangePasswordResponseModel {
+class SuccessModel {
   int statusCode;
   String detail;
 
-  ChangePasswordResponseModel({
+  SuccessModel({
     required this.statusCode,
     required this.detail,
   });
