@@ -47,10 +47,7 @@ class _SuperGroupCreateScreenState
       }
     }, (success) {
       if (mounted) {
-        Navigator.of(context).pushNamedAndRemoveUntil(
-          '/super_monitor_screen',
-          ModalRoute.withName('/super_main_screen'),
-        );
+        Navigator.of(context).pop(true);
       }
     });
   }

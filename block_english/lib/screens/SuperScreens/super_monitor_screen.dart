@@ -73,8 +73,12 @@ class _SuperMonitorScreenState extends ConsumerState<SuperMonitorScreen> {
                     ),
                   ],
                 ),
-                onPressed: () {
-                  Navigator.of(context).pushNamed('/super_group_create_screen');
+                onPressed: () async {
+                  final createResult = await Navigator.of(context)
+                      .pushNamed('/super_group_create_screen');
+                  if (createResult == true) {
+                    setState(() {});
+                  }
                 }),
             SizedBox(height: 10.r),
             ElevatedButton.icon(
