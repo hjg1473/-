@@ -4,6 +4,7 @@ import 'package:block_english/services/student_service.dart';
 import 'package:block_english/utils/status.dart';
 import 'package:block_english/utils/storage.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -630,9 +631,29 @@ class Season extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Scaffold(
-      body: Center(
-        child: Text('Season'),
+    return Scaffold(
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            '블록 잉글리시 보유 시즌 추가',
+            style: TextStyle(
+              fontSize: 18.sp,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+          SizedBox(height: 12.r),
+          //TODO: Change this to the actual season list
+          IconButton(
+            padding: EdgeInsets.zero,
+            onPressed: null,
+            icon: SvgPicture.asset(
+              'assets/buttons/season_1_button.svg',
+              width: 153.r,
+              height: 50.r,
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -643,9 +664,48 @@ class Settings extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Scaffold(
-      body: Center(
-        child: Text('Settings'),
+    return Scaffold(
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            '환경설정',
+            style: TextStyle(
+              fontSize: 18.sp,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+          SizedBox(height: 12.r),
+          IconButton(
+            padding: EdgeInsets.zero,
+            onPressed: null,
+            icon: SvgPicture.asset(
+              'assets/buttons/settings_notification_button.svg',
+              width: 302.r,
+              height: 48.r,
+            ),
+          ),
+          SizedBox(height: 8.r),
+          IconButton(
+            padding: EdgeInsets.zero,
+            onPressed: null,
+            icon: SvgPicture.asset(
+              'assets/buttons/settings_app_version_button.svg',
+              width: 302.r,
+              height: 48.r,
+            ),
+          ),
+          SizedBox(height: 8.r),
+          IconButton(
+            padding: EdgeInsets.zero,
+            onPressed: null,
+            icon: SvgPicture.asset(
+              'assets/buttons/settings_copyright_button.svg',
+              width: 302.r,
+              height: 48.r,
+            ),
+          ),
+        ],
       ),
     );
   }

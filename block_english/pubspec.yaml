@@ -99,6 +99,10 @@ flutter:
     - assets/buttons/labeled_back_button.svg
     - assets/buttons/rounded_save_button.svg
     - assets/buttons/rounded_edit_button.svg
+    - assets/buttons/season_1_button.svg
+    - assets/buttons/settings_notification_button.svg
+    - assets/buttons/settings_app_version_button.svg
+    - assets/buttons/settings_copyright_button.svg
 
   # To add assets to your application, add an assets section, like this:
   # assets:
