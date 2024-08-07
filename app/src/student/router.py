@@ -8,7 +8,7 @@ from starlette import status
 import sys, os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))))
 
-from app.src.models import Users, StudyInfo, Released, incorrect_problem_table, correct_problem_table
+from app.src.models import Users, StudyInfo, Released, incorrect_problem_table, correct_problem_table, Groups
 from student.dependencies import user_dependency, db_dependency
 from student.exceptions import get_user_exception, get_user_exception2, auth_exception, http_exception, select_exception1, select_exception2, select_exception3
 from student.schemas import PinNumber, SoloGroup, SeasonList
