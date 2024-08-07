@@ -1,16 +1,23 @@
 // ignore_for_file: constant_identifier_names
 
+enum UserType {
+  student,
+  teacher,
+  parent,
+}
+
 enum ButtonType {
   FILLED,
   OUTLINED,
 }
 
 const List<String> questionList = [
-  "좋아하는 색깔은?",
-  "좋아하는 음식은?",
+  "내가 좋아하는 색깔은?",
+  "내가 가장 좋아하는 캐릭터는?",
   "제일 처음 한 게임 이름은?",
-  "내 별명은?",
-  "우리 집 어른 이름은?",
+  "내가 좋아하는 나의 별명은?",
+  "나의 보물 제 1호는?",
+  "내가 제일 존경하는 인물은?"
 ];
 
 const List<String> levellist = [

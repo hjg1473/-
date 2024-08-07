@@ -8,7 +8,7 @@ class CreateUser(BaseModel):
     role: str
     questionType: int
     question: str
-    seasons: List[int]
+    # seasons: List[int] = [] # Optional[List[int]] = None
     
 class Username(BaseModel):
     username: str

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/scheduler.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class PinCodeWidget extends ConsumerStatefulWidget {
   const PinCodeWidget({
@@ -46,72 +46,91 @@ class _PinCodeWidgetState extends ConsumerState<PinCodeWidget>
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(20.0),
+      padding: const EdgeInsets.symmetric(
+        horizontal: 16,
+        vertical: 12,
+      ).r,
       decoration: BoxDecoration(
-          border: Border.all(),
-          borderRadius: BorderRadius.circular(12.0),
-          boxShadow: const <BoxShadow>[
-            BoxShadow(
-              color: Colors.black,
-              offset: Offset(
-                0.5,
-                0.5,
-              ),
-              blurRadius: 1.0,
-            ),
-          ],
-          color: Colors.white),
-      width: double.infinity,
+        borderRadius: BorderRadius.circular(8.0).r,
+        boxShadow: <BoxShadow>[
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.5),
+            spreadRadius: 1,
+            blurRadius: 7,
+            offset: const Offset(0, 0),
+          ),
+        ],
+        color: Colors.white,
+      ),
+      width: 320.r,
+      height: 176.r,
       child: Column(
         children: [
-          const Text(
-            '모니터링 학습차 추가 핀코드',
-            style: TextStyle(
-              fontSize: 20.0,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-          const Text(
-            '학습자는 학습자 추가 핀코드를 입력해주세요',
-            style: TextStyle(
-              color: Color.fromARGB(255, 148, 148, 148),
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-          const SizedBox(
-            height: 20,
-          ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              for (String pin in widget.pinCode.split('')) PinBlock(pin: pin)
-            ],
-          ),
-          Text(
-            _formatDuration(),
-            style: const TextStyle(
-              color: Color.fromARGB(255, 148, 148, 148),
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.only(top: 20),
-            child: SizedBox(
-              width: double.infinity,
-              height: 50,
-              child: ElevatedButton(
-                onPressed: widget.onButtonClicked,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color.fromARGB(255, 65, 65, 65),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12.0),
+          SizedBox(
+            width: 288.r,
+            height: 36.r,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Text(
+                  '모니터링 학습자 추가 핀코드',
+                  style: TextStyle(
+                    fontSize: 14.sp,
+                    fontWeight: FontWeight.w700,
                   ),
                 ),
-                child: const Text(
-                  '닫기',
-                  style: TextStyle(color: Colors.white, fontSize: 20.0),
+                Text(
+                  '학습자는 학습자 추가 핀코드를 입력해주세요',
+                  style: TextStyle(
+                    color: const Color(0xFFC2C2C2),
+                    fontSize: 11.sp,
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
-              ),
+              ],
+            ),
+          ),
+          const Spacer(),
+          SizedBox(
+            width: 288.r,
+            height: 100.r,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    for (String pin in widget.pinCode.split(''))
+                      PinBlock(pin: pin)
+                  ],
+                ),
+                Text(
+                  _formatDuration(),
+                  style: TextStyle(
+                    color: const Color(0xFFC2C2C2),
+                    fontSize: 11.sp,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                SizedBox(
+                  width: double.infinity,
+                  height: 50,
+                  child: ElevatedButton(
+                    onPressed: widget.onButtonClicked,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color.fromARGB(255, 65, 65, 65),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12.0),
+                      ),
+                    ),
+                    child: const Text(
+                      '닫기',
+                      style: TextStyle(color: Colors.white, fontSize: 20.0),
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
         ],
@@ -128,18 +147,20 @@ class PinBlock extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 4.0),
+      padding: const EdgeInsets.symmetric(horizontal: 2).r,
       child: Container(
+        alignment: Alignment.center,
+        width: 28.r,
+        height: 36.r,
         decoration: BoxDecoration(
           color: const Color(0xFFD9D9D9),
-          borderRadius: BorderRadius.circular(12.0),
+          borderRadius: BorderRadius.circular(4).r,
         ),
-        padding: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 14.0),
         child: Text(
           pin,
-          style: const TextStyle(
-            fontSize: 40,
-            fontWeight: FontWeight.bold,
+          style: TextStyle(
+            fontSize: 22.sp,
+            fontWeight: FontWeight.w800,
           ),
         ),
       ),

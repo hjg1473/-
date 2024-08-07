@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:block_english/models/SuperModel/pin_model.dart';
 import 'package:block_english/models/model.dart';
 import 'package:block_english/utils/constants.dart';
@@ -9,12 +11,15 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 part 'super_service.g.dart';
 
 class SuperService {
-  final String _super = "super";
-  final String _group = "group";
-  final String _info = "info";
-  final String _getpin = "get_pin";
-  final String _remove = "remove";
-  final String _groupId = "group_id";
+  static const String _super = "super";
+  static const String _group = "group";
+  static const String _info = "info";
+  static const String _getpin = "get_pin";
+  static const String _remove = "remove";
+  static const String _groupId = "group_id";
+  static const String _groupName = 'group_name';
+  static const String _groupDetail = 'group_detail';
+  static const String _groupUpdate = 'group_update';
   late final SuperServiceRef _ref;
 
   SuperService(SuperServiceRef ref) {
@@ -60,7 +65,7 @@ class SuperService {
   }
 
   Future<Either<FailureModel, CreateGroupResponseModel>> postCreateGroup(
-      String name) async {
+      String name, String detailText) async {
     final dio = _ref.watch(dioProvider);
     try {
       final response = await dio.post(
@@ -73,7 +78,7 @@ class SuperService {
         ),
         data: {
           'name': name,
-          'grade': 4,
+          'detail': detailText,
         },
       );
       return Right(CreateGroupResponseModel.fromJson(response.data));
@@ -120,6 +125,30 @@ class SuperService {
       );
 
       return Right(PinModel.fromJson(response.data));
+    } on DioException catch (e) {
+      return Left(FailureModel(
+        statusCode: e.response?.statusCode ?? 0,
+        detail: e.response?.data['detail'],
+      ));
+    }
+  }
+
+  Future<Either<FailureModel, Response>> putGroupUpdate(
+      int groupId, String groupName, String detail) async {
+    try {
+      final dio = _ref.watch(dioProvider);
+      final response = await dio.put('/$_super/$_groupUpdate',
+          options: Options(
+            contentType: Headers.jsonContentType,
+            headers: {TOKENVALIDATE: 'true'},
+          ),
+          data: {
+            _groupId: groupId,
+            _groupName: groupName,
+            _groupDetail: detail,
+          });
+
+      return Right(response);
     } on DioException catch (e) {
       return Left(FailureModel(
         statusCode: e.response?.statusCode ?? 0,

@@ -6,7 +6,7 @@ from datetime import timedelta
 import sys, os
 from sqlalchemy import select
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))))
-from app.src.models import Users, Released
+from app.src.models import Users, Released, Groups
 from auth.schemas import CreateUser, Message, Username, FindPassword, UpdatePassword
 from auth.utils import authenticate_user, decode_token, validate_token_payload
 from auth.service import create_access_token, create_user_in_db, create_study_info, get_user_to_username, create_released
@@ -35,13 +35,23 @@ def get_current_user(token: Annotated[str, Depends(oauth2_bearer)]):
     username, user_id, user_role = validate_token_payload(payload)
     return {'username' : username, 'id' : user_id, 'user_role': user_role}
 
+# 유저네임 중복 확인
+@router.post("/username_duplication", status_code=status.HTTP_200_OK)
+async def username_duplication(db: db_dependency, create_user: Username):
+    user = await get_user_to_username(create_user.username, db)
+    if user:
+        return {'detail': 0}
+    return {'detail': 1 }
+
 # 회원가입
 @router.post("/register", status_code=status.HTTP_200_OK, responses={409: {"model": Message}})
 async def create_new_user(db: db_dependency, create_user: CreateUser):
     await username_exception(create_user.username, db)
     user = await create_user_in_db(db, create_user)
-    await create_study_info(db, user.id)
-    await create_released(db, user.id, create_user.seasons)
+    if user.role == 'student':
+        await create_study_info(db, user.id)
+        # await create_released(db, user.id, create_user.seasons)
+
     logger = logger_setup.get_logger(user.id)
     logger.info("--- Register ---")
     return {'detail': '성공적으로 회원가입되었습니다.'}
@@ -84,7 +94,7 @@ async def find_password3(db: db_dependency, user: UpdatePassword):
     get_password_exception()
         
 # 로그인 
-@router.post("/token", responses={401: {"model": Message}})
+@router.post("/token")
 async def first_login_for_access_token(form_data: Annotated[OAuth2PasswordRequestForm, Depends()], db: db_dependency):
     user = await authenticate_user(form_data.username, form_data.password, db)    
     login_exception(user)
@@ -100,13 +110,21 @@ async def first_login_for_access_token(form_data: Annotated[OAuth2PasswordReques
 
     redis_client.close()
     await redis_client.wait_closed()
+
+    if user.role == 'super':
+        return {'access_token' : access_token, 'token_type' : 'bearer', 'username': user.username, 'role': user.role, 'refresh_token' : refresh_token, 'name': user.name, "username_correct": True, "password_correct": True}
+
     result = await db.execute(select(Released).filter(Released.owner_id == user.id))
     released_model = result.scalars().all()
     released = []
     for r in released_model:
         released.append({'season':r.released_season, 'level':r.released_level, 'step':r.released_step})
-
-    return {'access_token' : access_token, 'token_type' : 'bearer', 'role': user.role, 'refresh_token' : refresh_token, 'team_id': user.team_id, 'name': user.name, "username_correct": True, "password_correct": True, "released": released}
+    result2 = await db.execute(select(Groups).where(Groups.id == user.team_id))
+    group_model = result2.scalars().first()
+    if group_model is None:
+        return {'access_token' : access_token, 'token_type' : 'bearer', 'username': user.username, 'role': user.role, 'refresh_token' : refresh_token, 'team_id': user.team_id, 'name': user.name, "username_correct": True, "password_correct": True, "released": released, 'group_name': None}
+    
+    return {'access_token' : access_token, 'token_type' : 'bearer', 'username': user.username, 'role': user.role, 'refresh_token' : refresh_token, 'team_id': user.team_id, 'name': user.name, "username_correct": True, "password_correct": True, "released": released, 'group_name': group_model.name}
 
 # Access Token 유효성 검사
 @router.post("/access", status_code=status.HTTP_200_OK, responses={401: {"model": Message}})
@@ -119,16 +137,22 @@ async def login_for_access_token(access_token: Annotated[str, Depends(oauth2_bea
     stored_access_token = await redis_client.get(f"{username}_access")
     token_exception2(stored_access_token, access_token)
 
-
     result = await db.execute(select(Users).filter(Users.id == user_id))
-    user = result.scalars().all()
+    user = result.scalars().first()
+    if user_role == 'super':
+        return {'detail': 'Token Valid', 'role': user_role, 'username': username, 'name': user.name, "username_correct": True, "password_correct": True}
+
     result2 = await db.execute(select(Released).filter(Released.owner_id == user_id))
     released_model = result2.scalars().all()
     released = []
     for r in released_model:
         released.append({'season':r.released_season, 'level':r.released_level, 'step':r.released_step})
-
-    return {'detail': 'Token Valid', 'role': user_role, 'team_id': user.team_id, 'name': user.name, "username_correct": True, "password_correct": True, "released": released}
+    result2 = await db.execute(select(Groups).where(Groups.id == user.team_id))
+    group_model = result2.scalars().first()
+    if group_model is None:
+        return {'detail': 'Token Valid', 'role': user_role, 'team_id': user.team_id, 'username': username, 'name': user.name, "username_correct": True, "password_correct": True, "released": released, 'group_name': None}
+    
+    return {'detail': 'Token Valid', 'role': user_role, 'team_id': user.team_id, 'username': username, 'name': user.name, "username_correct": True, "password_correct": True, "released": released, 'group_name': group_model.name}
 
 # Refresh Token 유효성 검사
 @router.post("/refresh", responses={401: {"model": Message}})

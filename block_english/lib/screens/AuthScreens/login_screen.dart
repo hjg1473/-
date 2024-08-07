@@ -1,4 +1,5 @@
 import 'package:block_english/services/auth_service.dart';
+import 'package:block_english/utils/constants.dart';
 import 'package:block_english/utils/storage.dart';
 import 'package:block_english/widgets/square_button.dart';
 import 'package:flutter/material.dart';
@@ -73,11 +74,14 @@ class _LoginState extends ConsumerState<LoginScreen> {
     }, (loginResponseModel) async {
       var role = loginResponseModel.role;
 
-      if (role != 'student' && role != 'super') {
+      if (role != UserType.student.name &&
+          role != UserType.parent.name &&
+          role != UserType.teacher.name &&
+          role != 'super') {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
-              content: Text('로그인 다시해'),
+              content: Text('잘못된 권한입니다'),
             ),
           );
         }
@@ -91,12 +95,12 @@ class _LoginState extends ConsumerState<LoginScreen> {
           .saveRefreshToken(loginResponseModel.refreshToken);
 
       if (mounted) {
-        if (role == 'student') {
+        if (role == UserType.student.name) {
           Navigator.of(context).pushNamedAndRemoveUntil(
             '/stud_mode_select_screen',
             (Route<dynamic> route) => false,
           );
-        } else if (role == 'super') {
+        } else if (role == UserType.teacher.name) {
           Navigator.of(context).pushNamedAndRemoveUntil(
             '/super_main_screen',
             (Route<dynamic> route) => false,
@@ -217,6 +221,10 @@ class _LoginState extends ConsumerState<LoginScreen> {
                                       RegExp(r'[a-zA-Z0-9]'),
                                     ),
                                   ],
+                                  style: TextStyle(
+                                    fontSize: 16.sp,
+                                    fontWeight: FontWeight.w700,
+                                  ),
                                   decoration: InputDecoration(
                                     contentPadding: const EdgeInsets.symmetric(
                                       horizontal: 16,
@@ -282,6 +290,10 @@ class _LoginState extends ConsumerState<LoginScreen> {
                                   ],
                                   obscureText: passwordObsecured,
                                   obscuringCharacter: '*',
+                                  style: TextStyle(
+                                    fontSize: 16.sp,
+                                    fontWeight: FontWeight.w700,
+                                  ),
                                   decoration: InputDecoration(
                                     contentPadding: const EdgeInsets.symmetric(
                                       horizontal: 16,

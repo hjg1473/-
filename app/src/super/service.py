@@ -71,7 +71,7 @@ async def get_group_name(name, admin_id, db: db_dependency):
 async def update_new_group(addgroup, admin_id, db: db_dependency):
     group_model = Groups()
     group_model.name = addgroup.name
-    group_model.grade = addgroup.grade
+    group_model.detail = addgroup.detail
 
     db.add(group_model)
     await db.commit()
@@ -126,10 +126,11 @@ async def update_group_level_and_step(group_id, level, step, db:db_dependency):
     db.add(group_model)
     await db.commit()
 
-async def update_group_name(group_id, name, db: db_dependency):
+async def update_group_name(group_id, name, detail, db: db_dependency):
     result = await db.execute(select(Groups).filter(Groups.id == group_id))
     group_model = result.scalars().first()
     group_model.name = name
+    group_model.detail = detail
 
     db.add(group_model)
     await db.commit()

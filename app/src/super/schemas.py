@@ -12,7 +12,7 @@ class ProblemSet(BaseModel):
 
 class AddGroup(BaseModel):
     name: str
-    grade: str
+    detail: str
 
 class GroupStep(BaseModel):
     group_id: int
@@ -23,7 +23,12 @@ class GroupAvgTime(BaseModel):
 
 class GroupLevelStep(BaseModel):
     group_id: int
+    level: int
     step: int
+
+class GroupSeasonLevel(BaseModel):
+    group_id: int
+    season: int
     level: int
 
 class PinNumber(BaseModel):
@@ -32,6 +37,7 @@ class PinNumber(BaseModel):
 class GroupName(BaseModel):
     group_id: int
     group_name: str
+    group_detail: str
 
 class GroupId(BaseModel):
     group_id: int
@@ -42,5 +48,5 @@ class UserStep(BaseModel):
 
 class UserStep2(BaseModel):
     user_id: int
-    step: int
+    season: int
     level: int

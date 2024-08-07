@@ -17,6 +17,13 @@ def parse_sentence(sentence:str):
 
         else:
             parsed.append(word)
+
+    if 'dog' in parsed:
+        dog_index = parsed.index('dog')
+        if dog_index > 0 and parsed[dog_index -1] in ['a', 'A']:
+            parsed[dog_index -1] = ' '.join(parsed[dog_index-1:dog_index+1])
+            parsed.remove('dog')
+
     return parsed
 
 

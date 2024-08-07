@@ -2,10 +2,41 @@ import sys, os
 from sqlalchemy.dialects.mysql import insert
 from sqlalchemy import select, update
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))))
-from app.src.models import Problems, correct_problem_table, incorrect_problem_table, Words
-from problem.schemas import Problem
+from app.src.models import Problems, correct_problem_table, incorrect_problem_table, Words, WrongType
+from problem.schemas import Problem, TempUserProblem
 from problem.dependencies import db_dependency
 from problem.utils import *
+
+
+
+# async def create_Types_in_db(id, db: db_dependency, tempUserProblem: TempUserProblem) -> Types:
+#     print(type(tempUserProblem.totalFullStop))
+#     new_Types = Types(
+#         punctuation=tempUserProblem.totalFullStop,
+#         letter=tempUserProblem.totalTextType,
+#         block=tempUserProblem.totalIncorrectCompose,
+#         word=tempUserProblem.totalIncorrectWords,
+#         order=tempUserProblem.totalIncorrectOrder,
+#         owner_id = id
+#     )
+#     db.add(new_Types)
+#     await db.commit()
+#     await db.refresh(new_Types)
+#     return 
+
+# async def update_Types_in_db(model, db: db_dependency, tempUserProblem: TempUserProblem) -> Types:
+
+#     model.punctuation=tempUserProblem.totalFullStop
+#     model.letter=tempUserProblem.totalTextType
+#     model.block=tempUserProblem.totalIncorrectCompose
+#     model.word=tempUserProblem.totalIncorrectWords
+#     model.order=tempUserProblem.totalIncorrectOrder
+
+#     db.add(model)
+#     await db.commit()
+#     await db.refresh(model)
+#     return 
+
 
 async def create_problem_in_db(db: db_dependency, problem: Problem) -> Problems:
     new_problem = Problems(
@@ -26,12 +57,22 @@ async def get_problem_info(db):
     problem_list = result.scalars().all()
     return problem_list
 
-async def increment_correct_problem_count(study_info_id: int, problem_id: int, p_count: int, db: db_dependency):
+async def create_wrong_type(season:int, level:int, studyinfo_id:int, db):
+    wrongType = WrongType(
+        info_id = studyinfo_id,
+        season = season,
+        level = level
+    )
+    db.add(wrongType)
+    await db.commit()
+
+async def increment_correct_problem_count(study_info_id: int, problem_id: int, p_count: int, isGroup:int, db: db_dependency):
     # 업데이트 문 생성
     stmt = update(correct_problem_table).\
         where(
             correct_problem_table.c.study_info_id == study_info_id,
-            correct_problem_table.c.problem_id == problem_id
+            correct_problem_table.c.problem_id == problem_id,
+            correct_problem_table.c.isGroup == isGroup
         ).\
         values(count=correct_problem_table.c.count + p_count)
 
@@ -39,12 +80,13 @@ async def increment_correct_problem_count(study_info_id: int, problem_id: int, p
     await db.execute(stmt)
     await db.commit()
 
-async def increment_incorrect_problem_count(study_info_id: int, problem_id: int, p_count: int, db: db_dependency):
+async def increment_incorrect_problem_count(study_info_id: int, problem_id: int, p_count: int, isGroup:int, db: db_dependency):
     # 업데이트 문 생성
     stmt = update(incorrect_problem_table).\
         where(
             incorrect_problem_table.c.study_info_id == study_info_id,
-            incorrect_problem_table.c.problem_id == problem_id
+            incorrect_problem_table.c.problem_id == problem_id,
+            incorrect_problem_table.c.isGroup == isGroup
         ).\
         values(count=incorrect_problem_table.c.count + p_count)
 
@@ -70,7 +112,7 @@ async def get_incorrect_problem_count(study_info_id: int, problem_id: int, db):
     count = result.scalar()
     return count
 
-async def calculate_wrong_info(problem_parse:list, response_parse:list, tempUserProblem, db=db_dependency):
+async def calculate_wrong_info(problem_id, problem_parse:list, response_parse:list, tempUserProblem, db=db_dependency):
     problem = combine_sentence(problem_parse)
 
     # 0. response의 단어들이 블록에 있는 단어인지 검사    
@@ -142,9 +184,9 @@ async def calculate_wrong_info(problem_parse:list, response_parse:list, tempUser
         else:
             word_wrong += 1    
     
-    tempUserProblem.totalFullStop += letter_wrong 
-    tempUserProblem.totalTextType += punc_wrong
-    tempUserProblem.totalIncorrectCompose += block_wrong
+    tempUserProblem.totalIncorrectLetter += letter_wrong 
+    tempUserProblem.totalIncorrectPunc += punc_wrong
+    tempUserProblem.totalIncorrectBlock += block_wrong
     tempUserProblem.totalIncorrectWords += word_wrong
     tempUserProblem.totalIncorrectOrder += order_wrong
 

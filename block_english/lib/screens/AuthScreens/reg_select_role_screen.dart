@@ -13,11 +13,11 @@ class RegSelectRoleScreen extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             Padding(
-              padding: EdgeInsets.only(
-                top: 32.r,
-                left: 64.r,
-                right: 64.r,
-              ),
+              padding: const EdgeInsets.only(
+                top: 32,
+                left: 64,
+                right: 64,
+              ).r,
               child: Stack(
                 children: [
                   FilledButton.icon(
@@ -36,10 +36,10 @@ class RegSelectRoleScreen extends StatelessWidget {
                       ),
                     ),
                     style: FilledButton.styleFrom(
-                      padding: EdgeInsets.symmetric(
-                        horizontal: 20.r,
-                        vertical: 10.r,
-                      ),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 20,
+                        vertical: 10,
+                      ).r,
                       tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                       backgroundColor: Colors.black,
                     ),
@@ -75,7 +75,8 @@ class RegSelectRoleScreen extends StatelessWidget {
                 SizedBox(
                   child: IconButton(
                     onPressed: () {
-                      Navigator.pushNamed(context, '/reg_student_screen');
+                      Navigator.pushNamed(context, '/reg_get_info_screen',
+                          arguments: 'student');
                     },
                     icon: SvgPicture.asset(
                       width: 180.r,
@@ -91,7 +92,10 @@ class RegSelectRoleScreen extends StatelessWidget {
                 SizedBox(
                   child: IconButton(
                     onPressed: () {
-                      Navigator.pushNamed(context, '/reg_super_type_screen');
+                      Navigator.pushNamed(
+                        context,
+                        '/reg_super_type_screen',
+                      );
                     },
                     icon: SvgPicture.asset(
                       width: 180.r,
