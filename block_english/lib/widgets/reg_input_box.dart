@@ -103,7 +103,6 @@ class RegInputBox extends StatelessWidget {
                   obscureText: isSelected,
                   obscuringCharacter: '*',
                   controller: controller,
-                  cursorHeight: 13,
                   cursorColor: Colors.grey,
                   decoration: InputDecoration(
                     isCollapsed: true,

@@ -1,52 +1,59 @@
 import 'package:block_english/services/auth_service.dart';
+import 'package:block_english/utils/constants.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class LoadingScreen extends ConsumerWidget {
+class LoadingScreen extends ConsumerStatefulWidget {
   const LoadingScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    return Scaffold(
+  ConsumerState<LoadingScreen> createState() => _LoadingScreenState();
+}
+
+class _LoadingScreenState extends ConsumerState<LoadingScreen> {
+  loginWithToken() async {
+    final result = await ref.watch(authServiceProvider).postAuthAccess();
+
+    result.fold((failure) {
+      Navigator.of(context).pushNamedAndRemoveUntil(
+        '/login_screen',
+        (Route<dynamic> route) => false,
+      );
+    }, (accessResponse) {
+      if (accessResponse.role == UserType.student.name) {
+        Navigator.of(context).pushNamedAndRemoveUntil(
+          '/stud_mode_select_screen',
+          (Route<dynamic> route) => false,
+        );
+      } else if (accessResponse.role == UserType.teacher.name) {
+        Navigator.of(context).pushNamedAndRemoveUntil(
+          '/super_main_screen',
+          (Route<dynamic> route) => false,
+        );
+      } else if (accessResponse.role == UserType.parent.name) {
+      } else {
+        //TODO: show dialog and exit app
+        Navigator.of(context).pushNamedAndRemoveUntil(
+          '/setting_screen',
+          (Route<dynamic> route) => false,
+        );
+      }
+    });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      loginWithToken();
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return const Scaffold(
       body: Center(
-        child: Consumer(
-          builder: (context, ref, child) {
-            return FutureBuilder(
-              future: ref.watch(authServiceProvider).postAuthAccess(),
-              builder: (context, snapshot) {
-                if (!snapshot.hasData) {
-                  return const CircularProgressIndicator();
-                }
-                snapshot.data!.fold(
-                  (failure) {
-                    WidgetsBinding.instance.addPostFrameCallback(
-                        (_) => Navigator.of(context).pushNamedAndRemoveUntil(
-                              '/login_screen',
-                              (Route<dynamic> route) => false,
-                            ));
-                  },
-                  (accessresponse) {
-                    switch (accessresponse.role) {
-                      case 'student':
-                        WidgetsBinding.instance.addPostFrameCallback((_) =>
-                            Navigator.of(context).pushNamedAndRemoveUntil(
-                              '/stud_mode_select_screen',
-                              (Route<dynamic> route) => false,
-                            ));
-                      case 'super':
-                        WidgetsBinding.instance.addPostFrameCallback((_) =>
-                            Navigator.of(context).pushNamedAndRemoveUntil(
-                              '/super_main_screen',
-                              (Route<dynamic> route) => false,
-                            ));
-                    }
-                  },
-                );
-                return const CircularProgressIndicator();
-              },
-            );
-          },
-        ),
+        child: CircularProgressIndicator(),
       ),
     );
   }

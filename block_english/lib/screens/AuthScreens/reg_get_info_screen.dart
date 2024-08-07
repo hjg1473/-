@@ -178,6 +178,7 @@ class _RegStudentScreenState extends ConsumerState<RegGetInfoScreen> {
         child: SizedBox(
           height: 1.sh,
           child: Column(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               SizedBox(
                 height: 307.r,

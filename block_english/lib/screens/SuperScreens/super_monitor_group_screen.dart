@@ -1,18 +1,23 @@
 import 'package:block_english/models/SuperModel/student_in_group_model.dart';
 import 'package:block_english/screens/SuperScreens/super_group_setting_screen.dart';
+import 'package:block_english/screens/SuperScreens/super_group_setting_screen.dart';
 import 'package:block_english/services/super_service.dart';
 import 'package:block_english/widgets/student_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 class MonitorGroupScreen extends ConsumerStatefulWidget {
   const MonitorGroupScreen({
     super.key,
     required this.groupName,
+    required this.detailText,
     required this.groupId,
   });
 
   final String groupName;
+  final String detailText;
   final int groupId;
 
   @override
@@ -58,34 +63,85 @@ class _MonitorGroupScreenState extends ConsumerState<MonitorGroupScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-          title: Text(
-            widget.groupName,
-          ),
-          centerTitle: true,
-          actions: [
-            IconButton(
-              icon: const Icon(
-                Icons.settings_rounded,
-                color: Colors.black,
-              ),
-              onPressed: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (context) => GroupSettingScreen(
-                      groupName: widget.groupName,
-                      groupId: widget.groupId,
+      body: Padding(
+        padding: const EdgeInsets.symmetric(
+          horizontal: 64,
+          vertical: 32,
+        ).r,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Stack(
+              alignment: Alignment.center,
+              children: [
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: IconButton(
+                    padding: EdgeInsets.zero,
+                    onPressed: () =>
+                        Navigator.of(context).pushNamedAndRemoveUntil(
+                      '/super_monitor_screen',
+                      ModalRoute.withName('/super_main_screen'),
+                    ),
+                    icon: SvgPicture.asset(
+                      'assets/buttons/round_back_button.svg',
+                      width: 48.r,
+                      height: 48.r,
                     ),
                   ),
-                );
-              },
+                ),
+                Align(
+                  alignment: Alignment.center,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        widget.groupName,
+                        style: TextStyle(
+                          fontSize: 22.sp,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                      if (widget.detailText.isNotEmpty)
+                        Text(
+                          widget.detailText,
+                          style: TextStyle(
+                            fontSize: 14.sp,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        )
+                    ],
+                  ),
+                ),
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    //TODO: 개인/그룹 바꾸는 버튼
+                    children: [
+                      IconButton(
+                        padding: EdgeInsets.zero,
+                        onPressed: () {
+                          Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => GroupSettingScreen(
+                                        groupName: widget.groupName,
+                                        detailText: widget.detailText,
+                                        groupId: widget.groupId,
+                                      )));
+                        },
+                        icon: SvgPicture.asset(
+                          'assets/buttons/round_setting_button.svg',
+                          width: 48.r,
+                          height: 48.r,
+                        ),
+                      ),
+                    ],
+                  ),
+                )
+              ],
             ),
-          ]),
-      body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 20.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
             isLoading
                 ? const Center(
                     child: CircularProgressIndicator(),

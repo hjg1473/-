@@ -28,6 +28,7 @@ class GroupButton extends StatelessWidget {
             MaterialPageRoute(
                 builder: (context) => MonitorGroupScreen(
                       groupName: name,
+                      detailText: detail,
                       groupId: id,
                     )));
       },
