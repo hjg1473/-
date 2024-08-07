@@ -25,6 +25,7 @@ class _StudentProfileScreenState extends ConsumerState<StudentProfileScreen> {
       return MaterialPageRoute<dynamic>(
           builder: (context) => Info(
                 onLogoutPressed: onLogoutPressed,
+                onChangePasswordPressed: onChangePasswordPressed,
               ),
           settings: setting);
     }
@@ -38,6 +39,10 @@ class _StudentProfileScreenState extends ConsumerState<StudentProfileScreen> {
     else {
       throw Exception('Unknown route: ${setting.name}');
     }
+  }
+
+  onChangePasswordPressed() {
+    Navigator.of(context).pushNamed('/user_change_password_screen');
   }
 
   onLogoutPressed() async {
@@ -282,8 +287,14 @@ class _StudentProfileScreenState extends ConsumerState<StudentProfileScreen> {
 }
 
 class Info extends ConsumerStatefulWidget {
+  final VoidCallback onChangePasswordPressed;
   final VoidCallback onLogoutPressed;
-  const Info({super.key, required this.onLogoutPressed});
+
+  const Info({
+    super.key,
+    required this.onChangePasswordPressed,
+    required this.onLogoutPressed,
+  });
   @override
   ConsumerState<Info> createState() => _InfoState();
 }
@@ -339,7 +350,7 @@ class _InfoState extends ConsumerState<Info> {
                       vertical: 12,
                     ).r,
                   ),
-                  onPressed: () {},
+                  onPressed: widget.onChangePasswordPressed,
                   child: Text(
                     '비밀번호 변경',
                     style: TextStyle(

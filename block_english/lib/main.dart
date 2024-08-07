@@ -3,6 +3,7 @@ import 'package:block_english/screens/AuthScreens/reg_pw_question_screen.dart';
 import 'package:block_english/screens/AuthScreens/reg_select_role_screen.dart';
 import 'package:block_english/screens/AuthScreens/reg_get_info_screen.dart';
 import 'package:block_english/screens/AuthScreens/reg_super_type_screen.dart';
+import 'package:block_english/screens/UserScreens/user_change_password_screen.dart';
 import 'package:block_english/screens/StudentScreens/student_main_screen.dart';
 import 'package:block_english/screens/StudentScreens/student_mode_select_screen.dart';
 import 'package:block_english/screens/StudentScreens/student_profile_screen.dart';
@@ -55,6 +56,8 @@ class MyApp extends StatelessWidget {
           '/reg_super_type_screen': (context) => const RegSuperTypeScreen(),
           '/reg_get_info_screen': (context) => const RegGetInfoScreen(),
           '/reg_pw_question_screen': (context) => const RegPwQuestionScreen(),
+          '/user_change_password_screen': (context) =>
+              const UserChangePasswordScreen(),
           '/stud_mode_select_screen': (context) =>
               const StudentModeSelectScreen(),
           '/stud_season_select_screen': (context) =>

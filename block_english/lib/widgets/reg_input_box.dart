@@ -12,7 +12,7 @@ class RegInputBox extends StatelessWidget {
   final String errorMessage;
   final bool dupCheck;
   final bool obscureText;
-  final bool isSelected;
+  final bool isObsecure;
   final VoidCallback? onChanged;
   final VoidCallback? onCheckChanged;
   final VoidCallback? onCheckPressed;
@@ -30,7 +30,7 @@ class RegInputBox extends StatelessWidget {
     this.errorMessage = '',
     this.dupCheck = false,
     this.obscureText = false,
-    this.isSelected = false,
+    this.isObsecure = false,
     this.onChanged,
     this.onCheckChanged,
     this.onCheckPressed,
@@ -100,7 +100,7 @@ class RegInputBox extends StatelessWidget {
                     }
                   },
                   inputFormatters: inputFormatters,
-                  obscureText: isSelected,
+                  obscureText: isObsecure,
                   obscuringCharacter: '*',
                   controller: controller,
                   cursorHeight: 13,
@@ -146,7 +146,7 @@ class RegInputBox extends StatelessWidget {
                       width: 25.r,
                       child: IconButton(
                         padding: EdgeInsets.zero,
-                        icon: isSelected
+                        icon: isObsecure
                             ? const Icon(Icons.visibility_off_outlined)
                             : const Icon(Icons.visibility),
                         iconSize: 25.r,
