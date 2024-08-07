@@ -71,21 +71,21 @@ class Users(Base):
     )
 
 
-# class Types(Base):  # Study information
-#     __tablename__ = "types"
+class WrongType(Base):
+    __tablename__ = "wrongType"
 
-#     id = Column(Integer, primary_key=True, index=True)  # PK
-    # season = Column(Integer, default=1)
-    # level = Column(Integer, default=1)
-    # punctuation = Column(Integer, default=0)
-    # letter = Column(Integer, default=0)
-    # block = Column(Integer, default=0)
-    # word = Column(Integer, default=0)
-    # order = Column(Integer, default=0)
-#     owner_id = Column(Integer, ForeignKey("studyInfo.id"))  # FK to users
+    id = Column(Integer, primary_key=True, index=True)
+    season = Column(Integer)
+    level = Column(Integer)
 
-#     # Relationships
-#     owner = relationship("StudyInfo", back_populates="owner2")
+    wrong_letter = Column(Integer, default=0)
+    wrong_punctuation = Column(Integer, default=0)
+    wrong_block = Column(Integer, default=0)
+    wrong_order = Column(Integer, default=0)
+    wrong_word = Column(Integer, default=0)
+
+    info_id = Column(Integer, ForeignKey("studyInfo.id"))  # FK to study Info
+    info = relationship("StudyInfo", back_populates="wrong_types", cascade="delete") # 1:M to study info
 
 class Released(Base):  # Study information
     __tablename__ = "released"
@@ -104,25 +104,10 @@ class Groups(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String)
-    grade = Column(String)
+    detail = Column(String)
+    releasedLevel = Column(Integer, default=1)
+    releasedStep = Column(Integer, default=1)
     members = relationship("Users", foreign_keys=[Users.team_id], back_populates="team")
-
-class WrongType(Base):
-    __tablename__ = "wrongType"
-
-    id = Column(Integer, primary_key=True, index=True)
-    season = Column(Integer)
-    level = Column(Integer)
-
-    wrong_letter = Column(Integer, default=0)
-    wrong_punctuation = Column(Integer, default=0)
-    wrong_block = Column(Integer, default=0)
-    wrong_order = Column(Integer, default=0)
-    wrong_word = Column(Integer, default=0)
-
-    info_id = Column(Integer, ForeignKey("studyInfo.id"))  # FK to study Info
-    info = relationship("StudyInfo", back_populates="wrong_types", cascade="delete") # 1:M to study info
-
 
 class StudyInfo(Base):  # Study information
     __tablename__ = "studyInfo"
@@ -134,9 +119,9 @@ class StudyInfo(Base):  # Study information
 
     # Relationships
     owner = relationship("Users", back_populates="studyInfos", cascade="delete")
+    wrong_types = relationship("WrongType", back_populates="info", cascade="delete")
     correct_problems = relationship("Problems", secondary=correct_problem_table, back_populates="correct_study_infos")
     incorrect_problems = relationship("Problems", secondary=incorrect_problem_table, back_populates="incorrect_study_infos")
-    wrong_types = relationship("WrongType", back_populates="info", cascade="delete")
 
 class Problems(Base):  # Problems
     __tablename__ = "problems"

@@ -23,7 +23,12 @@ class GroupAvgTime(BaseModel):
 
 class GroupLevelStep(BaseModel):
     group_id: int
+    level: int
     step: int
+
+class GroupSeasonLevel(BaseModel):
+    group_id: int
+    season: int
     level: int
 
 class PinNumber(BaseModel):

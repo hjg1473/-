@@ -2,7 +2,7 @@ from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 import models
 import easyocr
-import models, database
+from src import models, database
 from auth import router as auth_router
 from problem import router as problem_router
 from game import router as game_router

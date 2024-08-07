@@ -8,7 +8,7 @@ from starlette import status
 import sys, os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))))
 
-from app.src.models import Users, StudyInfo, Released
+from app.src.models import Users, StudyInfo, Released, Groups
 from student.dependencies import user_dependency, db_dependency
 from student.exceptions import get_user_exception, get_user_exception2, auth_exception, http_exception, select_exception1, select_exception2, select_exception3
 from student.schemas import PinNumber, SoloGroup, SeasonList
@@ -126,8 +126,10 @@ async def read_user_info(user: user_dependency, db: db_dependency):
     
     result = await db.execute(select(Users).filter(Users.id == user.get('id')))
     user_model = result.scalars().first()
+    result2 = await db.execute(select(Groups).where(Groups.id == user_model.team_id))
+    group_model = result2.scalars().first()
 
-    return {'name': user_model.name, 'team_id': user_model.team_id}
+    return {'name': user_model.name, 'team_id': user_model.team_id, 'group_name': group_model.name}
 
 # 사용자의 프로필 반환
 @router.get("/profile_info", status_code = status.HTTP_200_OK)
