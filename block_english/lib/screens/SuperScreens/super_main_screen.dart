@@ -34,7 +34,7 @@ class SuperMainScreen extends ConsumerWidget {
                     crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
                       Text(
-                        '${ref.watch(statusProvider).name} 님',
+                        '${ref.watch(statusProvider).name}님,',
                         style: TextStyle(
                           fontSize: 15.sp,
                           fontWeight: FontWeight.w600,

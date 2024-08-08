@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:block_english/models/SuperModel/pin_model.dart';
+import 'package:block_english/models/SuperModel/user_monitoring_incorrect_model.dart';
 import 'package:block_english/models/model.dart';
 import 'package:block_english/utils/constants.dart';
 import 'package:block_english/utils/dio.dart';
@@ -166,6 +167,33 @@ class SuperService {
 
   //   );
   // }
+
+  Future<Either<FailureModel, UserMonitoringIncorrectModel>>
+      postUserMonitoringIncorrect(int userId) async {
+    try {
+      final dio = _ref.watch(dioProvider);
+      final response = await dio.post(
+        '/$_super/user_monitoring_incorrect',
+        options: Options(
+          headers: {
+            'accept': 'application/json',
+            TOKENVALIDATE: 'true',
+            'Content-Type': 'application/json',
+          },
+        ),
+        data: {
+          'user_id': userId,
+        },
+      );
+
+      return Right(UserMonitoringIncorrectModel.fromJson(response.data));
+    } on DioException catch (e) {
+      return Left(FailureModel(
+        statusCode: e.response?.statusCode ?? 0,
+        detail: e.response?.data['detail'],
+      ));
+    }
+  }
 }
 
 @Riverpod(keepAlive: true)

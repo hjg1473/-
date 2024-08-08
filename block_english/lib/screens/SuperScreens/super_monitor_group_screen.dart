@@ -1,6 +1,5 @@
 import 'package:block_english/models/SuperModel/student_in_group_model.dart';
 import 'package:block_english/screens/SuperScreens/super_group_setting_screen.dart';
-import 'package:block_english/screens/SuperScreens/super_group_setting_screen.dart';
 import 'package:block_english/services/super_service.dart';
 import 'package:block_english/widgets/student_button.dart';
 import 'package:flutter/material.dart';
@@ -189,6 +188,7 @@ class _MonitorGroupScreenState extends ConsumerState<MonitorGroupScreen> {
                                     name: student.name,
                                     studentId: student.id,
                                     groupId: widget.groupId,
+                                    groupName: widget.groupName,
                                   );
                                 },
                                 separatorBuilder: (context, index) =>
