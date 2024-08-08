@@ -3,7 +3,8 @@ import 'package:block_english/utils/constants.dart';
 class ProblemsModel {
   List<ProblemEntry> problems;
 
-  getProblem() {
+  ProblemEntry? getProblem() {
+    if (problems.isEmpty) return null;
     return problems.removeAt(0);
   }
 
