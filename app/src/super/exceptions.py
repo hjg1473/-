@@ -27,10 +27,6 @@ def super_authenticate_exception(user):
         raise HTTPException(status_code=404, detail="Could not validate credentials")
     if user.get('user_role') != 'parent' and user.get('user_role') != 'teacher':
         raise HTTPException(status_code=401, detail='관리자 계정이 아닙니다')
-    
-def super_released_exception(target_released):
-    if target_released is None:
-        raise HTTPException(status_code=404, detail="관리자가 해당 시즌을 보유하고 있지 않습니다.")
 
 def problem_found_exception(target_problems):
     if target_problems is None:

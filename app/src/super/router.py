@@ -55,7 +55,9 @@ async def create_group(addgroup: AddGroup,
     super_authenticate_exception(user)
     await existing_name_exception(addgroup.name, user.get('id'), db)
 
-    await update_new_group(addgroup, user.get('id'), db)
+    newGroup = await update_new_group(addgroup, user.get('id'), db)
+    # defalut released group: season1, level0, step0
+    await create_group_released(newGroup.id, 1, db)
 
     return {'detail':'Success'}
 
@@ -139,10 +141,6 @@ async def unlock_step_level(group_id: int, type: str, season:int, level:int, ste
     super_authenticate_exception(user)
     await super_group_exception(user.get("id"), group_id, db)
     
-    result = await db.execute(select(Released).filter(Released.owner_id==user.get("id"), Released.released_season == season))
-    target_released = result.scalars().first()
-    super_released_exception(target_released)
-
     result3 = await db.execute(select(ReleasedGroup).filter(ReleasedGroup.owner_id == group_id, ReleasedGroup.released_season == season))
     target_season = result3.scalars().first()
     if target_season is None:

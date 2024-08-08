@@ -79,6 +79,7 @@ async def update_new_group(addgroup, admin_id, db: db_dependency):
     stmt = insert(teacher_group_table).values({'teacher_id': admin_id, 'group_id': group_model.id})
     await db.execute(stmt)
     await db.commit()
+    return group_model
 
 async def get_std_info(group_id, db: db_dependency):
     result = await db.execute(select(Users).where(Users.team_id == group_id))
