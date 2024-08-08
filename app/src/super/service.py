@@ -72,13 +72,16 @@ async def update_new_group(addgroup, admin_id, db: db_dependency):
     group_model = Groups()
     group_model.name = addgroup.name
     group_model.detail = addgroup.detail
-
+    from datetime import datetime
+    group_model.created = datetime.today().strftime("%y.%m.%d")
+    
     db.add(group_model)
     await db.commit()
     await db.refresh(group_model)
     stmt = insert(teacher_group_table).values({'teacher_id': admin_id, 'group_id': group_model.id})
     await db.execute(stmt)
     await db.commit()
+    return group_model
 
 async def get_std_info(group_id, db: db_dependency):
     result = await db.execute(select(Users).where(Users.team_id == group_id))
@@ -123,7 +126,6 @@ async def update_group_level_and_step(group_id, level, type, step, db:db_depende
     rg_model.released_level = level
     rg_model.released_step = step
     rg_model.released_type = type
-
     db.add(rg_model)
     await db.commit()
 

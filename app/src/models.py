@@ -98,25 +98,13 @@ class Released(Base):  # Study information
     # Relationships
     owner = relationship("Users", back_populates="released")
 
-class ReleasedGroup(Base):  # Study information
-    __tablename__ = "released_group"
-
-    id = Column(Integer, primary_key=True, index=True)  # PK
-    released_season = Column(Integer, default=1)
-    released_level = Column(Integer, default=1)
-    released_type = Column(String)
-    released_step = Column(Integer, default=1)
-    owner_id = Column(Integer, ForeignKey("groups.id"))  # FK to users
-
-    # Relationships
-    owner = relationship("Groups", back_populates="released")
-
 class Groups(Base):
     __tablename__ = "groups"
 
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String)
     detail = Column(String)
+    created = Column(String)
     released = relationship("ReleasedGroup", back_populates="owner",cascade='delete')
     members = relationship("Users", foreign_keys=[Users.team_id], back_populates="team")
 
@@ -167,3 +155,16 @@ class Words(Base):
     block = relationship("Blocks", back_populates="word")
     
     words = Column(String)      # word value: I, me, dog, ...
+
+class ReleasedGroup(Base):  # Study information
+    __tablename__ = "released_group"
+
+    id = Column(Integer, primary_key=True, index=True)  # PK
+    released_season = Column(Integer, default=1)
+    released_level = Column(Integer, default=1)
+    released_type = Column(String)
+    released_step = Column(Integer, default=1)
+    owner_id = Column(Integer, ForeignKey("groups.id"))  # FK to users
+
+    # Relationships
+    owner = relationship("Groups", back_populates="released")

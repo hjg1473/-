@@ -9,6 +9,10 @@ from auth.exceptions import get_user_exception
 def http_exception():
     return HTTPException(status_code=404, detail="Not found")
 
+def super_released_exception(target_released):
+    if target_released is None:
+        raise HTTPException(status_code=404, detail="관리자가 해당 시즌을 보유하고 있지 않습니다.")
+
 def group_remove_exception():
     return HTTPException(status_code=400, detail="그룹에 학생이 존재합니다.")
 
@@ -28,10 +32,6 @@ def super_authenticate_exception(user):
     if user.get('user_role') != 'parent' and user.get('user_role') != 'teacher':
         raise HTTPException(status_code=401, detail='관리자 계정이 아닙니다')
     
-def super_released_exception(target_released):
-    if target_released is None:
-        raise HTTPException(status_code=404, detail="관리자가 해당 시즌을 보유하고 있지 않습니다.")
-
 def problem_found_exception(target_problems):
     if target_problems is None:
         raise HTTPException(status_code=404, detail="해당 스텝의 문제를 찾을 수 없습니다.")

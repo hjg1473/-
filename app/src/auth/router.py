@@ -6,7 +6,7 @@ from datetime import timedelta
 import sys, os
 from sqlalchemy import select
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))))
-from app.src.models import Users, Released, Groups
+from app.src.models import Users, Released, Groups, ReleasedGroup
 from auth.schemas import CreateUser, Message, Username, FindPassword, UpdatePassword
 from auth.utils import authenticate_user, decode_token, validate_token_payload
 from auth.service import create_access_token, create_user_in_db, create_study_info, get_user_to_username, create_released
@@ -122,9 +122,14 @@ async def first_login_for_access_token(form_data: Annotated[OAuth2PasswordReques
     result2 = await db.execute(select(Groups).where(Groups.id == user.team_id))
     group_model = result2.scalars().first()
     if group_model is None:
-        return {'access_token' : access_token, 'token_type' : 'bearer', 'username': user.username, 'role': user.role, 'refresh_token' : refresh_token, 'team_id': user.team_id, 'name': user.name, "username_correct": True, "password_correct": True, "released": released, 'group_name': None}
+        return {'access_token' : access_token, 'token_type' : 'bearer', 'username': user.username, 'role': user.role, 'refresh_token' : refresh_token, 'team_id': user.team_id, 'name': user.name, "username_correct": True, "password_correct": True, "released": released, 'group_name': None, 'released_group': None}
     
-    return {'access_token' : access_token, 'token_type' : 'bearer', 'username': user.username, 'role': user.role, 'refresh_token' : refresh_token, 'team_id': user.team_id, 'name': user.name, "username_correct": True, "password_correct": True, "released": released, 'group_name': group_model.name}
+    result = await db.execute(select(ReleasedGroup).filter(ReleasedGroup.owner_id == user.team_id))
+    released_group_model = result.scalars().all()
+    released_group = []
+    for rg in released_group_model:
+        released_group.append({"season":rg.released_season, "level":rg.released_level, "step":rg.released_step, "type":rg.released_type})
+    return {'access_token' : access_token, 'token_type' : 'bearer', 'username': user.username, 'role': user.role, 'refresh_token' : refresh_token, 'team_id': user.team_id, 'name': user.name, "username_correct": True, "password_correct": True, "released": released, 'group_name': group_model.name, 'released_group':released_group}
 
 # Access Token 유효성 검사
 @router.post("/access", status_code=status.HTTP_200_OK, responses={401: {"model": Message}})
@@ -150,9 +155,14 @@ async def login_for_access_token(access_token: Annotated[str, Depends(oauth2_bea
     result2 = await db.execute(select(Groups).where(Groups.id == user.team_id))
     group_model = result2.scalars().first()
     if group_model is None:
-        return {'detail': 'Token Valid', 'role': user_role, 'team_id': user.team_id, 'username': username, 'name': user.name, "username_correct": True, "password_correct": True, "released": released, 'group_name': None}
-    
-    return {'detail': 'Token Valid', 'role': user_role, 'team_id': user.team_id, 'username': username, 'name': user.name, "username_correct": True, "password_correct": True, "released": released, 'group_name': group_model.name}
+        return {'detail': 'Token Valid', 'role': user_role, 'team_id': user.team_id, 'username': username, 'name': user.name, "username_correct": True, "password_correct": True, "released": released, 'group_name': None, 'released_group':None}
+        
+    result = await db.execute(select(ReleasedGroup).filter(ReleasedGroup.owner_id == user.team_id))
+    released_group_model = result.scalars().all()
+    released_group = []
+    for rg in released_group_model:
+        released_group.append({"season":rg.released_season, "level":rg.released_level, "step":rg.released_step, "type":rg.released_type})
+    return {'detail': 'Token Valid', 'role': user_role, 'team_id': user.team_id, 'username': username, 'name': user.name, "username_correct": True, "password_correct": True, "released": released, 'group_name': group_model.name, 'released_group':released_group}
 
 # Refresh Token 유효성 검사
 @router.post("/refresh", responses={401: {"model": Message}})

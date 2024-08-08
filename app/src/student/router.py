@@ -8,12 +8,12 @@ from starlette import status
 import sys, os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))))
 
-from app.src.models import Users, StudyInfo, Released, Groups, incorrect_problem_table, correct_problem_table, WrongType
+from app.src.models import Users, StudyInfo, Released, Groups, incorrect_problem_table, correct_problem_table, WrongType, ReleasedGroup
 from student.dependencies import user_dependency, db_dependency
 from student.exceptions import get_user_exception, get_user_exception2, auth_exception, http_exception, select_exception1, select_exception2, select_exception3
 from student.schemas import PinNumber, SoloGroup, SeasonList
 from app.src.super.exceptions import find_student_exception, find_group_exception
-from app.src.super.service import update_std_group
+from app.src.super.service import update_std_group, get_group_to_groupid
 router = APIRouter( 
     prefix="/student",
     tags=["student"],
@@ -73,14 +73,22 @@ async def user_solve_problem(pin_number: PinNumber,
     if stored_group_id is None:
         return {'detail': '유효하지 않은 핀코드입니다.'}
     string_group_id = stored_group_id.decode('utf-8')
+    group_id = int(string_group_id)
     redis_client.close()
     await redis_client.wait_closed()
 
     await find_student_exception(user.get("id"), db)
-    await find_group_exception(int(string_group_id), db)
-    await update_std_group(int(string_group_id), user.get("id"), db)
+    await find_group_exception(group_id, db)
+    await update_std_group(group_id, user.get("id"), db)
+    group = await get_group_to_groupid(group_id, db)
 
-    return {'detail' : '연결되었습니다.'}
+    result = await db.execute(select(ReleasedGroup).filter(ReleasedGroup.owner_id == group_id))
+    released_model = result.scalars().all()
+    released_group = []
+    for rg in released_model:
+        released_group.append({"season":rg.released_season, "level":rg.released_level, "step":rg.released_step, "type":rg.released_type})
+
+    return {"team_id":group_id, "group_name": group.name, "group_detail":group.detail, "released_group":released_group}
 
 # 학생과 학부모 연결, 학부모 -> 학생(teachers_students) # wireframe 나오면 고도화.
 @router.get("/connect/parent", status_code = status.HTTP_200_OK)
@@ -167,20 +175,22 @@ async def read_user_studyinfo(user: user_dependency, db: db_dependency):
         normal_corrects = [0, 0, 0]
         ai_corrects = [0, 0, 0]
         for item in study_info.correct_problems:
-            count = c_table_count[c_table_id.index(item.id)]
-            if item.type == "normal":
-                normal_corrects[item.level - 1] += count
-            else:
-                ai_corrects[item.level - 1] += count
+            if item.season == rm.released_season:
+                count = c_table_count[c_table_id.index(item.id)]
+                if item.type == "normal":
+                    normal_corrects[item.level] += count
+                else:
+                    ai_corrects[item.level] += count
 
         normal_incorrects = [0, 0, 0]
         ai_incorrects = [0, 0, 0]
         for item in study_info.incorrect_problems:
-            count = ic_table_count[ic_table_id.index(item.id)]
-            if item.type == "normal":
-                normal_incorrects[item.level - 1] += count
-            else:
-                ai_incorrects[item.level - 1] += count
+            if item.season == rm.released_season:
+                count = ic_table_count[ic_table_id.index(item.id)]
+                if item.type == "normal":
+                    normal_incorrects[item.level] += count
+                else:
+                    ai_incorrects[item.level] += count
 
         normal_all = [normal_corrects[0] + normal_incorrects[0], normal_corrects[1] + normal_incorrects[1], normal_corrects[2] + normal_incorrects[2]]
         ai_all = [ai_corrects[0] + ai_incorrects[0], ai_corrects[1] + ai_incorrects[1], ai_corrects[2] + ai_incorrects[2]]
@@ -201,7 +211,7 @@ async def read_user_studyinfo(user: user_dependency, db: db_dependency):
                                        "released_step":rm.released_step
                                        })
 
-    return {'detail':information}
+    return information
 
 # 유저 모니터링 정보 2
 @router.get("/monitoring_incorrect", status_code = status.HTTP_200_OK)
