@@ -52,8 +52,175 @@ class _UserManageAccountScreenState
     );
   }
 
+  Future<dynamic> _showLogoutDialog(BuildContext context) {
+    return showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(7.02).r,
+        ),
+        titlePadding: const EdgeInsets.fromLTRB(
+          20,
+          28,
+          20,
+          8,
+        ).r,
+        title: Center(
+          child: Text(
+            '로그아웃',
+            style: TextStyle(
+              fontSize: 18.sp,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+        ),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 20).r,
+        content: Text(
+          '로그아웃 하시겠습니까?',
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            fontSize: 14.sp,
+            fontWeight: FontWeight.bold,
+            color: const Color(0xFFA7A7A7),
+          ),
+        ),
+        actionsPadding: const EdgeInsets.fromLTRB(20, 32, 20, 20).r,
+        actions: [
+          FilledButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+            style: FilledButton.styleFrom(
+              padding: const EdgeInsets.symmetric(
+                vertical: 13,
+                horizontal: 53,
+              ).r,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(7.02).r,
+              ),
+              backgroundColor: const Color(0xFF919191),
+            ),
+            child: Text(
+              '취소',
+              style: TextStyle(
+                fontSize: 16.sp,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+          FilledButton(
+            onPressed: onLogoutPressed,
+            style: FilledButton.styleFrom(
+              padding: const EdgeInsets.symmetric(
+                vertical: 13,
+                horizontal: 53,
+              ).r,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(7.02).r,
+              ),
+              backgroundColor: const Color(0xFF93E54C),
+            ),
+            child: Text(
+              '확인',
+              style: TextStyle(
+                fontSize: 16.sp,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<dynamic> _showQuitDialog(BuildContext context) {
+    return showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(7.02).r,
+        ),
+        titlePadding: const EdgeInsets.fromLTRB(
+          20,
+          28,
+          20,
+          12,
+        ).r,
+        title: Center(
+          child: Text(
+            '계정 탈퇴',
+            style: TextStyle(
+              fontSize: 18.sp,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+        ),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 20).r,
+        content: Text(
+          '탈퇴 시 계정 정보 및 그동안 학습했던\n학습 내역과 리포트가 삭제되어 복구가 불가해요\n\n정말 탈퇴하시겠습니까?',
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            fontSize: 14.sp,
+            fontWeight: FontWeight.bold,
+            color: const Color(0xFFA7A7A7),
+          ),
+        ),
+        actionsPadding: const EdgeInsets.fromLTRB(
+          20,
+          24,
+          20,
+          20,
+        ).r,
+        actions: [
+          FilledButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+            style: FilledButton.styleFrom(
+              padding: const EdgeInsets.symmetric(
+                vertical: 13,
+                horizontal: 40.5,
+              ).r,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(7.02).r,
+              ),
+              backgroundColor: const Color(0xFF919191),
+            ),
+            child: Text(
+              '더 공부할래요',
+              style: TextStyle(
+                fontSize: 16.sp,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+          FilledButton(
+            onPressed: onQuitPressed,
+            style: FilledButton.styleFrom(
+              padding: const EdgeInsets.symmetric(
+                vertical: 13,
+                horizontal: 57,
+              ).r,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(7.02).r,
+              ),
+              backgroundColor: const Color(0xFFFF6699),
+            ),
+            child: Text(
+              '떠날래요',
+              style: TextStyle(
+                fontSize: 16.sp,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   onQuitPressed() async {
-    // 비밀번호 입력창?
+    //TODO: 비밀번호 입력창 추가
   }
 
   @override
@@ -103,7 +270,7 @@ class _UserManageAccountScreenState
                 top: 156,
               ).r,
               child: FilledButton(
-                onPressed: onLogoutPressed,
+                onPressed: () => _showLogoutDialog(context),
                 style: FilledButton.styleFrom(
                   padding: const EdgeInsets.symmetric(
                     vertical: 15,
@@ -131,7 +298,9 @@ class _UserManageAccountScreenState
                 top: 216,
               ).r,
               child: FilledButton(
-                onPressed: () {},
+                onPressed: () {
+                  _showQuitDialog(context);
+                },
                 style: FilledButton.styleFrom(
                   padding: const EdgeInsets.symmetric(
                     vertical: 15,
