@@ -177,7 +177,7 @@ async def read_super_info(user: user_dependency, db: db_dependency):
     return user_model_json
 
 # 특정 유저의 시즌-레벨 별 약한 부분 TOP 3 조회 
-@router.post("/user_weak_parts_top3", status_code = status.HTTP_200_OK)
+@router.post("/user_monitoring_incorrect", status_code = status.HTTP_200_OK)
 async def read_user_weak_parts_top3(userStep: UserStep, user: user_dependency, db: db_dependency):
     
     super_authenticate_exception(user)
@@ -217,12 +217,29 @@ async def read_user_weak_parts_top3(userStep: UserStep, user: user_dependency, d
         divided_data["level"] = wrongTypes.level
         divided_data_list.append(divided_data)
 
-    return divided_data_list
+    recent_problem_model = await get_latest_log(userStep.user_id)
+    if recent_problem_model is None:
+        return {'weak_parts':divided_data_list, 'weakest': await user_weakest_info(userStep.user_id, db),'recent_detail':'최근 푼 문제 없음' }
+    from app.src.problem.service import calculate_wrongs
+    problem_parse = split_sentence(recent_problem_model.problem)
+    response_parse = split_sentence(recent_problem_model.answer)
+    # return {'problem_parse':problem_parse,'response_parse':response_parse}
+    letter_wrong, punc_wrong, block_wrong, word_wrong, order_wrong = await calculate_wrongs(problem_parse, response_parse, db)
+    values = {
+        'letter_wrong': letter_wrong,
+        'punc_wrong': punc_wrong,
+        'block_wrong': block_wrong,
+        'word_wrong': word_wrong,
+        'order_wrong': order_wrong
+    }
+    max_variable = max(values, key=values.get)
 
-# 특정 유저의 전 시즌-레벨 통합 가장 약한 부분 내용 조회
-@router.post("/user_weakest", status_code = status.HTTP_200_OK)
-async def read_user_weakest(userStep: UserStep, user: user_dependency, db: db_dependency):
-    
+    return {'weak_parts':divided_data_list, 'weakest': await user_weakest_info(userStep.user_id, db),'recent_problem':recent_problem_model.problem, 'recent_answer':recent_problem_model.answer, 'recent_detail':max_variable }
+
+# 사용자의 프로필 반환
+@router.post("/user_monitoring_etc", status_code = status.HTTP_200_OK)
+async def read_user_id(userStep: UserStep, user: user_dependency, db: db_dependency):
+
     super_authenticate_exception(user)
     await find_student_exception(userStep.user_id, db)
     # 선생님이 관리하는 학생이 아니면 예외 처리
@@ -230,7 +247,70 @@ async def read_user_weakest(userStep: UserStep, user: user_dependency, db: db_de
     group_list = await get_group_list(user.get("id"), db)
     std_access_exception(group_list, std_team_id)
 
-    return await user_weakest_info(userStep.user_id, db)
+
+    result = await db.execute(select(StudyInfo).filter(StudyInfo.owner_id == userStep.user_id))
+    studyinfo_model = result.scalars().first()
+
+    return  {"totalStudyTime": studyinfo_model.totalStudyTime, 'streamStudyDay': studyinfo_model.streamStudyDay}
+
+
+# # 특정 유저의 전 시즌-레벨 통합 가장 약한 부분 내용 조회
+# @router.post("/user_weakest", status_code = status.HTTP_200_OK)
+# async def read_user_weakest(userStep: UserStep, user: user_dependency, db: db_dependency):
+    
+#     super_authenticate_exception(user)
+#     await find_student_exception(userStep.user_id, db)
+#     # 선생님이 관리하는 학생이 아니면 예외 처리
+#     std_team_id = await get_std_team_id(userStep.user_id, db)
+#     group_list = await get_group_list(user.get("id"), db)
+#     std_access_exception(group_list, std_team_id)
+
+#     return await user_weakest_info(userStep.user_id, db)
+
+# # 특정 유저의 특정 시즌-레벨의 오답률 정보 조회
+# @router.post("/user_answer_rate_info", status_code = status.HTTP_200_OK)
+# async def read_user_answerRate(userStep: UserStep2, user: user_dependency, db: db_dependency):
+    
+#     super_authenticate_exception(user)
+#     await find_student_exception(userStep.user_id, db)
+
+#     std_team_id = await get_std_team_id(userStep.user_id, db)
+#     group_list = await get_group_list(user.get("id"), db)
+#     std_access_exception(group_list, std_team_id)
+#     correct_count = await user_step_problem_count(userStep.user_id, userStep.season, userStep.level, "correct_problems", db)
+#     incorrect_count = await user_step_problem_count(userStep.user_id, userStep.season, userStep.level, "incorrect_problems", db)
+#     user_level_step_incorrect_answer_rate = 0
+#     get_studyInfo_exception(correct_count, incorrect_count)
+#     user_level_step_incorrect_answer_rate = f"{incorrect_count / (correct_count + incorrect_count):.2f}"
+#     return {'correct_count': correct_count, 'incorrect_count': incorrect_count, 'user_level_step_incorrect_answer_rate': user_level_step_incorrect_answer_rate}
+
+# # 특정 유저의 최근의 틀린 문제 조회
+# @router.post("/user_recently_problem/", status_code = status.HTTP_200_OK)
+# async def read_user_recently_problem(user_id: int, user: user_dependency, db: db_dependency):
+    
+#     super_authenticate_exception(user)
+#     await find_student_exception(user_id, db)
+
+#     std_team_id = await get_std_team_id(user_id, db)
+#     group_list = await get_group_list(user.get("id"), db)
+#     std_access_exception(group_list, std_team_id)
+
+#     recent_problem_model = await get_latest_log(user_id)
+#     from app.src.problem.service import calculate_wrongs
+#     problem_parse = split_sentence(recent_problem_model.problem)
+#     response_parse = split_sentence(recent_problem_model.answer)
+#     # return {'problem_parse':problem_parse,'response_parse':response_parse}
+#     letter_wrong, punc_wrong, block_wrong, word_wrong, order_wrong = await calculate_wrongs(problem_parse, response_parse, db)
+#     values = {
+#         'letter_wrong': letter_wrong,
+#         'punc_wrong': punc_wrong,
+#         'block_wrong': block_wrong,
+#         'word_wrong': word_wrong,
+#         'order_wrong': order_wrong
+#     }
+#     max_variable = max(values, key=values.get)
+    
+#     return {'problem':recent_problem_model.problem, 'answer':recent_problem_model.answer, 'detail':max_variable}
 
 # 특정 그룹의 전 시즌-레벨 통합 가장 약한 부분 내용 조회 :: 계산 최대 다수의 weakest 
 @router.post("/group_weakest", status_code = status.HTTP_200_OK)
@@ -260,25 +340,6 @@ async def read_group_weakest(group: GroupId, user: user_dependency, db: db_depen
             values[value["weakest"]] += 1
     largest_variable = max(values, key=values.get)
     return {"weakest":f"{largest_variable}"}
-
-
-# 특정 유저의 특정 시즌-레벨의 오답률 정보 조회
-@router.post("/user_answer_rate_info", status_code = status.HTTP_200_OK)
-async def read_user_answerRate(userStep: UserStep2, user: user_dependency, db: db_dependency):
-    
-    super_authenticate_exception(user)
-    await find_student_exception(userStep.user_id, db)
-
-    std_team_id = await get_std_team_id(userStep.user_id, db)
-    group_list = await get_group_list(user.get("id"), db)
-    std_access_exception(group_list, std_team_id)
-    correct_count = await user_step_problem_count(userStep.user_id, userStep.season, userStep.level, "correct_problems", db)
-    incorrect_count = await user_step_problem_count(userStep.user_id, userStep.season, userStep.level, "incorrect_problems", db)
-    user_level_step_incorrect_answer_rate = 0
-    get_studyInfo_exception(correct_count, incorrect_count)
-    user_level_step_incorrect_answer_rate = f"{incorrect_count / (correct_count + incorrect_count):.2f}"
-    return {'correct_count': correct_count, 'incorrect_count': incorrect_count, 'user_level_step_incorrect_answer_rate': user_level_step_incorrect_answer_rate}
-
 
 # 특정 반의 특정 시즌-레벨의 오답률 정보 조회
 @router.post("/group_answer_rate_info", status_code = status.HTTP_200_OK)
@@ -380,150 +441,3 @@ async def read_group_avgSentence(groupStep: GroupLevelStep, user: user_dependenc
     await super_group_exception(user.get("id"), groupStep.group_id, db)
     await find_group_exception(groupStep.group_id, db)
     return await group_avg_student_problem(groupStep.group_id, groupStep.step, groupStep.level, db)
-
-def split_sentence(sentence: str) -> list:
-    # 정규 표현식을 사용하여 단어와 구두점을 분리
-    return re.findall(r'\w+|[^\w\s]', sentence, re.UNICODE)
-
-class LogResponse(BaseModel):
-    problem: str
-    answer: str
-
-async def get_latest_log(user_id: int):
-    query = {
-        "query": {
-            "bool": {
-                "must": [
-                    {"match": {"userid": user_id}}
-                ],
-                "filter": [
-                    {"exists": {"field": "problem"}}
-                ]
-            }
-        },
-        "sort": [
-            {"@timestamp": {"order": "desc"}}
-        ],
-        "size": 1
-    }
-    
-    # Elasticsearch에서 비동기 쿼리 실행
-    from app.src.problem.router import es
-    response = await es.search(index="logstash-logs-*", body=query)
-    
-    if response["hits"]["total"]["value"] == 0:
-        raise HTTPException(status_code=404, detail="Log not found")
-    
-    # 가장 최근의 로그 추출
-    latest_log = response["hits"]["hits"][0]["_source"]
-    
-    # message 필드를 파싱하여 problem과 answer 추출
-    message = latest_log.get("message")
-    if not message:
-        raise HTTPException(status_code=404, detail="Message field not found in the log")
-    
-    # 정규 표현식을 사용하여 problem과 answer 추출
-    match = re.search(r'problem=(.*?),answer=(.*?)(?: - |\])', message)
-    if not match:
-        raise HTTPException(status_code=404, detail="Problem and answer fields not found in the message")
-    
-    problem = match.group(1).strip()
-    answer = match.group(2).strip()
-    
-    return LogResponse(problem=problem, answer=answer)
-
-# 특정 유저의 최근의 틀린 문제 조회
-@router.post("/student_recently_problem/", status_code = status.HTTP_200_OK)
-async def read_group_avgSentence(user_id: int, user: user_dependency, db: db_dependency):
-    
-    super_authenticate_exception(user)
-    await find_student_exception(user_id, db)
-
-    std_team_id = await get_std_team_id(user_id, db)
-    group_list = await get_group_list(user.get("id"), db)
-    std_access_exception(group_list, std_team_id)
-
-    recent_problem_model = await get_latest_log(user_id)
-    from app.src.problem.utils import combine_sentence, lettercase_filter, punctuation_filter
-    problem_parse = split_sentence(recent_problem_model.problem)
-    response_parse = split_sentence(recent_problem_model.answer)
-    # return {'problem_parse':problem_parse,'response_parse':response_parse}
-    problem = combine_sentence(problem_parse)
-    # 0. response의 단어들이 블록에 있는 단어인지 검사    
-    popList = []
-    for item in response_parse:
-        result = await db.execute(select(Words).filter(Words.words == item))
-        word_model = result.scalars().first()
-
-        if word_model is None:
-            popList.append(item)
-        
-    for item in popList:
-        response_parse.remove(item)
-        
-    if response_parse is None:
-        return {'detail':'공백 블럭'}
-    response = combine_sentence(response_parse)
-    # v1: 대소문자 filter 거친 문장 --> 대소문자 맞는 걸로 바뀜
-    # v2: 구두점 filter 거친 문장   --> 구두점 사라짐
-    # v3: 블록 filter 거친 문장     --> 틀린 블록은 삭제됨
-
-    # 1. 대소문자 판단
-    letter_wrong, response_v1 = lettercase_filter(problem, response)
-
-    # 2. 구두점 판단
-    punc_wrong, problem_v2, response_v2 = punctuation_filter(problem, response_v1)
-
-    # 3. 블록이 맞는지
-    block_wrong = 0
-    response_v2_split = response_v2.split(' ')
-    problem_v2_split = problem_v2.split(' ')
-    r_len_v2 = len(response_v2_split)
-    p_len_v2 = len(problem_v2_split)
-
-    # problem 블록 id 리스트
-    problem_block = []
-    for item in problem_v2_split:
-        result = await db.execute(select(Words).filter(Words.words == item))
-        word_model = result.scalars().first()
-        problem_block.append(word_model.block_id)
-
-    # response 블록 id 리스트
-    response_block = []
-    for item in response_v2_split:
-        result = await db.execute(select(Words).filter(Words.words == item))
-        word_model = result.scalars().first()
-        response_block.append(word_model.block_id)
-
-
-    block_wrong += max(r_len_v2 - p_len_v2, p_len_v2-r_len_v2)
-    response_v3_split = response_v2_split.copy()
-
-    for i in range(r_len_v2):
-        id = response_block[i]
-        if id in problem_block:
-            problem_block.remove(id)
-        else:
-            block_wrong += 1
-            response_v3_split.remove(response_v2_split[i])
-
-    # return {"problem_v2":problem_v2_split, "response_v1":response_v1, "r_v2":response_v2, "r_v3":response_v3_split, "letter":letter_wrong, "punc":punc_wrong, "block":block_wrong}
-    word_wrong = 0
-    order_wrong = 0
-    # 4. 블록이 맞은 것 중, 단어가 틀렸는지 and 순서가 틀렸는지
-    for item in response_v3_split:
-        if item in problem_v2_split:
-            if response_v3_split.index(item) != problem_v2_split.index(item):
-                order_wrong += 1
-        else:
-            word_wrong += 1    
-    values = {
-        'letter_wrong': letter_wrong,
-        'punc_wrong': punc_wrong,
-        'block_wrong': block_wrong,
-        'word_wrong': word_wrong,
-        'order_wrong': order_wrong
-    }
-    max_variable = max(values, key=values.get)
-    
-    return {'problem':recent_problem_model.problem, 'answer':recent_problem_model.answer, 'detail':max_variable}

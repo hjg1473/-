@@ -50,3 +50,7 @@ class UserStep2(BaseModel):
     user_id: int
     season: int
     level: int
+
+class LogResponse(BaseModel):
+    problem: str
+    answer: str

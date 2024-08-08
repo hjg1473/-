@@ -8,7 +8,7 @@ from starlette import status
 import sys, os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))))
 
-from app.src.models import Users, StudyInfo, Released, Groups, incorrect_problem_table, correct_problem_table
+from app.src.models import Users, StudyInfo, Released, Groups, incorrect_problem_table, correct_problem_table, WrongType
 from student.dependencies import user_dependency, db_dependency
 from student.exceptions import get_user_exception, get_user_exception2, auth_exception, http_exception, select_exception1, select_exception2, select_exception3
 from student.schemas import PinNumber, SoloGroup, SeasonList
@@ -131,25 +131,12 @@ async def read_user_info(user: user_dependency, db: db_dependency):
 
     return {'name': user_model.name, 'team_id': user_model.team_id, 'group_name': group_model.name}
 
-# 사용자의 프로필 반환
-@router.get("/profile_info", status_code = status.HTTP_200_OK)
-async def read_user_id(user: user_dependency, db: db_dependency):
-
-    get_user_exception(user)
-    auth_exception(user.get('user_role'))
-
-    result = await db.execute(select(StudyInfo).filter(StudyInfo.owner_id == user.get("id")))
-    studyinfo_model = result.scalars().first()
-
-    return  {"totalStudyTime": studyinfo_model.totalStudyTime, 'streamStudyDay': studyinfo_model.streamStudyDay}
-
 # 학생의 self 학습 정보 반환.
 @router.get("/studyinfo/rate", status_code = status.HTTP_200_OK)
 async def read_user_studyinfo(user: user_dependency, db: db_dependency):
 
     get_user_exception(user)
     auth_exception(user.get('user_role'))
-    #로그를 보여주자. 학습 기록 처럼. ex) 7/18 - step1 완료, 7/19 - step2 완료 ... 등등
     
     result = await db.execute(select(Released).filter(Released.owner_id == user.get("id")))
     released_model = result.scalars().all()
@@ -215,3 +202,72 @@ async def read_user_studyinfo(user: user_dependency, db: db_dependency):
                                        })
 
     return {'detail':information}
+
+# 유저 모니터링 정보 2
+@router.get("/monitoring_incorrect", status_code = status.HTTP_200_OK)
+async def read_self_monitoring(user: user_dependency, db: db_dependency):
+    
+    get_user_exception(user)
+    auth_exception(user.get('user_role'))
+
+    # 학생이 해금한 시즌 정보
+    result2 = await db.execute(select(Released).filter(Released.owner_id == user.get('id')))
+    released_model = result2.scalars().all()
+    seasons = [item.released_season for item in released_model]
+
+    result = await db.execute(select(StudyInfo).filter(StudyInfo.owner_id == user.get('id')))
+    study_info = result.scalars().first()
+    temp_result = await db.execute(select(WrongType).filter(WrongType.info_id == study_info.id).filter(WrongType.season.in_(seasons)))
+    wrongType_model = temp_result.scalars().all()
+    # return wrongType_model
+    divided_data_list = []
+
+    for wrongTypes in wrongType_model:
+        total_wrongType = (
+            wrongTypes.wrong_punctuation
+            + wrongTypes.wrong_order
+            + wrongTypes.wrong_letter
+            + wrongTypes.wrong_block
+            + wrongTypes.wrong_word
+        )
+        
+        wrong_data = {k: v for k, v in vars(wrongTypes).items() if k.startswith("wrong")}
+        
+        top3_wrong = dict(sorted(wrong_data.items(), key=lambda item: item[1], reverse=True)[:3])
+        
+        divided_data = {k: f"{v / total_wrongType:.2f}" for k, v in top3_wrong.items()}
+        divided_data["season"] = wrongTypes.season
+        divided_data["level"] = wrongTypes.level
+        divided_data_list.append(divided_data)
+
+    from app.src.super.utils import get_latest_log, user_weakest_info, split_sentence
+    recent_problem_model = await get_latest_log(user.get('id'))
+    if recent_problem_model is None:
+        return {'weak_parts':divided_data_list, 'weakest': await user_weakest_info(user.get('id'), db),'recent_detail':'최근 푼 문제 없음' }
+    from app.src.problem.service import calculate_wrongs
+    problem_parse = split_sentence(recent_problem_model.problem)
+    response_parse = split_sentence(recent_problem_model.answer)
+    # return {'problem_parse':problem_parse,'response_parse':response_parse}
+    letter_wrong, punc_wrong, block_wrong, word_wrong, order_wrong = await calculate_wrongs(problem_parse, response_parse, db)
+    values = {
+        'letter_wrong': letter_wrong,
+        'punc_wrong': punc_wrong,
+        'block_wrong': block_wrong,
+        'word_wrong': word_wrong,
+        'order_wrong': order_wrong
+    }
+    max_variable = max(values, key=values.get)
+
+    return {'weak_parts':divided_data_list, 'weakest': await user_weakest_info(user.get('id'), db),'recent_problem':recent_problem_model.problem, 'recent_answer':recent_problem_model.answer, 'recent_detail':max_variable }
+
+# 유저 모니터링 정보 3
+@router.get("/monitoring_etc", status_code = status.HTTP_200_OK)
+async def read_user_id(user: user_dependency, db: db_dependency):
+
+    get_user_exception(user)
+    auth_exception(user.get('user_role'))
+
+    result = await db.execute(select(StudyInfo).filter(StudyInfo.owner_id == user.get("id")))
+    studyinfo_model = result.scalars().first()
+
+    return  {"totalStudyTime": studyinfo_model.totalStudyTime, 'streamStudyDay': studyinfo_model.streamStudyDay}

@@ -41,7 +41,6 @@ class Users(Base):
     role = Column(String, index=True)  # Role (super or student or parent)
     question = Column(String)
     questionType = Column(Integer)
-    released_season = Column(JSON)  # Unique token (teachers only) > released_season
 
     # Relationship with Groups
     team_id = Column(Integer, ForeignKey("groups.id"), nullable=True) # FK, team (student only)
