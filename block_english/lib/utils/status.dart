@@ -7,10 +7,12 @@ class Status {
   StudentMode studentMode = StudentMode.NONE;
   Season season = Season.NONE;
   String name = '';
+  String username = '';
 
   // Student's fields
   List<ReleaseStatus> releaseStatus = [];
   int? teamId;
+  String? groupName;
 
   setStudentMode(StudentMode mode) {
     studentMode = mode;
@@ -24,13 +26,23 @@ class Status {
     this.name = name;
   }
 
-  setStudentStatus(List<dynamic> released, int? teamId) {
+  setUsername(String username) {
+    this.username = username;
+  }
+
+  setGroup(int teamId, String groupName) {
+    this.teamId = teamId;
+    this.groupName = groupName;
+  }
+
+  setStudentStatus(List<dynamic> released, int? teamId, String? groupName) {
     for (Map<String, dynamic> data in released) {
       releaseStatus
           .add(ReleaseStatus(data['season'], data['level'], data['step']));
     }
 
-    teamId = teamId;
+    this.teamId = teamId;
+    this.groupName = groupName;
   }
 }
 

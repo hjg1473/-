@@ -134,7 +134,7 @@ class _LoginState extends ConsumerState<LoginScreen> {
                       padding: EdgeInsets.only(
                         top: 38.r,
                         left: 42.r,
-                        right: 42.r,
+                        right: 64.r,
                       ),
                       child: SizedBox(
                         height: 307.r - 38.r,
