@@ -21,6 +21,10 @@ def get_problem_exception(stepinfo_model):
     if stepinfo_model is None:
         raise HTTPException(status_code=404, detail='문제 데이터가 존재하지 않습니다.')
     
+def get_season_exception(Released_model):
+    if Released_model is None:
+        raise HTTPException(status_code=404, detail='해당 시즌이 없습니다.')
+
 def get_studyStart_exception(studyStart_timestamp):
     if studyStart_timestamp is None: #
         raise HTTPException(status_code=404, detail="학습을 시작하지 않았습니다.")
