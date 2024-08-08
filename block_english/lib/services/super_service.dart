@@ -1,5 +1,4 @@
-import 'dart:io';
-
+import 'package:block_english/models/StudentModel/student_study_time_model.dart';
 import 'package:block_english/models/SuperModel/pin_model.dart';
 import 'package:block_english/models/SuperModel/user_monitoring_incorrect_model.dart';
 import 'package:block_english/models/model.dart';
@@ -187,6 +186,33 @@ class SuperService {
       );
 
       return Right(UserMonitoringIncorrectModel.fromJson(response.data));
+    } on DioException catch (e) {
+      return Left(FailureModel(
+        statusCode: e.response?.statusCode ?? 0,
+        detail: e.response?.data['detail'],
+      ));
+    }
+  }
+
+  Future<Either<FailureModel, StudyTimeModel>> postUserMonitoringEtc(
+      int userId) async {
+    try {
+      final dio = _ref.watch(dioProvider);
+      final response = await dio.post(
+        '/$_super/user_monitoring_etc',
+        options: Options(
+          headers: {
+            'accept': 'application/json',
+            TOKENVALIDATE: 'true',
+            'Content-Type': 'application/json',
+          },
+        ),
+        data: {
+          'user_id': userId,
+        },
+      );
+
+      return Right(StudyTimeModel.fromJson(response.data));
     } on DioException catch (e) {
       return Left(FailureModel(
         statusCode: e.response?.statusCode ?? 0,

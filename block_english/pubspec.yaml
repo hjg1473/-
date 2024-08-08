@@ -81,6 +81,10 @@ flutter:
     - assets/images/LOGO.svg
     - assets/images/student_character.svg
     - assets/images/profile_photo.svg
+    - assets/images/monitor_character1.svg
+    - assets/images/monitor_character3.svg
+    - assets/images/monitor_day_icon.svg
+    - assets/images/monitor_time_icon.svg
 
     - assets/cards/sign_in_manager.svg
     - assets/cards/sign_in_user.svg

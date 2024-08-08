@@ -6,7 +6,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 const String learning = '/';
-const String wrongAnswers = '/wrong_answers';
+const String incorrect = '/incorrect';
 const String manage = '/manage';
 
 class CustomRoute<T> extends MaterialPageRoute<T> {
@@ -146,7 +146,7 @@ class _MonitorStudentScreenState extends State<MonitorStudentScreen> {
                       FilledButton(
                         onPressed: () {
                           if (currentPage != 2) {
-                            onMenuPressed(wrongAnswers);
+                            onMenuPressed(incorrect);
                             setState(() {
                               currentPage = 2;
                             });
@@ -239,11 +239,11 @@ class _MonitorStudentScreenState extends State<MonitorStudentScreen> {
               alignment: Alignment.centerRight,
               child: Padding(
                 padding: const EdgeInsets.symmetric(
-                  horizontal: 44,
+                  horizontal: 64,
                   vertical: 24,
                 ).r,
                 child: SizedBox(
-                  width: 465.r,
+                  width: 425.r,
                   height: 327.r,
                   child: Navigator(
                     key: _navigatorKey,
@@ -254,8 +254,10 @@ class _MonitorStudentScreenState extends State<MonitorStudentScreen> {
                           switch (settings.name) {
                             case learning:
                               return LearningAnalysis(userId: widget.studentId);
-                            case wrongAnswers:
-                              return WrongAnswers(userId: widget.studentId);
+                            case incorrect:
+                              return Incorrect(
+                                  userId: widget.studentId,
+                                  userName: widget.studentName);
                             case manage:
                               return ManageStudent(userId: widget.studentId);
                             default:
@@ -275,18 +277,30 @@ class _MonitorStudentScreenState extends State<MonitorStudentScreen> {
   }
 }
 
-class LearningAnalysis extends StatelessWidget {
+class LearningAnalysis extends ConsumerStatefulWidget {
   const LearningAnalysis({super.key, required this.userId});
   final int userId;
 
   @override
+  ConsumerState<LearningAnalysis> createState() => _LearningAnalysisState();
+}
+
+class _LearningAnalysisState extends ConsumerState<LearningAnalysis> {
+  @override
   Widget build(BuildContext context) {
-    return const Scaffold(
-      backgroundColor: Color(0xFFECECEC),
-      body: Stack(
+    return Container(
+      width: 465.r,
+      height: 327.r,
+      color: const Color(0xFFECECEC),
+      child: Stack(
         children: [
-          Center(
-            child: Text('Learning Analysis'),
+          Container(
+            width: 302.r,
+            height: 142.r,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(8).r,
+            ),
           ),
         ],
       ),
@@ -294,15 +308,20 @@ class LearningAnalysis extends StatelessWidget {
   }
 }
 
-class WrongAnswers extends ConsumerStatefulWidget {
-  const WrongAnswers({super.key, required this.userId});
+class Incorrect extends ConsumerStatefulWidget {
+  const Incorrect({
+    super.key,
+    required this.userId,
+    required this.userName,
+  });
   final int userId;
+  final String userName;
 
   @override
-  ConsumerState<WrongAnswers> createState() => _WrongAnswersState();
+  ConsumerState<Incorrect> createState() => _IncorrectState();
 }
 
-class _WrongAnswersState extends ConsumerState<WrongAnswers> {
+class _IncorrectState extends ConsumerState<Incorrect> {
   bool isLoading = true;
   List<WeakPartModel> weakParts = [];
   String weakest = '';
@@ -333,8 +352,8 @@ class _WrongAnswersState extends ConsumerState<WrongAnswers> {
           .map((weakPart) => WeakPartModel.fromJson(weakPart))
           .toList();
       weakest = data.weakest;
-      recentProblem = data.recentProblem ?? '';
-      recentAnswer = data.recentAnswer ?? '';
+      recentProblem = data.recentProblem ?? 'I love block english.';
+      recentAnswer = data.recentAnswer ?? 'I block english love.';
       recentDetail = data.recentDetail;
 
       debugPrint('userId: ${widget.userId} weakest: $weakest');
@@ -348,9 +367,12 @@ class _WrongAnswersState extends ConsumerState<WrongAnswers> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFFECECEC),
-      body: isLoading
+    //TODO: 푼 문제 없을 때 화면 구성
+    return Container(
+      width: 425.r,
+      height: 327.r,
+      color: const Color(0xFFECECEC),
+      child: isLoading
           ? const Center(
               child: CircularProgressIndicator(
                 color: Colors.grey,
@@ -359,19 +381,180 @@ class _WrongAnswersState extends ConsumerState<WrongAnswers> {
           : Stack(
               children: [
                 Container(
-                  width: 465.r,
+                  width: 425.r,
                   height: 152.r,
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(8).r,
                   ),
-                  child: const Row(
+                  padding: const EdgeInsets.fromLTRB(
+                    11,
+                    12,
+                    10,
+                    10,
+                  ).r,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text('오류 분석'),
+                      SizedBox(
+                        width: 274.r,
+                        height: 130.r,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Container(
+                              decoration: BoxDecoration(
+                                color: Colors.black,
+                                borderRadius: BorderRadius.circular(10).r,
+                              ),
+                              padding: EdgeInsets.symmetric(
+                                horizontal: 9.r,
+                                vertical: 3.r,
+                              ),
+                              child: Text(
+                                '오답 원인',
+                                style: TextStyle(
+                                  fontSize: 14.sp,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ),
+                            const Spacer(),
+                            //TODO: 그래프 추가
+                            Container(
+                              width: 274.r,
+                              height: 96.r,
+                              color: Colors.grey,
+                            ),
+                          ],
+                        ),
+                      ),
                       Column(
-                        children: [],
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            '가장 약한 부분은?',
+                            style: TextStyle(
+                              fontSize: 11.sp,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          SizedBox(height: 5.r),
+                          Text(
+                            '$weakest 오류',
+                            style: TextStyle(
+                              fontSize: 18.sp,
+                              fontWeight: FontWeight.w800,
+                            ),
+                          ),
+                        ],
                       ),
                     ],
+                  ),
+                ),
+                //TODO: display svg image
+                Positioned(
+                  left: 0,
+                  bottom: 0,
+                  child: SvgPicture.asset(
+                    'assets/images/monitor_character1.svg',
+                    width: 63.r,
+                    height: 120.r,
+                  ),
+                ),
+                Positioned(
+                  left: 86.r,
+                  bottom: 70.r,
+                  child: Container(
+                    width: 162.r,
+                    height: 90.r,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(8).r,
+                    ),
+                    padding: const EdgeInsets.all(10).r,
+                    alignment: Alignment.center,
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          '최근에 틀린 문제',
+                          style: TextStyle(
+                            fontSize: 11.sp,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        Text(
+                          recentProblem,
+                          style: TextStyle(
+                            fontSize: 14.sp,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                Positioned(
+                  right: 0,
+                  bottom: 70.r,
+                  child: Container(
+                    width: 162.r,
+                    height: 90.r,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(8).r,
+                    ),
+                    padding: const EdgeInsets.all(10).r,
+                    alignment: Alignment.center,
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          '${widget.userName}의 답',
+                          style: TextStyle(
+                            fontSize: 11.sp,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        Text(
+                          recentAnswer,
+                          style: TextStyle(
+                            fontSize: 14.sp,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                Positioned(
+                  right: 0,
+                  bottom: 0,
+                  child: Container(
+                    width: 339.r,
+                    height: 55.r,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(8).r,
+                    ),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 7,
+                      vertical: 19,
+                    ).r,
+                    child: Center(
+                      child: Text(
+                        recentDetail,
+                        style: TextStyle(
+                          fontSize: 14.sp,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
                   ),
                 ),
               ],
@@ -380,21 +563,162 @@ class _WrongAnswersState extends ConsumerState<WrongAnswers> {
   }
 }
 
-class ManageStudent extends StatelessWidget {
+class ManageStudent extends ConsumerStatefulWidget {
   const ManageStudent({super.key, required this.userId});
   final int userId;
 
   @override
+  ConsumerState<ManageStudent> createState() => _ManageStudentState();
+}
+
+class _ManageStudentState extends ConsumerState<ManageStudent> {
+  bool isLoading = true;
+  int totalStudyTime = 0;
+  int streamStudyDay = 0;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    waitForData();
+  }
+
+  waitForData() async {
+    final response = await ref
+        .watch(superServiceProvider)
+        .postUserMonitoringEtc(widget.userId);
+
+    response.fold((failure) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('${failure.statusCode} : ${failure.detail}'),
+        ),
+      );
+    }, (data) {
+      totalStudyTime = data.totalStudyTime;
+      streamStudyDay = data.streamStudyDay;
+      setState(() {
+        isLoading = false;
+      });
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return const Scaffold(
-      backgroundColor: Color(0xFFECECEC),
-      body: Stack(
-        children: [
-          Center(
-            child: Text('Manage Student'),
-          ),
-        ],
-      ),
+    return Container(
+      width: 425.r,
+      height: 327.r,
+      color: const Color(0xFFECECEC),
+      child: isLoading
+          ? const Center(
+              child: CircularProgressIndicator(
+                color: Colors.grey,
+              ),
+            )
+          : Stack(
+              children: [
+                Positioned(
+                  left: 80.r,
+                  top: 37.r,
+                  child: SvgPicture.asset(
+                    'assets/images/monitor_day_icon.svg',
+                    width: 34.r,
+                    height: 38.r,
+                  ),
+                ),
+                Positioned(
+                  left: 127.r,
+                  top: 40.r,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        '$streamStudyDay일째',
+                        style: TextStyle(
+                          fontSize: 14.sp,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      Text(
+                        '연속 학습 중',
+                        style: TextStyle(
+                          fontSize: 11.sp,
+                          fontWeight: FontWeight.bold,
+                          color: const Color(0xFFB2B2B2),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Positioned(
+                  top: 37.r,
+                  right: 155.r,
+                  child: SvgPicture.asset(
+                    'assets/images/monitor_time_icon.svg',
+                    width: 34.r,
+                    height: 38.r,
+                  ),
+                ),
+                Positioned(
+                  right: 79.r,
+                  top: 40.r,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        '$totalStudyTime시간',
+                        style: TextStyle(
+                          fontSize: 14.sp,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      Text(
+                        '총 학습 시간',
+                        style: TextStyle(
+                          fontSize: 11.sp,
+                          fontWeight: FontWeight.bold,
+                          color: const Color(0xFFB2B2B2),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                //TODO: display svg image
+                Positioned(
+                  bottom: 62.r,
+                  left: 46.r,
+                  child: SvgPicture.asset(
+                    'assets/images/monitor_character3.svg',
+                    width: 334.r,
+                    height: 166.r,
+                  ),
+                ),
+                Align(
+                  alignment: Alignment.bottomCenter,
+                  child: FilledButton(
+                    onPressed: () {},
+                    style: FilledButton.styleFrom(
+                      minimumSize: Size(311.r, 37.r),
+                      backgroundColor: const Color(0xFF484848),
+                      padding: const EdgeInsets.symmetric(
+                        vertical: 10,
+                      ).r,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8).r,
+                      ),
+                      alignment: Alignment.center,
+                    ),
+                    child: Text(
+                      '학습자 삭제',
+                      style: TextStyle(
+                        fontSize: 14.sp,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
     );
   }
 }
