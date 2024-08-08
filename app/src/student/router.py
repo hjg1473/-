@@ -202,8 +202,6 @@ async def read_user_studyinfo(user: user_dependency, db: db_dependency):
                 normal_rate[i] = (normal_incorrects[i]/float(normal_all[i]) * 100)
             if ai_all[i] != 0:
                 ai_rate[i] = (ai_incorrects[i]/float(ai_all[i]) * 100)
-
-
         information["seasons"].append({"season":rm.released_season,
                                        "incorrect_rate_normal":normal_rate,
                                        "incorrect_rate_ai":ai_rate,

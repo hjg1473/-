@@ -140,9 +140,7 @@ async def read_group_info(group_id:int, user:user_dependency, db:db_dependency):
 async def unlock_step_level(group_id: int, type: str, season:int, level:int, step:int, user:user_dependency, db:db_dependency):
     super_authenticate_exception(user)
     await super_group_exception(user.get("id"), group_id, db)
-
-
-
+    
     result3 = await db.execute(select(ReleasedGroup).filter(ReleasedGroup.owner_id == group_id, ReleasedGroup.released_season == season))
     target_season = result3.scalars().first()
     if target_season is None:

@@ -113,7 +113,6 @@ async def read_problem_all(season:int, level:int, step:int, user: user_dependenc
 async def practice_read_level_and_step(season:int, user: user_dependency, db: db_dependency):
 
     get_user_exception(user)
-
     result = await db.execute(select(Released).filter(Released.owner_id == user.get("id")).filter(Released.released_season == season))
     Released_model = result.scalars().first()
     get_season_exception(Released_model)
@@ -183,7 +182,6 @@ async def read_level_and_step_expert(season:int, level:int, difficulty:int, user
     Released_model = result.scalars().first()
     if Released_model is None:
         return {'detail':'해당 시즌을 가지고 있지 않습니다.'}
-    
 
     result = await db.execute(select(Problems).filter(Problems.type == 'ai', Problems.season == season).filter(Problems.level == level, Problems.difficulty == difficulty))
     problem_model = result.scalars().all()
