@@ -111,7 +111,7 @@ async def first_login_for_access_token(form_data: Annotated[OAuth2PasswordReques
     redis_client.close()
     await redis_client.wait_closed()
 
-    if user.role == 'super':
+    if user.role == 'teacher' or user.role == 'parent':
         return {'access_token' : access_token, 'token_type' : 'bearer', 'username': user.username, 'role': user.role, 'refresh_token' : refresh_token, 'name': user.name, "username_correct": True, "password_correct": True}
 
     result = await db.execute(select(Released).filter(Released.owner_id == user.id))
