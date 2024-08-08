@@ -8,12 +8,12 @@ from fastapi import APIRouter, BackgroundTasks
 from starlette import status
 import sys, os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))))
-from app.src.models import Users, StudyInfo, Problems, correct_problem_table, Words, Blocks, Released, WrongType
+from app.src.models import Users, StudyInfo, Problems, Groups, Words, Blocks, Released, WrongType, ReleasedGroup
 from fastapi import requests, UploadFile, File, Form
 import requests
 from problem.dependencies import user_dependency, db_dependency
 from problem.schemas import Problem, ProblemInfo, UserProblems, TempUserProblem, TempUserProblems, Answer
-from problem.exceptions import http_exception, successful_response, get_user_exception, get_problem_exception, get_studyStart_exception, get_doubleEnd_exception, get_season_exception
+from problem.exceptions import *
 from problem.service import *
 from problem.utils import check_answer, search_log_timestamp
 from problem.constants import INDEX, QUERY_MATCH_ALL
@@ -183,8 +183,7 @@ async def read_level_and_step_expert(season:int, level:int, difficulty:int, user
     Released_model = result.scalars().first()
     if Released_model is None:
         return {'detail':'해당 시즌을 가지고 있지 않습니다.'}
-    currentLevel = Released_model.released_level
-    currentStep = Released_model.released_step
+    
 
     result = await db.execute(select(Problems).filter(Problems.type == 'ai', Problems.season == season).filter(Problems.level == level, Problems.difficulty == difficulty))
     problem_model = result.scalars().all()
