@@ -167,7 +167,7 @@ async def create_room(db: db_dependency, request: CreateRoomRequest):
     pnum = 0
     roomProblem[pin_number] = {}
     for problem in final_problems:
-        problems.append({"problem_id": problem.id, "koreaProblem": problem.koreaProblem})
+        problems.append({"problem_id": problem.id, "englishProblem":problem.englishProblem ,"koreaProblem": problem.koreaProblem})
         roomProblem[pin_number][pnum] = problem.englishProblem
         pnum += 1
 

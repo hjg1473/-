@@ -104,7 +104,7 @@ async def read_problem_all(season:int, level:int, step:int, user: user_dependenc
             block_model = result.scalars().first()
             p_colors.append(block_model.color)
 
-        problem.append({'id': p.id, 'englishProblem': p.englishProblem, 'blockColors':p_colors})
+        problem.append({'id': p.id, 'englishProblem': p.englishProblem, 'koreaProblem': p.koreaProblem, 'blockColors':p_colors})
 
     return {'problems': problem}
 
@@ -170,7 +170,7 @@ async def read_problem_all(season:int, level:int, step:int, user: user_dependenc
             block_model = result.scalars().first()
             p_colors.append(block_model.color)
 
-        problem.append({'id': p.id, 'englishProblem': p.englishProblem, 'blockColors':p_colors})
+        problem.append({'id': p.id, 'englishProblem': p.englishProblem, 'koreaProblem': p.koreaProblem, 'blockColors':p_colors})
 
     return {'problems': problem}
 

@@ -112,7 +112,7 @@ async def get_incorrect_problem_count(study_info_id: int, problem_id: int, db):
     count = result.scalar()
     return count
 
-async def calculate_wrong_info(problem_id, problem_parse:list, response_parse:list, tempUserProblem, db=db_dependency):
+async def calculate_wrongs(problem_parse:list, response_parse:list, db=db_dependency):
     problem = combine_sentence(problem_parse)
 
     # 0. response의 단어들이 블록에 있는 단어인지 검사    
@@ -182,7 +182,12 @@ async def calculate_wrong_info(problem_id, problem_parse:list, response_parse:li
             if response_v3_split.index(item) != problem_v2_split.index(item):
                 order_wrong += 1
         else:
-            word_wrong += 1    
+            word_wrong += 1  
+
+    return letter_wrong, punc_wrong, block_wrong, word_wrong, order_wrong
+
+async def calculate_wrong_info(problem_id, problem_parse:list, response_parse:list, tempUserProblem, db=db_dependency):
+    letter_wrong, punc_wrong, block_wrong, word_wrong, order_wrong = await calculate_wrongs(problem_parse, response_parse, db)
     
     tempUserProblem.totalIncorrectLetter += letter_wrong 
     tempUserProblem.totalIncorrectPunc += punc_wrong

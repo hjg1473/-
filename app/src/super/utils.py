@@ -1,11 +1,11 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
 import sys, os
-
+import re
 from sqlalchemy import func, select
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))))
 from super.dependencies import db_dependency, user_dependency
 from super.service import *
-from super.schemas import ProblemSet, AddGroup, GroupStep
+from super.schemas import ProblemSet, AddGroup, GroupStep, LogResponse
 from super.exceptions import *
 from starlette import status
 from app.src.models import Users, StudyInfo, Problems, correct_problem_table, Groups, Released, WrongType
@@ -39,9 +39,10 @@ async def user_weakest_info(user_id, db):
     
     values = {'wrong_punctuation': total_wrong_punctuation, 'wrong_order': total_wrong_order, 'wrong_letter': total_wrong_letter, 'wrong_block': total_wrong_block, 'wrong_word': total_wrong_word}
     largest_variable = max(values, key=values.get)
+    if (total_wrong_punctuation+total_wrong_order+total_wrong_letter+total_wrong_block+total_wrong_word) == 0:
+        return "정보 없음"
 
-
-    return {"weakest":f"{largest_variable}"}
+    return f"{largest_variable}"
 
 async def user_step_problem_count(user_id, season, level, attribute_name, db):
 
@@ -363,3 +364,54 @@ def get_max_step_in_level(data, start_level_name):
         return max_step
     else:
         return 0
+    
+
+async def get_latest_log(user_id: int):
+    query = {
+        "query": {
+            "bool": {
+                "must": [
+                    {"match": {"userid": user_id}}
+                ],
+                "filter": [
+                    {"exists": {"field": "problem"}}
+                ]
+            }
+        },
+        "sort": [
+            {"@timestamp": {"order": "desc"}}
+        ],
+        "size": 1
+    }
+    
+    # Elasticsearch에서 비동기 쿼리 실행
+    from app.src.problem.router import es
+    response = await es.search(index="logstash-logs-*", body=query)
+    
+    if response["hits"]["total"]["value"] == 0:
+        return
+        # raise HTTPException(status_code=404, detail="Log not found")
+    
+    # 가장 최근의 로그 추출
+    latest_log = response["hits"]["hits"][0]["_source"]
+    
+    # message 필드를 파싱하여 problem과 answer 추출
+    message = latest_log.get("message")
+    if not message:
+        return
+        # raise HTTPException(status_code=404, detail="Message field not found in the log")
+    
+    # 정규 표현식을 사용하여 problem과 answer 추출
+    match = re.search(r'problem=(.*?),answer=(.*?)(?: - |\])', message)
+    if not match:
+        return
+        # raise HTTPException(status_code=404, detail="Problem and answer fields not found in the message")
+    
+    problem = match.group(1).strip()
+    answer = match.group(2).strip()
+    
+    return LogResponse(problem=problem, answer=answer)
+
+def split_sentence(sentence: str) -> list:
+    # 정규 표현식을 사용하여 단어와 구두점을 분리
+    return re.findall(r'\w+|[^\w\s]', sentence, re.UNICODE)
