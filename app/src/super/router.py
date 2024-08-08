@@ -1,5 +1,7 @@
-from fastapi import APIRouter
+import re
+from fastapi import APIRouter, HTTPException
 import sys, os
+from pydantic import BaseModel
 from sqlalchemy import delete, select
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))))
 from super.constants import STUDY_PASS_STANDARD
@@ -7,7 +9,7 @@ from super.dependencies import db_dependency, user_dependency
 from super.service import *
 from super.schemas import ProblemSet, AddGroup, GroupStep, GroupAvgTime, GroupLevelStep, GroupName, UserStep, UserStep2, GroupId, GroupSeasonLevel
 from super.utils import *
-from app.src.models import StudyInfo, Problems, Groups, WrongType, Released, Users
+from app.src.models import StudyInfo, Problems, Groups, WrongType, Released, Users, Words
 from app.src.auth.utils import create_pin_number
 import aioredis
 from super.exceptions import *
@@ -379,3 +381,149 @@ async def read_group_avgSentence(groupStep: GroupLevelStep, user: user_dependenc
     await find_group_exception(groupStep.group_id, db)
     return await group_avg_student_problem(groupStep.group_id, groupStep.step, groupStep.level, db)
 
+def split_sentence(sentence: str) -> list:
+    # 정규 표현식을 사용하여 단어와 구두점을 분리
+    return re.findall(r'\w+|[^\w\s]', sentence, re.UNICODE)
+
+class LogResponse(BaseModel):
+    problem: str
+    answer: str
+
+async def get_latest_log(user_id: int):
+    query = {
+        "query": {
+            "bool": {
+                "must": [
+                    {"match": {"userid": user_id}}
+                ],
+                "filter": [
+                    {"exists": {"field": "problem"}}
+                ]
+            }
+        },
+        "sort": [
+            {"@timestamp": {"order": "desc"}}
+        ],
+        "size": 1
+    }
+    
+    # Elasticsearch에서 비동기 쿼리 실행
+    from app.src.problem.router import es
+    response = await es.search(index="logstash-logs-*", body=query)
+    
+    if response["hits"]["total"]["value"] == 0:
+        raise HTTPException(status_code=404, detail="Log not found")
+    
+    # 가장 최근의 로그 추출
+    latest_log = response["hits"]["hits"][0]["_source"]
+    
+    # message 필드를 파싱하여 problem과 answer 추출
+    message = latest_log.get("message")
+    if not message:
+        raise HTTPException(status_code=404, detail="Message field not found in the log")
+    
+    # 정규 표현식을 사용하여 problem과 answer 추출
+    match = re.search(r'problem=(.*?),answer=(.*?)(?: - |\])', message)
+    if not match:
+        raise HTTPException(status_code=404, detail="Problem and answer fields not found in the message")
+    
+    problem = match.group(1).strip()
+    answer = match.group(2).strip()
+    
+    return LogResponse(problem=problem, answer=answer)
+
+# 특정 유저의 최근의 틀린 문제 조회
+@router.post("/student_recently_problem/", status_code = status.HTTP_200_OK)
+async def read_group_avgSentence(user_id: int, user: user_dependency, db: db_dependency):
+    
+    super_authenticate_exception(user)
+    await find_student_exception(user_id, db)
+
+    std_team_id = await get_std_team_id(user_id, db)
+    group_list = await get_group_list(user.get("id"), db)
+    std_access_exception(group_list, std_team_id)
+
+    recent_problem_model = await get_latest_log(user_id)
+    from app.src.problem.utils import combine_sentence, lettercase_filter, punctuation_filter
+    problem_parse = split_sentence(recent_problem_model.problem)
+    response_parse = split_sentence(recent_problem_model.answer)
+    # return {'problem_parse':problem_parse,'response_parse':response_parse}
+    problem = combine_sentence(problem_parse)
+    # 0. response의 단어들이 블록에 있는 단어인지 검사    
+    popList = []
+    for item in response_parse:
+        result = await db.execute(select(Words).filter(Words.words == item))
+        word_model = result.scalars().first()
+
+        if word_model is None:
+            popList.append(item)
+        
+    for item in popList:
+        response_parse.remove(item)
+        
+    if response_parse is None:
+        return {'detail':'공백 블럭'}
+    response = combine_sentence(response_parse)
+    # v1: 대소문자 filter 거친 문장 --> 대소문자 맞는 걸로 바뀜
+    # v2: 구두점 filter 거친 문장   --> 구두점 사라짐
+    # v3: 블록 filter 거친 문장     --> 틀린 블록은 삭제됨
+
+    # 1. 대소문자 판단
+    letter_wrong, response_v1 = lettercase_filter(problem, response)
+
+    # 2. 구두점 판단
+    punc_wrong, problem_v2, response_v2 = punctuation_filter(problem, response_v1)
+
+    # 3. 블록이 맞는지
+    block_wrong = 0
+    response_v2_split = response_v2.split(' ')
+    problem_v2_split = problem_v2.split(' ')
+    r_len_v2 = len(response_v2_split)
+    p_len_v2 = len(problem_v2_split)
+
+    # problem 블록 id 리스트
+    problem_block = []
+    for item in problem_v2_split:
+        result = await db.execute(select(Words).filter(Words.words == item))
+        word_model = result.scalars().first()
+        problem_block.append(word_model.block_id)
+
+    # response 블록 id 리스트
+    response_block = []
+    for item in response_v2_split:
+        result = await db.execute(select(Words).filter(Words.words == item))
+        word_model = result.scalars().first()
+        response_block.append(word_model.block_id)
+
+
+    block_wrong += max(r_len_v2 - p_len_v2, p_len_v2-r_len_v2)
+    response_v3_split = response_v2_split.copy()
+
+    for i in range(r_len_v2):
+        id = response_block[i]
+        if id in problem_block:
+            problem_block.remove(id)
+        else:
+            block_wrong += 1
+            response_v3_split.remove(response_v2_split[i])
+
+    # return {"problem_v2":problem_v2_split, "response_v1":response_v1, "r_v2":response_v2, "r_v3":response_v3_split, "letter":letter_wrong, "punc":punc_wrong, "block":block_wrong}
+    word_wrong = 0
+    order_wrong = 0
+    # 4. 블록이 맞은 것 중, 단어가 틀렸는지 and 순서가 틀렸는지
+    for item in response_v3_split:
+        if item in problem_v2_split:
+            if response_v3_split.index(item) != problem_v2_split.index(item):
+                order_wrong += 1
+        else:
+            word_wrong += 1    
+    values = {
+        'letter_wrong': letter_wrong,
+        'punc_wrong': punc_wrong,
+        'block_wrong': block_wrong,
+        'word_wrong': word_wrong,
+        'order_wrong': order_wrong
+    }
+    max_variable = max(values, key=values.get)
+    
+    return {'problem':recent_problem_model.problem, 'answer':recent_problem_model.answer, 'detail':max_variable}
