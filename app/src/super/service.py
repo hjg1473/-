@@ -1,5 +1,5 @@
 from super.dependencies import db_dependency
-from app.src.models import Users, Groups, Problems, teacher_group_table
+from app.src.models import Users, Groups, Problems, teacher_group_table, ReleasedGroup
 from sqlalchemy import select, delete, insert
 
 # async def get_problemset(problemset, db: db_dependency):
@@ -117,13 +117,14 @@ async def get_std_team_id(user_id, db: db_dependency):
     user_group = result.scalars().first()
     return user_group.team_id
 
-async def update_group_level_and_step(group_id, level, step, db:db_dependency):
-    result = await db.execute(select(Groups).filter(Groups.id == group_id))
-    group_model = result.scalars().first()
-    group_model.releasedLevel = level
-    group_model.releasedStep = step
+async def update_group_level_and_step(group_id, level, type, step, db:db_dependency):
+    result = await db.execute(select(ReleasedGroup).filter(ReleasedGroup.owner_id == group_id))
+    rg_model = result.scalars().first()
+    rg_model.released_level = level
+    rg_model.released_step = step
+    rg_model.released_type = type
 
-    db.add(group_model)
+    db.add(rg_model)
     await db.commit()
 
 async def update_group_name(group_id, name, detail, db: db_dependency):
@@ -135,3 +136,13 @@ async def update_group_name(group_id, name, detail, db: db_dependency):
     db.add(group_model)
     await db.commit()
 
+async def create_group_released(group_id:int, season:int, db:db_dependency):
+    new_released_group = ReleasedGroup(
+        owner_id = group_id,
+        released_season=season,
+        released_level=0,
+        released_step=0
+    )
+    db.add(new_released_group)
+    await db.commit()
+    return new_released_group

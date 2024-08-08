@@ -134,34 +134,38 @@ async def read_group_info(group_id:int, user:user_dependency, db:db_dependency):
     return result
 
 # 선생님이 관리하는 반의 step 및 level 해금
-@router.put("/group/{group_id}/problems/unlock/{level}/{step}", status_code= status.HTTP_200_OK)
-async def unlock_step_level(group_id: int, level:int, step:int, user:user_dependency, db:db_dependency):
+@router.put("/group/{group_id}/problems/unlock", status_code= status.HTTP_200_OK)
+async def unlock_step_level(group_id: int, type: str, season:int, level:int, step:int, user:user_dependency, db:db_dependency):
     super_authenticate_exception(user)
     await super_group_exception(user.get("id"), group_id, db)
-    # check whether level and step are valid.\
-    result3 = await db.execute(select(Problems).filter(Problems.level == level, Problems.step == step))
-    target_problems = result3.scalars().all()
+    
+    result = await db.execute(select(Released).filter(Released.owner_id==user.get("id"), Released.released_season == season))
+    target_released = result.scalars().first()
+    super_released_exception(target_released)
 
+    result3 = await db.execute(select(ReleasedGroup).filter(ReleasedGroup.owner_id == group_id, ReleasedGroup.released_season == season))
+    target_season = result3.scalars().first()
+    if target_season is None:
+        target_season = await create_group_released(group_id, season, db)
+
+    result = await db.execute(select(Problems).filter(Problems.season == season, Problems.level == level, Problems.step == step, Problems.type == type))
+    target_problems = result.scalars().all()
     problem_found_exception(target_problems)
 
-    target_level_num = level    
-    target_step_num = step
-
-    group_model = await get_group_to_groupid(group_id, db)
-
-    current_level = group_model.releasedLevel
-    current_step = group_model.releasedStep
-    if current_level is None or current_step is None:
-        current_step = 1
-        current_level = 1
-    # 근데 현재 2-3 인데 1-4 를 해금하려고 하면 안됨.
-    if (target_level_num < current_level):
+    # check whether level and step are valid.
+    current_level = target_season.released_level
+    current_type = target_season.released_type
+    current_step = target_season.released_step
+    # 현재 2-3 인데 1-4 를 해금하려고 하면 안됨.
+    if (level < current_level):
         raise released_step_exception()
     # 현재 2-3 인데 2-3을 해금하려면 안됨. 2-4 부터.
-    elif (target_level_num == current_level) and (target_step_num <= current_step):
+    elif (level == current_level) and (step <= current_step) and (type == current_type):
+        raise released_step_exception()
+    if (type == 'normal' and current_type == 'ai'):
         raise released_step_exception()
 
-    await update_group_level_and_step(group_id, target_level_num, target_step_num, db)
+    await update_group_level_and_step(group_id, level, type, step, db)
 
     return {'detail' : 'Success'}
 
