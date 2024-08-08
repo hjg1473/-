@@ -15,6 +15,7 @@ import 'package:block_english/screens/SuperScreens/super_game_code_screen.dart';
 import 'package:block_english/screens/SuperScreens/super_game_screen.dart';
 import 'package:block_english/screens/SuperScreens/super_main_screen.dart';
 import 'package:block_english/screens/SuperScreens/super_monitor_screen.dart';
+import 'package:block_english/screens/UserScreens/user_manage_account_screen.dart';
 import 'package:block_english/screens/loading_screen.dart';
 import 'package:block_english/screens/setting_screen.dart';
 import 'package:flutter/material.dart';
@@ -59,6 +60,8 @@ class MyApp extends StatelessWidget {
           '/reg_pw_question_screen': (context) => const RegPwQuestionScreen(),
           '/user_change_password_screen': (context) =>
               const UserChangePasswordScreen(),
+          '/user_manage_account_screen': (context) =>
+              const UserManageAccountScreen(),
           '/stud_mode_select_screen': (context) =>
               const StudentModeSelectScreen(),
           '/stud_season_select_screen': (context) =>

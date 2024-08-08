@@ -1,10 +1,6 @@
-import 'dart:ui';
-import 'package:block_english/services/auth_service.dart';
 import 'package:block_english/services/student_service.dart';
 import 'package:block_english/utils/status.dart';
-import 'package:block_english/utils/storage.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -83,41 +79,8 @@ class _StudentProfileScreenState extends ConsumerState<StudentProfileScreen> {
     }
   }
 
-  onLogoutPressed() async {
-    final storage = ref.watch(secureStorageProvider);
-    final result = await ref
-        .watch(authServiceProvider)
-        .postAuthLogout(await storage.readRefreshToken() ?? "");
-
-    result.fold(
-      (failure) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('애플리케이션을 재시작해 주세요'),
-            ),
-          );
-        }
-      },
-      (response) {
-        if (response.statusCode == 200) {
-          storage.removeTokens();
-
-          Navigator.of(context).pushNamedAndRemoveUntil(
-            '/login_screen',
-            (Route<dynamic> route) => false,
-          );
-        } else {
-          if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('다시해'),
-              ),
-            );
-          }
-        }
-      },
-    );
+  onAccountPressed() {
+    Navigator.of(context).pushNamed('/user_manage_account_screen');
   }
 
   @override
@@ -371,7 +334,7 @@ class _StudentProfileScreenState extends ConsumerState<StudentProfileScreen> {
                                 onChangePasswordPressed:
                                     onChangePasswordPressed,
                                 onAddSuperPressed: onAddSuperPressed,
-                                onLogoutPressed: onLogoutPressed,
+                                onAccountPressed: onAccountPressed,
                               );
                             case season:
                               return const Season();
@@ -382,7 +345,7 @@ class _StudentProfileScreenState extends ConsumerState<StudentProfileScreen> {
                                 onChangePasswordPressed:
                                     onChangePasswordPressed,
                                 onAddSuperPressed: onAddSuperPressed,
-                                onLogoutPressed: onLogoutPressed,
+                                onAccountPressed: onAccountPressed,
                               );
                           }
                         },
@@ -402,13 +365,13 @@ class _StudentProfileScreenState extends ConsumerState<StudentProfileScreen> {
 class Info extends ConsumerStatefulWidget {
   final VoidCallback onChangePasswordPressed;
   final VoidCallback onAddSuperPressed;
-  final VoidCallback onLogoutPressed;
+  final VoidCallback onAccountPressed;
 
   const Info({
     super.key,
     required this.onChangePasswordPressed,
     required this.onAddSuperPressed,
-    required this.onLogoutPressed,
+    required this.onAccountPressed,
   });
   @override
   ConsumerState<Info> createState() => _InfoState();
@@ -600,22 +563,23 @@ class _InfoState extends ConsumerState<Info> {
               ),
               const Spacer(),
               GestureDetector(
-                onTap: widget.onLogoutPressed,
-                child: Text(
-                  '로그아웃',
-                  style: TextStyle(
-                    fontSize: 11.sp,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-              SizedBox(width: 16.r),
-              GestureDetector(
-                onTap: () {},
-                child: Text(
-                  '계정 탈퇴',
-                  style:
-                      TextStyle(fontSize: 11.sp, fontWeight: FontWeight.bold),
+                onTap: widget.onAccountPressed,
+                child: Row(
+                  children: [
+                    Text(
+                      '로그아웃',
+                      style: TextStyle(
+                        fontSize: 11.sp,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    SizedBox(width: 16.r),
+                    Text(
+                      '계정 탈퇴',
+                      style: TextStyle(
+                          fontSize: 11.sp, fontWeight: FontWeight.bold),
+                    ),
+                  ],
                 ),
               ),
             ],
