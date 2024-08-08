@@ -175,20 +175,22 @@ async def read_user_studyinfo(user: user_dependency, db: db_dependency):
         normal_corrects = [0, 0, 0]
         ai_corrects = [0, 0, 0]
         for item in study_info.correct_problems:
-            count = c_table_count[c_table_id.index(item.id)]
-            if item.type == "normal":
-                normal_corrects[item.level - 1] += count
-            else:
-                ai_corrects[item.level - 1] += count
+            if item.season == rm.released_season:
+                count = c_table_count[c_table_id.index(item.id)]
+                if item.type == "normal":
+                    normal_corrects[item.level - 1] += count
+                else:
+                    ai_corrects[item.level - 1] += count
 
         normal_incorrects = [0, 0, 0]
         ai_incorrects = [0, 0, 0]
         for item in study_info.incorrect_problems:
-            count = ic_table_count[ic_table_id.index(item.id)]
-            if item.type == "normal":
-                normal_incorrects[item.level - 1] += count
-            else:
-                ai_incorrects[item.level - 1] += count
+            if item.season == rm.released_season:
+                count = ic_table_count[ic_table_id.index(item.id)]
+                if item.type == "normal":
+                    normal_incorrects[item.level - 1] += count
+                else:
+                    ai_incorrects[item.level - 1] += count
 
         normal_all = [normal_corrects[0] + normal_incorrects[0], normal_corrects[1] + normal_incorrects[1], normal_corrects[2] + normal_incorrects[2]]
         ai_all = [ai_corrects[0] + ai_incorrects[0], ai_corrects[1] + ai_incorrects[1], ai_corrects[2] + ai_incorrects[2]]
@@ -200,8 +202,6 @@ async def read_user_studyinfo(user: user_dependency, db: db_dependency):
                 normal_rate[i] = (normal_incorrects[i]/float(normal_all[i]) * 100)
             if ai_all[i] != 0:
                 ai_rate[i] = (ai_incorrects[i]/float(ai_all[i]) * 100)
-
-
         information["seasons"].append({"season":rm.released_season,
                                        "incorrect_rate_normal":normal_rate,
                                        "incorrect_rate_ai":ai_rate,
