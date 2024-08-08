@@ -3,14 +3,16 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class SquareButton extends StatelessWidget {
   final String text;
-  final Color? backgroundColor;
+  final Color backgroundColor;
   final VoidCallback? onPressed;
+  final Icon? icon;
 
   const SquareButton({
     super.key,
     required this.text,
     this.backgroundColor = Colors.black,
     this.onPressed,
+    this.icon,
   });
 
   @override
@@ -27,13 +29,23 @@ class SquareButton extends StatelessWidget {
           alignment: Alignment.topCenter,
           padding: EdgeInsets.only(top: 16.r),
         ),
-        child: Text(
-          text,
-          style: TextStyle(
-            fontSize: 16.sp,
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
-          ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            if (icon != null)
+              Padding(
+                padding: const EdgeInsets.only(right: 10).r,
+                child: icon!,
+              ),
+            Text(
+              text,
+              style: TextStyle(
+                fontSize: 16.sp,
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
         ),
       ),
     );

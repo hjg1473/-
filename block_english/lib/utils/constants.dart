@@ -64,6 +64,33 @@ String seasonToString(Season season) {
   }
 }
 
+enum BlockColor { skyblue, pink, green, yellow, purple, none }
+
+BlockColor stringToBlockColor(String str) {
+  switch (str) {
+    case 'skyblue':
+      return BlockColor.skyblue;
+    case 'pink':
+      return BlockColor.pink;
+    case 'green':
+      return BlockColor.green;
+    case 'yellow':
+      return BlockColor.yellow;
+    case 'purple':
+      return BlockColor.purple;
+    default:
+      return BlockColor.none;
+  }
+}
+
+enum StudyMode {
+  practice,
+  expert,
+  game,
+  retry,
+  none,
+}
+
 const String BASEURL = 'http://3.34.58.76';
 const String ACCESSTOKEN = 'accessToken';
 const String REFRESHTOKEN = 'refreshToken';

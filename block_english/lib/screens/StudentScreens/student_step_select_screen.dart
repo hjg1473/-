@@ -1,4 +1,5 @@
-import 'package:block_english/models/ProblemModel/problem_info_model.dart';
+import 'package:block_english/models/ProblemModel/problem_practice_info_model.dart';
+import 'package:block_english/screens/StudentScreens/load_problem_screen.dart';
 import 'package:block_english/services/problem_service.dart';
 import 'package:block_english/utils/constants.dart';
 import 'package:block_english/utils/status.dart';
@@ -132,49 +133,70 @@ class _StudentStepSelectScreenState
                   ? ListView.separated(
                       scrollDirection: Axis.horizontal,
                       itemBuilder: (context, index) {
-                        return ClipOval(
-                          child: Container(
-                            alignment: Alignment.center,
-                            width: 78.r,
-                            height: 78.r,
-                            color: isStepLocked(index)
-                                ? const Color(0xFF999999)
-                                : const Color(0xFFB132FE),
-                            child: Stack(
+                        return GestureDetector(
+                          onTap: () {
+                            if (isStepLocked(index)) {
+                              // TODO: 자물쇠 흔들리는 애니메이션이라든지
+                              return;
+                            }
+                            setState(() {
+                              Navigator.of(context).push(MaterialPageRoute(
+                                builder: (context) {
+                                  return LoadProblemScreen(
+                                    season: seasonToInt(
+                                        ref.watch(statusProvider).season),
+                                    level: selectedLevel,
+                                    step: index,
+                                    studyMode: StudyMode.practice,
+                                  );
+                                },
+                              ));
+                            });
+                          },
+                          child: ClipOval(
+                            child: Container(
                               alignment: Alignment.center,
-                              children: [
-                                index != numberOfSteps
-                                    ? Text(
-                                        'STEP ${index + 1}',
-                                        style: TextStyle(
-                                          fontSize: 16.sp,
-                                          fontWeight: FontWeight.w700,
-                                          color: Colors.white,
+                              width: 78.r,
+                              height: 78.r,
+                              color: isStepLocked(index)
+                                  ? const Color(0xFF999999)
+                                  : const Color(0xFFB132FE),
+                              child: Stack(
+                                alignment: Alignment.center,
+                                children: [
+                                  index != numberOfSteps
+                                      ? Text(
+                                          'STEP ${index + 1}',
+                                          style: TextStyle(
+                                            fontSize: 16.sp,
+                                            fontWeight: FontWeight.w700,
+                                            color: Colors.white,
+                                          ),
+                                        )
+                                      : Text(
+                                          '오답',
+                                          style: TextStyle(
+                                            fontSize: 16.sp,
+                                            fontWeight: FontWeight.w700,
+                                            color: Colors.white,
+                                          ),
                                         ),
-                                      )
-                                    : Text(
-                                        '오답',
-                                        style: TextStyle(
-                                          fontSize: 16.sp,
-                                          fontWeight: FontWeight.w700,
-                                          color: Colors.white,
-                                        ),
+                                  if (isStepLocked(index))
+                                    Center(
+                                      child: Icon(
+                                        Icons.lock,
+                                        size: 28.r,
+                                        color: const Color(0xFFFFFBDA),
+                                        shadows: const [
+                                          Shadow(
+                                            color: Colors.black,
+                                            blurRadius: 10,
+                                          ),
+                                        ],
                                       ),
-                                if (isStepLocked(index))
-                                  Center(
-                                    child: Icon(
-                                      Icons.lock,
-                                      size: 28.r,
-                                      color: const Color(0xFFFFFBDA),
-                                      shadows: const [
-                                        Shadow(
-                                          color: Colors.black,
-                                          blurRadius: 10,
-                                        ),
-                                      ],
                                     ),
-                                  ),
-                              ],
+                                ],
+                              ),
                             ),
                           ),
                         );
