@@ -51,7 +51,6 @@ class AuthService {
     }
   }
 
-  // TODO: Update Reg Request
   Future<Either<FailureModel, RegResponseModel>> postAuthRegister(
     String name,
     String username,
@@ -111,10 +110,13 @@ class AuthService {
 
       _ref.watch(statusProvider).setName(response.data['name']);
 
+      _ref.watch(statusProvider).setUsername(username);
+
       if (response.data['role'] == 'student') {
         _ref.watch(statusProvider).setStudentStatus(
               response.data['released'],
               response.data['team_id'],
+              response.data['group_name'],
             );
       }
 
@@ -138,12 +140,19 @@ class AuthService {
         ),
       );
 
-      _ref.watch(statusProvider).setName(response.data['name']);
+      _ref.watch(statusProvider).setName(
+            response.data['name'],
+          );
+
+      _ref.watch(statusProvider).setUsername(
+            response.data['username'],
+          );
 
       if (response.data['role'] == 'student') {
         _ref.watch(statusProvider).setStudentStatus(
               response.data['released'],
               response.data['team_id'],
+              response.data['group_name'],
             );
       }
 

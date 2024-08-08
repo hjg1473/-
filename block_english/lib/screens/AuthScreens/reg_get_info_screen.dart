@@ -38,8 +38,8 @@ class _RegStudentScreenState extends ConsumerState<RegGetInfoScreen> {
   bool dupChecked = false;
   bool nameChecked = false;
   bool passwordChecked = false;
-  bool isObsecure = false;
-  bool isObsecure2 = false;
+  bool isObsecure = true;
+  bool isObsecure2 = true;
 
   onNameChanged() {
     name = nameController.text;
@@ -65,6 +65,7 @@ class _RegStudentScreenState extends ConsumerState<RegGetInfoScreen> {
     if (password.length > 7 && password2.isNotEmpty) {
       if (password == password2) {
         setState(() {
+          passwordError = '';
           password2Error = '';
           passwordChecked = true;
           if (nameChecked && dupChecked) {
@@ -73,6 +74,7 @@ class _RegStudentScreenState extends ConsumerState<RegGetInfoScreen> {
         });
       } else {
         setState(() {
+          passwordError = '';
           password2Error = '비밀번호가 일치하지 않습니다';
           passwordChecked = false;
           nextDisable = true;
@@ -86,6 +88,11 @@ class _RegStudentScreenState extends ConsumerState<RegGetInfoScreen> {
       });
     } else {
       setState(() {
+        if (password.length < 7) {
+          passwordError = '비밀번호는 8자 이상이어야 합니다';
+        } else {
+          passwordError = '';
+        }
         passwordChecked = false;
         nextDisable = true;
       });
@@ -276,7 +283,7 @@ class _RegStudentScreenState extends ConsumerState<RegGetInfoScreen> {
                                 errorMessage: passwordError,
                                 onChanged: onPasswordChanged,
                                 obscureText: true,
-                                isSelected: !isObsecure,
+                                isObsecure: isObsecure,
                                 onEyePressed: onEyePressed,
                               ),
                               SizedBox(width: 20.r),
@@ -292,7 +299,7 @@ class _RegStudentScreenState extends ConsumerState<RegGetInfoScreen> {
                                 errorMessage: password2Error,
                                 onChanged: onPasswordChanged,
                                 obscureText: true,
-                                isSelected: !isObsecure2,
+                                isObsecure: isObsecure2,
                                 onEyePressed: onEye2Pressed,
                               ),
                             ],
