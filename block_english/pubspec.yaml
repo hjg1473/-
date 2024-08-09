@@ -49,6 +49,8 @@ dependencies:
   wolt_modal_sheet: ^0.7.1
   flutter_screenutil: ^5.9.3
   flutter_pin_code_fields: ^2.2.0
+  lottie: ^3.1.2
+  fl_chart: ^0.68.0
 
 dev_dependencies:
   flutter_test:
@@ -76,38 +78,10 @@ flutter:
   uses-material-design: true
 
   assets:
-    - assets/images/test.png
-    - assets/images/season_block.svg
-    - assets/images/LOGO.svg
-    - assets/images/student_character.svg
-    - assets/images/profile_photo.svg
-    - assets/images/monitor_character1.svg
-    - assets/images/monitor_character3.svg
-    - assets/images/monitor_day_icon.svg
-    - assets/images/monitor_time_icon.svg
-
-    - assets/cards/sign_in_manager.svg
-    - assets/cards/sign_in_user.svg
-    - assets/cards/sign_in_teacher.svg
-    - assets/cards/sign_in_parent.svg
-    
-    - assets/cards/student_main_1.svg
-    - assets/cards/student_main_2.svg
-    - assets/cards/student_main_3.svg
-    - assets/cards/180_206_card.svg
-
-    - assets/cards/super_main_1.svg
-    - assets/cards/super_main_2.svg
-
-    - assets/buttons/round_back_button.svg
-    - assets/buttons/round_setting_button.svg
-    - assets/buttons/labeled_back_button.svg
-    - assets/buttons/rounded_save_button.svg
-    - assets/buttons/rounded_edit_button.svg
-    - assets/buttons/season_1_button.svg
-    - assets/buttons/settings_notification_button.svg
-    - assets/buttons/settings_app_version_button.svg
-    - assets/buttons/settings_copyright_button.svg
+    - assets/images/
+    - assets/lottie/
+    - assets/buttons/
+    - assets/cards/
 
   # To add assets to your application, add an assets section, like this:
   # assets:

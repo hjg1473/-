@@ -1,6 +1,7 @@
 import 'package:block_english/models/StudentModel/student_study_info_model.dart';
 import 'package:block_english/models/StudentModel/student_weak_part_model.dart';
 import 'package:block_english/services/super_service.dart';
+import 'package:block_english/utils/constants.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -159,7 +160,7 @@ class _MonitorStudentScreenState extends State<MonitorStudentScreen> {
                 padding: const EdgeInsets.only(
                   top: 32,
                   left: 64,
-                ).h,
+                ).r,
                 child: SizedBox(
                   height: 319.r,
                   child: Column(
@@ -631,7 +632,6 @@ class _IncorrectState extends ConsumerState<Incorrect> {
                     10,
                   ).r,
                   child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       SizedBox(
                         width: 274.r,
@@ -667,6 +667,7 @@ class _IncorrectState extends ConsumerState<Incorrect> {
                           ],
                         ),
                       ),
+                      const Spacer(),
                       Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -680,7 +681,7 @@ class _IncorrectState extends ConsumerState<Incorrect> {
                           ),
                           SizedBox(height: 5.r),
                           Text(
-                            '$weakest 오류',
+                            '${wrongToString(weakest)} 오류',
                             style: TextStyle(
                               fontSize: 18.sp,
                               fontWeight: FontWeight.w800,
@@ -688,6 +689,7 @@ class _IncorrectState extends ConsumerState<Incorrect> {
                           ),
                         ],
                       ),
+                      const Spacer(),
                     ],
                   ),
                 ),

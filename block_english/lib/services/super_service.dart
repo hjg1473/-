@@ -185,7 +185,7 @@ class SuperService {
         },
       );
 
-      return Right((response.data['seasons']['seasons'] as List).map((e) {
+      return Right((response.data['seasons'] as List).map((e) {
         return StudyInfoModel.fromJson(e);
       }).toList());
     } on DioException catch (e) {

@@ -46,6 +46,21 @@ String seasonToString(Season season) {
   }
 }
 
+String wrongToString(String wrong) {
+  switch (wrong) {
+    case 'wrong_word':
+      return '단어';
+    case 'wrong_block':
+      return '블록';
+    case 'wrong_punctuation':
+      return '문장 부호';
+    case 'wrong_order':
+      return '어순';
+    default:
+      return ''; // Add a default return statement to handle unexpected input
+  }
+}
+
 const String BASEURL = 'http://3.34.58.76';
 const String ACCESSTOKEN = 'accessToken';
 const String REFRESHTOKEN = 'refreshToken';

@@ -7,8 +7,12 @@ class StudyInfoModel {
 
   StudyInfoModel.fromJson(Map<String, dynamic> json)
       : season = json['season'],
-        incorrectRateNormal = json['incorrect_rate_normal'],
-        incorrectRateAI = json['incorrect_rate_ai'],
+        incorrectRateNormal = (json['incorrect_rate_normal'] as List)
+            .map((e) => e.toDouble() as double)
+            .toList(),
+        incorrectRateAI = (json['incorrect_rate_ai'] as List)
+            .map((e) => e.toDouble() as double)
+            .toList(),
         releasedLevel = json['released_level'],
         releasedStep = json['released_step'];
 }
