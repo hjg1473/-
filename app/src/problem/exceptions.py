@@ -23,7 +23,7 @@ def get_problem_exception(stepinfo_model):
     
 def get_season_exception(Released_model):
     if Released_model is None:
-        raise HTTPException(status_code=404, detail='해당 시즌이 없습니다.')
+        raise HTTPException(status_code=404, detail='사용자가 해당 시즌이 없습니다.')
 
 def get_studyStart_exception(studyStart_timestamp):
     if studyStart_timestamp is None: #
@@ -32,7 +32,7 @@ def get_studyStart_exception(studyStart_timestamp):
 def get_doubleEnd_exception(studyStart_timestamp, recent_studyEnd_timestamp):
     if studyStart_timestamp < recent_studyEnd_timestamp:
         raise HTTPException(status_code=400, detail="중복된 학습 종료 호출입니다.")
-    
+
 def get_userGroup_exception(userGroup):
     if userGroup is None:
         raise HTTPException(status_code=400, detail="소속된 그룹이 없습니다.")

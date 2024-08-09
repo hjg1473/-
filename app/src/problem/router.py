@@ -80,6 +80,7 @@ async def read_problem_all(season:int, level:int, step:int, user: user_dependenc
 
     result = await db.execute(select(Problems).filter(Problems.level == level, Problems.season == season).filter(Problems.step == step).filter(Problems.type == "normal"))
     stepinfo_model = result.scalars().all()
+    get_problem_exception(stepinfo_model)
 
     TempUserProblems[user.get("id")] = TempUserProblem(0, 0, 0, 0, 0) # 객체 생성. 시작할 때.
     tempUserProblem = TempUserProblems.get(user.get("id"))
@@ -88,31 +89,14 @@ async def read_problem_all(season:int, level:int, step:int, user: user_dependenc
     tempUserProblem.solved_step = step
     tempUserProblem.solved_type = 'normal'
 
-    get_problem_exception(stepinfo_model)
-
-    problem = []
-    for p in stepinfo_model:
-        p_str = p.englishProblem
-        p_list = parse_sentence(p_str)
-        p_colors = []
-        # 단어마다 block 색깔 가져오기 ...
-        for word in p_list:
-            result = await db.execute(select(Words).filter(Words.words == word))
-            word_model = result.scalars().first()
-
-            result = await db.execute(select(Blocks).filter(Blocks.id == word_model.block_id))
-            block_model = result.scalars().first()
-            p_colors.append(block_model.color)
-
-        problem.append({'id': p.id, 'englishProblem': p.englishProblem, 'koreaProblem': p.koreaProblem, 'blockColors':p_colors})
-
-    return {'problems': problem}
+    return {'problems': await read_problem_block_colors(stepinfo_model, db)}
 
 # 연습문제: 레벨과 스텝 정보 반환
 @router.get("/practice/info/", status_code = status.HTTP_200_OK)
 async def practice_read_level_and_step(season:int, user: user_dependency, db: db_dependency):
 
     get_user_exception(user)
+
     result = await db.execute(select(Released).filter(Released.owner_id == user.get("id")).filter(Released.released_season == season))
     Released_model = result.scalars().first()
     get_season_exception(Released_model)
@@ -146,8 +130,8 @@ async def read_problem_all(season:int, level:int, step:int, user: user_dependenc
     
     result = await db.execute(select(Problems).filter(Problems.level == level, Problems.season == season).filter(Problems.step == step).filter(Problems.type == "ai"))
     stepinfo_model = result.scalars().all()
-
     get_problem_exception(stepinfo_model)
+
     TempUserProblems[user.get("id")] = TempUserProblem(0, 0, 0, 0, 0) # 객체 생성. 시작할 때.
     tempUserProblem = TempUserProblems.get(user.get("id"))
     tempUserProblem.solved_season = season
@@ -155,23 +139,7 @@ async def read_problem_all(season:int, level:int, step:int, user: user_dependenc
     tempUserProblem.solved_step = step
     tempUserProblem.solved_type = 'ai'
     
-    problem = []
-    for p in stepinfo_model:
-        p_str = p.englishProblem
-        p_list = parse_sentence(p_str)
-        p_colors = []
-        # 단어마다 block 색깔 가져오기 ...
-        for word in p_list:
-            result = await db.execute(select(Words).filter(Words.words == word))
-            word_model = result.scalars().first()
-            
-            result = await db.execute(select(Blocks).filter(Blocks.id == word_model.block_id))
-            block_model = result.scalars().first()
-            p_colors.append(block_model.color)
-
-        problem.append({'id': p.id, 'englishProblem': p.englishProblem, 'koreaProblem': p.koreaProblem, 'blockColors':p_colors})
-
-    return {'problems': problem}
+    return {'problems': await read_problem_block_colors(stepinfo_model, db)}
 
 # 확장 문제: 스텝 정보 반환
 @router.get("/expert/info/", status_code = status.HTTP_200_OK)
@@ -180,8 +148,8 @@ async def read_level_and_step_expert(season:int, level:int, difficulty:int, user
 
     result = await db.execute(select(Released).filter(Released.owner_id == user.get("id")).filter(Released.released_season == season))
     Released_model = result.scalars().first()
-    if Released_model is None:
-        return {'detail':'해당 시즌을 가지고 있지 않습니다.'}
+    get_season_exception(Released_model)
+    
 
     result = await db.execute(select(Problems).filter(Problems.type == 'ai', Problems.season == season).filter(Problems.level == level, Problems.difficulty == difficulty))
     problem_model = result.scalars().all()
@@ -245,7 +213,7 @@ async def ocr(file):
     return word_list
 
 
-# 학생이 문제를 풀었을 때, 일단 임시로 맞았다고 처리 (33초) (31초) -> (6~7초)
+# 사진을 넣어서 사진의 text 추출
 @router.post("/solve_OCR", status_code = status.HTTP_200_OK)
 async def user_solve_problem(user: user_dependency, db: db_dependency, 
                              file: UploadFile = File(...)):
@@ -259,11 +227,22 @@ async def user_solve_problem(user: user_dependency, db: db_dependency,
     word_list = await ocr(file)
     
     user_string = ' '.join(word_list)
+    # 1. 모든 단어를 한 번에 추출
+    all_words = set()
+    p_str = user_string
+    p_list = parse_sentence(p_str)
+    all_words.update(p_list)
+    # 2. 한 번의 쿼리로 모든 word와 block 정보 가져오기
+    result = await db.execute(
+        select(Words, Blocks).join(Blocks, Words.block_id == Blocks.id).filter(Words.words.in_(all_words))
+    )
+    # 3. 필요한 데이터를 딕셔너리로 매핑
+    word_to_color = {word_model.words: block_model.color for word_model, block_model in result.fetchall()}
 
-    temp_result = await db.execute(select(Words).filter(collate(Words.words,'utf8mb4_bin').in_(word_list)))
-    word_model = temp_result.scalars().all()
+    # 4. 필요한 색상을 가져오기
+    p_colors = [word_to_color[word] for word in p_list]
     
-    return {"user_input": user_string, "words_id": word_model}
+    return {"user_input": user_string, "colors": p_colors}
 
 
 @router.post("/solve_check", status_code = status.HTTP_200_OK)

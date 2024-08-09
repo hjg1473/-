@@ -156,7 +156,7 @@ async def login_for_access_token(access_token: Annotated[str, Depends(oauth2_bea
     group_model = result2.scalars().first()
     if group_model is None:
         return {'detail': 'Token Valid', 'role': user_role, 'team_id': user.team_id, 'username': username, 'name': user.name, "username_correct": True, "password_correct": True, "released": released, 'group_name': None, 'released_group':None}
-    
+        
     result = await db.execute(select(ReleasedGroup).filter(ReleasedGroup.owner_id == user.team_id))
     released_group_model = result.scalars().all()
     released_group = []
