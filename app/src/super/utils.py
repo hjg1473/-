@@ -13,6 +13,30 @@ from app.src.problem.service import get_correct_problem_count, get_incorrect_pro
 from sqlalchemy.orm import joinedload
 
 
+def weak_parts_top3(wrongType_model):
+    divided_data_list = []
+
+    for wrongTypes in wrongType_model:
+        total_wrongType = (
+            wrongTypes.wrong_punctuation
+            + wrongTypes.wrong_order
+            + wrongTypes.wrong_letter
+            + wrongTypes.wrong_block
+            + wrongTypes.wrong_word
+        )
+        
+        wrong_data = {k: v for k, v in vars(wrongTypes).items() if k.startswith("wrong")}
+        
+        top3_wrong = dict(sorted(wrong_data.items(), key=lambda item: item[1], reverse=True)[:3])
+        
+        if total_wrongType != 0:
+            divided_data = {k: f"{v / total_wrongType:.2f}" for k, v in top3_wrong.items()}
+        divided_data["season"] = wrongTypes.season
+        divided_data["level"] = wrongTypes.level
+        divided_data_list.append(divided_data)
+
+    return divided_data_list
+
 async def user_weakest_info(user_id, db):
     # 학생이 해금한 시즌 정보
     result2 = await db.execute(select(Released).filter(Released.owner_id == user_id))

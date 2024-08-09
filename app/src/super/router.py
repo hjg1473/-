@@ -22,6 +22,34 @@ router = APIRouter(
     responses={404: {"description": "Not found"}}
 )
 
+
+# 그룹 연결 핀번호 요청
+@router.get("/parent/get_pin", status_code=status.HTTP_200_OK)
+async def request_pin(user: user_dependency, db: db_dependency):
+    super_authenticate_exception(user)
+    
+    redis_client = await aioredis.create_redis_pool('redis://localhost')
+    pin = create_pin_number()
+    await redis_client.setex(f"{pin}", 180, user.get('id'))
+
+    redis_client.close()
+    await redis_client.wait_closed()
+
+    return {'parent_pinNumber': pin}
+
+
+# 해당 선생님이 관리하는 반 조회
+@router.get("/parent/get_child", status_code = status.HTTP_200_OK)
+async def read_group_info(user: user_dependency, db: db_dependency):
+    
+    super_authenticate_exception(user)
+
+    result = await db.execute(select(Users).options(joinedload(Users.student_teachers)).filter(Users.id == user.get('id')))
+    students = result.scalars().first()
+
+    return {"children": [{"id": students.id, "name": students.name} for students in students.student_teachers]}
+
+
 # 그룹 연결 핀번호 요청
 @router.post("/get_pin", status_code=status.HTTP_200_OK)
 async def request_pin(group: GroupId, user: user_dependency, db: db_dependency):
@@ -197,25 +225,7 @@ async def read_user_monitoring_summary(userStep: UserStep, user: user_dependency
     temp_result = await db.execute(select(WrongType).filter(WrongType.info_id == study_info.id).filter(WrongType.season.in_(seasons)))
     wrongType_model = temp_result.scalars().all()
     # return wrongType_model
-    divided_data_list = []
-
-    for wrongTypes in wrongType_model:
-        total_wrongType = (
-            wrongTypes.wrong_punctuation
-            + wrongTypes.wrong_order
-            + wrongTypes.wrong_letter
-            + wrongTypes.wrong_block
-            + wrongTypes.wrong_word
-        )
-        
-        wrong_data = {k: v for k, v in vars(wrongTypes).items() if k.startswith("wrong")}
-        
-        top3_wrong = dict(sorted(wrong_data.items(), key=lambda item: item[1], reverse=True)[:3])
-        if total_wrongType != 0:
-            divided_data = {k: f"{v / total_wrongType:.2f}" for k, v in top3_wrong.items()}
-        divided_data["season"] = wrongTypes.season
-        divided_data["level"] = wrongTypes.level
-        divided_data_list.append(divided_data)
+    divided_data_list = weak_parts_top3(wrongType_model)
 
     # 가장 약한 부분 하나만
     weakest = await user_weakest_info(userStep.user_id, db)
@@ -233,6 +243,14 @@ async def read_user_monitoring_summary(userStep: UserStep, user: user_dependency
 
     return  {"weakest_part":extracted_data,"totalStudyTime": studyinfo_model.totalStudyTime, 'streamStudyDay': studyinfo_model.streamStudyDay}
 
+def calculate_corrects(table_id, ai_corrects ,normal_corrects ,table_count, rm, study_info):
+    for item in study_info:
+        if item.season == rm.released_season:
+            count = table_count[table_id.index(item.id)]
+            if item.type == "normal":
+                normal_corrects[item.level] += count
+            else:
+                ai_corrects[item.level] += count
 
 # 특정 학생의 self 학습 정보 반환.
 @router.post("/user_monitoring_study/rate", status_code = status.HTTP_200_OK)
@@ -252,45 +270,19 @@ async def read_user_studyinfo(userStep: UserStep, user: user_dependency, db: db_
     study_info = result2.scalars().first()
     if study_info is None:
         raise http_exception()
-
-    # 틀린 문제 count 배열 받아오기
-    result = await db.execute(select(incorrect_problem_table.c.count).filter(incorrect_problem_table.c.study_info_id == study_info.id))
-    ic_table_count = result.scalars().all()
-
-    # 틀린 문제 id 배열 받아오기
-    result = await db.execute(select(incorrect_problem_table.c.problem_id).filter(incorrect_problem_table.c.study_info_id == study_info.id))
-    ic_table_id = result.scalars().all()
-
-    # 맞은 문제 count 배열 받아오기
-    result = await db.execute(select(correct_problem_table.c.count).filter(correct_problem_table.c.study_info_id == study_info.id))
-    c_table_count = result.scalars().all()
-
-    # 맞은 문제 id 배열 받아오기
-    result = await db.execute(select(correct_problem_table.c.problem_id).filter(correct_problem_table.c.study_info_id == study_info.id))
-    c_table_id = result.scalars().all()
-
-    information = {"seasons":[]}
+    
+    ic_table_count, ic_table_id, c_table_count, c_table_id = await fetch_data(study_info.id , db)
+    
+    information = []
     for rm in released_model:
         normal_corrects = [0, 0, 0]
         ai_corrects = [0, 0, 0]
-        for item in study_info.correct_problems:
-            if item.season == rm.released_season:
-                count = c_table_count[c_table_id.index(item.id)]
-                if item.type == "normal":
-                    normal_corrects[item.level] += count
-                else:
-                    ai_corrects[item.level] += count
+        calculate_corrects(c_table_id, ai_corrects, normal_corrects, c_table_count, rm, study_info.correct_problems)
 
         normal_incorrects = [0, 0, 0]
         ai_incorrects = [0, 0, 0]
-        for item in study_info.incorrect_problems:
-            if item.season == rm.released_season:
-                count = ic_table_count[ic_table_id.index(item.id)]
-                if item.type == "normal":
-                    normal_incorrects[item.level] += count
-                else:
-                    ai_incorrects[item.level] += count
-
+        calculate_corrects(ic_table_id, ai_incorrects, normal_incorrects, ic_table_count, rm, study_info.incorrect_problems)
+        
         normal_all = [normal_corrects[0] + normal_incorrects[0], normal_corrects[1] + normal_incorrects[1], normal_corrects[2] + normal_incorrects[2]]
         ai_all = [ai_corrects[0] + ai_incorrects[0], ai_corrects[1] + ai_incorrects[1], ai_corrects[2] + ai_incorrects[2]]
 
@@ -301,16 +293,14 @@ async def read_user_studyinfo(userStep: UserStep, user: user_dependency, db: db_
                 normal_rate[i] = (normal_incorrects[i]/float(normal_all[i]) * 100)
             if ai_all[i] != 0:
                 ai_rate[i] = (ai_incorrects[i]/float(ai_all[i]) * 100)
-
-
-        information["seasons"].append({"season":rm.released_season,
+        information.append({"season":rm.released_season,
                                        "incorrect_rate_normal":normal_rate,
                                        "incorrect_rate_ai":ai_rate,
                                        "released_level":rm.released_level,
                                        "released_step":rm.released_step
                                        })
 
-    return information
+    return {'seasons': information}
 
 # 특정 유저의 시즌-레벨 별 약한 부분 TOP 3 조회 
 @router.post("/user_monitoring_incorrect", status_code = status.HTTP_200_OK)
@@ -333,25 +323,7 @@ async def read_user_weak_parts_top3(userStep: UserStep, user: user_dependency, d
     temp_result = await db.execute(select(WrongType).filter(WrongType.info_id == study_info.id).filter(WrongType.season.in_(seasons)))
     wrongType_model = temp_result.scalars().all()
     # return wrongType_model
-    divided_data_list = []
-
-    for wrongTypes in wrongType_model:
-        total_wrongType = (
-            wrongTypes.wrong_punctuation
-            + wrongTypes.wrong_order
-            + wrongTypes.wrong_letter
-            + wrongTypes.wrong_block
-            + wrongTypes.wrong_word
-        )
-        
-        wrong_data = {k: v for k, v in vars(wrongTypes).items() if k.startswith("wrong")}
-        
-        top3_wrong = dict(sorted(wrong_data.items(), key=lambda item: item[1], reverse=True)[:3])
-        if total_wrongType != 0:
-            divided_data = {k: f"{v / total_wrongType:.2f}" for k, v in top3_wrong.items()}
-        divided_data["season"] = wrongTypes.season
-        divided_data["level"] = wrongTypes.level
-        divided_data_list.append(divided_data)
+    divided_data_list = weak_parts_top3(wrongType_model)
 
     recent_problem_model = await get_latest_log(userStep.user_id)
     if recent_problem_model is None:
@@ -522,46 +494,17 @@ async def read_group_monitoring(group: GroupId, user: user_dependency, db: db_de
         if study_info is None:
             raise http_exception()
 
-        # 틀린 문제 count 배열 받아오기
-        result = await db.execute(select(incorrect_problem_table.c.count).filter(incorrect_problem_table.c.study_info_id == study_info.id))
-        ic_table_count = result.scalars().all()
-
-        # 틀린 문제 id 배열 받아오기
-        result = await db.execute(select(incorrect_problem_table.c.problem_id).filter(incorrect_problem_table.c.study_info_id == study_info.id))
-        ic_table_id = result.scalars().all()
-
-        # 맞은 문제 count 배열 받아오기
-        result = await db.execute(select(correct_problem_table.c.count).filter(correct_problem_table.c.study_info_id == study_info.id))
-        c_table_count = result.scalars().all()
-
-        # 맞은 문제 id 배열 받아오기
-        result = await db.execute(select(correct_problem_table.c.problem_id).filter(correct_problem_table.c.study_info_id == study_info.id))
-        c_table_id = result.scalars().all()
+        ic_table_count, ic_table_id, c_table_count, c_table_id = await fetch_data(study_info.id , db)
 
         information = []
         # 해금된 시즌,레벨,유형
         for rm in released_model:
-            # normal_corrects = [0, 0, 0]
-            # ai_corrects = [0, 0, 0]
-            for item in study_info.correct_problems:
-                if item.season == rm.released_season:
-                    count = c_table_count[c_table_id.index(item.id)]
-                    if item.type == "normal":
-                        normal_corrects[item.level] += count
-                    else:
-                        ai_corrects[item.level] += count
+            
+            calculate_corrects(c_table_id, ai_corrects, normal_corrects, c_table_count, rm, study_info.correct_problems)
 
-            # normal_incorrects = [0, 0, 0]
-            # ai_incorrects = [0, 0, 0]
-            for item in study_info.incorrect_problems:
-                if item.season == rm.released_season:
-                    count = ic_table_count[ic_table_id.index(item.id)]
-                    if item.type == "normal":
-                        normal_incorrects[item.level] += count
-                    else:
-                        ai_incorrects[item.level] += count
+            calculate_corrects(ic_table_id, ai_incorrects, normal_incorrects, ic_table_count, rm, study_info.incorrect_problems)
+
             normal_all = [normal_corrects[0] + normal_incorrects[0], normal_corrects[1] + normal_incorrects[1], normal_corrects[2] + normal_incorrects[2]]
-            # result_list = [sum(x) for x in zip(result_list, normal_all)]
             result_normal = [a + b for a, b in zip(result_normal, normal_all)]
             ai_all = [ai_corrects[0] + ai_incorrects[0], ai_corrects[1] + ai_incorrects[1], ai_corrects[2] + ai_incorrects[2]]
             result_ai = [a + b for a, b in zip(result_ai, ai_all)]
@@ -572,8 +515,6 @@ async def read_group_monitoring(group: GroupId, user: user_dependency, db: db_de
                 normal_rate[i] = (normal_incorrects[i]/float(result_normal[i]) * 100)
             if ai_all[i] != 0:
                 ai_rate[i] = (ai_incorrects[i]/float(result_ai[i]) * 100)
-
-
         information.append({"season":rm.released_season,
                                         "incorrect_rate_normal":normal_rate,
                                         "incorrect_rate_ai":ai_rate,
