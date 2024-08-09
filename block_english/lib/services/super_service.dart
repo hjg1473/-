@@ -1,6 +1,7 @@
+import 'package:block_english/models/StudentModel/student_study_info_model.dart';
 import 'package:block_english/models/StudentModel/student_study_time_model.dart';
 import 'package:block_english/models/SuperModel/pin_model.dart';
-import 'package:block_english/models/SuperModel/user_monitoring_incorrect_model.dart';
+import 'package:block_english/models/StudentModel/student_incorrect_model.dart.dart';
 import 'package:block_english/models/model.dart';
 import 'package:block_english/utils/constants.dart';
 import 'package:block_english/utils/dio.dart';
@@ -15,7 +16,6 @@ class SuperService {
   static const String _group = "group";
   static const String _info = "info";
   static const String _getpin = "get_pin";
-  static const String _remove = "remove";
   static const String _groupId = "group_id";
   static const String _groupName = 'group_name';
   static const String _groupDetail = 'group_detail';
@@ -167,8 +167,37 @@ class SuperService {
   //   );
   // }
 
-  Future<Either<FailureModel, UserMonitoringIncorrectModel>>
-      postUserMonitoringIncorrect(int userId) async {
+  Future<Either<FailureModel, List<StudyInfoModel>>>
+      postUserMonitoringStudyRate(int userId) async {
+    try {
+      final dio = _ref.watch(dioProvider);
+      final response = await dio.post(
+        '/$_super/user_monitoring_study/rate',
+        options: Options(
+          headers: {
+            'accept': 'application/json',
+            TOKENVALIDATE: 'true',
+            'Content-Type': 'application/json',
+          },
+        ),
+        data: {
+          'user_id': userId,
+        },
+      );
+
+      return Right((response.data['seasons']['seasons'] as List).map((e) {
+        return StudyInfoModel.fromJson(e);
+      }).toList());
+    } on DioException catch (e) {
+      return Left(FailureModel(
+        statusCode: e.response?.statusCode ?? 0,
+        detail: e.response?.data['detail'],
+      ));
+    }
+  }
+
+  Future<Either<FailureModel, IncorrectModel>> postUserMonitoringIncorrect(
+      int userId) async {
     try {
       final dio = _ref.watch(dioProvider);
       final response = await dio.post(
@@ -185,7 +214,7 @@ class SuperService {
         },
       );
 
-      return Right(UserMonitoringIncorrectModel.fromJson(response.data));
+      return Right(IncorrectModel.fromJson(response.data));
     } on DioException catch (e) {
       return Left(FailureModel(
         statusCode: e.response?.statusCode ?? 0,

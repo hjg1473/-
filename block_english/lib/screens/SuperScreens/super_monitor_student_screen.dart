@@ -1,3 +1,4 @@
+import 'package:block_english/models/StudentModel/student_study_info_model.dart';
 import 'package:block_english/models/StudentModel/student_weak_part_model.dart';
 import 'package:block_english/services/super_service.dart';
 import 'package:flutter/material.dart';
@@ -15,11 +16,9 @@ class CustomRoute<T> extends MaterialPageRoute<T> {
   @override
   Widget buildTransitions(BuildContext context, Animation<double> animation,
       Animation<double> secondaryAnimation, Widget child) {
-    //return FadeTransition(opacity: animation, child: child);
     return SlideTransition(
       position:
           Tween<Offset>(begin: const Offset(0, 0), end: const Offset(0, 0))
-              //.chain(CurveTween(curve: Curves.linear))
               .animate(animation),
       child: child,
     );
@@ -55,6 +54,95 @@ class _MonitorStudentScreenState extends State<MonitorStudentScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _navigatorKey.currentState!.pushReplacementNamed(route);
     });
+  }
+
+  Future<dynamic> _showDeleteDialog(BuildContext context) {
+    return showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(7.02).r,
+        ),
+        titlePadding: const EdgeInsets.fromLTRB(
+          24,
+          28,
+          24,
+          12,
+        ).r,
+        title: Center(
+          child: Text(
+            '학습자 삭제',
+            style: TextStyle(
+              fontSize: 18.sp,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+        ),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 24,
+        ).r,
+        content: Text(
+          '학습자를 삭제하면\n더이상 모니터링이 불가합니다\n\n정말 삭제하시겠습니까?',
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            fontSize: 14.sp,
+            fontWeight: FontWeight.bold,
+            color: const Color(0xFFA7A7A7),
+          ),
+        ),
+        actionsPadding: const EdgeInsets.fromLTRB(
+          24,
+          24,
+          24,
+          28,
+        ).r,
+        actions: [
+          FilledButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+            style: FilledButton.styleFrom(
+              padding: const EdgeInsets.symmetric(
+                vertical: 15,
+                horizontal: 51.5,
+              ).r,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(7.02).r,
+              ),
+              backgroundColor: const Color(0xFF919191),
+            ),
+            child: Text(
+              '취소',
+              style: TextStyle(
+                fontSize: 16.sp,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+          //TODO: Add delete function
+          FilledButton(
+            onPressed: () {},
+            style: FilledButton.styleFrom(
+              padding: const EdgeInsets.symmetric(
+                vertical: 15,
+                horizontal: 51.5,
+              ).r,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(7.02).r,
+              ),
+              backgroundColor: const Color(0xFF93E54C),
+            ),
+            child: Text(
+              '삭제',
+              style: TextStyle(
+                fontSize: 16.sp,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -233,39 +321,49 @@ class _MonitorStudentScreenState extends State<MonitorStudentScreen> {
                 width: 553.r,
                 height: 1.sh,
                 color: const Color(0xFFECECEC),
-              ),
-            ),
-            Align(
-              alignment: Alignment.centerRight,
-              child: Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 64,
-                  vertical: 24,
-                ).r,
-                child: SizedBox(
-                  width: 425.r,
-                  height: 327.r,
-                  child: Navigator(
-                    key: _navigatorKey,
-                    initialRoute: learning,
-                    onGenerateRoute: (settings) {
-                      return CustomRoute(
-                        builder: (context) {
-                          switch (settings.name) {
-                            case learning:
-                              return LearningAnalysis(userId: widget.studentId);
-                            case incorrect:
-                              return Incorrect(
-                                  userId: widget.studentId,
-                                  userName: widget.studentName);
-                            case manage:
-                              return ManageStudent(userId: widget.studentId);
-                            default:
-                              return LearningAnalysis(userId: widget.studentId);
-                          }
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 64,
+                    vertical: 24,
+                  ).r,
+                  child: Center(
+                    child: SizedBox(
+                      width: 425.r,
+                      height: 327.r,
+                      child: Navigator(
+                        key: _navigatorKey,
+                        initialRoute: learning,
+                        onGenerateRoute: (settings) {
+                          return CustomRoute(
+                            builder: (context) {
+                              switch (settings.name) {
+                                case learning:
+                                  return LearningAnalysis(
+                                    userId: widget.studentId,
+                                    userName: widget.studentName,
+                                  );
+                                case incorrect:
+                                  return Incorrect(
+                                      userId: widget.studentId,
+                                      userName: widget.studentName);
+                                case manage:
+                                  return ManageStudent(
+                                    userId: widget.studentId,
+                                    onDeletePressed: () {
+                                      _showDeleteDialog(context);
+                                    },
+                                  );
+                                default:
+                                  return LearningAnalysis(
+                                    userId: widget.studentId,
+                                    userName: widget.studentName,
+                                  );
+                              }
+                            },
+                          );
                         },
-                      );
-                    },
+                      ),
+                    ),
                   ),
                 ),
               ),
@@ -278,33 +376,176 @@ class _MonitorStudentScreenState extends State<MonitorStudentScreen> {
 }
 
 class LearningAnalysis extends ConsumerStatefulWidget {
-  const LearningAnalysis({super.key, required this.userId});
+  const LearningAnalysis(
+      {super.key, required this.userId, required this.userName});
   final int userId;
+  final String userName;
 
   @override
   ConsumerState<LearningAnalysis> createState() => _LearningAnalysisState();
 }
 
 class _LearningAnalysisState extends ConsumerState<LearningAnalysis> {
+  bool isLoading = true;
+  List<StudyInfoModel> studyInfo = [];
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    waitForData();
+  }
+
+  waitForData() async {
+    final response = await ref
+        .watch(superServiceProvider)
+        .postUserMonitoringStudyRate(widget.userId);
+
+    response.fold((failure) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('${failure.statusCode} : ${failure.detail}'),
+        ),
+      );
+    }, (data) {
+      studyInfo = data;
+      if (studyInfo.isEmpty) {
+        debugPrint('No data');
+      } else {
+        debugPrint(studyInfo[0].incorrectRateAI.toString());
+      }
+    });
+    if (mounted) {
+      setState(() {
+        isLoading = false;
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: 465.r,
-      height: 327.r,
-      color: const Color(0xFFECECEC),
-      child: Stack(
-        children: [
-          Container(
-            width: 302.r,
-            height: 142.r,
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(8).r,
+    return isLoading
+        ? const Center(
+            child: CircularProgressIndicator(
+              color: Colors.grey,
             ),
-          ),
-        ],
-      ),
-    );
+          )
+        : Container(
+            width: 425.r,
+            height: 327.r,
+            color: const Color(0xFFECECEC),
+            child: Stack(
+              children: [
+                Positioned(
+                  left: 0,
+                  top: 0,
+                  child: Container(
+                    width: 262.r,
+                    height: 142.r,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(8).r,
+                    ),
+                  ),
+                ),
+                Positioned(
+                  right: 0,
+                  top: 0,
+                  child: Container(
+                    width: 148.r,
+                    height: 142.r,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(8).r,
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(
+                        18,
+                        15,
+                        18,
+                        16,
+                      ).r,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 2,
+                            ).r,
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF414141),
+                              borderRadius: BorderRadius.circular(10).r,
+                            ),
+                            child: Text(
+                              'Basic BEST',
+                              style: TextStyle(
+                                fontFamily: 'Pretendard',
+                                fontSize: 14.sp,
+                                color: Colors.white,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+                Positioned(
+                  left: 0,
+                  bottom: 0,
+                  child: Container(
+                    width: 242.r,
+                    height: 170.r,
+                    padding: const EdgeInsets.fromLTRB(
+                      13,
+                      13,
+                      13,
+                      12,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(8).r,
+                    ),
+                    child: Column(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 4,
+                          ).r,
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF414141),
+                            borderRadius: BorderRadius.circular(14).r,
+                          ),
+                          child: Text(
+                            '단원별 정답률',
+                            style: TextStyle(
+                              fontSize: 11.sp,
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                Positioned(
+                  right: 0,
+                  bottom: 0,
+                  child: Container(
+                    width: 131.r,
+                    height: 147.r,
+                    decoration: BoxDecoration(
+                      color: Colors.black,
+                      borderRadius: BorderRadius.circular(8).r,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          );
   }
 }
 
@@ -348,15 +589,11 @@ class _IncorrectState extends ConsumerState<Incorrect> {
       );
     }, (data) {
       //TODO: check mapping weakParts
-      weakParts = data.weakParts
-          .map((weakPart) => WeakPartModel.fromJson(weakPart))
-          .toList();
+      weakParts = data.weakParts;
       weakest = data.weakest;
       recentProblem = data.recentProblem ?? 'I love block english.';
       recentAnswer = data.recentAnswer ?? 'I block english love.';
       recentDetail = data.recentDetail;
-
-      debugPrint('userId: ${widget.userId} weakest: $weakest');
     });
     if (mounted) {
       setState(() {
@@ -564,8 +801,13 @@ class _IncorrectState extends ConsumerState<Incorrect> {
 }
 
 class ManageStudent extends ConsumerStatefulWidget {
-  const ManageStudent({super.key, required this.userId});
+  const ManageStudent({
+    super.key,
+    required this.userId,
+    required this.onDeletePressed,
+  });
   final int userId;
+  final VoidCallback onDeletePressed;
 
   @override
   ConsumerState<ManageStudent> createState() => _ManageStudentState();
@@ -695,7 +937,7 @@ class _ManageStudentState extends ConsumerState<ManageStudent> {
                 Align(
                   alignment: Alignment.bottomCenter,
                   child: FilledButton(
-                    onPressed: () {},
+                    onPressed: widget.onDeletePressed,
                     style: FilledButton.styleFrom(
                       minimumSize: Size(311.r, 37.r),
                       backgroundColor: const Color(0xFF484848),
