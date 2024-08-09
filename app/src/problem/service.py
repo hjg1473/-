@@ -92,20 +92,6 @@ async def increment_incorrect_problem_count(study_info_id: int, problem_id: int,
     await db.execute(stmt)
     await db.commit()
 
-async def clear_incorrect_problem_count(study_info_id: int, problem_id: int, isGroup:int, db: db_dependency):
-    # 업데이트 문 생성
-    stmt = update(incorrect_problem_table).\
-        where(
-            incorrect_problem_table.c.study_info_id == study_info_id,
-            incorrect_problem_table.c.problem_id == problem_id,
-            incorrect_problem_table.c.isGroup == isGroup
-        ).\
-        values(count=0)
-
-    # 업데이트 문 실행
-    await db.execute(stmt)
-    await db.commit()
-
 async def get_correct_problem_count(study_info_id: int, problem_id: int, db):
     query = select(correct_problem_table.c.count).where(
         correct_problem_table.c.study_info_id == study_info_id,
@@ -236,3 +222,17 @@ async def read_problem_block_colors(stepinfo_model,db):
 
         problem.append({'id': p.id, 'englishProblem': p.englishProblem, 'koreaProblem': p.koreaProblem, 'blockColors':p_colors})
     return problem
+
+async def clear_incorrect_problem_count(study_info_id: int, problem_id: int, isGroup:int, db: db_dependency):
+    # 업데이트 문 생성
+    stmt = update(incorrect_problem_table).\
+        where(
+            incorrect_problem_table.c.study_info_id == study_info_id,
+            incorrect_problem_table.c.problem_id == problem_id,
+            incorrect_problem_table.c.isGroup == isGroup
+        ).\
+        values(count=0)
+
+    # 업데이트 문 실행
+    await db.execute(stmt)
+    await db.commit()

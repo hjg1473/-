@@ -3,23 +3,18 @@ from fastapi.responses import JSONResponse
 import models
 import easyocr
 from src import models, database
+from src.exceptions import add_exception_handler
 from auth import router as auth_router
 from problem import router as problem_router
 from game import router as game_router
 from student import router as student_router
 from user import router as user_router
 from super import router as super_router
-from auth.utils import CustomResponseException
+
 
 app = FastAPI()
 
-@app.exception_handler(CustomResponseException)
-async def custom_response_exception_handler(request: Request, exc: CustomResponseException):
-    return JSONResponse(
-        status_code=exc.code,  # HTTP 상태 코드를 200으로 설정
-        content=exc.content
-    )
-
+add_exception_handler(app)
 # 데이터베이스 초기화 함수
 async def init_db():
     async with database.engine.begin() as conn:

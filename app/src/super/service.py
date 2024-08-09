@@ -1,5 +1,5 @@
 from super.dependencies import db_dependency
-from app.src.models import Users, Groups, Problems, teacher_group_table, ReleasedGroup
+from app.src.models import Users, Groups, Problems, teacher_group_table, ReleasedGroup, correct_problem_table, incorrect_problem_table
 from sqlalchemy import select, delete, insert
 
 # async def get_problemset(problemset, db: db_dependency):
@@ -157,3 +157,42 @@ async def update_group_level_and_step(group_id, season, level, type, step, db):
     rg_model.released_step = step
     db.add(rg_model)
     await db.commit()
+
+# 업데이트를 하는데, 대상은 그룹 소유의 시즌이 같고, 타입이 같은 건 1개. 
+async def update_group_level_and_step(group_id, season, level, type, step, db):
+    result = await db.execute(select(ReleasedGroup).filter(ReleasedGroup.owner_id == group_id, ReleasedGroup.released_type == type, ReleasedGroup.released_season == season))
+    rg_model = result.scalars().first()
+    rg_model.released_level = level
+    rg_model.released_step = step
+    db.add(rg_model)
+    await db.commit()
+
+async def fetch_data(study_info_id, db):
+    # 틀린 문제 count 배열 받아오기
+    ic_count_query = select(incorrect_problem_table.c.count).filter(incorrect_problem_table.c.study_info_id == study_info_id)
+    
+    # 틀린 문제 id 배열 받아오기
+    ic_id_query = select(incorrect_problem_table.c.problem_id).filter(incorrect_problem_table.c.study_info_id == study_info_id)
+    
+    # 맞은 문제 count 배열 받아오기
+    c_count_query = select(correct_problem_table.c.count).filter(correct_problem_table.c.study_info_id == study_info_id)
+    
+    # 맞은 문제 id 배열 받아오기
+    c_id_query = select(correct_problem_table.c.problem_id).filter(correct_problem_table.c.study_info_id == study_info_id)
+    
+    # 모든 쿼리를 비동기적으로 실행
+    import asyncio
+    results = await asyncio.gather(
+        db.execute(ic_count_query),
+        db.execute(ic_id_query),
+        db.execute(c_count_query),
+        db.execute(c_id_query)
+    )
+    
+    # 결과를 추출하고 변환
+    ic_table_count = results[0].scalars().all()
+    ic_table_id = results[1].scalars().all()
+    c_table_count = results[2].scalars().all()
+    c_table_id = results[3].scalars().all()
+    
+    return ic_table_count, ic_table_id, c_table_count, c_table_id
