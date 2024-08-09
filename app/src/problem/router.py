@@ -90,23 +90,37 @@ async def read_problem_all(season:int, level:int, step:int, user: user_dependenc
 
     get_problem_exception(stepinfo_model)
 
-    problem = []
-    for p in stepinfo_model:
-        p_str = p.englishProblem
-        p_list = parse_sentence(p_str)
-        p_colors = []
-        # 단어마다 block 색깔 가져오기 ...
+    # problem = []
+    # for p in stepinfo_model:
+    #     p_str = p.englishProblem
+    #     p_list = parse_sentence(p_str)
+    #     p_colors = []
+    #     # 단어마다 block 색깔 가져오기 ...
+    #     for word in p_list:
+    #         result = await db.execute(select(Words).filter(Words.words == word))
+    #         word_model = result.scalars().first()
+
+    #         result = await db.execute(select(Blocks).filter(Blocks.id == word_model.block_id))
+    #         block_model = result.scalars().first()
+    #         p_colors.append(block_model.color)
+
+    #     problem.append({'id': p.id, 'englishProblem': p.englishProblem, 'koreaProblem': p.koreaProblem, 'blockColors':p_colors})
+
+    result = await db.execute(select(Blocks))
+    blocks = result.scalars().all()
+    
+    result = await db.execute(select(Words))
+    words = result.scalars().all()
+    problems = []
+    for item in stepinfo_model:
+        p_list = parse_sentence(item.englishProblem)
+        colors = []
         for word in p_list:
-            result = await db.execute(select(Words).filter(Words.words == word))
-            word_model = result.scalars().first()
+            word_block_id = list(filter(lambda item : item.words == word, words))[0].block_id
+            colors.append(list(filter(lambda item : item.id == word_block_id, blocks))[0].color)
+        problems.append({'id':item.id, 'englishProblem':item.englishProblem, 'koreaProblem':item.koreaProblem, 'blockColors':colors})
 
-            result = await db.execute(select(Blocks).filter(Blocks.id == word_model.block_id))
-            block_model = result.scalars().first()
-            p_colors.append(block_model.color)
-
-        problem.append({'id': p.id, 'englishProblem': p.englishProblem, 'koreaProblem': p.koreaProblem, 'blockColors':p_colors})
-
-    return {'problems': problem}
+    return {'problems': problems}
 
 # 연습문제: 레벨과 스텝 정보 반환
 @router.get("/practice/info/", status_code = status.HTTP_200_OK)
@@ -155,23 +169,37 @@ async def read_problem_all(season:int, level:int, step:int, user: user_dependenc
     tempUserProblem.solved_step = step
     tempUserProblem.solved_type = 'ai'
     
-    problem = []
-    for p in stepinfo_model:
-        p_str = p.englishProblem
-        p_list = parse_sentence(p_str)
-        p_colors = []
-        # 단어마다 block 색깔 가져오기 ...
-        for word in p_list:
-            result = await db.execute(select(Words).filter(Words.words == word))
-            word_model = result.scalars().first()
+    # problem = []
+    # for p in stepinfo_model:
+    #     p_str = p.englishProblem
+    #     p_list = parse_sentence(p_str)
+    #     p_colors = []
+    #     # 단어마다 block 색깔 가져오기 ...
+    #     for word in p_list:
+    #         result = await db.execute(select(Words).filter(Words.words == word))
+    #         word_model = result.scalars().first()
             
-            result = await db.execute(select(Blocks).filter(Blocks.id == word_model.block_id))
-            block_model = result.scalars().first()
-            p_colors.append(block_model.color)
+    #         result = await db.execute(select(Blocks).filter(Blocks.id == word_model.block_id))
+    #         block_model = result.scalars().first()
+    #         p_colors.append(block_model.color)
 
-        problem.append({'id': p.id, 'englishProblem': p.englishProblem, 'koreaProblem': p.koreaProblem, 'blockColors':p_colors})
+    #     problem.append({'id': p.id, 'englishProblem': p.englishProblem, 'koreaProblem': p.koreaProblem, 'blockColors':p_colors})
 
-    return {'problems': problem}
+    result = await db.execute(select(Blocks))
+    blocks = result.scalars().all()
+    
+    result = await db.execute(select(Words))
+    words = result.scalars().all()
+    problems = []
+    for item in stepinfo_model:
+        p_list = parse_sentence(item.englishProblem)
+        colors = []
+        for word in p_list:
+            word_block_id = list(filter(lambda item : item.words == word, words))[0].block_id
+            colors.append(list(filter(lambda item : item.id == word_block_id, blocks))[0].color)
+        problems.append({'id':item.id, 'englishProblem':item.englishProblem, 'koreaProblem':item.koreaProblem, 'blockColors':colors})
+
+    return {'problems': problems}
 
 # 확장 문제: 스텝 정보 반환
 @router.get("/expert/info/", status_code = status.HTTP_200_OK)
@@ -197,6 +225,82 @@ async def read_level_and_step_expert(season:int, level:int, difficulty:int, user
             tail_step = p_step
 
     return {'steps' : list(range(tail_step, head_step+1))}
+
+
+# 시즌, 레벨에 맞는 오답 노트 문제 정보 반환
+@router.get("/practice/wrong_note/set/", status_code=status.HTTP_200_OK)
+async def read_problem_wrongs(mode_str:str, season:int, level:int, user:user_dependency, db:db_dependency):
+    get_user_exception(user)
+
+    isGroup = 0
+    if mode_str == 'group':
+        isGroup = 1
+
+    # study info 찾아오기
+    result2 = await db.execute(select(StudyInfo).options(joinedload(StudyInfo.incorrect_problems)).filter(StudyInfo.owner_id == user.get("id")))
+    study_info = result2.scalars().first()
+    
+    result = await db.execute(select(incorrect_problem_table.c.problem_id).\
+                              where(
+                                    incorrect_problem_table.c.study_info_id == study_info.id,
+                                    incorrect_problem_table.c.isGroup == isGroup,
+                                    incorrect_problem_table.c.count > 0
+                              ))
+    wrong_problems = result.scalars().all()
+
+    filterd_problems = []
+    for ip in list(study_info.incorrect_problems):
+        if ip.id in wrong_problems and ip.type=='normal' and int(ip.season) == season and ip.level == level:
+            filterd_problems.append(ip)
+
+    result = await db.execute(select(Blocks))
+    blocks = result.scalars().all()
+    
+    result = await db.execute(select(Words))
+    words = result.scalars().all()
+    problems = []
+    for item in filterd_problems:
+        p_list = parse_sentence(item.englishProblem)
+        colors = []
+        for word in p_list:
+            word_block_id = list(filter(lambda item : item.words == word, words))[0].block_id
+            colors.append(list(filter(lambda item : item.id == word_block_id, blocks))[0].color)
+        problems.append({'id':item.id, 'englishProblem':item.englishProblem, 'koreaProblem':item.koreaProblem, 'blockColors':colors})
+
+    return {"incorrects":problems}
+
+
+# 오답노트 종료 --> 해당 레벨의 오답들 빼기
+@router.post("/practice/wrong_note/end/", status_code=status.HTTP_200_OK)
+async def read_problem_wrongs(mode_str:str, season:int, level:int, user:user_dependency, db:db_dependency):
+    get_user_exception(user)
+    
+    isGroup = 0
+    if mode_str == 'group':
+        isGroup = 1
+
+    # study info 찾아오기
+    result = await db.execute(select(StudyInfo).options(joinedload(StudyInfo.incorrect_problems)).filter(StudyInfo.owner_id == user.get("id")))
+    study_info = result.scalars().first()
+    
+    result = await db.execute(select(incorrect_problem_table.c.problem_id).\
+                              where(
+                                    incorrect_problem_table.c.study_info_id == study_info.id,
+                                    incorrect_problem_table.c.isGroup == isGroup,
+                                    incorrect_problem_table.c.count > 0
+                              ))
+    wrong_problems = result.scalars().all()
+    filterd_problems = []
+    for ip in list(study_info.incorrect_problems):
+        if ip.id in wrong_problems and ip.type=='normal' and int(ip.season) == season and ip.level == level:
+            study_info.incorrect_problems.remove(ip)
+            await clear_incorrect_problem_count(study_info.id, ip.id, isGroup, db)
+    
+    db.add(study_info)
+    await db.commit()
+
+    return {"detail":"success"}
+
 
 async def ocr(file):
     img_binary = await file.read()
@@ -300,7 +404,7 @@ async def user_solve_problem(background_tasks: BackgroundTasks, user_string: str
 
 # 스텝 끝날때 마지막에 문제 저장
 @router.post("/send_problems_data/", status_code = status.HTTP_200_OK)
-async def send_problems_data(mode_str:int, user: user_dependency, db: db_dependency):
+async def send_problems_data(mode_str:str, user: user_dependency, db: db_dependency):
     get_user_exception(user)
 
     # isGroup 확인

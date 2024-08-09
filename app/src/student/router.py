@@ -175,7 +175,7 @@ async def read_user_studyinfo(user: user_dependency, db: db_dependency):
         normal_corrects = [0, 0, 0]
         ai_corrects = [0, 0, 0]
         for item in study_info.correct_problems:
-            if item.season == rm.released_season:
+            if int(item.season) == rm.released_season:
                 count = c_table_count[c_table_id.index(item.id)]
                 if item.type == "normal":
                     normal_corrects[item.level] += count
@@ -185,7 +185,7 @@ async def read_user_studyinfo(user: user_dependency, db: db_dependency):
         normal_incorrects = [0, 0, 0]
         ai_incorrects = [0, 0, 0]
         for item in study_info.incorrect_problems:
-            if item.season == rm.released_season:
+            if int(item.season) == rm.released_season:
                 count = ic_table_count[ic_table_id.index(item.id)]
                 if item.type == "normal":
                     normal_incorrects[item.level] += count
