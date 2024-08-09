@@ -124,49 +124,46 @@ async def read_group_info(group_id:int, user:user_dependency, db:db_dependency):
     await find_group_exception(group_id, db)
 
     group_model = await get_group_to_groupid(group_id, db)
-
-    released_level = group_model.releasedLevel
-    released_step = group_model.releasedStep
-
-    result = {
-        "released_level":released_level,
-        "released_step":released_step
-    }
-
-    return result
+    result3 = await db.execute(select(ReleasedGroup).filter(ReleasedGroup.owner_id == group_id))
+    target_season = result3.scalars().all()
+    return target_season
 
 # 선생님이 관리하는 반의 step 및 level 해금
 @router.put("/group/{group_id}/problems/unlock", status_code= status.HTTP_200_OK)
-async def unlock_step_level(group_id: int, type: str, season:int, level:int, step:int, user:user_dependency, db:db_dependency):
+async def unlock_step_level(group_id: int, type:str, season:int, level:int, step:int, user:user_dependency, db:db_dependency):
     super_authenticate_exception(user)
     await super_group_exception(user.get("id"), group_id, db)
-    
+
     result3 = await db.execute(select(ReleasedGroup).filter(ReleasedGroup.owner_id == group_id, ReleasedGroup.released_season == season))
-    target_season = result3.scalars().first()
-    if target_season is None:
+    target_season = result3.scalars().all()
+    # 그룹의 시즌별 해금 정보. 시즌이 없으면 생성
+
+    if not target_season:
         target_season = await create_group_released(group_id, season, db)
 
-    result = await db.execute(select(Problems).filter(Problems.season == season, Problems.level == level, Problems.step == step, Problems.type == type))
-    target_problems = result.scalars().all()
-    problem_found_exception(target_problems)
+    # return target_season
+    # 입력한 정보에 맞는 문제 검색
+    # result = await db.execute(select(Problems).filter(Problems.season == season, Problems.level == level, Problems.step == step))
+    # target_problems = result.scalars().all()
+    # problem_found_exception(target_problems)
 
-    # check whether level and step are valid.
-    current_level = target_season.released_level
-    current_type = target_season.released_type
-    current_step = target_season.released_step
-    # 현재 2-3 인데 1-4 를 해금하려고 하면 안됨.
-    if (level < current_level):
-        raise released_step_exception()
-    # 현재 2-3 인데 2-3을 해금하려면 안됨. 2-4 부터.
-    elif (level == current_level) and (step <= current_step) and (type == current_type):
-        raise released_step_exception()
-    if (type == 'normal' and current_type == 'ai'):
-        raise released_step_exception()
+    # 맨 처음에 만들었을 때가 target_season 이 반복가능하지 않아서 에러 뜸
+    for target in target_season:
+        # temp.append(target)
+        if target.released_type == type:
+            current_type = type
+            current_level = target.released_level
+            current_step = target.released_step
+            # 현재 2-3 인데 1-N 를 해금하려고 하면 안됨.
+            if (level < current_level):
+                raise released_step_exception()
+            # 현재 2-3 인데 2-3을 해금하려면 안됨. 2-4 부터.
+            elif (level == current_level) and (step <= current_step):
+                raise released_step_exception()   
 
-    await update_group_level_and_step(group_id, level, type, step, db)
+    await update_group_level_and_step(group_id, season, level, current_type, step, db)
 
-    return {'detail' : 'Success'}
-
+    return {'detail' : 'success'}
 
 # 선생님의 정보 반환, self
 @router.get("/info", status_code = status.HTTP_200_OK)
@@ -214,8 +211,8 @@ async def read_user_monitoring_summary(userStep: UserStep, user: user_dependency
         wrong_data = {k: v for k, v in vars(wrongTypes).items() if k.startswith("wrong")}
         
         top3_wrong = dict(sorted(wrong_data.items(), key=lambda item: item[1], reverse=True)[:3])
-        
-        divided_data = {k: f"{v / total_wrongType:.2f}" for k, v in top3_wrong.items()}
+        if total_wrongType != 0:
+            divided_data = {k: f"{v / total_wrongType:.2f}" for k, v in top3_wrong.items()}
         divided_data["season"] = wrongTypes.season
         divided_data["level"] = wrongTypes.level
         divided_data_list.append(divided_data)
@@ -313,7 +310,7 @@ async def read_user_studyinfo(userStep: UserStep, user: user_dependency, db: db_
                                        "released_step":rm.released_step
                                        })
 
-    return {'seasons':information}
+    return information
 
 # 특정 유저의 시즌-레벨 별 약한 부분 TOP 3 조회 
 @router.post("/user_monitoring_incorrect", status_code = status.HTTP_200_OK)
@@ -350,8 +347,8 @@ async def read_user_weak_parts_top3(userStep: UserStep, user: user_dependency, d
         wrong_data = {k: v for k, v in vars(wrongTypes).items() if k.startswith("wrong")}
         
         top3_wrong = dict(sorted(wrong_data.items(), key=lambda item: item[1], reverse=True)[:3])
-        
-        divided_data = {k: f"{v / total_wrongType:.2f}" for k, v in top3_wrong.items()}
+        if total_wrongType != 0:
+            divided_data = {k: f"{v / total_wrongType:.2f}" for k, v in top3_wrong.items()}
         divided_data["season"] = wrongTypes.season
         divided_data["level"] = wrongTypes.level
         divided_data_list.append(divided_data)
@@ -359,9 +356,15 @@ async def read_user_weak_parts_top3(userStep: UserStep, user: user_dependency, d
     recent_problem_model = await get_latest_log(userStep.user_id)
     if recent_problem_model is None:
         return {'weak_parts':divided_data_list, 'weakest': await user_weakest_info(userStep.user_id, db),'recent_detail':'최근 푼 문제 없음' }
+    elif recent_problem_model.problem == "" or recent_problem_model.answer == "":
+        return {'weak_parts':divided_data_list, 'weakest': await user_weakest_info(userStep.user_id, db),'recent_problem':recent_problem_model.problem, 'recent_answer':recent_problem_model.answer }
+
     from app.src.problem.service import calculate_wrongs
-    problem_parse = split_sentence(recent_problem_model.problem)
-    response_parse = split_sentence(recent_problem_model.answer)
+    from app.src.problem.utils import parse_sentence
+    problem_parse = parse_sentence(recent_problem_model.problem) # problem 은 문제 없음
+    response_parse = parse_sentence(recent_problem_model.answer)
+    # problem_parse = split_sentence(recent_problem_model.problem)
+    # response_parse = split_sentence(recent_problem_model.answer)
     # return {'problem_parse':problem_parse,'response_parse':response_parse}
     letter_wrong, punc_wrong, block_wrong, word_wrong, order_wrong = await calculate_wrongs(problem_parse, response_parse, db)
     values = {
@@ -372,6 +375,8 @@ async def read_user_weak_parts_top3(userStep: UserStep, user: user_dependency, d
         'order_wrong': order_wrong
     }
     max_variable = max(values, key=values.get)
+    if max_variable == 0:
+        return {'weak_parts':divided_data_list, 'weakest': await user_weakest_info(userStep.user_id, db),'recent_problem':recent_problem_model.problem, 'recent_answer':recent_problem_model.answer, 'recent_detail':'정보 없음' }
 
     return {'weak_parts':divided_data_list, 'weakest': await user_weakest_info(userStep.user_id, db),'recent_problem':recent_problem_model.problem, 'recent_answer':recent_problem_model.answer, 'recent_detail':max_variable }
 
@@ -470,8 +475,8 @@ async def read_group_monitoring(group: GroupId, user: user_dependency, db: db_de
         wrong_data = {k: v for k, v in wrongTypes.items() if k.startswith("wrong")}
         
         top3_wrong = dict(sorted(wrong_data.items(), key=lambda item: item[1], reverse=True)[:3])
-        
-        divided_data = {k: f"{v / total_wrongType:.2f}" for k, v in top3_wrong.items()}
+        if total_wrongType != 0:
+            divided_data = {k: f"{v / total_wrongType:.2f}" for k, v in top3_wrong.items()}
         divided_data["season"] = wrongTypes["season"]
         divided_data["level"] = wrongTypes["level"]
         divided_data_list.append(divided_data)

@@ -120,15 +120,6 @@ async def get_std_team_id(user_id, db: db_dependency):
     user_group = result.scalars().first()
     return user_group.team_id
 
-async def update_group_level_and_step(group_id, level, type, step, db:db_dependency):
-    result = await db.execute(select(ReleasedGroup).filter(ReleasedGroup.owner_id == group_id))
-    rg_model = result.scalars().first()
-    rg_model.released_level = level
-    rg_model.released_step = step
-    rg_model.released_type = type
-    db.add(rg_model)
-    await db.commit()
-
 async def update_group_name(group_id, name, detail, db: db_dependency):
     result = await db.execute(select(Groups).filter(Groups.id == group_id))
     group_model = result.scalars().first()
@@ -142,9 +133,27 @@ async def create_group_released(group_id:int, season:int, db:db_dependency):
     new_released_group = ReleasedGroup(
         owner_id = group_id,
         released_season=season,
+        released_type="normal",
         released_level=0,
         released_step=0
     )
     db.add(new_released_group)
+    new_released_group2 = ReleasedGroup(
+        owner_id = group_id,
+        released_season=season,
+        released_type="ai",
+        released_level=0,
+        released_step=0
+    )
+    db.add(new_released_group2)
     await db.commit()
-    return new_released_group
+    return [new_released_group, new_released_group2]
+
+# 업데이트를 하는데, 대상은 그룹 소유의 시즌이 같고, 타입이 같은 건 1개. 
+async def update_group_level_and_step(group_id, season, level, type, step, db):
+    result = await db.execute(select(ReleasedGroup).filter(ReleasedGroup.owner_id == group_id, ReleasedGroup.released_type == type, ReleasedGroup.released_season == season))
+    rg_model = result.scalars().first()
+    rg_model.released_level = level
+    rg_model.released_step = step
+    db.add(rg_model)
+    await db.commit()

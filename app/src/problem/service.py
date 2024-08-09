@@ -2,12 +2,10 @@ import sys, os
 from sqlalchemy.dialects.mysql import insert
 from sqlalchemy import select, update
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))))
-from app.src.models import Problems, correct_problem_table, incorrect_problem_table, Words, WrongType
+from app.src.models import Problems, correct_problem_table, incorrect_problem_table, Words, WrongType, Blocks
 from problem.schemas import Problem, TempUserProblem
 from problem.dependencies import db_dependency
 from problem.utils import *
-
-
 
 # async def create_Types_in_db(id, db: db_dependency, tempUserProblem: TempUserProblem) -> Types:
 #     print(type(tempUserProblem.totalFullStop))
@@ -127,8 +125,8 @@ async def calculate_wrongs(problem_parse:list, response_parse:list, db=db_depend
     for item in popList:
         response_parse.remove(item)
         
-    if response_parse is None:
-        return {'detail':'공백 블럭'}
+    if not response_parse:
+        return 0,0,0,0,0
     response = combine_sentence(response_parse)
     # v1: 대소문자 filter 거친 문장 --> 대소문자 맞는 걸로 바뀜
     # v2: 구두점 filter 거친 문장   --> 구두점 사라짐
@@ -197,3 +195,30 @@ async def calculate_wrong_info(problem_id, problem_parse:list, response_parse:li
 
     return
     # return {"problem_v1":problem, "response_v1":response_v1, "problem_v2":problem_v2, "r_v2":response_v2, "r_v3":response_v3_split, "letter":letter_wrong, "punc":punc_wrong, "block":block_wrong, "word":word_wrong, "order":order_wrong}
+
+
+async def read_problem_block_colors(stepinfo_model,db):
+    problem = []
+    # 1. 모든 단어를 한 번에 추출
+    all_words = set()
+    for p in stepinfo_model:
+        p_str = p.englishProblem
+        p_list = parse_sentence(p_str)
+        all_words.update(p_list)
+
+    # 2. 한 번의 쿼리로 모든 word와 block 정보 가져오기
+    result = await db.execute(
+        select(Words, Blocks).join(Blocks, Words.block_id == Blocks.id).filter(Words.words.in_(all_words))
+    )
+
+    # 3. 필요한 데이터를 딕셔너리로 매핑
+    word_to_color = {word_model.words: block_model.color for word_model, block_model in result.fetchall()}
+
+    # 4. 필요한 색상을 가져오기
+    for p in stepinfo_model:
+        p_str = p.englishProblem
+        p_list = parse_sentence(p_str)
+        p_colors = [word_to_color[word] for word in p_list]
+
+        problem.append({'id': p.id, 'englishProblem': p.englishProblem, 'koreaProblem': p.koreaProblem, 'blockColors':p_colors})
+    return problem

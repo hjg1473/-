@@ -7,30 +7,12 @@ services:
     ports:
       - "8000:8000"
     environment:
-      DATABASE_URL: mysql+pymysql://root:mysql1234@127.0.0.1:3306/test2
-    depends_on:
-      - cloudsql-proxy
+      DATABASE_URL: mysql+pymysql://admin:skkudevelop@database-3.crsukigqomda.ap-northeast-2.rds.amazonaws.com:3306/testdatabase
     volumes:
       - /home/ubuntu/app/src/logs:/app/src/logs
       - /home/ubuntu/app/src/EasyOCR/model/craft_mlt_25k.pth:/root/.EasyOCR/model/craft_mlt_25k.pth
       - /home/ubuntu/app/src/EasyOCR/model/english_g2.pth:/root/.EasyOCR/model/english_g2.pth
 
-  cloudsql-proxy:
-    image: gcr.io/cloudsql-docker/gce-proxy:latest
-    container_name: cloudsql-proxy
-    restart: always
-    network_mode: "host"
-    command: /cloud_sql_proxy -instances=servertest-425513:us-central1:mysql-test=tcp:3306 -credential_file=/secrets/cloudsql/credentials.json
-    volumes:
-      - /home/ubuntu/app/servertest-425513-ab5dd4787884.json:/secrets/cloudsql/credentials.json
-    ports:
-      - "3306:3306"
-    healthcheck:
-      test: ["CMD", "nc", "-z", "127.0.0.1", "3306"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-    
   nginx:
     restart: unless-stopped
     image: nginx
