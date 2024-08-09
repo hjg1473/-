@@ -390,6 +390,7 @@ class LearningAnalysis extends ConsumerStatefulWidget {
 class _LearningAnalysisState extends ConsumerState<LearningAnalysis> {
   bool isLoading = true;
   List<StudyInfoModel> studyInfo = [];
+  List<double> forCorrectRate = [];
 
   @override
   void didChangeDependencies() {
@@ -409,11 +410,12 @@ class _LearningAnalysisState extends ConsumerState<LearningAnalysis> {
         ),
       );
     }, (data) {
+      //TODO: 어떤 데이터를 제공할 건지? (완료한 시즌/진행 중인 시즌...)
       studyInfo = data;
-      if (studyInfo.isEmpty) {
-        debugPrint('No data');
-      } else {
-        debugPrint(studyInfo[0].incorrectRateAI.toString());
+      StudyInfoModel last = studyInfo.last;
+      for (int i = 0; i < last.releasedLevel!; i++) {
+        forCorrectRate
+            .add(last.incorrectRateNormal![i] + last.incorrectRateAI![i]);
       }
     });
     if (mounted) {
@@ -539,23 +541,22 @@ class _LearningAnalysisState extends ConsumerState<LearningAnalysis> {
                               right: 15.r,
                             ),
                             child: LineChartWidget(
-                                rate: studyInfo[0].incorrectRateNormal!),
+                              rate: forCorrectRate,
+                            ),
                           ),
                         ),
                       ],
                     ),
                   ),
                 ),
+                //TODO: display svg image
                 Positioned(
                   right: 0,
                   bottom: 0,
-                  child: Container(
+                  child: SvgPicture.asset(
+                    'assets/images/monitor_character2.svg',
                     width: 131.r,
                     height: 147.r,
-                    decoration: BoxDecoration(
-                      color: Colors.black,
-                      borderRadius: BorderRadius.circular(8).r,
-                    ),
                   ),
                 ),
               ],
