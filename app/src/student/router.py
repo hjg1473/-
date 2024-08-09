@@ -140,7 +140,7 @@ async def read_user_info(user: user_dependency, db: db_dependency):
     return {'name': user_model.name, 'team_id': user_model.team_id, 'group_name': group_model.name}
 
 # 학생의 self 학습 정보 반환.
-@router.get("/studyinfo/rate", status_code = status.HTTP_200_OK)
+@router.get("/monitoring_correct_rate", status_code = status.HTTP_200_OK)
 async def read_user_studyinfo(user: user_dependency, db: db_dependency):
 
     get_user_exception(user)
@@ -199,14 +199,14 @@ async def read_user_studyinfo(user: user_dependency, db: db_dependency):
         ai_rate = [0, 0, 0]
         for i in range(3):
             if normal_all[i] != 0:
-                normal_rate[i] = (normal_incorrects[i]/float(normal_all[i]) * 100)
+                normal_rate[i] = (normal_corrects[i]/float(normal_all[i]) * 100)
             if ai_all[i] != 0:
-                ai_rate[i] = (ai_incorrects[i]/float(ai_all[i]) * 100)
+                ai_rate[i] = (ai_corrects[i]/float(ai_all[i]) * 100)
 
 
         information["seasons"].append({"season":rm.released_season,
-                                       "incorrect_rate_normal":normal_rate,
-                                       "incorrect_rate_ai":ai_rate,
+                                       "correct_rate_normal":normal_rate,
+                                       "correct_rate_ai":ai_rate,
                                        "released_level":rm.released_level,
                                        "released_step":rm.released_step
                                        })
