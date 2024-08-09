@@ -1,4 +1,4 @@
-import 'package:block_english/models/StudentModel/student_weak_part_model.dart';
+import 'package:block_english/models/MonitoringModel/weak_part_model.dart';
 
 class IncorrectModel {
   List<WeakPartModel> weakParts = [];

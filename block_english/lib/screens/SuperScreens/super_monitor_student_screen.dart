@@ -1,5 +1,6 @@
-import 'package:block_english/models/StudentModel/student_study_info_model.dart';
-import 'package:block_english/models/StudentModel/student_weak_part_model.dart';
+import 'package:block_english/models/MonitoringModel/study_info_model.dart';
+import 'package:block_english/models/MonitoringModel/weak_part_model.dart';
+import 'package:block_english/widgets/ChartWidget/line_chart_widget.dart';
 import 'package:block_english/services/super_service.dart';
 import 'package:block_english/utils/constants.dart';
 import 'package:flutter/material.dart';
@@ -499,16 +500,17 @@ class _LearningAnalysisState extends ConsumerState<LearningAnalysis> {
                     width: 242.r,
                     height: 170.r,
                     padding: const EdgeInsets.fromLTRB(
+                      0,
                       13,
-                      13,
-                      13,
-                      12,
+                      0,
+                      0,
                     ),
                     decoration: BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(8).r,
                     ),
                     child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         Container(
                           padding: const EdgeInsets.symmetric(
@@ -526,6 +528,18 @@ class _LearningAnalysisState extends ConsumerState<LearningAnalysis> {
                               color: Colors.white,
                               fontWeight: FontWeight.bold,
                             ),
+                          ),
+                        ),
+                        const Spacer(),
+                        SizedBox(
+                          //width: 215.r,
+                          height: 130.r,
+                          child: Padding(
+                            padding: EdgeInsets.only(
+                              right: 15.r,
+                            ),
+                            child: LineChartWidget(
+                                rate: studyInfo[0].incorrectRateNormal!),
                           ),
                         ),
                       ],

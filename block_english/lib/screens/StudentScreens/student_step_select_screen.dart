@@ -49,7 +49,7 @@ class _StudentStepSelectScreenState
                     vertical: 10.r,
                   ),
                   child: Text(
-                    levellist[selectedLevel],
+                    levelList[selectedLevel],
                     style: TextStyle(
                       fontSize: 14.sp,
                       fontWeight: FontWeight.w700,

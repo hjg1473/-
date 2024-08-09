@@ -20,7 +20,7 @@ const List<String> questionList = [
   "내가 제일 존경하는 인물은?"
 ];
 
-const List<String> levellist = [
+const List<String> levelList = [
   "어순과 격",
   "부정문",
   "의문문",
