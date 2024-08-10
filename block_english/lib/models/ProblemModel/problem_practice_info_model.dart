@@ -1,22 +1,16 @@
-class ProblemInfoModel {
-  int currentLevel;
-  int currentStep;
+class ProblemPracticeInfoModel {
   List<Level> levels;
 
-  ProblemInfoModel({
-    required this.currentLevel,
-    required this.currentStep,
+  ProblemPracticeInfoModel({
     required this.levels,
   });
 
-  static ProblemInfoModel fromJson(Map<String, dynamic> json) {
+  static ProblemPracticeInfoModel fromJson(Map<String, dynamic> json) {
     var levelsFromJson = json['levels'] as List;
     List<Level> levelList =
         levelsFromJson.map((levelJson) => Level.fromJson(levelJson)).toList();
 
-    return ProblemInfoModel(
-      currentLevel: json['current_level'],
-      currentStep: json['current_step'],
+    return ProblemPracticeInfoModel(
       levels: levelList,
     );
   }
@@ -31,7 +25,6 @@ class Level {
     required this.steps,
   });
 
-  // JSON 데이터를 객체로 변환하는 static 메서드
   static Level fromJson(Map<String, dynamic> json) {
     return Level(
       levelName: json['level_name'],

@@ -1,5 +1,7 @@
 // ignore_for_file: constant_identifier_names
 
+import 'package:flutter/material.dart';
+
 enum UserType {
   student,
   teacher,
@@ -37,6 +39,24 @@ enum Season {
   SEASON1,
 }
 
+int seasonToInt(Season season) {
+  switch (season) {
+    case Season.NONE:
+      return 0;
+    case Season.SEASON1:
+      return 1;
+  }
+}
+
+Season intToSeason(int intSeason) {
+  switch (intSeason) {
+    case 1:
+      return Season.SEASON1;
+    default:
+      return Season.NONE;
+  }
+}
+
 String seasonToString(Season season) {
   switch (season) {
     case Season.NONE:
@@ -44,6 +64,50 @@ String seasonToString(Season season) {
     case Season.SEASON1:
       return 'Season 1';
   }
+}
+
+enum BlockColor { skyblue, pink, green, yellow, purple, none }
+
+BlockColor stringToBlockColor(String str) {
+  switch (str) {
+    case 'skyblue':
+      return BlockColor.skyblue;
+    case 'pink':
+      return BlockColor.pink;
+    case 'green':
+      return BlockColor.green;
+    case 'yellow':
+      return BlockColor.yellow;
+    case 'purple':
+      return BlockColor.purple;
+    default:
+      return BlockColor.none;
+  }
+}
+
+Color blockColorCToColor(BlockColor blockColor) {
+  switch (blockColor) {
+    case BlockColor.skyblue:
+      return const Color(0xFF6CE7EA);
+    case BlockColor.pink:
+      return const Color(0xFFFF6699);
+    case BlockColor.green:
+      return const Color(0xFF93E54C);
+    case BlockColor.yellow:
+      return const Color(0xFFFFED48);
+    case BlockColor.purple:
+      return const Color(0xFFB13EFE);
+    case BlockColor.none:
+      return Colors.white;
+  }
+}
+
+enum StudyMode {
+  practice,
+  expert,
+  game,
+  retry,
+  none,
 }
 
 const String BASEURL = 'http://3.34.58.76';

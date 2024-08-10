@@ -13,18 +13,19 @@ import 'package:block_english/screens/StudentScreens/student_step_select_screen.
 import 'package:block_english/screens/SuperScreens/super_group_create_screen.dart';
 import 'package:block_english/screens/SuperScreens/super_game_code_screen.dart';
 import 'package:block_english/screens/SuperScreens/super_game_screen.dart';
-import 'package:block_english/screens/SuperScreens/super_group_setting_screen.dart';
 import 'package:block_english/screens/SuperScreens/super_main_screen.dart';
 import 'package:block_english/screens/SuperScreens/super_monitor_screen.dart';
 import 'package:block_english/screens/UserScreens/user_manage_account_screen.dart';
 import 'package:block_english/screens/loading_screen.dart';
 import 'package:block_english/screens/setting_screen.dart';
+import 'package:block_english/utils/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
-void main() {
+void main() async {
+  Camera.initCamera();
   runApp(const ProviderScope(child: MyApp()));
 }
 

@@ -28,7 +28,6 @@ environment:
 # the latest version available on pub.dev. To see which dependencies have newer
 # versions available, run `flutter pub outdated`.
 dependencies:
-  speech_balloon: ^0.0.4
   animated_custom_dropdown: ^3.1.1
   flutter_secure_storage: ^9.2.2
   dio: ^5.5.0+1
@@ -37,6 +36,8 @@ dependencies:
   dartz: ^0.10.1
   flutter_svg: ^2.0.10+1
   debounce_throttle: ^2.0.0
+  camera: ^0.11.0+2
+  image: ^4.2.0
 
   flutter:
     sdk: flutter
@@ -86,11 +87,12 @@ flutter:
     - assets/cards/sign_in_user.svg
     - assets/cards/sign_in_teacher.svg
     - assets/cards/sign_in_parent.svg
-    
+
     - assets/cards/student_main_1.svg
     - assets/cards/student_main_2.svg
     - assets/cards/student_main_3.svg
-    - assets/cards/180_206_card.svg
+    - assets/cards/student_mode_single.svg
+    - assets/cards/student_mode_group.svg
 
     - assets/cards/super_main_1.svg
     - assets/cards/super_main_2.svg

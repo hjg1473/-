@@ -9,7 +9,7 @@ export './AuthModel/reg_response_model.dart';
 export './FailureModel/failure_model.dart';
 
 // ProblemModel
-export './ProblemModel/problem_info_model.dart';
+export 'ProblemModel/problem_practice_info_model.dart';
 
 // StudentModel
 export './StudentModel/student_info_model.dart';
