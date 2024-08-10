@@ -116,25 +116,29 @@ class _SuperMonitorScreenState extends ConsumerState<SuperMonitorScreen> {
   }
 
   void addButtonPressed() {
-    WoltModalSheet.show<void>(
-        context: context,
-        pageListBuilder: (modalSheetContext) {
-          return [
-            addPage(modalSheetContext, Theme.of(modalSheetContext).textTheme),
-          ];
-        },
-        modalTypeBuilder: (context) {
-          final size = MediaQuery.sizeOf(context).width;
-          if (size < 768) {
-            return const WoltBottomSheetType();
-          } else {
-            return const WoltDialogType();
-          }
-        },
-        onModalDismissedWithBarrierTap: () {
-          debugPrint('Closed modal sheet with barrier tap');
-          Navigator.of(context).pop();
-        });
+    if (role == 'parent') {
+      Navigator.of(context).pushNamed('/parent_add_child_screen');
+    } else {
+      WoltModalSheet.show<void>(
+          context: context,
+          pageListBuilder: (modalSheetContext) {
+            return [
+              addPage(modalSheetContext, Theme.of(modalSheetContext).textTheme),
+            ];
+          },
+          modalTypeBuilder: (context) {
+            final size = MediaQuery.sizeOf(context).width;
+            if (size < 768) {
+              return const WoltBottomSheetType();
+            } else {
+              return const WoltDialogType();
+            }
+          },
+          onModalDismissedWithBarrierTap: () {
+            debugPrint('Closed modal sheet with barrier tap');
+            Navigator.of(context).pop();
+          });
+    }
   }
 
   void waitForGroups() async {
@@ -154,6 +158,8 @@ class _SuperMonitorScreenState extends ConsumerState<SuperMonitorScreen> {
       });
     }
   }
+
+  void waitForChilds() async {}
 
   void search() {
     if (searchValue.isEmpty) {

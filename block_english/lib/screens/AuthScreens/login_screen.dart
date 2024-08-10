@@ -100,7 +100,8 @@ class _LoginState extends ConsumerState<LoginScreen> {
             '/stud_mode_select_screen',
             (Route<dynamic> route) => false,
           );
-        } else if (role == UserType.teacher.name) {
+        } else if (role == UserType.teacher.name ||
+            role == UserType.parent.name) {
           Navigator.of(context).pushNamedAndRemoveUntil(
             '/super_main_screen',
             (Route<dynamic> route) => false,

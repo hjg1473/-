@@ -10,6 +10,7 @@ part 'super_service.g.dart';
 
 class SuperService {
   static const String _super = "super";
+  static const String parent = "parent";
   static const String _group = "group";
   static const String _info = "info";
   static const String _getpin = "get_pin";
@@ -105,6 +106,28 @@ class SuperService {
       return Left(FailureModel(
         statusCode: e.response?.statusCode ?? 0,
         detail: e.response?.data['detail'] ?? "",
+      ));
+    }
+  }
+
+  Future<Either<FailureModel, PinModel>> getParentPinNumber() async {
+    try {
+      final dio = _ref.watch(dioProvider);
+      final response = await dio.get(
+        '/$_super/$parent/$_getpin',
+        options: Options(
+          headers: {
+            'accept': 'application/json',
+            TOKENVALIDATE: 'true',
+          },
+        ),
+      );
+
+      return Right(PinModel.fromJson(response.data));
+    } on DioException catch (e) {
+      return Left(FailureModel(
+        statusCode: e.response?.statusCode ?? 0,
+        detail: e.response?.data['detail'],
       ));
     }
   }

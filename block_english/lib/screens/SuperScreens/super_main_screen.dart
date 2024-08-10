@@ -9,7 +9,6 @@ class SuperMainScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    debugPrint(ref.watch(statusProvider).role);
     return Scaffold(
       body: Stack(
         children: [
