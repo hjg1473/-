@@ -2,6 +2,7 @@ import 'dart:ui';
 
 import 'package:block_english/models/SuperModel/group_info_model.dart';
 import 'package:block_english/services/super_service.dart';
+import 'package:block_english/utils/status.dart';
 import 'package:block_english/widgets/group_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
@@ -18,6 +19,7 @@ class SuperMonitorScreen extends ConsumerStatefulWidget {
 }
 
 class _SuperMonitorScreenState extends ConsumerState<SuperMonitorScreen> {
+  String role = '';
   String searchValue = '';
   String error = '';
   List<GroupInfoModel> groups = [];
@@ -199,6 +201,7 @@ class _SuperMonitorScreenState extends ConsumerState<SuperMonitorScreen> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
+    role = ref.watch(statusProvider).role!;
     waitForGroups();
   }
 
