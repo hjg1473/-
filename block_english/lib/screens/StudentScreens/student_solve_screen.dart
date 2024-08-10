@@ -1,4 +1,5 @@
 import 'package:block_english/models/ProblemModel/problems_model.dart';
+import 'package:block_english/screens/StudentScreens/student_camera_screen.dart';
 import 'package:block_english/utils/constants.dart';
 import 'package:block_english/widgets/square_button.dart';
 import 'package:flutter/material.dart';
@@ -198,7 +199,7 @@ class _StudentSolveScreenState extends State<StudentSolveScreen> {
                         onPressed: () {
                           Navigator.of(context).pushNamedAndRemoveUntil(
                               '/stud_step_select_screen',
-                              ModalRoute.withName('/stud_main_screen'));
+                              ModalRoute.withName('/stud_step_select_screen'));
                         },
                       ),
                     ),
@@ -211,11 +212,18 @@ class _StudentSolveScreenState extends State<StudentSolveScreen> {
                       onPressed: () {
                         if (currentProblem != null) {
                           // TODO: navigate to camera screen
+                          // Navigator.of(context).push(MaterialPageRoute(
+                          //     builder: (context) => StudentSolveScreen(
+                          //           problemsModel: widget.problemsModel,
+                          //           level: widget.level,
+                          //           step: widget.step,
+                          //         )));
                           Navigator.of(context).push(MaterialPageRoute(
-                              builder: (context) => StudentSolveScreen(
-                                    problemsModel: widget.problemsModel,
+                              builder: (context) => StudentCameraScreen(
                                     level: widget.level,
                                     step: widget.step,
+                                    problemsModel: widget.problemsModel,
+                                    currentProblem: currentProblem!,
                                   )));
                         } else {
                           // TODO: load next step

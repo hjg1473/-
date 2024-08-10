@@ -1,3 +1,7 @@
+import 'dart:io';
+import 'dart:typed_data';
+
+import 'package:block_english/models/ProblemModel/problem_ocr_model.dart';
 import 'package:block_english/models/ProblemModel/problems_model.dart';
 import 'package:block_english/models/model.dart';
 import 'package:block_english/utils/constants.dart';
@@ -18,6 +22,7 @@ class ProblemService {
   static const String _practice = 'practice';
   static const String _info = 'info';
   static const String _set = 'set';
+  static const String _ocr = 'solve_OCR';
 
   static late final ProblemServiceRef _ref;
 
@@ -68,6 +73,32 @@ class ProblemService {
       );
 
       return Right(ProblemsModel.fromJson(response.data, StudyMode.practice));
+    } on DioException catch (e) {
+      return Left(FailureModel(
+        statusCode: e.response?.statusCode ?? 0,
+        detail: e.response?.data['detail'] ?? "",
+      ));
+    }
+  }
+
+  Future<Either<FailureModel, ProblemOcrModel>> postProblemOCR(
+      Uint8List png) async {
+    final dio = _ref.watch(dioProvider);
+
+    try {
+      final response = await dio.post(
+        '/$_problem/$_ocr',
+        options: Options(
+          contentType: Headers.multipartFormDataContentType,
+          headers: {
+            'accept': 'application/json',
+            TOKENVALIDATE: 'true',
+          },
+        ),
+        data: FormData.fromMap({'file': MultipartFile.fromBytes(png)}),
+      );
+
+      return Right(ProblemOcrModel.fromJson(response.data));
     } on DioException catch (e) {
       return Left(FailureModel(
         statusCode: e.response?.statusCode ?? 0,

@@ -1,5 +1,7 @@
 // ignore_for_file: constant_identifier_names
 
+import 'package:flutter/material.dart';
+
 enum UserType {
   student,
   teacher,
@@ -80,6 +82,23 @@ BlockColor stringToBlockColor(String str) {
       return BlockColor.purple;
     default:
       return BlockColor.none;
+  }
+}
+
+Color blockColorCToColor(BlockColor blockColor) {
+  switch (blockColor) {
+    case BlockColor.skyblue:
+      return const Color(0xFF6CE7EA);
+    case BlockColor.pink:
+      return const Color(0xFFFF6699);
+    case BlockColor.green:
+      return const Color(0xFF93E54C);
+    case BlockColor.yellow:
+      return const Color(0xFFFFED48);
+    case BlockColor.purple:
+      return const Color(0xFFB13EFE);
+    case BlockColor.none:
+      return Colors.white;
   }
 }
 

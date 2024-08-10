@@ -36,6 +36,8 @@ dependencies:
   dartz: ^0.10.1
   flutter_svg: ^2.0.10+1
   debounce_throttle: ^2.0.0
+  camera: ^0.11.0+2
+  image: ^4.2.0
 
   flutter:
     sdk: flutter
