@@ -1,10 +1,9 @@
-import 'dart:ui';
-
-import 'package:block_english/models/SuperModel/group_info_model.dart';
+import 'package:block_english/models/model.dart';
 import 'package:block_english/services/super_service.dart';
+import 'package:block_english/utils/status.dart';
 import 'package:block_english/widgets/group_button.dart';
+import 'package:block_english/widgets/student_button.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -18,8 +17,11 @@ class SuperMonitorScreen extends ConsumerStatefulWidget {
 }
 
 class _SuperMonitorScreenState extends ConsumerState<SuperMonitorScreen> {
+  String role = '';
   String searchValue = '';
   String error = '';
+  List<StudentsInfoModel> children = [];
+  List<StudentsInfoModel> filteredChildren = [];
   List<GroupInfoModel> groups = [];
   List<GroupInfoModel> filteredGroups = [];
   bool isLoading = true;
@@ -114,25 +116,29 @@ class _SuperMonitorScreenState extends ConsumerState<SuperMonitorScreen> {
   }
 
   void addButtonPressed() {
-    WoltModalSheet.show<void>(
-        context: context,
-        pageListBuilder: (modalSheetContext) {
-          return [
-            addPage(modalSheetContext, Theme.of(modalSheetContext).textTheme),
-          ];
-        },
-        modalTypeBuilder: (context) {
-          final size = MediaQuery.sizeOf(context).width;
-          if (size < 768) {
-            return const WoltBottomSheetType();
-          } else {
-            return const WoltDialogType();
-          }
-        },
-        onModalDismissedWithBarrierTap: () {
-          debugPrint('Closed modal sheet with barrier tap');
-          Navigator.of(context).pop();
-        });
+    if (role == 'parent') {
+      Navigator.of(context).pushNamed('/parent_add_child_screen');
+    } else {
+      WoltModalSheet.show<void>(
+          context: context,
+          pageListBuilder: (modalSheetContext) {
+            return [
+              addPage(modalSheetContext, Theme.of(modalSheetContext).textTheme),
+            ];
+          },
+          modalTypeBuilder: (context) {
+            final size = MediaQuery.sizeOf(context).width;
+            if (size < 768) {
+              return const WoltBottomSheetType();
+            } else {
+              return const WoltDialogType();
+            }
+          },
+          onModalDismissedWithBarrierTap: () {
+            debugPrint('Closed modal sheet with barrier tap');
+            Navigator.of(context).pop();
+          });
+    }
   }
 
   void waitForGroups() async {
@@ -153,13 +159,41 @@ class _SuperMonitorScreenState extends ConsumerState<SuperMonitorScreen> {
     }
   }
 
+  void waitForChilds() async {
+    var response = await ref.watch(superServiceProvider).getChildList();
+    response.fold(
+      (failure) {
+        error = failure.detail;
+      },
+      (childList) {
+        children = childList;
+        filteredChildren = children;
+      },
+    );
+    if (mounted) {
+      setState(() {
+        isLoading = false;
+      });
+    }
+  }
+
   void search() {
     if (searchValue.isEmpty) {
-      filteredGroups = groups;
+      if (role == 'parent') {
+        filteredChildren = children;
+      } else {
+        filteredGroups = groups;
+      }
     } else {
-      filteredGroups = groups
-          .where((element) => containsKor(element.name, searchValue))
-          .toList();
+      if (role == 'parent') {
+        filteredChildren = children
+            .where((element) => containsKor(element.name, searchValue))
+            .toList();
+      } else {
+        filteredGroups = groups
+            .where((element) => containsKor(element.name, searchValue))
+            .toList();
+      }
     }
     setState(() {});
   }
@@ -199,7 +233,8 @@ class _SuperMonitorScreenState extends ConsumerState<SuperMonitorScreen> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    waitForGroups();
+    role = ref.watch(statusProvider).role!;
+    role == 'parent' ? waitForChilds() : waitForGroups();
   }
 
   @override
@@ -345,7 +380,8 @@ class _SuperMonitorScreenState extends ConsumerState<SuperMonitorScreen> {
                 ? const Center(child: CircularProgressIndicator())
                 : Expanded(
                     child: error.isEmpty
-                        ? filteredGroups.isEmpty
+                        ? role == 'parent' && filteredChildren.isEmpty ||
+                                role == 'teacher' && filteredGroups.isEmpty
                             ? Align(
                                 alignment: Alignment.topCenter,
                                 child: Padding(
@@ -354,14 +390,18 @@ class _SuperMonitorScreenState extends ConsumerState<SuperMonitorScreen> {
                                           .r,
                                   child: searchValue.isEmpty
                                       ? Text(
-                                          '관리 중인 그룹이 없습니다.',
+                                          role == 'parent'
+                                              ? '관리 중인 학생이 없습니다.'
+                                              : '관리 중인 그룹이 없습니다.',
                                           style: TextStyle(
                                             fontSize: 22.sp,
                                             fontWeight: FontWeight.w700,
                                           ),
                                         )
                                       : Text(
-                                          '조건에 맞는 그룹이 없습니다.',
+                                          role == 'parent'
+                                              ? '조건에 맞는 학생이 없습니다.'
+                                              : '조건에 맞는 그룹이 없습니다.',
                                           style: TextStyle(
                                             fontSize: 22.sp,
                                             fontWeight: FontWeight.w700,
@@ -379,15 +419,25 @@ class _SuperMonitorScreenState extends ConsumerState<SuperMonitorScreen> {
                                   childAspectRatio: 4.7,
                                 ),
                                 scrollDirection: Axis.vertical,
-                                itemCount: filteredGroups.length,
+                                itemCount: role == 'parent'
+                                    ? filteredChildren.length
+                                    : filteredGroups.length,
                                 itemBuilder: (BuildContext context, int index) {
-                                  var group = filteredGroups[index];
-                                  return GroupButton(
-                                    name: group.name,
-                                    id: group.id,
-                                    detail: group.detail,
-                                    studentNum: group.count,
-                                  );
+                                  if (role == 'parent') {
+                                    var child = filteredChildren[index];
+                                    return StudentButton(
+                                      name: child.name,
+                                      studentId: child.id,
+                                    );
+                                  } else {
+                                    var group = filteredGroups[index];
+                                    return GroupButton(
+                                      name: group.name,
+                                      id: group.id,
+                                      detail: group.detail,
+                                      studentNum: group.count,
+                                    );
+                                  }
                                 },
                               )
                         : // TODO: handle error

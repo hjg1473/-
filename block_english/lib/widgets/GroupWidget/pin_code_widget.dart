@@ -115,7 +115,7 @@ class _PinCodeWidgetState extends ConsumerState<PinCodeWidget>
                 ),
                 SizedBox(
                   width: double.infinity,
-                  height: 50,
+                  height: 38,
                   child: ElevatedButton(
                     onPressed: widget.onButtonClicked,
                     style: ElevatedButton.styleFrom(
@@ -124,9 +124,13 @@ class _PinCodeWidgetState extends ConsumerState<PinCodeWidget>
                         borderRadius: BorderRadius.circular(12.0),
                       ),
                     ),
-                    child: const Text(
+                    child: Text(
                       '닫기',
-                      style: TextStyle(color: Colors.white, fontSize: 20.0),
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 18.sp,
+                        fontWeight: FontWeight.w800,
+                      ),
                     ),
                   ),
                 ),

@@ -104,7 +104,7 @@ class _GroupSettingScreenState extends ConsumerState<GroupSettingScreen>
       });
 
       setState(() {
-        _pinCode = pinModel.groupPinNumber;
+        _pinCode = pinModel.groupPinNumber!;
         pinCodeExist = true;
         pinCodeExpired = false;
       });

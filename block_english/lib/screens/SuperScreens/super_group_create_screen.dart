@@ -65,11 +65,11 @@ class _SuperGroupCreateScreenState
       body: Stack(
         children: [
           Padding(
-            padding: EdgeInsets.only(
-              top: 32.r,
-              left: 64.r,
-              right: 64.r,
-            ),
+            padding: const EdgeInsets.only(
+              top: 32,
+              left: 64,
+              right: 64,
+            ).r,
             child: Stack(
               children: [
                 Align(

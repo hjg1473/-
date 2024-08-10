@@ -17,5 +17,5 @@ export './StudentModel/student_info_model.dart';
 // SuperModel
 export './SuperModel/create_group_response_model.dart';
 export './SuperModel/group_info_model.dart';
-export './SuperModel/student_in_group_model.dart';
+export './SuperModel/students_info_model.dart';
 export './SuperModel/super_info_model.dart';

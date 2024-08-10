@@ -13,6 +13,7 @@ class Status {
   Map<Season, ReleaseStatus> releaseStatus = {};
   int? teamId;
   String? groupName;
+  String? role;
 
   setStudentMode(StudentMode mode) {
     studentMode = mode;
@@ -28,6 +29,10 @@ class Status {
 
   setUsername(String username) {
     this.username = username;
+  }
+
+  setRole(String role) {
+    this.role = role;
   }
 
   setGroup(int? teamId, String? groupName) {
