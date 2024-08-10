@@ -10,7 +10,7 @@ part 'super_service.g.dart';
 
 class SuperService {
   static const String _super = "super";
-  static const String parent = "parent";
+  static const String _parent = "parent";
   static const String _group = "group";
   static const String _info = "info";
   static const String _getpin = "get_pin";
@@ -35,6 +35,26 @@ class SuperService {
         ),
       );
       return Right(SuperInfoModel.fromJson(response.data));
+    } on DioException catch (e) {
+      return Left(FailureModel(
+        statusCode: e.response?.statusCode ?? 0,
+        detail: e.response?.data['detail'] ?? "",
+      ));
+    }
+  }
+
+  Future<Either<FailureModel, List<StudentsInfoModel>>> getChildList() async {
+    final dio = _ref.watch(dioProvider);
+    try {
+      final response = await dio.get(
+        '/$_super/$_parent/get_child',
+        options: Options(
+          headers: {TOKENVALIDATE: 'true'},
+        ),
+      );
+      return Right((response.data['children'] as List)
+          .map((e) => StudentsInfoModel.fromJson(e))
+          .toList());
     } on DioException catch (e) {
       return Left(FailureModel(
         statusCode: e.response?.statusCode ?? 0,
@@ -89,7 +109,7 @@ class SuperService {
     }
   }
 
-  Future<Either<FailureModel, List<StudentInGroupModel>>> getStudentInGroup(
+  Future<Either<FailureModel, List<StudentsInfoModel>>> getStudentInGroup(
       int groupId) async {
     final dio = _ref.watch(dioProvider);
     try {
@@ -100,7 +120,7 @@ class SuperService {
         ),
       );
       return Right((response.data['groups'] as List)
-          .map((e) => StudentInGroupModel.fromJson(e))
+          .map((e) => StudentsInfoModel.fromJson(e))
           .toList());
     } on DioException catch (e) {
       return Left(FailureModel(
@@ -114,7 +134,7 @@ class SuperService {
     try {
       final dio = _ref.watch(dioProvider);
       final response = await dio.get(
-        '/$_super/$parent/$_getpin',
+        '/$_super/$_parent/$_getpin',
         options: Options(
           headers: {
             'accept': 'application/json',

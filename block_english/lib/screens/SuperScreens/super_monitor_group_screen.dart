@@ -1,4 +1,4 @@
-import 'package:block_english/models/SuperModel/student_in_group_model.dart';
+import 'package:block_english/models/model.dart';
 import 'package:block_english/screens/SuperScreens/super_group_setting_screen.dart';
 import 'package:block_english/services/super_service.dart';
 import 'package:block_english/widgets/student_button.dart';
@@ -25,7 +25,7 @@ class MonitorGroupScreen extends ConsumerStatefulWidget {
 
 class _MonitorGroupScreenState extends ConsumerState<MonitorGroupScreen> {
   String error = '';
-  List<StudentInGroupModel> students = [];
+  List<StudentsInfoModel> students = [];
   bool isLoading = true;
 
   void waitForStudents() async {
