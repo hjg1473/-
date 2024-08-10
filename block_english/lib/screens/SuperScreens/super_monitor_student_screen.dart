@@ -410,7 +410,6 @@ class _LearningAnalysisState extends ConsumerState<LearningAnalysis> {
         ),
       );
     }, (data) {
-      //TODO: 어떤 데이터를 제공할 건지? (완료한 시즌/진행 중인 시즌...)
       studyInfo = data;
       StudyInfoModel last = studyInfo.last;
       for (int i = 0; i < last.releasedLevel!; i++) {
