@@ -30,7 +30,7 @@ class Status {
     this.username = username;
   }
 
-  setGroup(int teamId, String groupName) {
+  setGroup(int? teamId, String? groupName) {
     this.teamId = teamId;
     this.groupName = groupName;
   }
