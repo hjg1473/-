@@ -118,6 +118,8 @@ class AuthService {
               response.data['team_id'],
               response.data['group_name'],
             );
+      } else {
+        _ref.watch(statusProvider).setRole(response.data['role']);
       }
 
       return Right(LoginResponseModel.fromJson(response.data));
@@ -154,6 +156,8 @@ class AuthService {
               response.data['team_id'],
               response.data['group_name'],
             );
+      } else {
+        _ref.watch(statusProvider).setRole(response.data['role']);
       }
 
       return Right(AccessReponseModel.fromJson(response.data));
