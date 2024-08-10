@@ -123,10 +123,6 @@ class AuthService {
               response.data['team_id'],
               response.data['group_name'],
             );
-        _ref.watch(statusProvider).setStudentStatus(
-              response.data['released'],
-              response.data['team_id'],
-            );
       }
 
       return Right(LoginResponseModel.fromJson(response.data));
@@ -164,14 +160,9 @@ class AuthService {
                 ReleaseStatus(info['level'], info['step']),
               );
         }
-
         _ref.watch(statusProvider).setGroup(
               response.data['team_id'],
               response.data['group_name'],
-            );
-        _ref.watch(statusProvider).setStudentStatus(
-              response.data['released'],
-              response.data['team_id'],
             );
       }
 
