@@ -552,10 +552,10 @@ class _LearningAnalysisState extends ConsumerState<LearningAnalysis> {
                 Positioned(
                   right: 0,
                   bottom: 0,
-                  child: SvgPicture.asset(
-                    'assets/images/monitor_character_1.svg',
-                    width: 139.r,
-                    height: 156.r,
+                  child: Image.asset(
+                    'assets/images/monitor_character_1.png',
+                    width: 131.r,
+                    height: 147.r,
                   ),
                 ),
               ],
@@ -711,11 +711,7 @@ class _IncorrectState extends ConsumerState<Incorrect> {
                 Positioned(
                   left: 0,
                   bottom: 0,
-                  child: SvgPicture.asset(
-                    'assets/images/monitor_character1.svg',
-                    width: 63.r,
-                    height: 120.r,
-                  ),
+                  child: Image.asset('assets/images/monitor_character_2.png'),
                 ),
                 Positioned(
                   left: 86.r,

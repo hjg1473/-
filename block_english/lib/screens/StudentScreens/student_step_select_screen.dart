@@ -250,7 +250,7 @@ class _StudentStepSelectScreenState
                         children: [
                           Center(
                             child: Text(
-                              levellist[index],
+                              levelList[index],
                               style: TextStyle(
                                 fontSize: 18.sp,
                                 fontWeight: FontWeight.w800,
