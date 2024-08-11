@@ -22,7 +22,7 @@ const List<String> questionList = [
   "내가 제일 존경하는 인물은?"
 ];
 
-const List<String> levellist = [
+const List<String> levelList = [
   "어순과 격",
   "부정문",
   "의문문",
@@ -63,6 +63,21 @@ String seasonToString(Season season) {
       return 'none';
     case Season.SEASON1:
       return 'Season 1';
+  }
+}
+
+String wrongToString(String wrong) {
+  switch (wrong) {
+    case 'wrong_word':
+      return '단어';
+    case 'wrong_block':
+      return '블록';
+    case 'wrong_punctuation':
+      return '문장 부호';
+    case 'wrong_order':
+      return '어순';
+    default:
+      return ''; // Add a default return statement to handle unexpected input
   }
 }
 

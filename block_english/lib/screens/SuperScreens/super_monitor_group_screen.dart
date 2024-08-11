@@ -188,6 +188,7 @@ class _MonitorGroupScreenState extends ConsumerState<MonitorGroupScreen> {
                                     name: student.name,
                                     studentId: student.id,
                                     groupId: widget.groupId,
+                                    groupName: widget.groupName,
                                   );
                                 },
                                 separatorBuilder: (context, index) =>

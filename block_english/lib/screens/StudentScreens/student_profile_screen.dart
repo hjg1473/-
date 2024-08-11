@@ -44,7 +44,7 @@ class _StudentProfileScreenState extends ConsumerState<StudentProfileScreen> {
 
   onMenuPressed(String route) {
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _navigatorKey.currentState!.popAndPushNamed(route);
+      _navigatorKey.currentState!.pushReplacementNamed(route);
     });
   }
 
@@ -380,212 +380,214 @@ class Info extends ConsumerStatefulWidget {
 class _InfoState extends ConsumerState<Info> {
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          '계정 정보',
-          style: TextStyle(
-            fontSize: 18.sp,
-            fontWeight: FontWeight.w800,
+    return Scaffold(
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            '계정 정보',
+            style: TextStyle(
+              fontSize: 18.sp,
+              fontWeight: FontWeight.w800,
+            ),
           ),
-        ),
-        const Spacer(flex: 3),
-        Container(
-          width: 302.r,
-          height: 58.r,
-          padding: const EdgeInsets.symmetric(
-            horizontal: 16,
-          ).r,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(8).r,
-            color: const Color(0xFFE9FADB),
+          const Spacer(flex: 3),
+          Container(
+            width: 302.r,
+            height: 58.r,
+            padding: const EdgeInsets.symmetric(
+              horizontal: 16,
+            ).r,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(8).r,
+              color: const Color(0xFFE9FADB),
+            ),
+            child: SizedBox(
+              width: 270.r,
+              height: 44.r,
+              child: Row(
+                children: [
+                  Text(
+                    '아이디',
+                    style: TextStyle(
+                      fontSize: 14.sp,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  SizedBox(width: 16.r),
+                  Text(
+                    ref.watch(statusProvider).username,
+                    style: TextStyle(fontSize: 14.sp),
+                  ),
+                  const Spacer(),
+                  FilledButton(
+                    style: FilledButton.styleFrom(
+                      backgroundColor: const Color(0xFF93E54C),
+                      minimumSize: Size(91.r, 26.r),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 14,
+                        vertical: 7,
+                      ).r,
+                    ),
+                    onPressed: widget.onChangePasswordPressed,
+                    child: Text(
+                      '비밀번호 변경',
+                      style: TextStyle(
+                        fontSize: 11.sp,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
           ),
-          child: SizedBox(
-            width: 270.r,
-            height: 44.r,
+          const Spacer(flex: 5),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Text(
+                '내 모니터링 관리자',
+                style: TextStyle(
+                  fontSize: 18.sp,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+              GestureDetector(
+                onTap: widget.onAddSuperPressed,
+                child: Text(
+                  '추가하기',
+                  style: TextStyle(
+                    fontSize: 11.sp,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const Spacer(flex: 3),
+          Container(
+            height: 110.r,
+            padding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 16,
+            ).r,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(8).r,
+              color: const Color(0xFFE9FADB),
+            ),
+            child: Column(
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      alignment: Alignment.center,
+                      width: 41.r,
+                      height: 36.r,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(20).r,
+                        color: const Color(0xFF93E54C),
+                      ),
+                      child: Text(
+                        '그룹',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 11.sp,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                    SizedBox(width: 21.r),
+                    Text(
+                      ref.watch(statusProvider).groupName ?? '연결된 그룹이 없어요',
+                      style: TextStyle(
+                        fontSize: 16.sp,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ],
+                ),
+                const Spacer(),
+                Row(
+                  children: [
+                    Container(
+                      alignment: Alignment.center,
+                      width: 41.r,
+                      height: 36.r,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(20).r,
+                        color: const Color(0xFF93E54C),
+                      ),
+                      child: Text(
+                        '개인',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 11.sp,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                    SizedBox(width: 21.r),
+                    // TODO: Change this to the actual name of parent
+                    Text(
+                      '연결된 관리자가 없어요',
+                      style: TextStyle(
+                        fontSize: 16.sp,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+          const Spacer(flex: 5),
+          Container(
+            alignment: Alignment.center,
+            height: 48.r,
+            padding: const EdgeInsets.symmetric(
+              horizontal: 16,
+            ).r,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(8).r,
+              color: const Color(0xFFE9FADB),
+            ),
             child: Row(
               children: [
                 Text(
-                  '아이디',
+                  '계정 관리',
                   style: TextStyle(
                     fontSize: 14.sp,
-                    fontWeight: FontWeight.w700,
+                    fontWeight: FontWeight.bold,
                   ),
-                ),
-                SizedBox(width: 16.r),
-                Text(
-                  ref.watch(statusProvider).username,
-                  style: TextStyle(fontSize: 14.sp),
                 ),
                 const Spacer(),
-                FilledButton(
-                  style: FilledButton.styleFrom(
-                    backgroundColor: const Color(0xFF93E54C),
-                    minimumSize: Size(91.r, 26.r),
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 14,
-                      vertical: 7,
-                    ).r,
-                  ),
-                  onPressed: widget.onChangePasswordPressed,
-                  child: Text(
-                    '비밀번호 변경',
-                    style: TextStyle(
-                      fontSize: 11.sp,
-                      fontWeight: FontWeight.bold,
-                    ),
+                GestureDetector(
+                  onTap: widget.onAccountPressed,
+                  child: Row(
+                    children: [
+                      Text(
+                        '로그아웃',
+                        style: TextStyle(
+                          fontSize: 11.sp,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      SizedBox(width: 16.r),
+                      Text(
+                        '계정 탈퇴',
+                        style: TextStyle(
+                            fontSize: 11.sp, fontWeight: FontWeight.bold),
+                      ),
+                    ],
                   ),
                 ),
               ],
             ),
           ),
-        ),
-        const Spacer(flex: 5),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Text(
-              '내 모니터링 관리자',
-              style: TextStyle(
-                fontSize: 18.sp,
-                fontWeight: FontWeight.w800,
-              ),
-            ),
-            GestureDetector(
-              onTap: widget.onAddSuperPressed,
-              child: Text(
-                '추가하기',
-                style: TextStyle(
-                  fontSize: 11.sp,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-          ],
-        ),
-        const Spacer(flex: 3),
-        Container(
-          height: 110.r,
-          padding: const EdgeInsets.symmetric(
-            horizontal: 16,
-            vertical: 16,
-          ).r,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(8).r,
-            color: const Color(0xFFE9FADB),
-          ),
-          child: Column(
-            children: [
-              Row(
-                children: [
-                  Container(
-                    alignment: Alignment.center,
-                    width: 41.r,
-                    height: 36.r,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(20).r,
-                      color: const Color(0xFF93E54C),
-                    ),
-                    child: Text(
-                      '그룹',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 11.sp,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                  SizedBox(width: 21.r),
-                  Text(
-                    ref.watch(statusProvider).groupName ?? '연결된 그룹이 없어요',
-                    style: TextStyle(
-                      fontSize: 16.sp,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                ],
-              ),
-              const Spacer(),
-              Row(
-                children: [
-                  Container(
-                    alignment: Alignment.center,
-                    width: 41.r,
-                    height: 36.r,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(20).r,
-                      color: const Color(0xFF93E54C),
-                    ),
-                    child: Text(
-                      '개인',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 11.sp,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                  SizedBox(width: 21.r),
-                  // TODO: Change this to the actual name of parent
-                  Text(
-                    '연결된 관리자가 없어요',
-                    style: TextStyle(
-                      fontSize: 16.sp,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
-        const Spacer(flex: 5),
-        Container(
-          alignment: Alignment.center,
-          height: 48.r,
-          padding: const EdgeInsets.symmetric(
-            horizontal: 16,
-          ).r,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(8).r,
-            color: const Color(0xFFE9FADB),
-          ),
-          child: Row(
-            children: [
-              Text(
-                '계정 관리',
-                style: TextStyle(
-                  fontSize: 14.sp,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const Spacer(),
-              GestureDetector(
-                onTap: widget.onAccountPressed,
-                child: Row(
-                  children: [
-                    Text(
-                      '로그아웃',
-                      style: TextStyle(
-                        fontSize: 11.sp,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    SizedBox(width: 16.r),
-                    Text(
-                      '계정 탈퇴',
-                      style: TextStyle(
-                          fontSize: 11.sp, fontWeight: FontWeight.bold),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }

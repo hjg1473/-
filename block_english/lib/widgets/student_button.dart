@@ -7,11 +7,13 @@ class StudentButton extends StatelessWidget {
     required this.name,
     this.groupId = -1,
     required this.studentId,
+    this.groupName = '',
   });
 
   final int studentId;
   final String name;
   final int groupId;
+  final String groupName;
 
   @override
   Widget build(BuildContext context) {
@@ -23,6 +25,7 @@ class StudentButton extends StatelessWidget {
             builder: (context) => MonitorStudentScreen(
               studentName: name,
               studentId: studentId,
+              groupName: groupName,
             ),
           ),
         );

@@ -6,6 +6,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import 'package:lottie/lottie.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
@@ -123,7 +125,30 @@ class _LoginState extends ConsumerState<LoginScreen> {
               Container(
                 width: 396.w,
                 height: 1.sh,
-                color: Colors.lightBlue[100],
+                color: const Color(0xFFEAFDFF),
+                child: Stack(
+                  children: [
+                    Positioned(
+                      top: 69.r,
+                      left: 98.16.r,
+                      child: SvgPicture.asset(
+                        'assets/images/LOGO.svg',
+                        width: 241.7.r,
+                        height: 39.r,
+                      ),
+                    ),
+                    Positioned(
+                      left: 63.r,
+                      bottom: 55.r,
+                      child: SizedBox(
+                        width: 310.r,
+                        child: Lottie.asset(
+                          'assets/lottie/motion_13.json',
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
               SizedBox(
                 width: 416.w,
