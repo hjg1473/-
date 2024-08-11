@@ -7,6 +7,7 @@ import 'package:block_english/utils/constants.dart';
 import 'package:block_english/utils/dio.dart';
 import 'package:dartz/dartz.dart';
 import 'package:dio/dio.dart';
+import 'package:flutter/material.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'super_service.g.dart';
@@ -168,7 +169,10 @@ class SuperService {
   // }
 
   Future<Either<FailureModel, List<StudyInfoModel>>>
-      postUserMonitoringStudyRate(int userId) async {
+      postUserMonitoringStudyRate(
+    int userId,
+    int season,
+  ) async {
     try {
       final dio = _ref.watch(dioProvider);
       final response = await dio.post(
@@ -182,10 +186,11 @@ class SuperService {
         ),
         data: {
           'user_id': userId,
+          'season': season,
         },
       );
-
-      return Right((response.data['seasons'] as List).map((e) {
+      debugPrint(response.data.toString());
+      return Right((response.data['detail'] as List).map((e) {
         return StudyInfoModel.fromJson(e);
       }).toList());
     } on DioException catch (e) {
@@ -197,7 +202,9 @@ class SuperService {
   }
 
   Future<Either<FailureModel, IncorrectModel>> postUserMonitoringIncorrect(
-      int userId) async {
+    int userId,
+    int season,
+  ) async {
     try {
       final dio = _ref.watch(dioProvider);
       final response = await dio.post(
@@ -211,6 +218,7 @@ class SuperService {
         ),
         data: {
           'user_id': userId,
+          'season': season,
         },
       );
 
@@ -224,7 +232,9 @@ class SuperService {
   }
 
   Future<Either<FailureModel, StudyTimeModel>> postUserMonitoringEtc(
-      int userId) async {
+    int userId,
+    int season,
+  ) async {
     try {
       final dio = _ref.watch(dioProvider);
       final response = await dio.post(
@@ -238,6 +248,7 @@ class SuperService {
         ),
         data: {
           'user_id': userId,
+          'season': season,
         },
       );
 

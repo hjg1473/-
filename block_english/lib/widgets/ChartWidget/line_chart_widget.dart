@@ -79,7 +79,7 @@ class _LineChartWidgetState extends State<LineChartWidget> {
 
   LineChartData mainData() {
     final spot = widget.rate.asMap().entries.map((e) {
-      return FlSpot(e.key.toDouble(), (100 - e.value) / 25);
+      return FlSpot(e.key.toDouble(), e.value / 25);
     }).toList();
     return LineChartData(
       gridData: FlGridData(

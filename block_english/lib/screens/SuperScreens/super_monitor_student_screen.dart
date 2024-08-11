@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:lottie/lottie.dart';
 
 const String learning = '/';
 const String incorrect = '/incorrect';
@@ -401,7 +402,7 @@ class _LearningAnalysisState extends ConsumerState<LearningAnalysis> {
   waitForData() async {
     final response = await ref
         .watch(superServiceProvider)
-        .postUserMonitoringStudyRate(widget.userId);
+        .postUserMonitoringStudyRate(widget.userId, 1);
 
     response.fold((failure) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -413,8 +414,7 @@ class _LearningAnalysisState extends ConsumerState<LearningAnalysis> {
       studyInfo = data;
       StudyInfoModel last = studyInfo.last;
       for (int i = 0; i < last.releasedLevel!; i++) {
-        forCorrectRate
-            .add(last.incorrectRateNormal![i] + last.incorrectRateAI![i]);
+        forCorrectRate.add(last.correctRateNormal![i] + last.correctRateAI![i]);
       }
     });
     if (mounted) {
@@ -553,9 +553,9 @@ class _LearningAnalysisState extends ConsumerState<LearningAnalysis> {
                   right: 0,
                   bottom: 0,
                   child: SvgPicture.asset(
-                    'assets/images/monitor_character2.svg',
-                    width: 131.r,
-                    height: 147.r,
+                    'assets/images/monitor_character_1.svg',
+                    width: 139.r,
+                    height: 156.r,
                   ),
                 ),
               ],
@@ -594,7 +594,7 @@ class _IncorrectState extends ConsumerState<Incorrect> {
   waitForData() async {
     final response = await ref
         .watch(superServiceProvider)
-        .postUserMonitoringIncorrect(widget.userId);
+        .postUserMonitoringIncorrect(widget.userId, 1);
 
     response.fold((failure) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -843,7 +843,7 @@ class _ManageStudentState extends ConsumerState<ManageStudent> {
   waitForData() async {
     final response = await ref
         .watch(superServiceProvider)
-        .postUserMonitoringEtc(widget.userId);
+        .postUserMonitoringEtc(widget.userId, 1);
 
     response.fold((failure) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -944,10 +944,9 @@ class _ManageStudentState extends ConsumerState<ManageStudent> {
                 Positioned(
                   bottom: 62.r,
                   left: 46.r,
-                  child: SvgPicture.asset(
-                    'assets/images/monitor_character3.svg',
+                  child: Lottie.asset(
                     width: 334.r,
-                    height: 166.r,
+                    'assets/lottie/motion_13.json',
                   ),
                 ),
                 Align(
