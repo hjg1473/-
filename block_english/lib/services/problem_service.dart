@@ -8,6 +8,7 @@ import 'package:block_english/utils/constants.dart';
 import 'package:block_english/utils/dio.dart';
 import 'package:dartz/dartz.dart';
 import 'package:dio/dio.dart';
+import 'package:http_parser/http_parser.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'problem_service.g.dart';
@@ -95,7 +96,13 @@ class ProblemService {
             TOKENVALIDATE: 'true',
           },
         ),
-        data: FormData.fromMap({'file': MultipartFile.fromBytes(png)}),
+        data: FormData.fromMap({
+          'file': MultipartFile.fromBytes(
+            png,
+            filename: 'ocr.png',
+            contentType: MediaType('image', 'png'),
+          ),
+        }),
       );
 
       return Right(ProblemOcrModel.fromJson(response.data));

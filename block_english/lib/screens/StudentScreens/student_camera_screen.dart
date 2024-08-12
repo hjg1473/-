@@ -1,6 +1,7 @@
 import 'package:block_english/models/ProblemModel/problem_ocr_model.dart';
 import 'package:block_english/models/ProblemModel/problems_model.dart';
 import 'package:block_english/screens/StudentScreens/student_result_screen.dart';
+import 'package:block_english/services/problem_service.dart';
 import 'package:block_english/utils/camera.dart';
 import 'package:block_english/utils/constants.dart';
 import 'package:block_english/utils/process_image.dart';
@@ -48,51 +49,51 @@ class _StudentCameraScreenState extends ConsumerState<StudentCameraScreen> {
 
       final png = await ProcessImage.cropImage(xFile);
 
-      // final result =
-      //     await ref.watch(problemServiceProvider).postProblemOCR(png);
+      final result =
+          await ref.watch(problemServiceProvider).postProblemOCR(png);
 
-      // result.fold(
-      //   (failure) {
-      //     // TODO: error handling
-      //   },
-      //   (problemOcrModel) {
-      //     Navigator.of(context).push(
-      //       MaterialPageRoute(
-      //         builder: (context) => StudentResultScreen(
-      //           level: widget.level,
-      //           step: widget.step,
-      //           problemsModel: widget.problemsModel,
-      //           currentProblem: widget.currentProblem,
-      //           // problemOcrModel: problemOcrModel,
-      //           problemOcrModel: ,
-      //         ),
-      //       ),
-      //     );
-      //   },
-      // );
-
-      if (!mounted) {
-        return;
-      }
-
-      Navigator.of(context).push(
-        MaterialPageRoute(
-          builder: (context) => StudentResultScreen(
-            level: widget.level,
-            step: widget.step,
-            problemsModel: widget.problemsModel,
-            currentProblem: widget.currentProblem,
-            problemOcrModel: ProblemOcrModel(
-              userInput: 'I like him',
-              blockColors: [
-                BlockColor.green,
-                BlockColor.purple,
-                BlockColor.skyblue,
-              ],
+      result.fold(
+        (failure) {
+          // TODO: error handling
+        },
+        (problemOcrModel) {
+          Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (context) => StudentResultScreen(
+                level: widget.level,
+                step: widget.step,
+                problemsModel: widget.problemsModel,
+                currentProblem: widget.currentProblem,
+                problemOcrModel: problemOcrModel,
+                // problemOcrModel: ,
+              ),
             ),
-          ),
-        ),
+          );
+        },
       );
+
+      // if (!mounted) {
+      //   return;
+      // }
+
+      // Navigator.of(context).push(
+      //   MaterialPageRoute(
+      //     builder: (context) => StudentResultScreen(
+      //       level: widget.level,
+      //       step: widget.step,
+      //       problemsModel: widget.problemsModel,
+      //       currentProblem: widget.currentProblem,
+      //       problemOcrModel: ProblemOcrModel(
+      //         userInput: 'I like him',
+      //         blockColors: [
+      //           BlockColor.green,
+      //           BlockColor.purple,
+      //           BlockColor.skyblue,
+      //         ],
+      //       ),
+      //     ),
+      //   ),
+      // );
     } on Exception catch (e) {
       // TODO: error handling
       debugPrint('[CAMERA]: _takePicture $e');
