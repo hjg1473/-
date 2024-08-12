@@ -1,5 +1,6 @@
 import 'package:block_english/screens/SuperScreens/super_monitor_group_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class GroupButton extends StatelessWidget {
   const GroupButton({
@@ -17,7 +18,7 @@ class GroupButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    double height = 70;
+    double height = 72;
     double padding = 12;
     double area = height - padding * 2;
 
@@ -34,10 +35,10 @@ class GroupButton extends StatelessWidget {
       },
       style: FilledButton.styleFrom(
         backgroundColor: const Color(0xFFEAEAEA),
-        minimumSize: Size(330, height),
+        minimumSize: Size(334, height),
         padding: EdgeInsets.all(padding),
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(10),
+          borderRadius: BorderRadius.circular(10).r,
         ),
       ),
       child: Row(
@@ -49,7 +50,7 @@ class GroupButton extends StatelessWidget {
             width: area,
             decoration: BoxDecoration(
               color: const Color(0xFFD9D9D9),
-              borderRadius: BorderRadius.circular(5),
+              borderRadius: BorderRadius.circular(5).r,
             ),
             child: Center(
               child: Text(
@@ -61,8 +62,8 @@ class GroupButton extends StatelessWidget {
               ),
             ),
           ),
-          const SizedBox(
-            width: 15,
+          SizedBox(
+            width: 15.r,
           ),
           Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -72,27 +73,27 @@ class GroupButton extends StatelessWidget {
                 children: [
                   Text(
                     name,
-                    style: const TextStyle(
-                      fontSize: 16,
+                    style: TextStyle(
+                      fontSize: 16.sp,
                       color: Colors.black,
                     ),
                   ),
-                  const SizedBox(width: 8),
-                  const Icon(Icons.person_rounded,
-                      color: Color(0xFF838383), size: 13),
+                  SizedBox(width: 8.r),
+                  Icon(Icons.person_rounded,
+                      color: const Color(0xFF838383), size: 13.r),
                   Text(' $studentNum명',
-                      style: const TextStyle(
-                        color: Color(0xFF9D9D9D),
-                        fontSize: 12,
+                      style: TextStyle(
+                        color: const Color(0xFF9D9D9D),
+                        fontSize: 12.sp,
                       )),
                 ],
               ),
               detail != ''
                   ? Text(
                       detail,
-                      style: const TextStyle(
-                        color: Color(0xFF9D9D9D),
-                        fontSize: 13,
+                      style: TextStyle(
+                        color: const Color(0xFF9D9D9D),
+                        fontSize: 13.sp,
                       ),
                     )
                   : const SizedBox(),

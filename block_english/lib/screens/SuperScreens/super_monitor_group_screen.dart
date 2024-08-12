@@ -142,6 +142,7 @@ class _MonitorGroupScreenState extends ConsumerState<MonitorGroupScreen> {
                 )
               ],
             ),
+            SizedBox(height: 20.r),
             isLoading
                 ? const Center(
                     child: CircularProgressIndicator(),

@@ -416,7 +416,7 @@ class _SuperMonitorScreenState extends ConsumerState<SuperMonitorScreen> {
                                   crossAxisCount: 2,
                                   crossAxisSpacing: 21.r,
                                   mainAxisSpacing: 10.r,
-                                  childAspectRatio: 4.7,
+                                  childAspectRatio: 334 / 72,
                                 ),
                                 scrollDirection: Axis.vertical,
                                 itemCount: role == 'parent'

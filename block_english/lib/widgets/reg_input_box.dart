@@ -42,7 +42,7 @@ class RegInputBox extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: width.r,
-      height: height.r,
+      //height: height.r,
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(8).w,
@@ -85,7 +85,7 @@ class RegInputBox extends StatelessWidget {
                                 errorMessage,
                                 style: TextStyle(
                                   color: success ? Colors.green : Colors.red,
-                                  fontSize: 11.r,
+                                  fontSize: 11.sp,
                                 ),
                               ),
                             ],

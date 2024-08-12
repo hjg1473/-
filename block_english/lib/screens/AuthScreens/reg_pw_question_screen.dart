@@ -121,7 +121,7 @@ class _RegPwQuestionScreenState extends ConsumerState<RegPwQuestionScreen> {
                             SizedBox(width: 29.r),
                             SizedBox(
                               width: 357.r,
-                              height: 50.r,
+                              //height: 50.r,
                               child: CustomDropdown(
                                 hintText: '질문을 선택해 주세요',
                                 items: questionList,
@@ -146,23 +146,23 @@ class _RegPwQuestionScreenState extends ConsumerState<RegPwQuestionScreen> {
                             SizedBox(width: 29.r),
                             SizedBox(
                               width: 357.r,
-                              height: 50.r,
+                              //height: 50.r,
                               child: TextField(
                                 decoration: InputDecoration(
                                   contentPadding: EdgeInsets.symmetric(
-                                    horizontal: 16.r,
-                                    vertical: 13.r,
+                                    horizontal: 18.r,
+                                    vertical: 16.r,
                                   ),
                                   hintText: '답변을 입력해 주세요',
                                   hintStyle: TextStyle(
                                     color: const Color(0xFFADADAD),
-                                    fontSize: 15.sp,
+                                    fontSize: 16.sp,
                                     fontWeight: FontWeight.w500,
                                   ),
                                   filled: true,
                                   fillColor: Colors.white,
                                   border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(10).w,
+                                    borderRadius: BorderRadius.circular(12).r,
                                     borderSide: BorderSide.none,
                                   ),
                                 ),

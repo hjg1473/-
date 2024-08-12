@@ -189,7 +189,7 @@ class _LoginState extends ConsumerState<LoginScreen> {
                         right: 64,
                       ).r,
                       child: SizedBox(
-                        height: 269.r,
+                        height: 1.sh - 106.r,
                         child: Column(
                           children: [
                             Row(

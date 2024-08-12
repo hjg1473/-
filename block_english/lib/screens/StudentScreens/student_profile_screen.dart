@@ -323,7 +323,7 @@ class _StudentProfileScreenState extends ConsumerState<StudentProfileScreen> {
                   right: 64,
                 ).r,
                 child: SizedBox(
-                  width: 302.r,
+                  width: 318.r,
                   height: 319.r,
                   child: Navigator(
                     key: _navigatorKey,
@@ -397,7 +397,7 @@ class _InfoState extends ConsumerState<Info> {
           ),
           const Spacer(flex: 3),
           Container(
-            width: 302.r,
+            width: 318.r,
             height: 58.r,
             padding: const EdgeInsets.symmetric(
               horizontal: 16,
@@ -595,32 +595,123 @@ class _InfoState extends ConsumerState<Info> {
   }
 }
 
-class Season extends StatelessWidget {
+class Season extends ConsumerStatefulWidget {
   const Season({super.key});
 
   @override
+  ConsumerState<Season> createState() => _SeasonState();
+}
+
+class _SeasonState extends ConsumerState<Season> {
+  late List<int> availableSeason;
+  late List<bool> selectedSeason = List.filled(2, false);
+
+  onPressed() async {
+    for (int i = 0; i < selectedSeason.length; i++) {
+      if (selectedSeason[i] && !availableSeason.contains(i + 1)) {
+        availableSeason.add(i + 1);
+      }
+    }
+
+    final response = await ref
+        .watch(studentServiceProvider)
+        .putUpdateSeason(availableSeason);
+    response.fold(
+      (failure) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('${failure.statusCode}: ${failure.detail}'),
+          ),
+        );
+      },
+      (success) {
+        ref.watch(statusProvider).setAvailableSeason(availableSeason);
+        if (mounted) {
+          setState(() {});
+        }
+      },
+    );
+  }
+
+  @override
   Widget build(BuildContext context) {
+    availableSeason = ref.watch(statusProvider).availableSeason;
+    for (int i = 0; i < availableSeason.length; i++) {
+      selectedSeason[i] = true;
+    }
+
     return Scaffold(
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            '블록 잉글리시 보유 시즌 추가',
-            style: TextStyle(
-              fontSize: 18.sp,
-              fontWeight: FontWeight.w800,
-            ),
+          Row(
+            children: [
+              Text(
+                '블록 잉글리시 보유 시즌 추가',
+                style: TextStyle(
+                  fontSize: 18.sp,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+              const Spacer(),
+              SizedBox(
+                width: 30.r,
+                height: 30.r,
+                child: IconButton(
+                  padding: EdgeInsets.zero,
+                  onPressed: onPressed,
+                  icon: const Icon(
+                    Icons.check,
+                    color: Colors.white,
+                  ),
+                  style: IconButton.styleFrom(
+                    padding: EdgeInsets.zero,
+                    iconSize: 18.r,
+                    backgroundColor: const Color(0xFF93E54C),
+                  ),
+                ),
+              ),
+            ],
           ),
           SizedBox(height: 12.r),
-          //TODO: Change this to the actual season list
-          IconButton(
-            padding: EdgeInsets.zero,
-            onPressed: null,
-            icon: SvgPicture.asset(
-              'assets/buttons/season_1_button.svg',
-              width: 153.r,
-              height: 50.r,
-            ),
+          Row(
+            children: [
+              IconButton(
+                padding: EdgeInsets.zero,
+                onPressed: availableSeason.contains(1)
+                    ? null
+                    : () {
+                        setState(() {
+                          selectedSeason[0] = !selectedSeason[0];
+                        });
+                      },
+                icon: Image.asset(
+                  selectedSeason[0]
+                      ? 'assets/buttons/season_1_selected_small.png'
+                      : 'assets/buttons/season_1_unselected_small.png',
+                  width: 153.r,
+                  height: 50.r,
+                ),
+              ),
+              const Spacer(),
+              IconButton(
+                padding: EdgeInsets.zero,
+                onPressed: availableSeason.contains(2)
+                    ? null
+                    : () {
+                        setState(() {
+                          selectedSeason[1] = !selectedSeason[1];
+                        });
+                      },
+                icon: Image.asset(
+                  selectedSeason[1]
+                      ? 'assets/buttons/season_2_selected_small.png'
+                      : 'assets/buttons/season_2_unselected_small.png',
+                  width: 153.r,
+                  height: 50.r,
+                ),
+              ),
+            ],
           ),
         ],
       ),

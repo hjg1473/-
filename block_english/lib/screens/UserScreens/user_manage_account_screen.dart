@@ -84,8 +84,14 @@ class _UserManageAccountScreenState
             color: const Color(0xFFA7A7A7),
           ),
         ),
-        actionsPadding: const EdgeInsets.fromLTRB(20, 32, 20, 20).r,
+        actionsPadding: const EdgeInsets.fromLTRB(
+          20,
+          32,
+          20,
+          20,
+        ).h,
         actions: [
+          //const Spacer(),
           FilledButton(
             onPressed: () {
               Navigator.of(context).pop();
@@ -94,7 +100,7 @@ class _UserManageAccountScreenState
               padding: const EdgeInsets.symmetric(
                 vertical: 13,
                 horizontal: 53,
-              ).r,
+              ).h,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(7.02).r,
               ),
@@ -114,7 +120,7 @@ class _UserManageAccountScreenState
               padding: const EdgeInsets.symmetric(
                 vertical: 13,
                 horizontal: 53,
-              ).r,
+              ).h,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(7.02).r,
               ),
@@ -128,6 +134,7 @@ class _UserManageAccountScreenState
               ),
             ),
           ),
+          //const Spacer(),
         ],
       ),
     );
