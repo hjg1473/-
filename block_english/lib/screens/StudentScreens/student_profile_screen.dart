@@ -378,6 +378,35 @@ class Info extends ConsumerStatefulWidget {
 }
 
 class _InfoState extends ConsumerState<Info> {
+  String parent = '';
+
+  waitForParentInfo() async {
+    final response = await ref.watch(studentServiceProvider).getParentInfo();
+    response.fold(
+      (failure) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('${failure.statusCode}: ${failure.detail}'),
+          ),
+        );
+      },
+      (success) {
+        if (mounted) {
+          setState(() {
+            parent = success.name;
+          });
+        }
+      },
+    );
+  }
+
+  @override
+  void didChangeDependencies() {
+    // TODO: implement didChangeDependencies
+    super.didChangeDependencies();
+    waitForParentInfo();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -529,9 +558,8 @@ class _InfoState extends ConsumerState<Info> {
                       ),
                     ),
                     SizedBox(width: 21.r),
-                    // TODO: Change this to the actual name of parent
                     Text(
-                      '연결된 관리자가 없어요',
+                      parent,
                       style: TextStyle(
                         fontSize: 16.sp,
                         fontWeight: FontWeight.w700,
