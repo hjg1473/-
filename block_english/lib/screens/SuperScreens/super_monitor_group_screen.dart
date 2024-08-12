@@ -51,6 +51,7 @@ class _MonitorGroupScreenState extends ConsumerState<MonitorGroupScreen> {
   void didChangeDependencies() {
     super.didChangeDependencies();
     waitForStudents();
+    debugPrint(widget.groupId.toString());
   }
 
   @override

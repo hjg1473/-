@@ -11,6 +11,7 @@ class Status {
 
   // Student's fields
   Map<Season, ReleaseStatus> releaseStatus = {};
+  Map<Season, ReleaseStatus> releaseGroupStatus = {};
   int? teamId;
   String? groupName;
   String? role;
@@ -38,6 +39,10 @@ class Status {
   setGroup(int? teamId, String? groupName) {
     this.teamId = teamId;
     this.groupName = groupName;
+  }
+
+  setGroupStatus(Season season, ReleaseStatus released) {
+    releaseGroupStatus[season] = released;
   }
 
   setStudentStatus(Season season, ReleaseStatus released) {

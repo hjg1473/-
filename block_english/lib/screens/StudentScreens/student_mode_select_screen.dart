@@ -8,6 +8,96 @@ import 'package:flutter_svg/flutter_svg.dart';
 class StudentModeSelectScreen extends ConsumerWidget {
   const StudentModeSelectScreen({super.key});
 
+  Future<dynamic> _showFailDialog(BuildContext context) {
+    return showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(7.02).r,
+        ),
+        titlePadding: const EdgeInsets.fromLTRB(
+          20,
+          28,
+          20,
+          8,
+        ).r,
+        title: Center(
+          child: Text(
+            '입장 실패',
+            style: TextStyle(
+              fontSize: 18.sp,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+        ),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 20).r,
+        content: Text(
+          '소속되어 있는 그룹이 없어서\n지금은 입장할 수 없어요!',
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            fontSize: 14.sp,
+            fontWeight: FontWeight.bold,
+            color: const Color(0xFFA7A7A7),
+          ),
+        ),
+        actionsPadding: const EdgeInsets.fromLTRB(
+          20,
+          32,
+          20,
+          20,
+        ).r,
+        actions: [
+          FilledButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+            style: FilledButton.styleFrom(
+              padding: const EdgeInsets.symmetric(
+                vertical: 13,
+                horizontal: 57,
+              ).r,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(7.02).r,
+              ),
+              backgroundColor: const Color(0xFF919191),
+            ),
+            child: Text(
+              '나갈래요',
+              style: TextStyle(
+                fontSize: 16.sp,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+          FilledButton(
+            onPressed: () {
+              Navigator.of(context).pushReplacementNamed(
+                  '/stud_add_super_screen',
+                  arguments: true);
+            },
+            style: FilledButton.styleFrom(
+              padding: const EdgeInsets.symmetric(
+                vertical: 13,
+                horizontal: 31.5,
+              ).r,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(7.02).r,
+              ),
+              backgroundColor: const Color(0xFF93E54C),
+            ),
+            child: Text(
+              '그룹 핀코드 입력',
+              style: TextStyle(
+                fontSize: 16.sp,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
@@ -65,6 +155,10 @@ class StudentModeSelectScreen extends ConsumerWidget {
                   SizedBox(
                     child: IconButton(
                       onPressed: () {
+                        if (ref.watch(statusProvider).teamId == null) {
+                          _showFailDialog(context);
+                          return;
+                        }
                         ref
                             .watch(statusProvider)
                             .setStudentMode(StudentMode.GROUP);

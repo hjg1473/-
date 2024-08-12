@@ -53,8 +53,8 @@ class _StudentProfileScreenState extends ConsumerState<StudentProfileScreen> {
   }
 
   onAddSuperPressed() async {
-    final result =
-        await Navigator.of(context).pushNamed('/stud_add_super_screen');
+    final result = await Navigator.of(context)
+        .pushNamed('/stud_add_super_screen', arguments: false);
     if (result == true) {
       final response = await ref.watch(studentServiceProvider).getStudentInfo();
       response.fold(

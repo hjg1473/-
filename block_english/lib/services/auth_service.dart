@@ -123,6 +123,14 @@ class AuthService {
               response.data['team_id'],
               response.data['group_name'],
             );
+        if (response.data['released_group'] != null) {
+          for (Map<String, dynamic> info in response.data['released_group']) {
+            _ref.watch(statusProvider).setGroupStatus(
+                  intToSeason(info['season']),
+                  ReleaseStatus(info['level'], info['step']),
+                );
+          }
+        }
       } else {
         _ref.watch(statusProvider).setRole(response.data['role']);
       }
@@ -166,6 +174,14 @@ class AuthService {
               response.data['team_id'],
               response.data['group_name'],
             );
+        if (response.data['released_group'] != null) {
+          for (Map<String, dynamic> info in response.data['released_group']) {
+            _ref.watch(statusProvider).setGroupStatus(
+                  intToSeason(info['season']),
+                  ReleaseStatus(info['level'], info['step']),
+                );
+          }
+        }
       } else {
         _ref.watch(statusProvider).setRole(response.data['role']);
       }
