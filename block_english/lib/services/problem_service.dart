@@ -1,8 +1,5 @@
-import 'dart:io';
 import 'dart:typed_data';
 
-import 'package:block_english/models/ProblemModel/problem_ocr_model.dart';
-import 'package:block_english/models/ProblemModel/problems_model.dart';
 import 'package:block_english/models/model.dart';
 import 'package:block_english/utils/constants.dart';
 import 'package:block_english/utils/dio.dart';

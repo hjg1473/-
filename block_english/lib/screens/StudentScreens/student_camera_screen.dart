@@ -1,9 +1,7 @@
-import 'package:block_english/models/ProblemModel/problem_ocr_model.dart';
 import 'package:block_english/models/ProblemModel/problems_model.dart';
 import 'package:block_english/screens/StudentScreens/student_result_screen.dart';
 import 'package:block_english/services/problem_service.dart';
 import 'package:block_english/utils/camera.dart';
-import 'package:block_english/utils/constants.dart';
 import 'package:block_english/utils/process_image.dart';
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
