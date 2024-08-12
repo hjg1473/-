@@ -4,6 +4,7 @@ import 'package:block_english/screens/AuthScreens/reg_select_role_screen.dart';
 import 'package:block_english/screens/AuthScreens/reg_get_info_screen.dart';
 import 'package:block_english/screens/AuthScreens/reg_super_type_screen.dart';
 import 'package:block_english/screens/StudentScreens/student_add_super_screen.dart';
+import 'package:block_english/screens/StudentScreens/student_available_season_screen.dart';
 import 'package:block_english/screens/SuperScreens/parent_add_child_screen.dart';
 import 'package:block_english/screens/UserScreens/user_change_password_screen.dart';
 import 'package:block_english/screens/StudentScreens/student_main_screen.dart';
@@ -65,6 +66,8 @@ class MyApp extends StatelessWidget {
               const UserChangePasswordScreen(),
           '/user_manage_account_screen': (context) =>
               const UserManageAccountScreen(),
+          '/stud_available_season_screen': (context) =>
+              const StudentAvailableSeasonScreen(),
           '/stud_mode_select_screen': (context) =>
               const StudentModeSelectScreen(),
           '/stud_season_select_screen': (context) =>

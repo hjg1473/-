@@ -1,5 +1,6 @@
 import 'package:block_english/models/StudentModel/parent_info_model.dart';
 import 'package:block_english/models/StudentModel/enter_group_response_model.dart';
+import 'package:block_english/models/SuccessModel/success_model.dart';
 import 'package:block_english/models/model.dart';
 import 'package:block_english/utils/constants.dart';
 import 'package:block_english/utils/dio.dart';
@@ -24,6 +25,65 @@ class StudentService {
 
   StudentService(StudentServiceRef ref) {
     _ref = ref;
+  }
+
+  Future<Either<FailureModel, List<int>>> getSeasonInfo() async {
+    final dio = _ref.watch(dioProvider);
+    try {
+      final response = await dio.get(
+        '/$_student/season_info',
+        options: Options(
+          headers: {
+            'accept': 'application/json',
+            TOKENVALIDATE: 'true',
+          },
+        ),
+      );
+
+      List<int> seasonList = (response.data['seasons'] as List)
+          .map((item) => int.parse(item.toString()))
+          .toList();
+      _ref.watch(statusProvider).setAvailableSeason(seasonList);
+
+      return Right(seasonList);
+    } on DioException catch (e) {
+      return Left(FailureModel(
+        statusCode: e.response?.statusCode ?? 0,
+        detail: e.response?.data['detail'] ?? '',
+      ));
+    }
+  }
+
+  Future<Either<FailureModel, SuccessModel>> putUpdateSeason(
+      List<int> seasons) async {
+    final dio = _ref.watch(dioProvider);
+    try {
+      final response = await dio.put(
+        '/$_student/update_season',
+        options: Options(
+          headers: {
+            'accept': 'application/json',
+            'Content-Type': 'application/json',
+            TOKENVALIDATE: 'true',
+          },
+        ),
+        data: {
+          'season': seasons,
+        },
+      );
+
+      return Right(
+        SuccessModel(
+          statusCode: response.statusCode ?? 0,
+          detail: response.data['detail'],
+        ),
+      );
+    } on DioException catch (e) {
+      return Left(FailureModel(
+        statusCode: e.response?.statusCode ?? 0,
+        detail: e.response?.data['detail'] ?? '',
+      ));
+    }
   }
 
   Future<Either<FailureModel, EnterGroupResponse>> postGroupEnter(

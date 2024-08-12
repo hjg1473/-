@@ -14,6 +14,9 @@ class Status {
   Map<Season, ReleaseStatus> releaseGroupStatus = {};
   int? teamId;
   String? groupName;
+  List<int> availableSeason = [];
+
+  // Super's fields
   String? role;
 
   setStudentMode(StudentMode mode) {
@@ -39,6 +42,10 @@ class Status {
   setGroup(int? teamId, String? groupName) {
     this.teamId = teamId;
     this.groupName = groupName;
+  }
+
+  setAvailableSeason(List<int> availableSeason) {
+    this.availableSeason = availableSeason;
   }
 
   setGroupStatus(Season season, ReleaseStatus released) {
