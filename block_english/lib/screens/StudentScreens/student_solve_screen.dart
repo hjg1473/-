@@ -4,6 +4,7 @@ import 'package:block_english/utils/constants.dart';
 import 'package:block_english/widgets/square_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 class StudentSolveScreen extends StatefulWidget {
   const StudentSolveScreen({
@@ -11,11 +12,15 @@ class StudentSolveScreen extends StatefulWidget {
     required this.problemsModel,
     required this.level,
     required this.step,
+    required this.totalNumber,
+    required this.correctNumber,
   });
 
   final int level;
   final int step;
   final ProblemsModel problemsModel;
+  final int totalNumber;
+  final int correctNumber;
 
   @override
   State<StudentSolveScreen> createState() => _StudentSolveScreenState();
@@ -28,6 +33,8 @@ class _StudentSolveScreenState extends State<StudentSolveScreen> {
   void initState() {
     super.initState();
     currentProblem = widget.problemsModel.getProblem();
+    debugPrint('[totalNumber] ${widget.totalNumber}');
+    debugPrint('[correctNumber] ${widget.correctNumber}');
   }
 
   @override
@@ -107,11 +114,46 @@ class _StudentSolveScreenState extends State<StudentSolveScreen> {
                             ],
                           ),
                         ),
-                        Container(
-                          width: 235.r,
-                          height: 32.r,
-                          color: Colors.red,
-                        )
+                        SizedBox(
+                          width: 220.r,
+                          height: 24.r,
+                          child: Stack(
+                            alignment: Alignment.centerLeft,
+                            clipBehavior: Clip.none,
+                            children: [
+                              Container(
+                                width: 220.r,
+                                height: 24.r,
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(45).r,
+                                ),
+                              ),
+                              Container(
+                                width: ((220 / (widget.totalNumber)) *
+                                        widget.correctNumber)
+                                    .r,
+                                height: 24.r,
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFFFA3C2),
+                                  borderRadius: BorderRadius.circular(45).r,
+                                ),
+                              ),
+                              Positioned(
+                                left: (((220 / (widget.totalNumber)) *
+                                            widget.correctNumber) -
+                                        (61 / 2))
+                                    .r,
+                                child: SizedBox(
+                                  width: 61.r,
+                                  height: 32.r,
+                                  child: SvgPicture.asset(
+                                      'assets/progressbar/progress_block.svg'),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
                       ],
                     ),
                   ),
@@ -212,18 +254,14 @@ class _StudentSolveScreenState extends State<StudentSolveScreen> {
                       onPressed: () {
                         if (currentProblem != null) {
                           // TODO: navigate to camera screen
-                          // Navigator.of(context).push(MaterialPageRoute(
-                          //     builder: (context) => StudentSolveScreen(
-                          //           problemsModel: widget.problemsModel,
-                          //           level: widget.level,
-                          //           step: widget.step,
-                          //         )));
                           Navigator.of(context).push(MaterialPageRoute(
                               builder: (context) => StudentCameraScreen(
                                     level: widget.level,
                                     step: widget.step,
                                     problemsModel: widget.problemsModel,
                                     currentProblem: currentProblem!,
+                                    totalNumber: widget.totalNumber,
+                                    correctNumber: widget.correctNumber,
                                   )));
                         } else {
                           // TODO: load next step

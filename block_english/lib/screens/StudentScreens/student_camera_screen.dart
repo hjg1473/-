@@ -1,14 +1,14 @@
-import 'package:block_english/models/ProblemModel/problem_ocr_model.dart';
 import 'package:block_english/models/ProblemModel/problems_model.dart';
 import 'package:block_english/screens/StudentScreens/student_result_screen.dart';
 import 'package:block_english/services/problem_service.dart';
 import 'package:block_english/utils/camera.dart';
-import 'package:block_english/utils/constants.dart';
 import 'package:block_english/utils/process_image.dart';
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 class StudentCameraScreen extends ConsumerStatefulWidget {
   const StudentCameraScreen({
@@ -17,12 +17,16 @@ class StudentCameraScreen extends ConsumerStatefulWidget {
     required this.step,
     required this.problemsModel,
     required this.currentProblem,
+    required this.totalNumber,
+    required this.correctNumber,
   });
 
   final int level;
   final int step;
   final ProblemsModel problemsModel;
   final ProblemEntry currentProblem;
+  final int totalNumber;
+  final int correctNumber;
 
   @override
   ConsumerState<StudentCameraScreen> createState() =>
@@ -39,13 +43,6 @@ class _StudentCameraScreenState extends ConsumerState<StudentCameraScreen> {
 
     try {
       final xFile = await controller.takePicture();
-      // Directory directory = Directory('storage/emulated/0/DCIM/MyImages');
-      // await Directory(directory.path).create(recursive: true);
-      // await File(xFile.path).copy('${directory.path}/${xFile.name}');
-
-      // File('${directory.path}/cropped.png').writeAsBytesSync(png);
-
-      // await File('${directory.path}/cropped.png').writeAsBytes(png);
 
       final png = await ProcessImage.cropImage(xFile);
 
@@ -65,35 +62,13 @@ class _StudentCameraScreenState extends ConsumerState<StudentCameraScreen> {
                 problemsModel: widget.problemsModel,
                 currentProblem: widget.currentProblem,
                 problemOcrModel: problemOcrModel,
-                // problemOcrModel: ,
+                totalNumber: widget.totalNumber,
+                correctNumber: widget.correctNumber,
               ),
             ),
           );
         },
       );
-
-      // if (!mounted) {
-      //   return;
-      // }
-
-      // Navigator.of(context).push(
-      //   MaterialPageRoute(
-      //     builder: (context) => StudentResultScreen(
-      //       level: widget.level,
-      //       step: widget.step,
-      //       problemsModel: widget.problemsModel,
-      //       currentProblem: widget.currentProblem,
-      //       problemOcrModel: ProblemOcrModel(
-      //         userInput: 'I like him',
-      //         blockColors: [
-      //           BlockColor.green,
-      //           BlockColor.purple,
-      //           BlockColor.skyblue,
-      //         ],
-      //       ),
-      //     ),
-      //   ),
-      // );
     } on Exception catch (e) {
       // TODO: error handling
       debugPrint('[CAMERA]: _takePicture $e');
@@ -109,9 +84,7 @@ class _StudentCameraScreenState extends ConsumerState<StudentCameraScreen> {
       enableAudio: false,
     );
     controller.initialize().then((_) {
-      // controller.value = controller.value.copyWith(
-      //   previewSize: Size(1.sw, 1.sh),
-      // );
+      controller.lockCaptureOrientation(DeviceOrientation.landscapeRight);
       if (!mounted) {
         return;
       }
@@ -158,6 +131,7 @@ class _StudentCameraScreenState extends ConsumerState<StudentCameraScreen> {
                 ),
               ),
             ),
+
           Align(
             alignment: Alignment.center,
             child: Column(
@@ -268,11 +242,46 @@ class _StudentCameraScreenState extends ConsumerState<StudentCameraScreen> {
                           ],
                         ),
                       ),
-                      Container(
-                        width: 235.r,
-                        height: 32.r,
-                        color: Colors.red,
-                      )
+                      SizedBox(
+                        width: 220.r,
+                        height: 24.r,
+                        child: Stack(
+                          alignment: Alignment.centerLeft,
+                          clipBehavior: Clip.none,
+                          children: [
+                            Container(
+                              width: 220.r,
+                              height: 24.r,
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(45).r,
+                              ),
+                            ),
+                            Container(
+                              width: ((220 / (widget.totalNumber)) *
+                                      widget.correctNumber)
+                                  .r,
+                              height: 24.r,
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFFFA3C2),
+                                borderRadius: BorderRadius.circular(45).r,
+                              ),
+                            ),
+                            Positioned(
+                              left: (((220 / (widget.totalNumber)) *
+                                          widget.correctNumber) -
+                                      (61 / 2))
+                                  .r,
+                              child: SizedBox(
+                                width: 61.r,
+                                height: 32.r,
+                                child: SvgPicture.asset(
+                                    'assets/progressbar/progress_block.svg'),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
                     ],
                   ),
                 ),
@@ -285,7 +294,7 @@ class _StudentCameraScreenState extends ConsumerState<StudentCameraScreen> {
                       color: const Color(0xFFD4D4D4),
                     ),
                     onPressed: () {
-                      _takePicture();
+                      if (controller.value.isInitialized) _takePicture();
                     },
                   ),
                 ),

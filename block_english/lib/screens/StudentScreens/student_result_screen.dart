@@ -5,6 +5,7 @@ import 'package:block_english/utils/constants.dart';
 import 'package:block_english/widgets/square_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 class StudentResultScreen extends StatefulWidget {
   const StudentResultScreen({
@@ -14,6 +15,8 @@ class StudentResultScreen extends StatefulWidget {
     required this.problemsModel,
     required this.currentProblem,
     required this.problemOcrModel,
+    required this.totalNumber,
+    required this.correctNumber,
   });
 
   final int level;
@@ -21,6 +24,8 @@ class StudentResultScreen extends StatefulWidget {
   final ProblemsModel problemsModel;
   final ProblemEntry currentProblem;
   final ProblemOcrModel problemOcrModel;
+  final int totalNumber;
+  final int correctNumber;
 
   @override
   State<StudentResultScreen> createState() => _StudentResultScreenState();
@@ -28,16 +33,26 @@ class StudentResultScreen extends StatefulWidget {
 
 class _StudentResultScreenState extends State<StudentResultScreen> {
   late List<String> results;
+  late int nextCorrectNumber;
+
   bool correct = true;
 
   @override
   void initState() {
     super.initState();
 
+    nextCorrectNumber = widget.correctNumber;
+
     results = widget.problemOcrModel.userInput.split(' ');
 
+    // correct = true;
     correct =
         (widget.currentProblem.answer == widget.problemOcrModel.userInput);
+
+    // if (correct)
+    {
+      nextCorrectNumber++;
+    }
   }
 
   @override
@@ -117,11 +132,46 @@ class _StudentResultScreenState extends State<StudentResultScreen> {
                             ],
                           ),
                         ),
-                        Container(
-                          width: 235.r,
-                          height: 32.r,
-                          color: Colors.red,
-                        )
+                        SizedBox(
+                          width: 220.r,
+                          height: 24.r,
+                          child: Stack(
+                            alignment: Alignment.centerLeft,
+                            clipBehavior: Clip.none,
+                            children: [
+                              Container(
+                                width: 220.r,
+                                height: 24.r,
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(45).r,
+                                ),
+                              ),
+                              Container(
+                                width: ((220 / (widget.totalNumber)) *
+                                        nextCorrectNumber)
+                                    .r,
+                                height: 24.r,
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFFFA3C2),
+                                  borderRadius: BorderRadius.circular(45).r,
+                                ),
+                              ),
+                              Positioned(
+                                left: (((220 / (widget.totalNumber)) *
+                                            nextCorrectNumber) -
+                                        (61 / 2))
+                                    .r,
+                                child: SizedBox(
+                                  width: 61.r,
+                                  height: 32.r,
+                                  child: SvgPicture.asset(
+                                      'assets/progressbar/progress_block.svg'),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
                       ],
                     ),
                   ),
@@ -234,13 +284,15 @@ class _StudentResultScreenState extends State<StudentResultScreen> {
                       ),
                       onPressed: () {
                         Navigator.of(context).pushAndRemoveUntil(
-                          MaterialPageRoute(
-                            builder: (context) => StudentSolveScreen(
+                          MaterialPageRoute(builder: (context) {
+                            return StudentSolveScreen(
                               problemsModel: widget.problemsModel,
                               level: widget.level,
                               step: widget.step,
-                            ),
-                          ),
+                              totalNumber: widget.totalNumber,
+                              correctNumber: nextCorrectNumber,
+                            );
+                          }),
                           ModalRoute.withName('/stud_step_select_screen'),
                         );
                       },
