@@ -23,7 +23,7 @@ export './ProblemModel/problems_model.dart';
 // StudentModel
 export './StudentModel/student_info_model.dart';
 export './StudentModel/parent_info_model.dart';
-export './StudentModel/enter_group_response_model.dart';
+export './StudentModel/pin_enter_response_model.dart';
 export './StudentModel/released_info_model.dart';
 
 // SuperModel

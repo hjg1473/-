@@ -1,12 +1,13 @@
 import 'package:block_english/models/StudentModel/released_info_model.dart';
 
-class EnterGroupResponse {
+class PinEnterResponse {
   int? teamId;
   String? groupName;
   String? groupDetail;
   List<ReleasedInfoModel>? releasedGroup;
+  String? parentName;
 
-  EnterGroupResponse.fromJson(Map<String, dynamic> json)
+  PinEnterResponse.fromJson(Map<String, dynamic> json)
       : teamId = json['team_id'],
         groupName = json['group_name'],
         groupDetail = json['group_detail'],
@@ -14,5 +15,6 @@ class EnterGroupResponse {
             ? null
             : (json['released_group'] as List)
                 .map((e) => ReleasedInfoModel.fromJson(e))
-                .toList();
+                .toList(),
+        parentName = json['parent_name'];
 }

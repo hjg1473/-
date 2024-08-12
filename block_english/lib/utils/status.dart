@@ -15,6 +15,7 @@ class Status {
   int? teamId;
   String? groupName;
   List<int> availableSeason = [];
+  String? parentName;
 
   // Super's fields
   String? role;
@@ -42,6 +43,10 @@ class Status {
   setGroup(int? teamId, String? groupName) {
     this.teamId = teamId;
     this.groupName = groupName;
+  }
+
+  setParent(String? parentName) {
+    this.parentName = parentName;
   }
 
   setAvailableSeason(List<int> availableSeason) {

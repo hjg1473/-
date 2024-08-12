@@ -96,7 +96,7 @@ class _StudentAddSuperScreenState extends ConsumerState<StudentAddSuperScreen> {
   onPressed() async {
     final response = await ref
         .watch(studentServiceProvider)
-        .postGroupEnter(int.parse(pincode));
+        .postPinEnter(int.parse(pincode));
     response.fold(
       (failure) {
         _showFailDialog(context, failure.detail);
@@ -106,6 +106,9 @@ class _StudentAddSuperScreenState extends ConsumerState<StudentAddSuperScreen> {
           Navigator.of(context).pushReplacement(
               MaterialPageRoute(builder: (context) => const SuccessScreen()));
         } else {
+          if (success.parentName != null) {
+            ref.watch(statusProvider).setParent(success.parentName);
+          }
           Navigator.of(context).pop(true);
         }
       },

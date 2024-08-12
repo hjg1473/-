@@ -56,31 +56,35 @@ class _StudentProfileScreenState extends ConsumerState<StudentProfileScreen> {
     final result = await Navigator.of(context)
         .pushNamed('/stud_add_super_screen', arguments: false);
     if (result == true) {
-      final response = await ref.watch(studentServiceProvider).getStudentInfo();
-      response.fold(
-        (failure) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('${failure.statusCode}: ${failure.detail}'),
-            ),
-          );
-        },
-        (success) {
-          if (mounted) {
-            setState(() {
-              ref.watch(statusProvider).setGroup(
-                    success.teamId,
-                    success.groupName,
-                  );
-            });
-          }
-        },
-      );
+      setState(() {});
     }
   }
 
   onAccountPressed() {
     Navigator.of(context).pushNamed('/user_manage_account_screen');
+  }
+
+  waitForParentInfo() async {
+    final response = await ref.watch(studentServiceProvider).getParentInfo();
+    response.fold(
+      (failure) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('${failure.statusCode}: ${failure.detail}'),
+          ),
+        );
+      },
+      (success) {
+        ref.watch(statusProvider).setParent(success.name);
+        setState(() {});
+      },
+    );
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    waitForParentInfo();
   }
 
   @override
@@ -378,35 +382,6 @@ class Info extends ConsumerStatefulWidget {
 }
 
 class _InfoState extends ConsumerState<Info> {
-  String parent = '';
-
-  waitForParentInfo() async {
-    final response = await ref.watch(studentServiceProvider).getParentInfo();
-    response.fold(
-      (failure) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('${failure.statusCode}: ${failure.detail}'),
-          ),
-        );
-      },
-      (success) {
-        if (mounted) {
-          setState(() {
-            parent = success.name;
-          });
-        }
-      },
-    );
-  }
-
-  @override
-  void didChangeDependencies() {
-    // TODO: implement didChangeDependencies
-    super.didChangeDependencies();
-    waitForParentInfo();
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -559,7 +534,7 @@ class _InfoState extends ConsumerState<Info> {
                     ),
                     SizedBox(width: 21.r),
                     Text(
-                      parent,
+                      ref.watch(statusProvider).parentName ?? '연결된 관리자가 없어요',
                       style: TextStyle(
                         fontSize: 16.sp,
                         fontWeight: FontWeight.w700,

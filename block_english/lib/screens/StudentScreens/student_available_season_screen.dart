@@ -45,12 +45,6 @@ class _StudentAvailableSeasonScreenState
         );
       },
       (success) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('${success.statusCode} : ${success.detail}'),
-          ),
-        );
-
         ref.watch(statusProvider).setAvailableSeason(seasons);
         if (mounted) {
           Navigator.of(context).pushNamedAndRemoveUntil(
