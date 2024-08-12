@@ -43,6 +43,8 @@ class _LoadProblemScreenState extends ConsumerState<LoadProblemScreen> {
                 problemsModel: problemsModel,
                 level: widget.level,
                 step: widget.step,
+                totalNumber: problemsModel.problems.length,
+                correctNumber: 0,
               )));
     });
   }
