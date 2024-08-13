@@ -8,6 +8,10 @@ class ProblemsModel {
     return problems.removeAt(0);
   }
 
+  void addProblem(ProblemEntry problemEntry) {
+    problems.add(problemEntry);
+  }
+
   ProblemsModel({required this.problems});
 
   static ProblemsModel fromJson(
