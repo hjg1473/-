@@ -121,9 +121,9 @@ class StudentService {
                 );
           }
         }
-      }
-      if (response.data['parent_id'] != null) {
-        debugPrint('parent_id: ${response.data['parent_id']}');
+      } else if (response.data['name'] != null) {
+        debugPrint('parent_name: ${response.data['name']}');
+        _ref.watch(statusProvider).setParent(response.data['name']);
       }
 
       return Right(PinEnterResponse.fromJson(response.data));

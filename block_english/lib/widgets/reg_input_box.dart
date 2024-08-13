@@ -22,7 +22,7 @@ class RegInputBox extends StatelessWidget {
   const RegInputBox({
     super.key,
     this.width = 332,
-    this.height = 64,
+    this.height = 72,
     required this.labelText,
     required this.hintText,
     required this.controller,
@@ -42,7 +42,7 @@ class RegInputBox extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: width.r,
-      //height: height.r,
+      height: height.r,
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(8).w,

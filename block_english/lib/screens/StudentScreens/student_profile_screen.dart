@@ -133,7 +133,7 @@ class _StudentProfileScreenState extends ConsumerState<StudentProfileScreen> {
                         }
                       },
                       style: FilledButton.styleFrom(
-                        minimumSize: Size(302.r, 44.r),
+                        minimumSize: Size(302.w, 44.r),
                         backgroundColor: currentPage == 1
                             ? selectedBackgroundColor
                             : unselectedBackgroundColor,
@@ -323,38 +323,41 @@ class _StudentProfileScreenState extends ConsumerState<StudentProfileScreen> {
                   right: 64,
                 ).r,
                 child: SizedBox(
-                  width: 318.r,
+                  width: 302.r,
                   height: 319.r,
-                  child: Navigator(
-                    key: _navigatorKey,
-                    initialRoute: info,
-                    onGenerateRoute: (settings) {
-                      return CustomRoute(
-                        //fullscreenDialog: true,
-                        builder: (context) {
-                          switch (settings.name) {
-                            case info:
-                              return Info(
-                                onChangePasswordPressed:
-                                    onChangePasswordPressed,
-                                onAddSuperPressed: onAddSuperPressed,
-                                onAccountPressed: onAccountPressed,
-                              );
-                            case season:
-                              return const Season();
-                            case setting:
-                              return const Settings();
-                            default:
-                              return Info(
-                                onChangePasswordPressed:
-                                    onChangePasswordPressed,
-                                onAddSuperPressed: onAddSuperPressed,
-                                onAccountPressed: onAccountPressed,
-                              );
-                          }
-                        },
-                      );
-                    },
+                  child: Align(
+                    alignment: Alignment.centerRight,
+                    child: Navigator(
+                      key: _navigatorKey,
+                      initialRoute: info,
+                      onGenerateRoute: (settings) {
+                        return CustomRoute(
+                          //fullscreenDialog: true,
+                          builder: (context) {
+                            switch (settings.name) {
+                              case info:
+                                return Info(
+                                  onChangePasswordPressed:
+                                      onChangePasswordPressed,
+                                  onAddSuperPressed: onAddSuperPressed,
+                                  onAccountPressed: onAccountPressed,
+                                );
+                              case season:
+                                return const Season();
+                              case setting:
+                                return const Settings();
+                              default:
+                                return Info(
+                                  onChangePasswordPressed:
+                                      onChangePasswordPressed,
+                                  onAddSuperPressed: onAddSuperPressed,
+                                  onAccountPressed: onAccountPressed,
+                                );
+                            }
+                          },
+                        );
+                      },
+                    ),
                   ),
                 ),
               ),
@@ -689,7 +692,7 @@ class _SeasonState extends ConsumerState<Season> {
                   selectedSeason[0]
                       ? 'assets/buttons/season_1_selected_small.png'
                       : 'assets/buttons/season_1_unselected_small.png',
-                  width: 153.r,
+                  width: 145.r,
                   height: 50.r,
                 ),
               ),
@@ -707,7 +710,7 @@ class _SeasonState extends ConsumerState<Season> {
                   selectedSeason[1]
                       ? 'assets/buttons/season_2_selected_small.png'
                       : 'assets/buttons/season_2_unselected_small.png',
-                  width: 153.r,
+                  width: 145.r,
                   height: 50.r,
                 ),
               ),

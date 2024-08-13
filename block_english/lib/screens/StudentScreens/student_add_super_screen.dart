@@ -106,9 +106,6 @@ class _StudentAddSuperScreenState extends ConsumerState<StudentAddSuperScreen> {
           Navigator.of(context).pushReplacement(
               MaterialPageRoute(builder: (context) => const SuccessScreen()));
         } else {
-          if (success.parentName != null) {
-            ref.watch(statusProvider).setParent(success.parentName);
-          }
           Navigator.of(context).pop(true);
         }
       },
@@ -129,7 +126,7 @@ class _StudentAddSuperScreenState extends ConsumerState<StudentAddSuperScreen> {
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   SizedBox(
-                    height: 307.r,
+                    height: 1.sh - 68.r,
                     child: Padding(
                       padding: const EdgeInsets.only(
                         top: 32,
