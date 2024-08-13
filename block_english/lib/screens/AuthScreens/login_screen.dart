@@ -68,7 +68,19 @@ class _LoginState extends ConsumerState<LoginScreen> {
         await ref.watch(authServiceProvider).postAuthToken(username, password);
 
     result.fold((failure) {
-      if (mounted) {
+      if (failure.statusCode == 200) {
+        if (failure.detail == 'username') {
+          setState(() {
+            usernameError = true;
+            usernameErrorMsg = '존재하지 않는 아이디입니다';
+          });
+        } else if (failure.detail == 'password') {
+          setState(() {
+            passwordError = true;
+            passwordErrorMsg = '비밀번호를 다시 확인해 주세요';
+          });
+        }
+      } else if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('${failure.statusCode}: ${failure.detail}'),

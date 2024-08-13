@@ -136,6 +136,21 @@ class AuthService {
 
       return Right(LoginResponseModel.fromJson(response.data));
     } on DioException catch (e) {
+      if (e.response?.statusCode == 200) {
+        String errorcode = '';
+        if (e.response?.data['username_correct'] == true) {
+          errorcode = 'password';
+        } else {
+          errorcode = 'username';
+        }
+
+        return Left(
+          FailureModel(
+            statusCode: 200,
+            detail: errorcode,
+          ),
+        );
+      }
       return Left(FailureModel(
         statusCode: e.response?.statusCode ?? 0,
         detail: e.response?.data['detail'] ?? '',
