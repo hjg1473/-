@@ -73,15 +73,10 @@ class _StudentResultScreenState extends State<StudentResultScreen> {
     super.initState();
 
     nextCorrectNumber = widget.correctNumber;
-
     results = widget.problemOcrModel.userInput;
-
-    // correct = true;
     correct =
         (widget.currentProblem.answer == widget.problemOcrModel.userInput);
-
-    // if (correct)
-    {
+    if (correct) {
       nextCorrectNumber++;
     }
   }
@@ -318,8 +313,13 @@ class _StudentResultScreenState extends State<StudentResultScreen> {
                       onPressed: () {
                         Navigator.of(context).pushAndRemoveUntil(
                           MaterialPageRoute(builder: (context) {
+                            ProblemsModel nextProblemsModel =
+                                widget.problemsModel;
+
+                            nextProblemsModel.addProblem(widget.currentProblem);
+
                             return StudentSolveScreen(
-                              problemsModel: widget.problemsModel,
+                              problemsModel: nextProblemsModel,
                               level: widget.level,
                               step: widget.step,
                               totalNumber: widget.totalNumber,

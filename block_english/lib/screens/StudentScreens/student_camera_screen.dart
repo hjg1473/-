@@ -103,6 +103,7 @@ class _StudentCameraScreenState extends ConsumerState<StudentCameraScreen> {
 
   @override
   void dispose() {
+    throttle.cancel();
     controller.dispose();
     super.dispose();
   }
@@ -293,7 +294,7 @@ class _StudentCameraScreenState extends ConsumerState<StudentCameraScreen> {
                     ),
                     onPressed: () {
                       if (controller.value.isInitialized) {
-                        throttle.setValue(null);
+                        throttle.notify(null);
                       }
                     },
                   ),
