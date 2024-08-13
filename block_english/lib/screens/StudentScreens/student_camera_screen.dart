@@ -5,6 +5,7 @@ import 'package:block_english/services/problem_service.dart';
 import 'package:block_english/utils/camera.dart';
 import 'package:block_english/utils/process_image.dart';
 import 'package:camera/camera.dart';
+import 'package:debounce_throttle/debounce_throttle.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -36,6 +37,12 @@ class StudentCameraScreen extends ConsumerStatefulWidget {
 
 class _StudentCameraScreenState extends ConsumerState<StudentCameraScreen> {
   late CameraController controller;
+
+  final throttle = Throttle(
+    const Duration(seconds: 3),
+    initialValue: null,
+    checkEquality: false,
+  );
 
   Future<void> _takePicture() async {
     if (!controller.value.isInitialized) {
@@ -88,6 +95,9 @@ class _StudentCameraScreenState extends ConsumerState<StudentCameraScreen> {
             break;
         }
       }
+    });
+    throttle.values.listen((_) {
+      _takePicture();
     });
   }
 
@@ -282,7 +292,9 @@ class _StudentCameraScreenState extends ConsumerState<StudentCameraScreen> {
                       color: const Color(0xFFD4D4D4),
                     ),
                     onPressed: () {
-                      if (controller.value.isInitialized) _takePicture();
+                      if (controller.value.isInitialized) {
+                        throttle.setValue(null);
+                      }
                     },
                   ),
                 ),
