@@ -22,7 +22,7 @@ class RegInputBox extends StatelessWidget {
   const RegInputBox({
     super.key,
     this.width = 332,
-    this.height = 64,
+    this.height = 72,
     required this.labelText,
     required this.hintText,
     required this.controller,
@@ -85,7 +85,7 @@ class RegInputBox extends StatelessWidget {
                                 errorMessage,
                                 style: TextStyle(
                                   color: success ? Colors.green : Colors.red,
-                                  fontSize: 11.r,
+                                  fontSize: 11.sp,
                                 ),
                               ),
                             ],

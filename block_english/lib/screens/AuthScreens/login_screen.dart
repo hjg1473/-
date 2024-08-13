@@ -1,5 +1,7 @@
 import 'package:block_english/services/auth_service.dart';
+import 'package:block_english/services/student_service.dart';
 import 'package:block_english/utils/constants.dart';
+import 'package:block_english/utils/status.dart';
 import 'package:block_english/utils/storage.dart';
 import 'package:block_english/widgets/square_button.dart';
 import 'package:flutter/material.dart';
@@ -98,9 +100,33 @@ class _LoginState extends ConsumerState<LoginScreen> {
 
       if (mounted) {
         if (role == UserType.student.name) {
-          Navigator.of(context).pushNamedAndRemoveUntil(
-            '/stud_mode_select_screen',
-            (Route<dynamic> route) => false,
+          final response =
+              await ref.watch(studentServiceProvider).getSeasonInfo();
+
+          response.fold(
+            (failure) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content:
+                      Text('시즌 조회 ${failure.statusCode}: ${failure.detail}'),
+                ),
+              );
+            },
+            (seasons) {
+              debugPrint('get: $seasons');
+              ref.watch(statusProvider).setAvailableSeason(seasons);
+              if (seasons.isEmpty) {
+                Navigator.of(context).pushNamedAndRemoveUntil(
+                  '/stud_available_season_screen',
+                  (Route<dynamic> route) => false,
+                );
+              } else {
+                Navigator.of(context).pushNamedAndRemoveUntil(
+                  '/stud_mode_select_screen',
+                  (Route<dynamic> route) => false,
+                );
+              }
+            },
           );
         } else if (role == UserType.teacher.name ||
             role == UserType.parent.name) {
@@ -163,7 +189,7 @@ class _LoginState extends ConsumerState<LoginScreen> {
                         right: 64,
                       ).r,
                       child: SizedBox(
-                        height: 269.r,
+                        height: 1.sh - 106.r,
                         child: Column(
                           children: [
                             Row(

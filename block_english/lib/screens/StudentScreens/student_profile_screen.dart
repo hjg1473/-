@@ -53,34 +53,38 @@ class _StudentProfileScreenState extends ConsumerState<StudentProfileScreen> {
   }
 
   onAddSuperPressed() async {
-    final result =
-        await Navigator.of(context).pushNamed('/stud_add_super_screen');
+    final result = await Navigator.of(context)
+        .pushNamed('/stud_add_super_screen', arguments: false);
     if (result == true) {
-      final response = await ref.watch(studentServiceProvider).getStudentInfo();
-      response.fold(
-        (failure) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('${failure.statusCode}: ${failure.detail}'),
-            ),
-          );
-        },
-        (success) {
-          if (mounted) {
-            setState(() {
-              ref.watch(statusProvider).setGroup(
-                    success.teamId,
-                    success.groupName,
-                  );
-            });
-          }
-        },
-      );
+      setState(() {});
     }
   }
 
   onAccountPressed() {
     Navigator.of(context).pushNamed('/user_manage_account_screen');
+  }
+
+  waitForParentInfo() async {
+    final response = await ref.watch(studentServiceProvider).getParentInfo();
+    response.fold(
+      (failure) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('${failure.statusCode}: ${failure.detail}'),
+          ),
+        );
+      },
+      (success) {
+        ref.watch(statusProvider).setParent(success.name);
+        setState(() {});
+      },
+    );
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    waitForParentInfo();
   }
 
   @override
@@ -129,7 +133,7 @@ class _StudentProfileScreenState extends ConsumerState<StudentProfileScreen> {
                         }
                       },
                       style: FilledButton.styleFrom(
-                        minimumSize: Size(302.r, 44.r),
+                        minimumSize: Size(302.w, 44.r),
                         backgroundColor: currentPage == 1
                             ? selectedBackgroundColor
                             : unselectedBackgroundColor,
@@ -321,36 +325,39 @@ class _StudentProfileScreenState extends ConsumerState<StudentProfileScreen> {
                 child: SizedBox(
                   width: 302.r,
                   height: 319.r,
-                  child: Navigator(
-                    key: _navigatorKey,
-                    initialRoute: info,
-                    onGenerateRoute: (settings) {
-                      return CustomRoute(
-                        //fullscreenDialog: true,
-                        builder: (context) {
-                          switch (settings.name) {
-                            case info:
-                              return Info(
-                                onChangePasswordPressed:
-                                    onChangePasswordPressed,
-                                onAddSuperPressed: onAddSuperPressed,
-                                onAccountPressed: onAccountPressed,
-                              );
-                            case season:
-                              return const Season();
-                            case setting:
-                              return const Settings();
-                            default:
-                              return Info(
-                                onChangePasswordPressed:
-                                    onChangePasswordPressed,
-                                onAddSuperPressed: onAddSuperPressed,
-                                onAccountPressed: onAccountPressed,
-                              );
-                          }
-                        },
-                      );
-                    },
+                  child: Align(
+                    alignment: Alignment.centerRight,
+                    child: Navigator(
+                      key: _navigatorKey,
+                      initialRoute: info,
+                      onGenerateRoute: (settings) {
+                        return CustomRoute(
+                          //fullscreenDialog: true,
+                          builder: (context) {
+                            switch (settings.name) {
+                              case info:
+                                return Info(
+                                  onChangePasswordPressed:
+                                      onChangePasswordPressed,
+                                  onAddSuperPressed: onAddSuperPressed,
+                                  onAccountPressed: onAccountPressed,
+                                );
+                              case season:
+                                return const Season();
+                              case setting:
+                                return const Settings();
+                              default:
+                                return Info(
+                                  onChangePasswordPressed:
+                                      onChangePasswordPressed,
+                                  onAddSuperPressed: onAddSuperPressed,
+                                  onAccountPressed: onAccountPressed,
+                                );
+                            }
+                          },
+                        );
+                      },
+                    ),
                   ),
                 ),
               ),
@@ -393,7 +400,7 @@ class _InfoState extends ConsumerState<Info> {
           ),
           const Spacer(flex: 3),
           Container(
-            width: 302.r,
+            width: 318.r,
             height: 58.r,
             padding: const EdgeInsets.symmetric(
               horizontal: 16,
@@ -529,9 +536,8 @@ class _InfoState extends ConsumerState<Info> {
                       ),
                     ),
                     SizedBox(width: 21.r),
-                    // TODO: Change this to the actual name of parent
                     Text(
-                      '연결된 관리자가 없어요',
+                      ref.watch(statusProvider).parentName ?? '연결된 관리자가 없어요',
                       style: TextStyle(
                         fontSize: 16.sp,
                         fontWeight: FontWeight.w700,
@@ -592,32 +598,123 @@ class _InfoState extends ConsumerState<Info> {
   }
 }
 
-class Season extends StatelessWidget {
+class Season extends ConsumerStatefulWidget {
   const Season({super.key});
 
   @override
+  ConsumerState<Season> createState() => _SeasonState();
+}
+
+class _SeasonState extends ConsumerState<Season> {
+  late List<int> availableSeason;
+  late List<bool> selectedSeason = List.filled(2, false);
+
+  onPressed() async {
+    for (int i = 0; i < selectedSeason.length; i++) {
+      if (selectedSeason[i] && !availableSeason.contains(i + 1)) {
+        availableSeason.add(i + 1);
+      }
+    }
+
+    final response = await ref
+        .watch(studentServiceProvider)
+        .putUpdateSeason(availableSeason);
+    response.fold(
+      (failure) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('${failure.statusCode}: ${failure.detail}'),
+          ),
+        );
+      },
+      (success) {
+        ref.watch(statusProvider).setAvailableSeason(availableSeason);
+        if (mounted) {
+          setState(() {});
+        }
+      },
+    );
+  }
+
+  @override
   Widget build(BuildContext context) {
+    availableSeason = ref.watch(statusProvider).availableSeason;
+    for (int i = 0; i < availableSeason.length; i++) {
+      selectedSeason[i] = true;
+    }
+
     return Scaffold(
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            '블록 잉글리시 보유 시즌 추가',
-            style: TextStyle(
-              fontSize: 18.sp,
-              fontWeight: FontWeight.w800,
-            ),
+          Row(
+            children: [
+              Text(
+                '블록 잉글리시 보유 시즌 추가',
+                style: TextStyle(
+                  fontSize: 18.sp,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+              const Spacer(),
+              SizedBox(
+                width: 30.r,
+                height: 30.r,
+                child: IconButton(
+                  padding: EdgeInsets.zero,
+                  onPressed: onPressed,
+                  icon: const Icon(
+                    Icons.check,
+                    color: Colors.white,
+                  ),
+                  style: IconButton.styleFrom(
+                    padding: EdgeInsets.zero,
+                    iconSize: 18.r,
+                    backgroundColor: const Color(0xFF93E54C),
+                  ),
+                ),
+              ),
+            ],
           ),
           SizedBox(height: 12.r),
-          //TODO: Change this to the actual season list
-          IconButton(
-            padding: EdgeInsets.zero,
-            onPressed: null,
-            icon: SvgPicture.asset(
-              'assets/buttons/season_1_button.svg',
-              width: 153.r,
-              height: 50.r,
-            ),
+          Row(
+            children: [
+              IconButton(
+                padding: EdgeInsets.zero,
+                onPressed: availableSeason.contains(1)
+                    ? null
+                    : () {
+                        setState(() {
+                          selectedSeason[0] = !selectedSeason[0];
+                        });
+                      },
+                icon: Image.asset(
+                  selectedSeason[0]
+                      ? 'assets/buttons/season_1_selected_small.png'
+                      : 'assets/buttons/season_1_unselected_small.png',
+                  width: 145.r,
+                  height: 50.r,
+                ),
+              ),
+              const Spacer(),
+              IconButton(
+                padding: EdgeInsets.zero,
+                onPressed: availableSeason.contains(2)
+                    ? null
+                    : () {
+                        setState(() {
+                          selectedSeason[1] = !selectedSeason[1];
+                        });
+                      },
+                icon: Image.asset(
+                  selectedSeason[1]
+                      ? 'assets/buttons/season_2_selected_small.png'
+                      : 'assets/buttons/season_2_unselected_small.png',
+                  width: 145.r,
+                  height: 50.r,
+                ),
+              ),
+            ],
           ),
         ],
       ),

@@ -86,8 +86,6 @@ flutter:
     - assets/cards/
     - assets/progressbar/
 
-    - assets/images/monitor_character_1.png
-
   # To add assets to your application, add an assets section, like this:
   # assets:
   #   - images/a_dot_burr.jpeg

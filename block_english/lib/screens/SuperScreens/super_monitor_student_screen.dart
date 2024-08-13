@@ -412,6 +412,9 @@ class _LearningAnalysisState extends ConsumerState<LearningAnalysis> {
       );
     }, (data) {
       studyInfo = data;
+      if (studyInfo.isEmpty) {
+        return;
+      }
       StudyInfoModel last = studyInfo.last;
       for (int i = 0; i < last.releasedLevel!; i++) {
         forCorrectRate.add(last.correctRateNormal![i] + last.correctRateAI![i]);
@@ -711,7 +714,10 @@ class _IncorrectState extends ConsumerState<Incorrect> {
                 Positioned(
                   left: 0,
                   bottom: 0,
-                  child: Image.asset('assets/images/monitor_character_2.png'),
+                  child: Image.asset(
+                    'assets/images/monitor_character_2.png',
+                    width: 72.r,
+                  ),
                 ),
                 Positioned(
                   left: 86.r,

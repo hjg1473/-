@@ -51,6 +51,7 @@ class _MonitorGroupScreenState extends ConsumerState<MonitorGroupScreen> {
   void didChangeDependencies() {
     super.didChangeDependencies();
     waitForStudents();
+    debugPrint(widget.groupId.toString());
   }
 
   @override
@@ -141,6 +142,7 @@ class _MonitorGroupScreenState extends ConsumerState<MonitorGroupScreen> {
                 )
               ],
             ),
+            SizedBox(height: 20.r),
             isLoading
                 ? const Center(
                     child: CircularProgressIndicator(),
