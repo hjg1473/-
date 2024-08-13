@@ -5,6 +5,7 @@ import 'package:block_english/models/ProblemModel/problems_model.dart';
 import 'package:block_english/screens/StudentScreens/student_solve_screen.dart';
 import 'package:block_english/utils/constants.dart';
 import 'package:block_english/widgets/square_button.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -77,8 +78,8 @@ class _StudentResultScreenState extends State<StudentResultScreen> {
     results = widget.problemOcrModel.userInput;
 
     // correct = true;
-    correct =
-        (widget.currentProblem.answer == widget.problemOcrModel.userInput);
+    correct = listEquals(
+        widget.currentProblem.answer, widget.problemOcrModel.userInput);
 
     // if (correct)
     {

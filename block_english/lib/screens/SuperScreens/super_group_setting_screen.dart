@@ -1,7 +1,8 @@
+import 'dart:async';
+
 import 'package:block_english/screens/SuperScreens/super_monitor_group_screen.dart';
 import 'package:block_english/services/super_service.dart';
 import 'package:block_english/widgets/GroupWidget/pin_code_widget.dart';
-import 'package:debounce_throttle/debounce_throttle.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
@@ -30,6 +31,7 @@ class _GroupSettingScreenState extends ConsumerState<GroupSettingScreen>
     with SingleTickerProviderStateMixin {
   final TextEditingController _groupNameController = TextEditingController();
   final TextEditingController _detailController = TextEditingController();
+  late StreamController<bool> _btnController;
 
   int groupId = 0;
 
@@ -42,8 +44,6 @@ class _GroupSettingScreenState extends ConsumerState<GroupSettingScreen>
   Ticker? _ticker;
   Duration _elapsed = Duration.zero;
 
-  late Throttle _throttle;
-
   @override
   void initState() {
     super.initState();
@@ -52,17 +52,14 @@ class _GroupSettingScreenState extends ConsumerState<GroupSettingScreen>
     _detailController.text = widget.detailText;
     savedDetail = widget.detailText;
     groupId = widget.groupId;
-    _throttle = Throttle<String>(
-      const Duration(milliseconds: 5000),
-      initialValue: '',
-      checkEquality: false,
-    )..values.listen((_) => onPinGeneratePressed());
+    _btnController = StreamController<bool>();
   }
 
   @override
   void dispose() {
     _groupNameController.dispose();
     _detailController.dispose();
+    _btnController.close();
     super.dispose();
   }
 
@@ -83,6 +80,9 @@ class _GroupSettingScreenState extends ConsumerState<GroupSettingScreen>
   }
 
   onPinGeneratePressed() async {
+    if (_btnController.isClosed) return;
+    _btnController.add(false);
+
     final result =
         await ref.watch(superServiceProvider).postPinNumber(widget.groupId);
 
@@ -91,6 +91,9 @@ class _GroupSettingScreenState extends ConsumerState<GroupSettingScreen>
       debugPrint('[SUPER_GROUP_SETTING_SCREEN] onPinGenerated error');
       debugPrint(
           '[ERROR] code: ${failure.statusCode} detail: ${failure.detail}');
+
+      if (_btnController.isClosed) return;
+      _btnController.add(true);
     }, (pinModel) {
       _ticker ??= createTicker((elapsed) {
         setState(() {
@@ -99,6 +102,8 @@ class _GroupSettingScreenState extends ConsumerState<GroupSettingScreen>
           if (_elapsed.inSeconds >= 180) {
             pinCodeExpired = true;
             _ticker!.stop();
+            if (_btnController.isClosed) return;
+            _btnController.add(true);
           }
         });
       });
@@ -351,7 +356,7 @@ class _GroupSettingScreenState extends ConsumerState<GroupSettingScreen>
                           GestureDetector(
                             onTap: (pinCodeExpired || !pinCodeExist)
                                 ? () {
-                                    _throttle.setValue(_pinCode);
+                                    onPinGeneratePressed();
                                   }
                                 : null,
                             child: Container(

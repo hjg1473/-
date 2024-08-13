@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:block_english/models/ProblemModel/problems_model.dart';
 import 'package:block_english/screens/StudentScreens/student_result_screen.dart';
 import 'package:block_english/screens/StudentScreens/wait_ocr_screen.dart';
@@ -37,17 +39,15 @@ class StudentCameraScreen extends ConsumerStatefulWidget {
 
 class _StudentCameraScreenState extends ConsumerState<StudentCameraScreen> {
   late CameraController controller;
-
-  final throttle = Throttle(
-    const Duration(seconds: 3),
-    initialValue: null,
-    checkEquality: false,
-  );
+  late StreamController<bool> _btnController;
 
   Future<void> _takePicture() async {
     if (!controller.value.isInitialized) {
       return;
     }
+
+    if (_btnController.isClosed) return;
+    _btnController.add(false);
 
     try {
       final xFile = await controller.takePicture();
@@ -68,6 +68,8 @@ class _StudentCameraScreenState extends ConsumerState<StudentCameraScreen> {
       // TODO: error handling
       debugPrint('[CAMERA]: _takePicture $e');
     }
+    if (_btnController.isClosed) return;
+    _btnController.add(true);
   }
 
   @override
@@ -96,14 +98,13 @@ class _StudentCameraScreenState extends ConsumerState<StudentCameraScreen> {
         }
       }
     });
-    throttle.values.listen((_) {
-      _takePicture();
-    });
+    _btnController = StreamController<bool>();
   }
 
   @override
   void dispose() {
     controller.dispose();
+    _btnController.close();
     super.dispose();
   }
 
@@ -293,7 +294,7 @@ class _StudentCameraScreenState extends ConsumerState<StudentCameraScreen> {
                     ),
                     onPressed: () {
                       if (controller.value.isInitialized) {
-                        throttle.setValue(null);
+                        _takePicture();
                       }
                     },
                   ),
