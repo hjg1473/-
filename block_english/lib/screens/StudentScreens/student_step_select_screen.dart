@@ -47,7 +47,7 @@ class _StudentStepSelectScreenState
     return (ref
             .watch(statusProvider)
             .releaseStatus[ref.watch(statusProvider).season]!
-            .currentLevel <=
+            .currentLevel <
         level);
   }
 
@@ -55,7 +55,7 @@ class _StudentStepSelectScreenState
     return (ref
             .watch(statusProvider)
             .releaseStatus[ref.watch(statusProvider).season]!
-            .currentStep <=
+            .currentStep <
         step);
   }
 
@@ -153,50 +153,47 @@ class _StudentStepSelectScreenState
                               ));
                             });
                           },
-                          child: ClipOval(
-                            child: Container(
+                          child: Container(
+                            alignment: Alignment.center,
+                            width: 78.r,
+                            height: 78.r,
+                            child: Stack(
                               alignment: Alignment.center,
-                              width: 78.r,
-                              height: 78.r,
-                              color: isStepLocked(index)
-                                  ? const Color(0xFF999999)
-                                  : const Color(0xFFB132FE),
-                              child: Stack(
-                                alignment: Alignment.center,
-                                children: [
-                                  index != numberOfSteps
-                                      ? Text(
-                                          'STEP ${index + 1}',
-                                          style: TextStyle(
-                                            fontSize: 16.sp,
-                                            fontWeight: FontWeight.w700,
-                                            color: Colors.white,
+                              children: [
+                                if (isStepLocked(index))
+                                  SvgPicture.asset(
+                                    'assets/buttons/disabled_step_button.svg',
+                                    width: 76.r,
+                                    height: 76.r,
+                                  ),
+                                if (!isStepLocked(index))
+                                  SvgPicture.asset(
+                                    'assets/buttons/enabled_step_button.svg',
+                                    width: 76.r,
+                                    height: 76.r,
+                                  ),
+                                if (!isStepLocked(index))
+                                  Align(
+                                    alignment: const Alignment(0, 0.3),
+                                    child: index != numberOfSteps
+                                        ? Text(
+                                            'STEP ${index + 1}',
+                                            style: TextStyle(
+                                              fontSize: 18.sp,
+                                              fontWeight: FontWeight.w800,
+                                              color: Colors.white,
+                                            ),
+                                          )
+                                        : Text(
+                                            '오답',
+                                            style: TextStyle(
+                                              fontSize: 18.sp,
+                                              fontWeight: FontWeight.w800,
+                                              color: Colors.white,
+                                            ),
                                           ),
-                                        )
-                                      : Text(
-                                          '오답',
-                                          style: TextStyle(
-                                            fontSize: 16.sp,
-                                            fontWeight: FontWeight.w700,
-                                            color: Colors.white,
-                                          ),
-                                        ),
-                                  if (isStepLocked(index))
-                                    Center(
-                                      child: Icon(
-                                        Icons.lock,
-                                        size: 28.r,
-                                        color: const Color(0xFFFFFBDA),
-                                        shadows: const [
-                                          Shadow(
-                                            color: Colors.black,
-                                            blurRadius: 10,
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                ],
-                              ),
+                                  )
+                              ],
                             ),
                           ),
                         );

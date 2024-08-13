@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import 'package:block_english/models/model.dart';
 import 'package:block_english/utils/constants.dart';
 import 'package:block_english/utils/dio.dart';
+import 'package:block_english/utils/status.dart';
 import 'package:dartz/dartz.dart';
 import 'package:dio/dio.dart';
 import 'package:http_parser/http_parser.dart';
@@ -26,6 +27,38 @@ class ProblemService {
 
   ProblemService(ProblemServiceRef ref) {
     _ref = ref;
+  }
+
+  Future<Either<FailureModel, Response>> postProblemEnd() async {
+    final dio = _ref.watch(dioProvider);
+
+    try {
+      final response = await dio.post(
+        '/$_problem/study_end',
+        options: Options(
+          headers: {
+            'accept': 'application/json',
+            TOKENVALIDATE: 'true',
+          },
+        ),
+        queryParameters: {
+          'mode_str': modeToString(_ref.watch(statusProvider).studentMode),
+        },
+      );
+      for (Map<String, dynamic> info in response.data['released']) {
+        _ref.watch(statusProvider).setStudentStatus(
+              intToSeason(info['season']),
+              ReleaseStatus(info['level'], info['step']),
+            );
+      }
+
+      return Right(response);
+    } on DioException catch (e) {
+      return Left(FailureModel(
+        statusCode: e.response?.statusCode ?? 0,
+        detail: e.response?.data['detail'] ?? "",
+      ));
+    }
   }
 
   Future<Either<FailureModel, ProblemPracticeInfoModel>> getProblemPracticeInfo(
@@ -80,7 +113,9 @@ class ProblemService {
   }
 
   Future<Either<FailureModel, ProblemOcrModel>> postProblemOCR(
-      Uint8List png) async {
+    Uint8List png,
+    int problemId,
+  ) async {
     final dio = _ref.watch(dioProvider);
 
     try {
@@ -99,6 +134,7 @@ class ProblemService {
             filename: 'ocr.png',
             contentType: MediaType('image', 'png'),
           ),
+          'problem_id': problemId,
         }),
       );
 

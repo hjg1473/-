@@ -1,5 +1,8 @@
+import 'dart:async';
+
 import 'package:block_english/models/ProblemModel/problems_model.dart';
 import 'package:block_english/screens/StudentScreens/student_result_screen.dart';
+import 'package:block_english/screens/StudentScreens/wait_ocr_screen.dart';
 import 'package:block_english/services/problem_service.dart';
 import 'package:block_english/utils/camera.dart';
 import 'package:block_english/utils/process_image.dart';
@@ -35,44 +38,37 @@ class StudentCameraScreen extends ConsumerStatefulWidget {
 
 class _StudentCameraScreenState extends ConsumerState<StudentCameraScreen> {
   late CameraController controller;
+  late StreamController<bool> _btnController;
 
   Future<void> _takePicture() async {
     if (!controller.value.isInitialized) {
       return;
     }
 
+    if (_btnController.isClosed) return;
+    _btnController.add(false);
+
     try {
       final xFile = await controller.takePicture();
 
-      final png = await ProcessImage.cropImage(xFile);
+      if (!mounted) return;
 
-      final result =
-          await ref.watch(problemServiceProvider).postProblemOCR(png);
-
-      result.fold(
-        (failure) {
-          // TODO: error handling
-        },
-        (problemOcrModel) {
-          Navigator.of(context).push(
-            MaterialPageRoute(
-              builder: (context) => StudentResultScreen(
+      Navigator.of(context).push(MaterialPageRoute(
+          builder: (context) => WaitOcrScreen(
                 level: widget.level,
                 step: widget.step,
                 problemsModel: widget.problemsModel,
                 currentProblem: widget.currentProblem,
-                problemOcrModel: problemOcrModel,
                 totalNumber: widget.totalNumber,
                 correctNumber: widget.correctNumber,
-              ),
-            ),
-          );
-        },
-      );
+                xFile: xFile,
+              )));
     } on Exception catch (e) {
       // TODO: error handling
       debugPrint('[CAMERA]: _takePicture $e');
     }
+    if (_btnController.isClosed) return;
+    _btnController.add(true);
   }
 
   @override
@@ -101,11 +97,13 @@ class _StudentCameraScreenState extends ConsumerState<StudentCameraScreen> {
         }
       }
     });
+    _btnController = StreamController<bool>();
   }
 
   @override
   void dispose() {
     controller.dispose();
+    _btnController.close();
     super.dispose();
   }
 
@@ -294,7 +292,9 @@ class _StudentCameraScreenState extends ConsumerState<StudentCameraScreen> {
                       color: const Color(0xFFD4D4D4),
                     ),
                     onPressed: () {
-                      if (controller.value.isInitialized) _takePicture();
+                      if (controller.value.isInitialized) {
+                        _takePicture();
+                      }
                     },
                   ),
                 ),

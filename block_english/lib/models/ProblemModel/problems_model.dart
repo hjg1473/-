@@ -8,6 +8,10 @@ class ProblemsModel {
     return problems.removeAt(0);
   }
 
+  void addProblem(ProblemEntry problemEntry) {
+    problems.add(problemEntry);
+  }
+
   ProblemsModel({required this.problems});
 
   static ProblemsModel fromJson(
@@ -16,19 +20,20 @@ class ProblemsModel {
 
     List<ProblemEntry> entries = [];
     for (var problem in problemList) {
+      final answer = problem['answer'] as List;
       if (studyMode == StudyMode.game) {
         entries.add(ProblemEntry(
           id: problem['id'],
-          question: problem['koreaProblem'],
-          answer: problem['englishProblem'],
+          question: problem['question'],
+          answer: answer.map((str) => str.toString()).toList(),
           studyMode: studyMode,
         ));
       } else {
         final colors = problem['blockColors'] as List;
         entries.add(ProblemEntry(
           id: problem['id'],
-          question: problem['koreaProblem'],
-          answer: problem['englishProblem'],
+          question: problem['question'],
+          answer: answer.map((str) => str.toString()).toList(),
           studyMode: studyMode,
           blockColors:
               colors.map((color) => stringToBlockColor(color)).toList(),
@@ -43,7 +48,7 @@ class ProblemsModel {
 class ProblemEntry {
   int id;
   String question;
-  String answer;
+  List<String> answer;
   StudyMode studyMode;
   List<BlockColor> blockColors;
 

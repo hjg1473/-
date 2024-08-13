@@ -1,12 +1,18 @@
+import 'dart:math';
+
 import 'package:block_english/models/ProblemModel/problems_model.dart';
 import 'package:block_english/screens/StudentScreens/student_camera_screen.dart';
+import 'package:block_english/services/problem_service.dart';
 import 'package:block_english/utils/constants.dart';
+import 'package:block_english/utils/status.dart';
 import 'package:block_english/widgets/square_button.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:lottie/lottie.dart';
 
-class StudentSolveScreen extends StatefulWidget {
+class StudentSolveScreen extends ConsumerStatefulWidget {
   const StudentSolveScreen({
     super.key,
     required this.problemsModel,
@@ -23,18 +29,48 @@ class StudentSolveScreen extends StatefulWidget {
   final int correctNumber;
 
   @override
-  State<StudentSolveScreen> createState() => _StudentSolveScreenState();
+  ConsumerState<StudentSolveScreen> createState() => _StudentSolveScreenState();
 }
 
-class _StudentSolveScreenState extends State<StudentSolveScreen> {
+class _StudentSolveScreenState extends ConsumerState<StudentSolveScreen> {
   late final ProblemEntry? currentProblem;
 
   @override
   void initState() {
     super.initState();
     currentProblem = widget.problemsModel.getProblem();
+    if (currentProblem == null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) async {
+        final response =
+            await ref.watch(problemServiceProvider).postProblemEnd();
+
+        response.fold(
+          (failure) {
+            debugPrint('[postProblemEnd] ${failure.detail}');
+          },
+          (response) {
+            debugPrint('[postProblemEnd] ${response.data}');
+          },
+        );
+      });
+    }
     debugPrint('[totalNumber] ${widget.totalNumber}');
     debugPrint('[correctNumber] ${widget.correctNumber}');
+  }
+
+  getRandomLottiePath() {
+    int rand = Random().nextInt(4);
+
+    switch (rand) {
+      case 0:
+        return 'assets/lottie/motion_1.json';
+      case 1:
+        return 'assets/lottie/motion_4.json';
+      case 2:
+        return 'assets/lottie/motion_7.json';
+      case 3:
+        return 'assets/lottie/motion_10.json';
+    }
   }
 
   @override
@@ -46,6 +82,11 @@ class _StudentSolveScreenState extends State<StudentSolveScreen> {
         color: const Color(0xFFFFEEF4),
         child: Stack(
           children: [
+            if (currentProblem == null)
+              Lottie.asset(
+                'assets/lottie/motion_30.json',
+                repeat: false,
+              ),
             Padding(
               padding: const EdgeInsets.symmetric(
                 horizontal: 44,
@@ -175,22 +216,24 @@ class _StudentSolveScreenState extends State<StudentSolveScreen> {
                                 height: 14.r,
                               ),
                               SizedBox(
-                                width: 522.r,
-                                height: 135.r,
+                                width: 630.r,
+                                height: 180.r,
                                 child: Row(
                                   mainAxisAlignment:
                                       MainAxisAlignment.spaceBetween,
                                   crossAxisAlignment: CrossAxisAlignment.center,
                                   children: [
-                                    Container(
-                                      width: 190.r,
-                                      height: 135.r,
-                                      color: Colors.blue,
+                                    SizedBox(
+                                      width: 280.r,
+                                      height: 180.r,
+                                      child: Lottie.asset(
+                                        getRandomLottiePath(),
+                                      ),
                                     ),
                                     Container(
                                       alignment: Alignment.center,
-                                      width: 268.r,
-                                      height: 98.r,
+                                      width: 350.r,
+                                      height: 122.r,
                                       decoration: BoxDecoration(
                                           color: Colors.white,
                                           borderRadius:
@@ -218,12 +261,77 @@ class _StudentSolveScreenState extends State<StudentSolveScreen> {
                           ),
                         )
                       : Positioned(
-                          left: 88.r,
-                          top: 60.r,
-                          child: Container(
-                            width: 572.r,
-                            height: 218.r,
-                            color: Colors.green,
+                          left: 95.r,
+                          top: 41.r,
+                          child: SizedBox(
+                            width: 565.r,
+                            height: 272.r,
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                SizedBox(
+                                  width: 250.r,
+                                  height: 272.r,
+                                  child: Lottie.asset(
+                                    'assets/lottie/motion_14.json',
+                                  ),
+                                ),
+                                Align(
+                                  alignment: const Alignment(0, -0.3),
+                                  child: Stack(
+                                    alignment: Alignment.center,
+                                    children: [
+                                      SvgPicture.asset(
+                                        'assets/images/speechBallon.svg',
+                                        width: 260.r,
+                                        height: 140.r,
+                                      ),
+                                      SizedBox(
+                                        width: 115.r,
+                                        height: 91.r,
+                                        child: Column(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.spaceBetween,
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Container(
+                                              alignment: Alignment.center,
+                                              width: 80.r,
+                                              height: 34.r,
+                                              decoration: BoxDecoration(
+                                                color: Colors.pink[300],
+                                                borderRadius:
+                                                    BorderRadius.circular(40).r,
+                                              ),
+                                              child: Text(
+                                                'step ${widget.step + 1}',
+                                                style: TextStyle(
+                                                  fontSize: 16.sp,
+                                                  color: Colors.white,
+                                                ),
+                                              ),
+                                            ),
+                                            SizedBox(
+                                              width: 115.r,
+                                              height: 45.r,
+                                              child: Text(
+                                                'Clear!',
+                                                style: TextStyle(
+                                                  fontSize: 40.sp,
+                                                  fontWeight: FontWeight.w800,
+                                                ),
+                                              ),
+                                            )
+                                          ],
+                                        ),
+                                      )
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
                         ),
                 ],
@@ -241,7 +349,7 @@ class _StudentSolveScreenState extends State<StudentSolveScreen> {
                         onPressed: () {
                           Navigator.of(context).pushNamedAndRemoveUntil(
                               '/stud_step_select_screen',
-                              ModalRoute.withName('/stud_step_select_screen'));
+                              ModalRoute.withName('/stud_main_screen'));
                         },
                       ),
                     ),

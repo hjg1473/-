@@ -34,6 +34,17 @@ enum StudentMode {
   NONE,
 }
 
+String modeToString(StudentMode mode) {
+  switch (mode) {
+    case StudentMode.PRIVATE:
+      return 'solo';
+    case StudentMode.GROUP:
+      return 'group';
+    case StudentMode.NONE:
+      return 'none';
+  }
+}
+
 enum Season {
   NONE,
   SEASON1,

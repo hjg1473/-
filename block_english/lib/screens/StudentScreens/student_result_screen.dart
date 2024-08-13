@@ -1,11 +1,15 @@
+import 'dart:math';
+
 import 'package:block_english/models/ProblemModel/problem_ocr_model.dart';
 import 'package:block_english/models/ProblemModel/problems_model.dart';
 import 'package:block_english/screens/StudentScreens/student_solve_screen.dart';
 import 'package:block_english/utils/constants.dart';
 import 'package:block_english/widgets/square_button.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:lottie/lottie.dart';
 
 class StudentResultScreen extends StatefulWidget {
   const StudentResultScreen({
@@ -37,20 +41,45 @@ class _StudentResultScreenState extends State<StudentResultScreen> {
 
   bool correct = true;
 
+  getRandomLottiePath() {
+    int rand = Random().nextInt(4);
+
+    if (correct) {
+      switch (rand) {
+        case 0:
+          return 'assets/lottie/motion_2.json';
+        case 1:
+          return 'assets/lottie/motion_5.json';
+        case 2:
+          return 'assets/lottie/motion_8.json';
+        case 3:
+          return 'assets/lottie/motion_11.json';
+      }
+    } else {
+      switch (rand) {
+        case 0:
+          return 'assets/lottie/motion_3.json';
+        case 1:
+          return 'assets/lottie/motion_6.json';
+        case 2:
+          return 'assets/lottie/motion_9.json';
+        case 3:
+          return 'assets/lottie/motion_12.json';
+      }
+    }
+  }
+
   @override
   void initState() {
     super.initState();
 
     nextCorrectNumber = widget.correctNumber;
+    results = widget.problemOcrModel.userInput;
 
-    results = widget.problemOcrModel.userInput.split(' ');
+    correct = listEquals(
+        widget.currentProblem.answer, widget.problemOcrModel.userInput);
 
-    // correct = true;
-    correct =
-        (widget.currentProblem.answer == widget.problemOcrModel.userInput);
-
-    // if (correct)
-    {
+    if (correct) {
       nextCorrectNumber++;
     }
   }
@@ -116,7 +145,7 @@ class _StudentResultScreenState extends State<StudentResultScreen> {
                                   padding: const EdgeInsets.symmetric(
                                     horizontal: 10,
                                   ).r,
-                                  height: 36.r,
+                                  height: 50.r,
                                   child: Center(
                                     child: Text(
                                       'Step ${widget.step + 1}',
@@ -184,21 +213,23 @@ class _StudentResultScreenState extends State<StudentResultScreen> {
                           height: 14.r,
                         ),
                         SizedBox(
-                          width: 522.r,
-                          height: 135.r,
+                          width: 630.r,
+                          height: 180.r,
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             crossAxisAlignment: CrossAxisAlignment.center,
                             children: [
-                              Container(
-                                width: 190.r,
-                                height: 135.r,
-                                color: Colors.blue,
+                              SizedBox(
+                                width: 280.r,
+                                height: 180.r,
+                                child: Lottie.asset(
+                                  getRandomLottiePath(),
+                                ),
                               ),
                               Container(
                                 alignment: Alignment.center,
-                                width: 268.r,
-                                height: 98.r,
+                                width: 350.r,
+                                height: 112.r,
                                 decoration: BoxDecoration(
                                     color: Colors.white,
                                     borderRadius: BorderRadius.circular(8).r,
@@ -285,15 +316,23 @@ class _StudentResultScreenState extends State<StudentResultScreen> {
                       onPressed: () {
                         Navigator.of(context).pushAndRemoveUntil(
                           MaterialPageRoute(builder: (context) {
+                            ProblemsModel nextProblemsModel =
+                                widget.problemsModel;
+
+                            if (!correct) {
+                              nextProblemsModel
+                                  .addProblem(widget.currentProblem);
+                            }
+
                             return StudentSolveScreen(
-                              problemsModel: widget.problemsModel,
+                              problemsModel: nextProblemsModel,
                               level: widget.level,
                               step: widget.step,
                               totalNumber: widget.totalNumber,
                               correctNumber: nextCorrectNumber,
                             );
                           }),
-                          ModalRoute.withName('/stud_step_select_screen'),
+                          ModalRoute.withName('/stud_main_screen'),
                         );
                       },
                     ),
