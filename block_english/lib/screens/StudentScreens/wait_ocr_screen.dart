@@ -62,6 +62,14 @@ class _WaitOcrScreenState extends ConsumerState<WaitOcrScreen> {
   }
 
   @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      waitOcr();
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: Lottie.asset('assets/lottie/motion_29.json'),
