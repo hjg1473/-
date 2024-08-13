@@ -319,7 +319,10 @@ class _StudentResultScreenState extends State<StudentResultScreen> {
                             ProblemsModel nextProblemsModel =
                                 widget.problemsModel;
 
-                            nextProblemsModel.addProblem(widget.currentProblem);
+                            if (!correct) {
+                              nextProblemsModel
+                                  .addProblem(widget.currentProblem);
+                            }
 
                             return StudentSolveScreen(
                               problemsModel: nextProblemsModel,
