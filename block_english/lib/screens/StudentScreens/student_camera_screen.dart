@@ -46,8 +46,9 @@ class _StudentCameraScreenState extends ConsumerState<StudentCameraScreen> {
 
       final png = await ProcessImage.cropImage(xFile);
 
-      final result =
-          await ref.watch(problemServiceProvider).postProblemOCR(png);
+      final result = await ref
+          .watch(problemServiceProvider)
+          .postProblemOCR(png, widget.currentProblem.id);
 
       result.fold(
         (failure) {

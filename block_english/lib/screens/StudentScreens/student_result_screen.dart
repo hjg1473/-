@@ -74,7 +74,7 @@ class _StudentResultScreenState extends State<StudentResultScreen> {
 
     nextCorrectNumber = widget.correctNumber;
 
-    results = widget.problemOcrModel.userInput.split(' ');
+    results = widget.problemOcrModel.userInput;
 
     // correct = true;
     correct =

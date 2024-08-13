@@ -83,7 +83,9 @@ class ProblemService {
   }
 
   Future<Either<FailureModel, ProblemOcrModel>> postProblemOCR(
-      Uint8List png) async {
+    Uint8List png,
+    int problemId,
+  ) async {
     final dio = _ref.watch(dioProvider);
 
     try {
@@ -102,6 +104,7 @@ class ProblemService {
             filename: 'ocr.png',
             contentType: MediaType('image', 'png'),
           ),
+          'problem_id': problemId,
         }),
       );
 
