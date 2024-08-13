@@ -82,6 +82,11 @@ class _StudentSolveScreenState extends ConsumerState<StudentSolveScreen> {
         color: const Color(0xFFFFEEF4),
         child: Stack(
           children: [
+            if (currentProblem == null)
+              Lottie.asset(
+                'assets/lottie/motion_30.json',
+                repeat: false,
+              ),
             Padding(
               padding: const EdgeInsets.symmetric(
                 horizontal: 44,
