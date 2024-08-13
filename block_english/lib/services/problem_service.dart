@@ -3,9 +3,11 @@ import 'dart:typed_data';
 
 import 'package:block_english/models/ProblemModel/problem_ocr_model.dart';
 import 'package:block_english/models/ProblemModel/problems_model.dart';
+import 'package:block_english/models/SuccessModel/success_model.dart';
 import 'package:block_english/models/model.dart';
 import 'package:block_english/utils/constants.dart';
 import 'package:block_english/utils/dio.dart';
+import 'package:block_english/utils/status.dart';
 import 'package:dartz/dartz.dart';
 import 'package:dio/dio.dart';
 import 'package:http_parser/http_parser.dart';
@@ -29,6 +31,32 @@ class ProblemService {
 
   ProblemService(ProblemServiceRef ref) {
     _ref = ref;
+  }
+
+  Future<Either<FailureModel, Response>> postProblemEnd() async {
+    final dio = _ref.watch(dioProvider);
+
+    try {
+      final response = await dio.post(
+        '/$_problem/study_end',
+        options: Options(
+          headers: {
+            'accept': 'application/json',
+            TOKENVALIDATE: 'true',
+          },
+        ),
+        queryParameters: {
+          'mode_str': modeToString(_ref.watch(statusProvider).studentMode),
+        },
+      );
+
+      return Right(response);
+    } on DioException catch (e) {
+      return Left(FailureModel(
+        statusCode: e.response?.statusCode ?? 0,
+        detail: e.response?.data['detail'] ?? "",
+      ));
+    }
   }
 
   Future<Either<FailureModel, ProblemPracticeInfoModel>> getProblemPracticeInfo(

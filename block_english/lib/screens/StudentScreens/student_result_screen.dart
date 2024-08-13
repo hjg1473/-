@@ -145,7 +145,7 @@ class _StudentResultScreenState extends State<StudentResultScreen> {
                                   padding: const EdgeInsets.symmetric(
                                     horizontal: 10,
                                   ).r,
-                                  height: 36.r,
+                                  height: 50.r,
                                   child: Center(
                                     child: Text(
                                       'Step ${widget.step + 1}',

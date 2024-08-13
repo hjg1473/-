@@ -2,14 +2,16 @@ import 'dart:math';
 
 import 'package:block_english/models/ProblemModel/problems_model.dart';
 import 'package:block_english/screens/StudentScreens/student_camera_screen.dart';
+import 'package:block_english/services/problem_service.dart';
 import 'package:block_english/utils/constants.dart';
 import 'package:block_english/widgets/square_button.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:lottie/lottie.dart';
 
-class StudentSolveScreen extends StatefulWidget {
+class StudentSolveScreen extends ConsumerStatefulWidget {
   const StudentSolveScreen({
     super.key,
     required this.problemsModel,
@@ -26,16 +28,31 @@ class StudentSolveScreen extends StatefulWidget {
   final int correctNumber;
 
   @override
-  State<StudentSolveScreen> createState() => _StudentSolveScreenState();
+  ConsumerState<StudentSolveScreen> createState() => _StudentSolveScreenState();
 }
 
-class _StudentSolveScreenState extends State<StudentSolveScreen> {
+class _StudentSolveScreenState extends ConsumerState<StudentSolveScreen> {
   late final ProblemEntry? currentProblem;
 
   @override
   void initState() {
     super.initState();
     currentProblem = widget.problemsModel.getProblem();
+    if (currentProblem == null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) async {
+        final response =
+            await ref.watch(problemServiceProvider).postProblemEnd();
+
+        response.fold(
+          (l) {
+            debugPrint('[postProblemEnd] ${l.detail}');
+          },
+          (r) {
+            debugPrint('[postProblemEnd] ${r.data}');
+          },
+        );
+      });
+    }
     debugPrint('[totalNumber] ${widget.totalNumber}');
     debugPrint('[correctNumber] ${widget.correctNumber}');
   }
