@@ -50,7 +50,6 @@ async def create_new_user(db: db_dependency, create_user: CreateUser):
     user = await create_user_in_db(db, create_user)
     if user.role == 'student':
         await create_study_info(db, user.id)
-        # await create_released(db, user.id, create_user.seasons)
 
     logger = logger_setup.get_logger(user.id)
     logger.info("--- Register ---")
@@ -119,8 +118,8 @@ async def first_login_for_access_token(form_data: Annotated[OAuth2PasswordReques
     released = []
     for r in released_model:
         released.append({'season':r.released_season, 'level':r.released_level, 'step':r.released_step})
-    result2 = await db.execute(select(Groups).where(Groups.id == user.team_id))
-    group_model = result2.scalars().first()
+    result = await db.execute(select(Groups).where(Groups.id == user.team_id))
+    group_model = result.scalars().first()
     if group_model is None:
         return {'access_token' : access_token, 'token_type' : 'bearer', 'username': user.username, 'role': user.role, 'refresh_token' : refresh_token, 'team_id': user.team_id, 'name': user.name, "username_correct": True, "password_correct": True, "released": released, 'group_name': None, 'released_group': None}
     
@@ -147,13 +146,13 @@ async def login_for_access_token(access_token: Annotated[str, Depends(oauth2_bea
     if user_role == 'super':
         return {'detail': 'Token Valid', 'role': user_role, 'username': username, 'name': user.name, "username_correct": True, "password_correct": True}
 
-    result2 = await db.execute(select(Released).filter(Released.owner_id == user_id))
-    released_model = result2.scalars().all()
+    result = await db.execute(select(Released).filter(Released.owner_id == user_id))
+    released_model = result.scalars().all()
     released = []
     for r in released_model:
         released.append({'season':r.released_season, 'level':r.released_level, 'step':r.released_step})
-    result2 = await db.execute(select(Groups).where(Groups.id == user.team_id))
-    group_model = result2.scalars().first()
+    result = await db.execute(select(Groups).where(Groups.id == user.team_id))
+    group_model = result.scalars().first()
     if group_model is None:
         return {'detail': 'Token Valid', 'role': user_role, 'team_id': user.team_id, 'username': username, 'name': user.name, "username_correct": True, "password_correct": True, "released": released, 'group_name': None, 'released_group':None}
         

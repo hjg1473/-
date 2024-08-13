@@ -57,7 +57,7 @@ async def request_pin(group: GroupId, user: user_dependency, db: db_dependency):
     await super_group_exception(user.get("id"), group.group_id, db)
     redis_client = await aioredis.create_redis_pool('redis://localhost')
     pin = create_pin_number()
-    await redis_client.setex(f"{pin}", 180, group.group_id)
+    await redis_client.setex(f"{pin}", 180, str(group.group_id) + "," + str(user.get('id')))
 
     redis_client.close()
     await redis_client.wait_closed()
@@ -213,16 +213,29 @@ async def read_user_monitoring_summary(userStep: UserStep, user: user_dependency
     # 선생님이 관리하는 학생이 아니면 예외 처리
     std_team_id = await get_std_team_id(userStep.user_id, db)
     group_list = await get_group_list(user.get("id"), db)
-    std_access_exception(group_list, std_team_id)
+    if group_list:
+        std_access_exception(group_list, std_team_id)
+    else:
+        result = await db.execute(select(Users).options(joinedload(Users.student_teachers)).filter(Users.id == user.get('id')))
+        students = result.scalars().first()
+        children = [{"id": students.id, "name": students.name} for students in students.student_teachers]
+        # return children
+        isGroup = False
+        for u in children:
+            if u["id"] == userStep.user_id:
+                isGroup = True
+        if not isGroup:
+            raise HTTPException(status_code=403, detail="해당 학생에 접근할 수 없습니다.")
 
     # 학생이 해금한 시즌 정보
-    result2 = await db.execute(select(Released).filter(Released.owner_id == userStep.user_id))
-    released_model = result2.scalars().all()
-    seasons = [item.released_season for item in released_model]
+    # result2 = await db.execute(select(Released).filter(Released.owner_id == userStep.user_id))
+    # released_model = result2.scalars().all()
+    # seasons = [item.released_season for item in released_model]
 
     result = await db.execute(select(StudyInfo).filter(StudyInfo.owner_id == userStep.user_id))
     study_info = result.scalars().first()
-    temp_result = await db.execute(select(WrongType).filter(WrongType.info_id == study_info.id).filter(WrongType.season.in_(seasons)))
+    # temp_result = await db.execute(select(WrongType).filter(WrongType.info_id == study_info.id).filter(WrongType.season.in_(seasons)))
+    temp_result = await db.execute(select(WrongType).filter(WrongType.info_id == study_info.id).filter(WrongType.season == userStep.season))
     wrongType_model = temp_result.scalars().all()
     # return wrongType_model
     divided_data_list = weak_parts_top3(wrongType_model)
@@ -243,15 +256,6 @@ async def read_user_monitoring_summary(userStep: UserStep, user: user_dependency
 
     return  {"weakest_part":extracted_data,"totalStudyTime": studyinfo_model.totalStudyTime, 'streamStudyDay': studyinfo_model.streamStudyDay}
 
-def calculate_corrects(table_id, ai_corrects ,normal_corrects ,table_count, rm, study_info):
-    for item in study_info:
-        if item.season == rm.released_season:
-            count = table_count[table_id.index(item.id)]
-            if item.type == "normal":
-                normal_corrects[item.level] += count
-            else:
-                ai_corrects[item.level] += count
-
 # 특정 학생의 self 학습 정보 반환.
 @router.post("/user_monitoring_study/rate", status_code = status.HTTP_200_OK)
 async def read_user_studyinfo(userStep: UserStep, user: user_dependency, db: db_dependency):
@@ -261,9 +265,21 @@ async def read_user_studyinfo(userStep: UserStep, user: user_dependency, db: db_
     # 선생님이 관리하는 학생이 아니면 예외 처리
     std_team_id = await get_std_team_id(userStep.user_id, db)
     group_list = await get_group_list(user.get("id"), db)
-    std_access_exception(group_list, std_team_id)
+    if group_list:
+        std_access_exception(group_list, std_team_id)
+    else:
+        result = await db.execute(select(Users).options(joinedload(Users.student_teachers)).filter(Users.id == user.get('id')))
+        students = result.scalars().first()
+        children = [{"id": students.id, "name": students.name} for students in students.student_teachers]
+        # return children
+        isGroup = False
+        for u in children:
+            if u["id"] == userStep.user_id:
+                isGroup = True
+        if not isGroup:
+            raise HTTPException(status_code=403, detail="해당 학생에 접근할 수 없습니다.")
     
-    result = await db.execute(select(Released).filter(Released.owner_id == userStep.user_id))
+    result = await db.execute(select(Released).filter(Released.owner_id == userStep.user_id).filter(Released.released_season == userStep.season))
     released_model = result.scalars().all()
 
     result2 = await db.execute(select(StudyInfo).options(joinedload(StudyInfo.correct_problems)).options(joinedload(StudyInfo.incorrect_problems)).filter(StudyInfo.owner_id == userStep.user_id))
@@ -290,17 +306,17 @@ async def read_user_studyinfo(userStep: UserStep, user: user_dependency, db: db_
         ai_rate = [0, 0, 0]
         for i in range(3):
             if normal_all[i] != 0:
-                normal_rate[i] = (normal_incorrects[i]/float(normal_all[i]) * 100)
+                normal_rate[i] = (normal_corrects[i]/float(normal_all[i]) * 100)
             if ai_all[i] != 0:
-                ai_rate[i] = (ai_incorrects[i]/float(ai_all[i]) * 100)
+                ai_rate[i] = (ai_corrects[i]/float(ai_all[i]) * 100)
         information.append({"season":rm.released_season,
-                                       "incorrect_rate_normal":normal_rate,
-                                       "incorrect_rate_ai":ai_rate,
+                                       "correct_rate_normal":normal_rate,
+                                       "correct_rate_ai":ai_rate,
                                        "released_level":rm.released_level,
                                        "released_step":rm.released_step
                                        })
 
-    return {'seasons': information}
+    return {'detail': information}
 
 # 특정 유저의 시즌-레벨 별 약한 부분 TOP 3 조회 
 @router.post("/user_monitoring_incorrect", status_code = status.HTTP_200_OK)
@@ -311,16 +327,29 @@ async def read_user_weak_parts_top3(userStep: UserStep, user: user_dependency, d
     # 선생님이 관리하는 학생이 아니면 예외 처리
     std_team_id = await get_std_team_id(userStep.user_id, db)
     group_list = await get_group_list(user.get("id"), db)
-    std_access_exception(group_list, std_team_id)
+    if group_list:
+        std_access_exception(group_list, std_team_id)
+    else:
+        result = await db.execute(select(Users).options(joinedload(Users.student_teachers)).filter(Users.id == user.get('id')))
+        students = result.scalars().first()
+        children = [{"id": students.id, "name": students.name} for students in students.student_teachers]
+        # return children
+        isGroup = False
+        for u in children:
+            if u["id"] == userStep.user_id:
+                isGroup = True
+        if not isGroup:
+            raise HTTPException(status_code=403, detail="해당 학생에 접근할 수 없습니다.")
 
     # 학생이 해금한 시즌 정보
-    result2 = await db.execute(select(Released).filter(Released.owner_id == userStep.user_id))
-    released_model = result2.scalars().all()
-    seasons = [item.released_season for item in released_model]
+    # result2 = await db.execute(select(Released).filter(Released.owner_id == userStep.user_id))
+    # released_model = result2.scalars().all()
+    # seasons = [item.released_season for item in released_model]
 
     result = await db.execute(select(StudyInfo).filter(StudyInfo.owner_id == userStep.user_id))
     study_info = result.scalars().first()
-    temp_result = await db.execute(select(WrongType).filter(WrongType.info_id == study_info.id).filter(WrongType.season.in_(seasons)))
+    # temp_result = await db.execute(select(WrongType).filter(WrongType.info_id == study_info.id).filter(WrongType.season.in_(seasons)))
+    temp_result = await db.execute(select(WrongType).filter(WrongType.info_id == study_info.id).filter(WrongType.season == userStep.season))
     wrongType_model = temp_result.scalars().all()
     # return wrongType_model
     divided_data_list = weak_parts_top3(wrongType_model)
@@ -361,7 +390,19 @@ async def read_user_id(userStep: UserStep, user: user_dependency, db: db_depende
     # 선생님이 관리하는 학생이 아니면 예외 처리
     std_team_id = await get_std_team_id(userStep.user_id, db)
     group_list = await get_group_list(user.get("id"), db)
-    std_access_exception(group_list, std_team_id)
+    if group_list:
+        std_access_exception(group_list, std_team_id)
+    else:
+        result = await db.execute(select(Users).options(joinedload(Users.student_teachers)).filter(Users.id == user.get('id')))
+        students = result.scalars().first()
+        children = [{"id": students.id, "name": students.name} for students in students.student_teachers]
+        # return children
+        isGroup = False
+        for u in children:
+            if u["id"] == userStep.user_id:
+                isGroup = True
+        if not isGroup:
+            raise HTTPException(status_code=403, detail="해당 학생에 접근할 수 없습니다.")
 
 
     result = await db.execute(select(StudyInfo).filter(StudyInfo.owner_id == userStep.user_id))
@@ -512,18 +553,18 @@ async def read_group_monitoring(group: GroupId, user: user_dependency, db: db_de
         ai_rate = [0, 0, 0]
         for i in range(3):
             if normal_all[i] != 0:
-                normal_rate[i] = (normal_incorrects[i]/float(result_normal[i]) * 100)
+                normal_rate[i] = (normal_corrects[i]/float(result_normal[i]) * 100)
             if ai_all[i] != 0:
-                ai_rate[i] = (ai_incorrects[i]/float(result_ai[i]) * 100)
+                ai_rate[i] = (ai_corrects[i]/float(result_ai[i]) * 100)
         information.append({"season":rm.released_season,
-                                        "incorrect_rate_normal":normal_rate,
-                                        "incorrect_rate_ai":ai_rate,
+                                        "correct_rate_normal":normal_rate,
+                                        "correct_rate_ai":ai_rate,
                                         "released_level":rm.released_level,
                                         "released_step":rm.released_step
                                         })
 
 
-    return {'seasons':information,"incorrect_reason": divided_data_list, "weakest":f"{largest_variable}", "created":groups_create.created, 'peoples': await get_std_group_count(group.group_id, db) }
+    return {'detail':information,"incorrect_reason": divided_data_list, "weakest":f"{largest_variable}", "created":groups_create.created, 'peoples': await get_std_group_count(group.group_id, db) }
 
 
 # # 특정 유저의 전 시즌-레벨 통합 가장 약한 부분 내용 조회
