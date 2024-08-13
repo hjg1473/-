@@ -326,7 +326,7 @@ class _StudentResultScreenState extends State<StudentResultScreen> {
                               correctNumber: nextCorrectNumber,
                             );
                           }),
-                          ModalRoute.withName('/stud_step_select_screen'),
+                          ModalRoute.withName('/stud_main_screen'),
                         );
                       },
                     ),

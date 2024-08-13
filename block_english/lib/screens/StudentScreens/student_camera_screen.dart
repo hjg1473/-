@@ -1,5 +1,6 @@
 import 'package:block_english/models/ProblemModel/problems_model.dart';
 import 'package:block_english/screens/StudentScreens/student_result_screen.dart';
+import 'package:block_english/screens/StudentScreens/wait_ocr_screen.dart';
 import 'package:block_english/services/problem_service.dart';
 import 'package:block_english/utils/camera.dart';
 import 'package:block_english/utils/process_image.dart';
@@ -44,32 +45,18 @@ class _StudentCameraScreenState extends ConsumerState<StudentCameraScreen> {
     try {
       final xFile = await controller.takePicture();
 
-      final png = await ProcessImage.cropImage(xFile);
+      if (!mounted) return;
 
-      final result = await ref
-          .watch(problemServiceProvider)
-          .postProblemOCR(png, widget.currentProblem.id);
-
-      result.fold(
-        (failure) {
-          // TODO: error handling
-        },
-        (problemOcrModel) {
-          Navigator.of(context).push(
-            MaterialPageRoute(
-              builder: (context) => StudentResultScreen(
+      Navigator.of(context).push(MaterialPageRoute(
+          builder: (context) => WaitOcrScreen(
                 level: widget.level,
                 step: widget.step,
                 problemsModel: widget.problemsModel,
                 currentProblem: widget.currentProblem,
-                problemOcrModel: problemOcrModel,
                 totalNumber: widget.totalNumber,
                 correctNumber: widget.correctNumber,
-              ),
-            ),
-          );
-        },
-      );
+                xFile: xFile,
+              )));
     } on Exception catch (e) {
       // TODO: error handling
       debugPrint('[CAMERA]: _takePicture $e');

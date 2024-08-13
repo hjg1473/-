@@ -238,12 +238,77 @@ class _StudentSolveScreenState extends State<StudentSolveScreen> {
                           ),
                         )
                       : Positioned(
-                          left: 88.r,
-                          top: 60.r,
-                          child: Container(
-                            width: 572.r,
-                            height: 218.r,
-                            color: Colors.green,
+                          left: 95.r,
+                          top: 41.r,
+                          child: SizedBox(
+                            width: 565.r,
+                            height: 272.r,
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                SizedBox(
+                                  width: 250.r,
+                                  height: 272.r,
+                                  child: Lottie.asset(
+                                    'assets/lottie/motion_14.json',
+                                  ),
+                                ),
+                                Align(
+                                  alignment: const Alignment(0, -0.3),
+                                  child: Stack(
+                                    alignment: Alignment.center,
+                                    children: [
+                                      SvgPicture.asset(
+                                        'assets/images/speechBallon.svg',
+                                        width: 260.r,
+                                        height: 140.r,
+                                      ),
+                                      SizedBox(
+                                        width: 115.r,
+                                        height: 91.r,
+                                        child: Column(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.spaceBetween,
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Container(
+                                              alignment: Alignment.center,
+                                              width: 80.r,
+                                              height: 34.r,
+                                              decoration: BoxDecoration(
+                                                color: Colors.pink[300],
+                                                borderRadius:
+                                                    BorderRadius.circular(40).r,
+                                              ),
+                                              child: Text(
+                                                'step ${widget.step + 1}',
+                                                style: TextStyle(
+                                                  fontSize: 16.sp,
+                                                  color: Colors.white,
+                                                ),
+                                              ),
+                                            ),
+                                            SizedBox(
+                                              width: 115.r,
+                                              height: 45.r,
+                                              child: Text(
+                                                'Clear!',
+                                                style: TextStyle(
+                                                  fontSize: 40.sp,
+                                                  fontWeight: FontWeight.w800,
+                                                ),
+                                              ),
+                                            )
+                                          ],
+                                        ),
+                                      )
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
                         ),
                 ],
@@ -261,7 +326,7 @@ class _StudentSolveScreenState extends State<StudentSolveScreen> {
                         onPressed: () {
                           Navigator.of(context).pushNamedAndRemoveUntil(
                               '/stud_step_select_screen',
-                              ModalRoute.withName('/stud_step_select_screen'));
+                              ModalRoute.withName('/stud_main_screen'));
                         },
                       ),
                     ),
