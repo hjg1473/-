@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:lottie/lottie.dart';
 
 class StudentModeSelectScreen extends ConsumerWidget {
   const StudentModeSelectScreen({super.key});
@@ -52,10 +53,24 @@ class StudentModeSelectScreen extends ConsumerWidget {
                         Navigator.of(context)
                             .pushNamed('/stud_season_select_screen');
                       },
-                      icon: SvgPicture.asset(
-                        width: 180.r,
-                        height: 206.r,
-                        'assets/cards/student_mode_single.svg',
+                      icon: Stack(
+                        alignment: Alignment.bottomCenter,
+                        children: [
+                          SvgPicture.asset(
+                            width: 180.r,
+                            height: 206.r,
+                            'assets/cards/student_mode_single.svg',
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.only(bottom: 8.0).r,
+                            child: SizedBox(
+                              width: 205.r,
+                              height: 142.r,
+                              child:
+                                  Lottie.asset('assets/lottie/motion_27.json'),
+                            ),
+                          )
+                        ],
                       ),
                     ),
                   ),
@@ -71,10 +86,24 @@ class StudentModeSelectScreen extends ConsumerWidget {
                         Navigator.of(context)
                             .pushNamed('/stud_season_select_screen');
                       },
-                      icon: SvgPicture.asset(
-                        width: 180.r,
-                        height: 206.r,
-                        'assets/cards/student_mode_group.svg',
+                      icon: Stack(
+                        alignment: Alignment.bottomCenter,
+                        children: [
+                          SvgPicture.asset(
+                            width: 180.r,
+                            height: 206.r,
+                            'assets/cards/student_mode_group.svg',
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.only(bottom: 8.0).r,
+                            child: SizedBox(
+                              width: 205.r,
+                              height: 142.r,
+                              child:
+                                  Lottie.asset('assets/lottie/motion_26.json'),
+                            ),
+                          )
+                        ],
                       ),
                     ),
                   ),

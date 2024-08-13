@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:block_english/models/ProblemModel/problems_model.dart';
 import 'package:block_english/screens/StudentScreens/student_camera_screen.dart';
 import 'package:block_english/utils/constants.dart';
@@ -5,6 +7,7 @@ import 'package:block_english/widgets/square_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:lottie/lottie.dart';
 
 class StudentSolveScreen extends StatefulWidget {
   const StudentSolveScreen({
@@ -35,6 +38,21 @@ class _StudentSolveScreenState extends State<StudentSolveScreen> {
     currentProblem = widget.problemsModel.getProblem();
     debugPrint('[totalNumber] ${widget.totalNumber}');
     debugPrint('[correctNumber] ${widget.correctNumber}');
+  }
+
+  getRandomLottiePath() {
+    int rand = Random().nextInt(4);
+
+    switch (rand) {
+      case 0:
+        return 'assets/lottie/motion_1.json';
+      case 1:
+        return 'assets/lottie/motion_4.json';
+      case 2:
+        return 'assets/lottie/motion_7.json';
+      case 3:
+        return 'assets/lottie/motion_10.json';
+    }
   }
 
   @override
@@ -175,22 +193,24 @@ class _StudentSolveScreenState extends State<StudentSolveScreen> {
                                 height: 14.r,
                               ),
                               SizedBox(
-                                width: 522.r,
-                                height: 135.r,
+                                width: 630.r,
+                                height: 180.r,
                                 child: Row(
                                   mainAxisAlignment:
                                       MainAxisAlignment.spaceBetween,
                                   crossAxisAlignment: CrossAxisAlignment.center,
                                   children: [
-                                    Container(
-                                      width: 190.r,
-                                      height: 135.r,
-                                      color: Colors.blue,
+                                    SizedBox(
+                                      width: 280.r,
+                                      height: 180.r,
+                                      child: Lottie.asset(
+                                        getRandomLottiePath(),
+                                      ),
                                     ),
                                     Container(
                                       alignment: Alignment.center,
-                                      width: 268.r,
-                                      height: 98.r,
+                                      width: 350.r,
+                                      height: 122.r,
                                       decoration: BoxDecoration(
                                           color: Colors.white,
                                           borderRadius:
