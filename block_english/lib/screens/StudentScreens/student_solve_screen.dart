@@ -4,6 +4,7 @@ import 'package:block_english/models/ProblemModel/problems_model.dart';
 import 'package:block_english/screens/StudentScreens/student_camera_screen.dart';
 import 'package:block_english/services/problem_service.dart';
 import 'package:block_english/utils/constants.dart';
+import 'package:block_english/utils/status.dart';
 import 'package:block_english/widgets/square_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -44,11 +45,11 @@ class _StudentSolveScreenState extends ConsumerState<StudentSolveScreen> {
             await ref.watch(problemServiceProvider).postProblemEnd();
 
         response.fold(
-          (l) {
-            debugPrint('[postProblemEnd] ${l.detail}');
+          (failure) {
+            debugPrint('[postProblemEnd] ${failure.detail}');
           },
-          (r) {
-            debugPrint('[postProblemEnd] ${r.data}');
+          (response) {
+            debugPrint('[postProblemEnd] ${response.data}');
           },
         );
       });

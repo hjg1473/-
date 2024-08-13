@@ -3,7 +3,6 @@ import 'dart:typed_data';
 
 import 'package:block_english/models/ProblemModel/problem_ocr_model.dart';
 import 'package:block_english/models/ProblemModel/problems_model.dart';
-import 'package:block_english/models/SuccessModel/success_model.dart';
 import 'package:block_english/models/model.dart';
 import 'package:block_english/utils/constants.dart';
 import 'package:block_english/utils/dio.dart';
@@ -49,6 +48,12 @@ class ProblemService {
           'mode_str': modeToString(_ref.watch(statusProvider).studentMode),
         },
       );
+      for (Map<String, dynamic> info in response.data['released']) {
+        _ref.watch(statusProvider).setStudentStatus(
+              intToSeason(info['season']),
+              ReleaseStatus(info['level'], info['step']),
+            );
+      }
 
       return Right(response);
     } on DioException catch (e) {
