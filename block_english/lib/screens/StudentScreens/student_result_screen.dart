@@ -76,12 +76,10 @@ class _StudentResultScreenState extends State<StudentResultScreen> {
     nextCorrectNumber = widget.correctNumber;
     results = widget.problemOcrModel.userInput;
 
-    // correct = true;
     correct = listEquals(
         widget.currentProblem.answer, widget.problemOcrModel.userInput);
 
-    // if (correct)
-    {
+    if (correct) {
       nextCorrectNumber++;
     }
   }
