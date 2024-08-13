@@ -12,6 +12,14 @@ from app.src.models import Users, StudyInfo, Problems, correct_problem_table, Gr
 from app.src.problem.service import get_correct_problem_count, get_incorrect_problem_count
 from sqlalchemy.orm import joinedload
 
+def calculate_corrects(table_id, ai_corrects ,normal_corrects ,table_count, rm, study_info):
+    for item in study_info:
+        if item.season == rm.released_season:
+            count = table_count[table_id.index(item.id)]
+            if item.type == "normal":
+                normal_corrects[item.level] += count
+            else:
+                ai_corrects[item.level] += count
 
 def weak_parts_top3(wrongType_model):
     divided_data_list = []
@@ -31,6 +39,8 @@ def weak_parts_top3(wrongType_model):
         
         if total_wrongType != 0:
             divided_data = {k: f"{v / total_wrongType:.2f}" for k, v in top3_wrong.items()}
+        else:
+            divided_data = {k: f"{0:.2f}" for k, v in top3_wrong.items()}
         divided_data["season"] = wrongTypes.season
         divided_data["level"] = wrongTypes.level
         divided_data_list.append(divided_data)

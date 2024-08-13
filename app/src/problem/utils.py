@@ -5,8 +5,10 @@ punctuations = ['.', ',', '?', '!']
 def parse_sentence(sentence:str):
     sentnece_split = sentence.split(' ')
     parsed = []
+
     for word in sentnece_split:
         word_list = list(word)
+        print("[parse_sentence]word_list", word_list)
         if word_list[-1] in punctuations:
             punc = word_list[-1]
             word_list.remove(punc)

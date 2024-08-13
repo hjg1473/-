@@ -45,6 +45,7 @@ class GroupId(BaseModel):
 
 class UserStep(BaseModel):
     user_id: int
+    season: int
 
 class UserStep2(BaseModel):
     user_id: int

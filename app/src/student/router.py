@@ -36,8 +36,9 @@ async def user_season_info(user: user_dependency, db:db_dependency):
 
 # 시즌 업데이트
 @router.put("/update_season", status_code=status.HTTP_200_OK)
-async def update_user_season(user: user_dependency, db: db_dependency, season: SeasonList):
+async def update_user_season(season: SeasonList, user: user_dependency, db: db_dependency):
     get_user_exception(user)
+    auth_exception(user.get('user_role'))
 
     result2 = await db.execute(select(Released).filter(Released.owner_id == user.get('id')))
     released_model = result2.scalars().all()
@@ -62,69 +63,55 @@ async def update_user_season(user: user_dependency, db: db_dependency, season: S
     await db.commit()
     return {'detail': '수정되었습니다.'}
 
-@router.post("/group/enter", status_code = status.HTTP_200_OK)
+@router.post("/pin/enter", status_code = status.HTTP_200_OK)
 async def user_solve_problem(pin_number: PinNumber,
                             user: user_dependency,
                             db: db_dependency):
     
     redis_client = await aioredis.create_redis_pool('redis://localhost')
-    print(type(pin_number.pin_number))
-    stored_group_id = await redis_client.get(f"{pin_number.pin_number}")
-    if stored_group_id is None:
+    # print(type(pin_number.pin_number))
+    stored_id = await redis_client.get(pin_number.pin_number)
+    if stored_id is None:
         return {'detail': '유효하지 않은 핀코드입니다.'}
-    string_group_id = stored_group_id.decode('utf-8')
-    group_id = int(string_group_id)
-    redis_client.close()
-    await redis_client.wait_closed()
+    string_id = stored_id.decode('utf-8')
+    # ,가 있으면 group
+    if "," in string_id:
+        group_id_str, user_id_str = string_id.split(",")
+        # 각 값을 정수로 변환
+        group_id = int(group_id_str)
+        user_id = int(user_id_str)
+        redis_client.close()
+        await redis_client.wait_closed()
+        await find_student_exception(user.get("id"), db)
+        await find_group_exception(group_id, db)
+        await update_std_group(group_id, user.get("id"), db)
+        group = await get_group_to_groupid(group_id, db)
 
-    await find_student_exception(user.get("id"), db)
-    await find_group_exception(group_id, db)
-    await update_std_group(group_id, user.get("id"), db)
-    group = await get_group_to_groupid(group_id, db)
+        result = await db.execute(select(ReleasedGroup).filter(ReleasedGroup.owner_id == group_id))
+        released_model = result.scalars().all()
+        released_group = []
+        for rg in released_model:
+            released_group.append({"season":rg.released_season, "level":rg.released_level, "step":rg.released_step, "type":rg.released_type})
 
-    result = await db.execute(select(ReleasedGroup).filter(ReleasedGroup.owner_id == group_id))
-    released_model = result.scalars().all()
-    released_group = []
-    for rg in released_model:
-        released_group.append({"season":rg.released_season, "level":rg.released_level, "step":rg.released_step, "type":rg.released_type})
+        return {"team_id":group_id, "group_name": group.name, "group_detail":group.detail, "released_group":released_group}
+    else:
+        result = await db.execute(select(Users).options(joinedload(Users.teachers_students)).filter(Users.id == user.get('id')))
+        student = result.scalars().first()
+        redis_client.close()
+        await redis_client.wait_closed()
 
-    return {"team_id":group_id, "group_name": group.name, "group_detail":group.detail, "released_group":released_group}
+        result2 = await db.execute(select(Users).options(joinedload(Users.student_teachers)).filter(Users.id == string_id))
+        parent = result2.scalars().first()
 
-
-# 학생과 학부모 연결, 학부모 -> 학생(teachers_students) # wireframe 나오면 고도화.
-@router.post("/parent/connect", status_code = status.HTTP_200_OK)
-async def connect_teacher(pin_number: PinNumber, user: user_dependency, db: db_dependency):
-
-    get_user_exception(user)
-    auth_exception(user.get('user_role'))
-
-    result = await db.execute(select(Users).options(joinedload(Users.teachers_students)).filter(Users.id == user.get('id')))
-    student = result.scalars().first()
-    
-    get_user_exception2(student)
-
-    redis_client = await aioredis.create_redis_pool('redis://localhost')
-    print(type(pin_number.pin_number))
-    stored_parent_id = await redis_client.get(f"{pin_number.pin_number}")
-    if stored_parent_id is None:
-        return {'detail': '유효하지 않은 핀코드입니다.'}
-    string_parent_id = stored_parent_id.decode('utf-8')
-
-    redis_client.close()
-    await redis_client.wait_closed()
-
-    result2 = await db.execute(select(Users).options(joinedload(Users.student_teachers)).filter(Users.id == stored_parent_id))
-    parent = result2.scalars().first()
-
-    select_exception1(string_parent_id, user.get('id'))
-    select_exception2(string_parent_id)
-    select_exception3(user.get('id'), parent.student_teachers)
-    if parent not in student.teachers_students:
-        student.teachers_students.append(parent)
-    if student not in parent.student_teachers:
-        parent.student_teachers.append(student)
-    await db.commit()
-    return {"detail": "Connected successfully", "parent_id": string_parent_id}
+        select_exception1(string_id, user.get('id'))
+        select_exception2(string_id)
+        select_exception3(user.get('id'), parent.student_teachers)
+        if parent not in student.teachers_students:
+            student.teachers_students.append(parent)
+        if student not in parent.student_teachers:
+            parent.student_teachers.append(student)
+        await db.commit()
+        return {"name": parent.name}
 
 # 학생(self)과 연결된 학부모의 아이디 반환
 @router.get("/parent/info", status_code = status.HTTP_200_OK)
@@ -135,7 +122,11 @@ async def read_connect_parent(user: user_dependency, db: db_dependency):
     
     result = await db.execute(select(Users).options(joinedload(Users.student_teachers)).options(joinedload(Users.teachers_students)).filter(Users.id == user.get('id')))
     parent = result.scalars().first()
-    return {"parents": [{"name": parent.name} for parent in parent.teachers_students]}
+    name = ""
+    for parent in parent.teachers_students:
+        name = parent.name
+    # return {"parents": [{"name": parent.name} for parent in parent.teachers_students]}
+    return {'name': name}
 
 # 학생 정보 반환
 @router.get("/info", status_code = status.HTTP_200_OK)
@@ -152,13 +143,14 @@ async def read_user_info(user: user_dependency, db: db_dependency):
     return {'name': user_model.name, 'team_id': user_model.team_id, 'group_name': group_model.name}
 
 # 학생의 self 학습 정보 반환.
-@router.get("/monitoring_correct_rate", status_code = status.HTTP_200_OK)
-async def read_user_studyinfo(user: user_dependency, db: db_dependency):
+@router.get("/monitoring_correct_rate/", status_code = status.HTTP_200_OK)
+async def read_user_studyinfo(season: int, user: user_dependency, db: db_dependency):
 
     get_user_exception(user)
     auth_exception(user.get('user_role'))
     
-    result = await db.execute(select(Released).filter(Released.owner_id == user.get("id")))
+
+    result = await db.execute(select(Released).filter(Released.owner_id == user.get("id")).filter(Released.released_season == season))
     released_model = result.scalars().all()
 
     result2 = await db.execute(select(StudyInfo).options(joinedload(StudyInfo.correct_problems)).options(joinedload(StudyInfo.incorrect_problems)).filter(StudyInfo.owner_id == user.get("id")))
@@ -169,27 +161,16 @@ async def read_user_studyinfo(user: user_dependency, db: db_dependency):
     from app.src.super.service import fetch_data
     ic_table_count, ic_table_id, c_table_count, c_table_id = await fetch_data(study_info.id , db)
 
-    information = {"seasons":[]}
+    information = []
     for rm in released_model:
+        from app.src.super.utils import calculate_corrects
         normal_corrects = [0, 0, 0]
         ai_corrects = [0, 0, 0]
-        for item in study_info.correct_problems:
-            if item.season == rm.released_season:
-                count = c_table_count[c_table_id.index(item.id)]
-                if item.type == "normal":
-                    normal_corrects[item.level] += count
-                else:
-                    ai_corrects[item.level] += count
+        calculate_corrects(c_table_id, ai_corrects, normal_corrects, c_table_count, rm, study_info.correct_problems)
 
         normal_incorrects = [0, 0, 0]
         ai_incorrects = [0, 0, 0]
-        for item in study_info.incorrect_problems:
-            if item.season == rm.released_season:
-                count = ic_table_count[ic_table_id.index(item.id)]
-                if item.type == "normal":
-                    normal_incorrects[item.level] += count
-                else:
-                    ai_incorrects[item.level] += count
+        calculate_corrects(ic_table_id, ai_incorrects, normal_incorrects, ic_table_count, rm, study_info.incorrect_problems)
 
         normal_all = [normal_corrects[0] + normal_incorrects[0], normal_corrects[1] + normal_incorrects[1], normal_corrects[2] + normal_incorrects[2]]
         ai_all = [ai_corrects[0] + ai_incorrects[0], ai_corrects[1] + ai_incorrects[1], ai_corrects[2] + ai_incorrects[2]]
@@ -203,30 +184,31 @@ async def read_user_studyinfo(user: user_dependency, db: db_dependency):
                 ai_rate[i] = (ai_corrects[i]/float(ai_all[i]) * 100)
 
 
-        information["seasons"].append({"season":rm.released_season,
+        information.append({"season":rm.released_season,
                                         "correct_rate_normal":normal_rate,
                                        "correct_rate_ai":ai_rate,
                                        "released_level":rm.released_level,
                                        "released_step":rm.released_step
                                        })
 
-    return information
+    return {'seasons':information}
 
 # 유저 모니터링 정보 2
-@router.get("/monitoring_incorrect", status_code = status.HTTP_200_OK)
-async def read_self_monitoring(user: user_dependency, db: db_dependency):
+@router.get("/monitoring_incorrect/", status_code = status.HTTP_200_OK)
+async def read_self_monitoring(season: int, user: user_dependency, db: db_dependency):
     
     get_user_exception(user)
     auth_exception(user.get('user_role'))
 
     # 학생이 해금한 시즌 정보
-    result2 = await db.execute(select(Released).filter(Released.owner_id == user.get('id')))
-    released_model = result2.scalars().all()
-    seasons = [item.released_season for item in released_model]
+    # result2 = await db.execute(select(Released).filter(Released.owner_id == user.get('id')))
+    # released_model = result2.scalars().all()
+    # seasons = [item.released_season for item in released_model]
 
     result = await db.execute(select(StudyInfo).filter(StudyInfo.owner_id == user.get('id')))
     study_info = result.scalars().first()
-    temp_result = await db.execute(select(WrongType).filter(WrongType.info_id == study_info.id).filter(WrongType.season.in_(seasons)))
+    # temp_result = await db.execute(select(WrongType).filter(WrongType.info_id == study_info.id).filter(WrongType.season.in_(seasons)))
+    temp_result = await db.execute(select(WrongType).filter(WrongType.info_id == study_info.id).filter(WrongType.season == season))
     wrongType_model = temp_result.scalars().all()
 
     from app.src.super.utils import get_latest_log, user_weakest_info, weak_parts_top3

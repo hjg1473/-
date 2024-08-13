@@ -3,7 +3,7 @@ from pydantic import BaseModel
 
 
 class PinNumber(BaseModel):
-    pin_number: int
+    pin_number: str
 
 class SoloGroup(BaseModel):
     mode: str # solo , group
