@@ -52,6 +52,14 @@ class _StudentStepSelectScreenState
   }
 
   bool isStepLocked(int step) {
+    if (ref
+            .watch(statusProvider)
+            .releaseStatus[ref.watch(statusProvider).season]!
+            .currentLevel <
+        selectedLevel - 1) {
+      return true;
+    }
+
     return (ref
             .watch(statusProvider)
             .releaseStatus[ref.watch(statusProvider).season]!
