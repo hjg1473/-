@@ -1,4 +1,5 @@
 import 'package:block_english/services/student_service.dart';
+import 'package:block_english/utils/constants.dart';
 import 'package:block_english/utils/status.dart';
 import 'package:block_english/widgets/square_button.dart';
 import 'package:flutter/material.dart';
@@ -45,7 +46,12 @@ class _StudentAvailableSeasonScreenState
         );
       },
       (success) {
+        //TODO: set season1 status
         ref.watch(statusProvider).setAvailableSeason(seasons);
+        ref.watch(statusProvider).setStudentStatus(
+              Season.SEASON1,
+              ReleaseStatus(0, 0),
+            );
         if (mounted) {
           Navigator.of(context).pushNamedAndRemoveUntil(
             '/stud_mode_select_screen',
