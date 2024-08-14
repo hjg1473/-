@@ -271,7 +271,7 @@ class _StudentResultScreenState extends State<StudentResultScreen> {
                                           horizontal: 14,
                                           vertical: 6,
                                         ).r,
-                                        height: 32.r,
+                                        height: 40.r,
                                         decoration: BoxDecoration(
                                           color: correct
                                               ? blockColorCToColor(
