@@ -52,12 +52,17 @@ class _StudentStepSelectScreenState
   }
 
   bool isStepLocked(int step) {
+    debugPrint(ref
+        .watch(statusProvider)
+        .releaseStatus[ref.watch(statusProvider).season]!
+        .currentLevel
+        .toString());
     if (ref
             .watch(statusProvider)
             .releaseStatus[ref.watch(statusProvider).season]!
-            .currentLevel <
-        selectedLevel - 1) {
-      return true;
+            .currentLevel >
+        selectedLevel) {
+      return false;
     }
 
     return (ref
@@ -185,7 +190,7 @@ class _StudentStepSelectScreenState
                                     alignment: const Alignment(0, 0.3),
                                     child: index != numberOfSteps
                                         ? Text(
-                                            'STEP ${index + 1}',
+                                            'STEP${index + 1}',
                                             style: TextStyle(
                                               fontSize: 18.sp,
                                               fontWeight: FontWeight.w800,
