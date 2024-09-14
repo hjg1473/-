@@ -10,9 +10,17 @@ from game import router as game_router
 from student import router as student_router
 from user import router as user_router
 from super import router as super_router
-
+# from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
+
+# app.add_middleware(
+#     CORSMiddleware,
+#     allow_origins={"*"},
+#     allow_credentials=True,
+#     allow_methods={"OPTIONS", "GET", "POST"},
+#     allow_headers={"*"},
+# )
 
 add_exception_handler(app)
 # 데이터베이스 초기화 함수

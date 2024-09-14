@@ -91,8 +91,8 @@ class Released(Base):  # Study information
 
     id = Column(Integer, primary_key=True, index=True)  # PK
     released_season = Column(Integer, default=1)
-    released_level = Column(Integer, default=1)
-    released_step = Column(Integer, default=1)
+    released_level = Column(Integer, default=0)
+    released_step = Column(Integer, default=0)
     owner_id = Column(Integer, ForeignKey("users.id"))  # FK to users
 
     # Relationships
@@ -161,9 +161,9 @@ class ReleasedGroup(Base):  # Study information
 
     id = Column(Integer, primary_key=True, index=True)  # PK
     released_season = Column(Integer, default=1)
-    released_level = Column(Integer, default=1)
+    released_level = Column(Integer, default=0)
     released_type = Column(String)
-    released_step = Column(Integer, default=1)
+    released_step = Column(Integer, default=0)
     owner_id = Column(Integer, ForeignKey("groups.id"))  # FK to users
 
     # Relationships

@@ -218,9 +218,10 @@ async def read_problem_block_colors(stepinfo_model,db):
     for p in stepinfo_model:
         p_str = p.englishProblem
         p_list = parse_sentence(p_str)
+        p_list.pop(-1)
         p_colors = [word_to_color[word] for word in p_list]
-
-        problem.append({'id': p.id, 'englishProblem': p.englishProblem, 'koreaProblem': p.koreaProblem, 'blockColors':p_colors})
+        problem.append({'id': p.id, 'question': p.koreaProblem, 'answer': p_list, 'blockColors':p_colors})
+        # problem.append({'id': p.id, 'englishProblem': p.englishProblem, 'koreaProblem': p.koreaProblem, 'blockColors':p_colors})
     return problem
 
 async def clear_incorrect_problem_count(study_info_id: int, problem_id: int, isGroup:int, db: db_dependency):

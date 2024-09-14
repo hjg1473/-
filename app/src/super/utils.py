@@ -449,3 +449,23 @@ async def get_latest_log(user_id: int):
 def split_sentence(sentence: str) -> list:
     # 정규 표현식을 사용하여 단어와 구두점을 분리
     return re.findall(r'\w+|[^\w\s]', sentence, re.UNICODE)
+
+
+async def process_user_access(user, user_id, db):
+    super_authenticate_exception(user)
+    await find_student_exception(user_id, db)
+    std_team_id = await get_std_team_id(user_id, db)
+    group_list = await get_group_list(user.get("id"), db)
+    
+    if group_list:
+        std_access_exception(group_list, std_team_id)
+    else:
+        result = await db.execute(select(Users).options(joinedload(Users.student_teachers)).filter(Users.id == user.get('id')))
+        students = result.scalars().first()
+        children = [{"id": students.id, "name": students.name} for students in students.student_teachers]
+        isGroup = False
+        for u in children:
+            if u["id"] == user_id:
+                isGroup = True
+        if not isGroup:
+            raise HTTPException(status_code=403, detail="해당 학생에 접근할 수 없습니다.")
