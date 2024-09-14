@@ -10,7 +10,7 @@ class UserQuitVerification(BaseModel):
     password: str
 
 class User_info(BaseModel):
-    season: List
+    name: str
 
 class User_season(BaseModel):
     season: str

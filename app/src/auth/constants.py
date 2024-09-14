@@ -1,7 +1,9 @@
 from auth.config import settings
 
-SECRET_KEY = settings.SECRET_KEY
-ALGORITHM = settings.ALGORITHM
+# SECRET_KEY = settings.SECRET_KEY
+# ALGORITHM = settings.ALGORITHM
+SECRET_KEY = "KlgH6AzYDeZeGwD288to79I3vTHT8wp7"# 비밀키(추후 설정)
+ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 REFRESH_TOKEN_EXPIRE_DAYS = 7
 # SMS_KEY="66ca6ecb"

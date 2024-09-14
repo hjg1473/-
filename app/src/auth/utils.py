@@ -24,7 +24,7 @@ def get_password_hash(password):
 def verify_password_sync(plain_password, hashed_password):
     return bcrypt_context.verify(plain_password, hashed_password)
 
-# 동기함수를 run_in_executor 를 통해 비동기 함수로 
+# Change a synchronous function to an asynchronous function using run_in_executor
 async def verify_password(plain_password, hashed_password): 
     loop = asyncio.get_event_loop()
     return await loop.run_in_executor(None, verify_password_sync, plain_password, hashed_password)
