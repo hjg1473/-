@@ -5,6 +5,9 @@ import 'package:block_english/widgets/ChartWidget/bar_chart_widget.dart';
 import 'package:block_english/widgets/ChartWidget/line_chart_widget.dart';
 import 'package:block_english/services/super_service.dart';
 import 'package:block_english/utils/constants.dart';
+import 'package:block_english/widgets/ChartWidget/pie_chart_widget.dart';
+import 'package:block_english/widgets/square_button.dart';
+import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -326,45 +329,38 @@ class _MonitorStudentScreenState extends State<MonitorStudentScreen> {
                 width: 539.r,
                 height: 1.sh,
                 color: const Color(0xFFECECEC),
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(24, 24, 44, 24).r,
-                  child: SizedBox(
-                    width: 471.r,
-                    height: 327.r,
-                    child: Navigator(
-                      key: _navigatorKey,
-                      initialRoute: learning,
-                      onGenerateRoute: (settings) {
-                        return CustomRoute(
-                          builder: (context) {
-                            switch (settings.name) {
-                              case learning:
-                                return LearningAnalysis(
-                                  userId: widget.studentId,
-                                  userName: widget.studentName,
-                                );
-                              case incorrect:
-                                return Incorrect(
-                                    userId: widget.studentId,
-                                    userName: widget.studentName);
-                              case manage:
-                                return ManageStudent(
-                                  userId: widget.studentId,
-                                  onDeletePressed: () {
-                                    _showDeleteDialog(context);
-                                  },
-                                );
-                              default:
-                                return LearningAnalysis(
-                                  userId: widget.studentId,
-                                  userName: widget.studentName,
-                                );
-                            }
-                          },
-                        );
+                child: Navigator(
+                  key: _navigatorKey,
+                  initialRoute: learning,
+                  onGenerateRoute: (settings) {
+                    return CustomRoute(
+                      builder: (context) {
+                        switch (settings.name) {
+                          case learning:
+                            return LearningAnalysis(
+                              userId: widget.studentId,
+                              userName: widget.studentName,
+                            );
+                          case incorrect:
+                            return Incorrect(
+                                userId: widget.studentId,
+                                userName: widget.studentName);
+                          case manage:
+                            return ManageStudent(
+                              userId: widget.studentId,
+                              onDeletePressed: () {
+                                _showDeleteDialog(context);
+                              },
+                            );
+                          default:
+                            return LearningAnalysis(
+                              userId: widget.studentId,
+                              userName: widget.studentName,
+                            );
+                        }
                       },
-                    ),
-                  ),
+                    );
+                  },
                 ),
               ),
             ),
@@ -427,160 +423,166 @@ class _LearningAnalysisState extends ConsumerState<LearningAnalysis> {
 
   @override
   Widget build(BuildContext context) {
-    return isLoading
-        ? const Center(
-            child: CircularProgressIndicator(
-              color: Colors.grey,
-            ),
-          )
-        : Container(
-            width: 471.r,
-            height: 327.r,
-            color: const Color(0xFFECECEC),
-            child: Stack(
-              children: [
-                Positioned(
-                  left: 0,
-                  top: 0,
-                  child: Container(
-                    width: 307.r,
-                    height: 142.r,
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(8).r,
-                    ),
-                  ),
+    return Container(
+      color: const Color(0xFFECECEC),
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(24, 24, 44, 24).r,
+        child: isLoading
+            ? const Center(
+                child: CircularProgressIndicator(
+                  color: Colors.grey,
                 ),
-                Positioned(
-                  right: 0,
-                  top: 0,
-                  child: Container(
-                    width: 148.r,
-                    height: 142.r,
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(8).r,
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 17).r,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 12,
-                              vertical: 4,
-                            ).r,
-                            decoration: BoxDecoration(
-                              color: primaryPurple[500],
-                              borderRadius: BorderRadius.circular(20).r,
-                            ),
-                            child: Text(
-                              'Basic BEST',
-                              style: TextStyle(
-                                fontSize: 14.sp,
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
-                          const Spacer(flex: 2),
-                          Text(
-                            // Basic best level
-                            levelList[0],
-                            style: TextStyle(
-                              fontSize: 14.sp,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          const Spacer(flex: 3),
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 12,
-                              vertical: 4,
-                            ).r,
-                            decoration: BoxDecoration(
-                              color: primaryPurple[500],
-                              borderRadius: BorderRadius.circular(20).r,
-                            ),
-                            child: Text(
-                              'Expert BEST',
-                              style: TextStyle(
-                                fontSize: 14.sp,
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
-                          const Spacer(flex: 2),
-                          Text(
-                            // Basic best level
-                            levelList[1],
-                            style: TextStyle(
-                              fontSize: 14.sp,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ],
+              )
+            : Container(
+                width: 471.r,
+                height: 327.r,
+                color: const Color(0xFFECECEC),
+                child: Stack(
+                  children: [
+                    Positioned(
+                      left: 0,
+                      top: 0,
+                      child: Container(
+                        width: 307.r,
+                        height: 142.r,
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(8).r,
+                        ),
                       ),
                     ),
-                  ),
-                ),
-                Positioned(
-                  left: 0,
-                  bottom: 0,
-                  child: Container(
-                    width: 274.r,
-                    height: 170.r,
-                    padding: const EdgeInsets.fromLTRB(
-                      0,
-                      16,
-                      0,
-                      0,
+                    Positioned(
+                      right: 0,
+                      top: 0,
+                      child: Container(
+                        width: 148.r,
+                        height: 142.r,
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(8).r,
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 17).r,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 12,
+                                  vertical: 4,
+                                ).r,
+                                decoration: BoxDecoration(
+                                  color: primaryPurple[500],
+                                  borderRadius: BorderRadius.circular(20).r,
+                                ),
+                                child: Text(
+                                  'Basic BEST',
+                                  style: TextStyle(
+                                    fontSize: 14.sp,
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                              const Spacer(flex: 2),
+                              Text(
+                                // Basic best level
+                                levelList[0],
+                                style: TextStyle(
+                                  fontSize: 14.sp,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              const Spacer(flex: 3),
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 12,
+                                  vertical: 4,
+                                ).r,
+                                decoration: BoxDecoration(
+                                  color: primaryPurple[500],
+                                  borderRadius: BorderRadius.circular(20).r,
+                                ),
+                                child: Text(
+                                  'Expert BEST',
+                                  style: TextStyle(
+                                    fontSize: 14.sp,
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                              const Spacer(flex: 2),
+                              Text(
+                                // Basic best level
+                                levelList[1],
+                                style: TextStyle(
+                                  fontSize: 14.sp,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
                     ),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(8).r,
-                    ),
-                    child: Stack(
-                      children: [
-                        Align(
-                          alignment: Alignment.topCenter,
-                          child: Text(
-                            '단원별 정답률',
-                            style: TextStyle(
-                              fontSize: 14.sp,
-                              color: Colors.black,
-                              fontWeight: FontWeight.bold,
+                    Positioned(
+                      left: 0,
+                      bottom: 0,
+                      child: Container(
+                        width: 274.r,
+                        height: 170.r,
+                        padding: const EdgeInsets.fromLTRB(
+                          0,
+                          16,
+                          0,
+                          0,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(8).r,
+                        ),
+                        child: Stack(
+                          children: [
+                            Align(
+                              alignment: Alignment.topCenter,
+                              child: Text(
+                                '단원별 정답률',
+                                style: TextStyle(
+                                  fontSize: 14.sp,
+                                  color: Colors.black,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
                             ),
-                          ),
+                            Positioned(
+                              left: 53.r,
+                              bottom: 12.r,
+                              child: SizedBox(
+                                width: 200.r,
+                                height: 112.5.r,
+                                child: BarChartWidget(),
+                              ),
+                            ),
+                          ],
                         ),
-                        Positioned(
-                          left: 53.r,
-                          bottom: 12.r,
-                          child: SizedBox(
-                            width: 200.r,
-                            height: 112.5.r,
-                            child: BarChartWidget(),
-                          ),
-                        ),
-                      ],
+                      ),
                     ),
-                  ),
+                    //TODO: display svg image
+                    Positioned(
+                      right: 0,
+                      bottom: 0,
+                      child: Image.asset(
+                        'assets/images/monitor_character_1.png',
+                        width: 131.r,
+                        height: 147.r,
+                      ),
+                    ),
+                  ],
                 ),
-                //TODO: display svg image
-                Positioned(
-                  right: 0,
-                  bottom: 0,
-                  child: Image.asset(
-                    'assets/images/monitor_character_1.png',
-                    width: 131.r,
-                    height: 147.r,
-                  ),
-                ),
-              ],
-            ),
-          );
+              ),
+      ),
+    );
   }
 }
 
@@ -640,198 +642,226 @@ class _IncorrectState extends ConsumerState<Incorrect> {
 
   @override
   Widget build(BuildContext context) {
-    //TODO: 푼 문제 없을 때 화면 구성
     return Container(
-      width: 425.r,
-      height: 327.r,
       color: const Color(0xFFECECEC),
-      child: isLoading
-          ? const Center(
-              child: CircularProgressIndicator(
-                color: Colors.grey,
-              ),
-            )
-          : Stack(
-              children: [
-                Container(
-                  width: 425.r,
-                  height: 152.r,
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(8).r,
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(24, 24, 44, 24).r,
+        child: Container(
+          width: 465.r,
+          height: 327.r,
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(8).r,
+          ),
+          child: isLoading
+              ? const Center(
+                  child: CircularProgressIndicator(
+                    color: Colors.grey,
                   ),
-                  padding: const EdgeInsets.fromLTRB(
-                    11,
-                    12,
-                    10,
-                    10,
-                  ).r,
-                  child: Row(
-                    children: [
-                      SizedBox(
-                        width: 274.r,
-                        height: 130.r,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Container(
-                              decoration: BoxDecoration(
-                                color: Colors.black,
-                                borderRadius: BorderRadius.circular(10).r,
-                              ),
-                              padding: EdgeInsets.symmetric(
-                                horizontal: 9.r,
-                                vertical: 3.r,
-                              ),
-                              child: Text(
-                                '오답 원인',
-                                style: TextStyle(
-                                  fontSize: 14.sp,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.white,
-                                ),
-                              ),
-                            ),
-                            const Spacer(),
-                            //TODO: 그래프 추가
-                            Container(
-                              width: 274.r,
-                              height: 96.r,
-                              color: Colors.grey,
-                            ),
-                          ],
+                )
+              : Stack(
+                  children: [
+                    Positioned(
+                      top: 56.r,
+                      left: 70.r,
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: primaryPurple[500],
+                          borderRadius: BorderRadius.circular(20).r,
+                        ),
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 12.r,
+                          vertical: 4.r,
+                        ),
+                        child: Text(
+                          '오답 분석',
+                          style: TextStyle(
+                            fontSize: 16.sp,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
                         ),
                       ),
-                      const Spacer(),
-                      Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
+                    ),
+                    Positioned(
+                      top: 100.r,
+                      left: 28.r,
+                      child: SizedBox(
+                        width: 171.r,
+                        child: const PieChartWidget(),
+                      ),
+                    ),
+                    Positioned(
+                      top: 31.r,
+                      left: 230.r,
+                      child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
-                            '가장 약한 부분은?',
-                            style: TextStyle(
-                              fontSize: 11.sp,
-                              fontWeight: FontWeight.bold,
-                            ),
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Container(
+                                width: 20.r,
+                                height: 20.r,
+                                decoration: BoxDecoration(
+                                  color: primaryPink[500],
+                                  borderRadius: BorderRadius.circular(20).r,
+                                ),
+                              ),
+                              SizedBox(width: 13.r),
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                      '${wrongToString('wrong_order')} 오답 (20%)',
+                                      style: TextStyle(
+                                        fontSize: 16.r,
+                                        fontWeight: FontWeight.w800,
+                                      )),
+                                  Text('단어 순서를 헷갈렸어요.',
+                                      style: TextStyle(
+                                        fontSize: 11.r,
+                                        fontWeight: FontWeight.bold,
+                                        color: const Color(0xFF818181),
+                                      )),
+                                ],
+                              ),
+                            ],
                           ),
-                          SizedBox(height: 5.r),
-                          Text(
-                            '${wrongToString(weakest)} 오류',
-                            style: TextStyle(
-                              fontSize: 18.sp,
-                              fontWeight: FontWeight.w800,
-                            ),
+                          SizedBox(height: 20.r),
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Container(
+                                width: 20.r,
+                                height: 20.r,
+                                decoration: BoxDecoration(
+                                  color: primaryYellow[500],
+                                  borderRadius: BorderRadius.circular(20).r,
+                                ),
+                              ),
+                              SizedBox(width: 13.r),
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                      '${wrongToString('wrong_punctuation')} 오답 (20%)',
+                                      style: TextStyle(
+                                        fontSize: 16.r,
+                                        fontWeight: FontWeight.w800,
+                                      )),
+                                  Text('문장 부호를 잘못 넣었어요.',
+                                      style: TextStyle(
+                                        fontSize: 11.r,
+                                        fontWeight: FontWeight.bold,
+                                        color: const Color(0xFF818181),
+                                      )),
+                                ],
+                              ),
+                            ],
+                          ),
+                          SizedBox(height: 20.r),
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Container(
+                                width: 20.r,
+                                height: 20.r,
+                                decoration: BoxDecoration(
+                                  color: primaryGreen[500],
+                                  borderRadius: BorderRadius.circular(20).r,
+                                ),
+                              ),
+                              SizedBox(width: 13.r),
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                      '${wrongToString('wrong_block')} 오답 (20%)',
+                                      style: TextStyle(
+                                        fontSize: 16.r,
+                                        fontWeight: FontWeight.w800,
+                                      )),
+                                  Text('단어를 알맞게 변형하지 못했어요.',
+                                      style: TextStyle(
+                                        fontSize: 11.r,
+                                        fontWeight: FontWeight.bold,
+                                        color: const Color(0xFF818181),
+                                      )),
+                                ],
+                              ),
+                            ],
+                          ),
+                          SizedBox(height: 20.r),
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Container(
+                                width: 20.r,
+                                height: 20.r,
+                                decoration: BoxDecoration(
+                                  color: primaryBlue[500],
+                                  borderRadius: BorderRadius.circular(20).r,
+                                ),
+                              ),
+                              SizedBox(width: 13.r),
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                      '${wrongToString('wrong_word')} 오답 (20%)',
+                                      style: TextStyle(
+                                        fontSize: 16.r,
+                                        fontWeight: FontWeight.w800,
+                                      )),
+                                  Text('올바른 단어를 사용하지 않았어요.',
+                                      style: TextStyle(
+                                        fontSize: 11.r,
+                                        fontWeight: FontWeight.bold,
+                                        color: const Color(0xFF818181),
+                                      )),
+                                ],
+                              ),
+                            ],
+                          ),
+                          SizedBox(height: 20.r),
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Container(
+                                width: 20.r,
+                                height: 20.r,
+                                decoration: BoxDecoration(
+                                  color: primaryPurple[500],
+                                  borderRadius: BorderRadius.circular(20).r,
+                                ),
+                              ),
+                              SizedBox(width: 13.r),
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text('기타 (20%)',
+                                      style: TextStyle(
+                                        fontSize: 16.r,
+                                        fontWeight: FontWeight.w800,
+                                      )),
+                                  // Text('올바른 단어를 사용하지 않았어요.',
+                                  //     style: TextStyle(
+                                  //       fontSize: 11.r,
+                                  //       fontWeight: FontWeight.bold,
+                                  //       color: const Color(0xFF818181),
+                                  //     )),
+                                ],
+                              ),
+                            ],
                           ),
                         ],
                       ),
-                      const Spacer(),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
-                //TODO: display svg image
-                Positioned(
-                  left: 0,
-                  bottom: 0,
-                  child: Image.asset(
-                    'assets/images/monitor_character_2.png',
-                    width: 72.r,
-                  ),
-                ),
-                Positioned(
-                  left: 86.r,
-                  bottom: 70.r,
-                  child: Container(
-                    width: 162.r,
-                    height: 90.r,
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(8).r,
-                    ),
-                    padding: const EdgeInsets.all(10).r,
-                    alignment: Alignment.center,
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          '최근에 틀린 문제',
-                          style: TextStyle(
-                            fontSize: 11.sp,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        Text(
-                          recentProblem,
-                          style: TextStyle(
-                            fontSize: 14.sp,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                Positioned(
-                  right: 0,
-                  bottom: 70.r,
-                  child: Container(
-                    width: 162.r,
-                    height: 90.r,
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(8).r,
-                    ),
-                    padding: const EdgeInsets.all(10).r,
-                    alignment: Alignment.center,
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          '${widget.userName}의 답',
-                          style: TextStyle(
-                            fontSize: 11.sp,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        Text(
-                          recentAnswer,
-                          style: TextStyle(
-                            fontSize: 14.sp,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                Positioned(
-                  right: 0,
-                  bottom: 0,
-                  child: Container(
-                    width: 339.r,
-                    height: 55.r,
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(8).r,
-                    ),
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 7,
-                      vertical: 19,
-                    ).r,
-                    child: Center(
-                      child: Text(
-                        recentDetail,
-                        style: TextStyle(
-                          fontSize: 14.sp,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
+        ),
+      ),
     );
   }
 }
@@ -895,104 +925,92 @@ class _ManageStudentState extends ConsumerState<ManageStudent> {
             )
           : Stack(
               children: [
-                Positioned(
-                  left: 80.r,
-                  top: 37.r,
-                  child: SvgPicture.asset(
-                    'assets/images/monitor_day_icon.svg',
-                    width: 34.r,
-                    height: 38.r,
+                Align(
+                  alignment: Alignment.topCenter,
+                  child: Padding(
+                    padding: const EdgeInsets.only(top: 46).r,
+                    child: Container(
+                      width: 256.r,
+                      height: 60.r,
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(8).r,
+                      ),
+                      padding: const EdgeInsets.all(12).r,
+                      child: Row(
+                        children: [
+                          SvgPicture.asset(
+                            'assets/images/monitor_day_icon.svg',
+                            height: 32.r,
+                          ),
+                          SizedBox(width: 8.r),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              Text(
+                                '$streamStudyDay일째',
+                                style: TextStyle(
+                                  fontSize: 14.sp,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              Text(
+                                '연속 학습 시간',
+                                style: TextStyle(
+                                  fontSize: 11.sp,
+                                  fontWeight: FontWeight.bold,
+                                  color: const Color(0xFFB2B2B2),
+                                ),
+                              ),
+                            ],
+                          ),
+                          SizedBox(width: 20.r),
+                          SvgPicture.asset(
+                            'assets/images/monitor_time_icon.svg',
+                            height: 32.r,
+                          ),
+                          SizedBox(width: 8.r),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              Text(
+                                '$totalStudyTime시간',
+                                style: TextStyle(
+                                  fontSize: 14.sp,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              Text(
+                                '총 학습 시간',
+                                style: TextStyle(
+                                  fontSize: 11.sp,
+                                  fontWeight: FontWeight.bold,
+                                  color: const Color(0xFFB2B2B2),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
                 ),
-                Positioned(
-                  left: 127.r,
-                  top: 40.r,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        '$streamStudyDay일째',
-                        style: TextStyle(
-                          fontSize: 14.sp,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      Text(
-                        '연속 학습 중',
-                        style: TextStyle(
-                          fontSize: 11.sp,
-                          fontWeight: FontWeight.bold,
-                          color: const Color(0xFFB2B2B2),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                Positioned(
-                  top: 37.r,
-                  right: 155.r,
-                  child: SvgPicture.asset(
-                    'assets/images/monitor_time_icon.svg',
-                    width: 34.r,
-                    height: 38.r,
-                  ),
-                ),
-                Positioned(
-                  right: 79.r,
-                  top: 40.r,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        '$totalStudyTime시간',
-                        style: TextStyle(
-                          fontSize: 14.sp,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      Text(
-                        '총 학습 시간',
-                        style: TextStyle(
-                          fontSize: 11.sp,
-                          fontWeight: FontWeight.bold,
-                          color: const Color(0xFFB2B2B2),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                //TODO: display svg image
-                Positioned(
-                  bottom: 62.r,
-                  left: 46.r,
-                  child: Lottie.asset(
-                    width: 334.r,
-                    'assets/lottie/motion_13.json',
+                Align(
+                  alignment: Alignment.topCenter,
+                  child: Padding(
+                    padding: const EdgeInsets.only(top: 123).r,
+                    child: Lottie.asset(
+                      width: 334.r,
+                      //height: 166.r,
+                      'assets/lottie/motion_13.json',
+                    ),
                   ),
                 ),
                 Align(
                   alignment: Alignment.bottomCenter,
-                  child: FilledButton(
+                  child: SquareButton(
+                    text: '학습자 삭제',
                     onPressed: widget.onDeletePressed,
-                    style: FilledButton.styleFrom(
-                      minimumSize: Size(311.r, 37.r),
-                      backgroundColor: const Color(0xFF484848),
-                      padding: const EdgeInsets.symmetric(
-                        vertical: 10,
-                      ).r,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8).r,
-                      ),
-                      alignment: Alignment.center,
-                    ),
-                    child: Text(
-                      '학습자 삭제',
-                      style: TextStyle(
-                        fontSize: 14.sp,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                      ),
-                    ),
                   ),
                 ),
               ],
