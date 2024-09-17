@@ -1,5 +1,7 @@
 import 'package:block_english/models/MonitoringModel/study_info_model.dart';
 import 'package:block_english/models/MonitoringModel/weak_part_model.dart';
+import 'package:block_english/utils/color.dart';
+import 'package:block_english/widgets/ChartWidget/bar_chart_widget.dart';
 import 'package:block_english/widgets/ChartWidget/line_chart_widget.dart';
 import 'package:block_english/services/super_service.dart';
 import 'package:block_english/utils/constants.dart';
@@ -47,11 +49,11 @@ class MonitorStudentScreen extends StatefulWidget {
 class _MonitorStudentScreenState extends State<MonitorStudentScreen> {
   final _navigatorKey = GlobalKey<NavigatorState>();
   int currentPage = 1;
-  Color? unselectedFontColor = Colors.black;
-  Color? selectedFontColor = const Color(0xFF58892E);
-  Color? unselectedBackgroundColor = const Color(0xFFD9D9D9);
-  Color? selectedBackgroundColor = const Color(0xFFA9EA70);
-  Color selectedBorderColor = const Color(0xFF8AD24C);
+  Color? unselectedFontColor = const Color(0xFF8A8A8A);
+  Color? selectedFontColor = Colors.white;
+  Color? unselectedBackgroundColor = const Color(0xFFE4E4E4);
+  Color? selectedBackgroundColor = primaryPurple[400];
+  Color selectedBorderColor = const Color(0xFFAD3DF1);
 
   onMenuPressed(String route) {
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -204,13 +206,13 @@ class _MonitorStudentScreenState extends State<MonitorStudentScreen> {
                           }
                         },
                         style: FilledButton.styleFrom(
-                          minimumSize: Size(176.r, 48.r),
+                          minimumSize: Size(185.r, 44.r),
                           backgroundColor: currentPage == 1
                               ? selectedBackgroundColor
                               : unselectedBackgroundColor,
                           padding: const EdgeInsets.symmetric(
-                            horizontal: 20,
-                            vertical: 15,
+                            horizontal: 16,
+                            vertical: 14,
                           ).r,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(8).r,
@@ -225,7 +227,7 @@ class _MonitorStudentScreenState extends State<MonitorStudentScreen> {
                         child: Text(
                           '학습 분석',
                           style: TextStyle(
-                            fontSize: 16.sp,
+                            fontSize: 14.sp,
                             fontWeight: FontWeight.bold,
                             color: currentPage == 1
                                 ? selectedFontColor
@@ -233,7 +235,7 @@ class _MonitorStudentScreenState extends State<MonitorStudentScreen> {
                           ),
                         ),
                       ),
-                      SizedBox(height: 10.r),
+                      SizedBox(height: 8.r),
                       FilledButton(
                         onPressed: () {
                           if (currentPage != 2) {
@@ -244,13 +246,13 @@ class _MonitorStudentScreenState extends State<MonitorStudentScreen> {
                           }
                         },
                         style: FilledButton.styleFrom(
-                          minimumSize: Size(176.r, 48.r),
+                          minimumSize: Size(185.r, 44.r),
                           backgroundColor: currentPage == 2
                               ? selectedBackgroundColor
                               : unselectedBackgroundColor,
                           padding: const EdgeInsets.symmetric(
-                            horizontal: 20,
-                            vertical: 15,
+                            horizontal: 16,
+                            vertical: 14,
                           ).r,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(8).r,
@@ -265,7 +267,7 @@ class _MonitorStudentScreenState extends State<MonitorStudentScreen> {
                         child: Text(
                           '오답 분석',
                           style: TextStyle(
-                            fontSize: 16.sp,
+                            fontSize: 14.sp,
                             fontWeight: FontWeight.bold,
                             color: currentPage == 2
                                 ? selectedFontColor
@@ -284,13 +286,13 @@ class _MonitorStudentScreenState extends State<MonitorStudentScreen> {
                           }
                         },
                         style: FilledButton.styleFrom(
-                          minimumSize: Size(176.r, 48.r),
+                          minimumSize: Size(185.r, 44.r),
                           backgroundColor: currentPage == 3
                               ? selectedBackgroundColor
                               : unselectedBackgroundColor,
                           padding: const EdgeInsets.symmetric(
-                            horizontal: 20,
-                            vertical: 15,
+                            horizontal: 16,
+                            vertical: 14,
                           ),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(8).r,
@@ -305,7 +307,7 @@ class _MonitorStudentScreenState extends State<MonitorStudentScreen> {
                         child: Text(
                           '학습자 관리',
                           style: TextStyle(
-                            fontSize: 16.sp,
+                            fontSize: 14.sp,
                             fontWeight: FontWeight.bold,
                             color: currentPage == 3
                                 ? selectedFontColor
@@ -321,51 +323,46 @@ class _MonitorStudentScreenState extends State<MonitorStudentScreen> {
             Align(
               alignment: Alignment.centerRight,
               child: Container(
-                width: 553.r,
+                width: 539.r,
                 height: 1.sh,
                 color: const Color(0xFFECECEC),
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 64,
-                    vertical: 24,
-                  ).r,
-                  child: Center(
-                    child: SizedBox(
-                      width: 425.r,
-                      height: 327.r,
-                      child: Navigator(
-                        key: _navigatorKey,
-                        initialRoute: learning,
-                        onGenerateRoute: (settings) {
-                          return CustomRoute(
-                            builder: (context) {
-                              switch (settings.name) {
-                                case learning:
-                                  return LearningAnalysis(
+                  padding: const EdgeInsets.fromLTRB(24, 24, 44, 24).r,
+                  child: SizedBox(
+                    width: 471.r,
+                    height: 327.r,
+                    child: Navigator(
+                      key: _navigatorKey,
+                      initialRoute: learning,
+                      onGenerateRoute: (settings) {
+                        return CustomRoute(
+                          builder: (context) {
+                            switch (settings.name) {
+                              case learning:
+                                return LearningAnalysis(
+                                  userId: widget.studentId,
+                                  userName: widget.studentName,
+                                );
+                              case incorrect:
+                                return Incorrect(
                                     userId: widget.studentId,
-                                    userName: widget.studentName,
-                                  );
-                                case incorrect:
-                                  return Incorrect(
-                                      userId: widget.studentId,
-                                      userName: widget.studentName);
-                                case manage:
-                                  return ManageStudent(
-                                    userId: widget.studentId,
-                                    onDeletePressed: () {
-                                      _showDeleteDialog(context);
-                                    },
-                                  );
-                                default:
-                                  return LearningAnalysis(
-                                    userId: widget.studentId,
-                                    userName: widget.studentName,
-                                  );
-                              }
-                            },
-                          );
-                        },
-                      ),
+                                    userName: widget.studentName);
+                              case manage:
+                                return ManageStudent(
+                                  userId: widget.studentId,
+                                  onDeletePressed: () {
+                                    _showDeleteDialog(context);
+                                  },
+                                );
+                              default:
+                                return LearningAnalysis(
+                                  userId: widget.studentId,
+                                  userName: widget.studentName,
+                                );
+                            }
+                          },
+                        );
+                      },
                     ),
                   ),
                 ),
@@ -396,7 +393,8 @@ class _LearningAnalysisState extends ConsumerState<LearningAnalysis> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    waitForData();
+    //waitForData();
+    isLoading = false;
   }
 
   waitForData() async {
@@ -436,7 +434,7 @@ class _LearningAnalysisState extends ConsumerState<LearningAnalysis> {
             ),
           )
         : Container(
-            width: 425.r,
+            width: 471.r,
             height: 327.r,
             color: const Color(0xFFECECEC),
             child: Stack(
@@ -445,7 +443,7 @@ class _LearningAnalysisState extends ConsumerState<LearningAnalysis> {
                   left: 0,
                   top: 0,
                   child: Container(
-                    width: 262.r,
+                    width: 307.r,
                     height: 142.r,
                     decoration: BoxDecoration(
                       color: Colors.white,
@@ -464,32 +462,63 @@ class _LearningAnalysisState extends ConsumerState<LearningAnalysis> {
                       borderRadius: BorderRadius.circular(8).r,
                     ),
                     child: Padding(
-                      padding: const EdgeInsets.fromLTRB(
-                        18,
-                        15,
-                        18,
-                        16,
-                      ).r,
+                      padding: const EdgeInsets.symmetric(vertical: 17).r,
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
                           Container(
                             padding: const EdgeInsets.symmetric(
-                              horizontal: 16,
-                              vertical: 2,
+                              horizontal: 12,
+                              vertical: 4,
                             ).r,
                             decoration: BoxDecoration(
-                              color: const Color(0xFF414141),
-                              borderRadius: BorderRadius.circular(10).r,
+                              color: primaryPurple[500],
+                              borderRadius: BorderRadius.circular(20).r,
                             ),
                             child: Text(
                               'Basic BEST',
                               style: TextStyle(
-                                fontFamily: 'Pretendard',
                                 fontSize: 14.sp,
                                 color: Colors.white,
-                                fontWeight: FontWeight.w500,
+                                fontWeight: FontWeight.bold,
                               ),
+                            ),
+                          ),
+                          const Spacer(flex: 2),
+                          Text(
+                            // Basic best level
+                            levelList[0],
+                            style: TextStyle(
+                              fontSize: 14.sp,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const Spacer(flex: 3),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 4,
+                            ).r,
+                            decoration: BoxDecoration(
+                              color: primaryPurple[500],
+                              borderRadius: BorderRadius.circular(20).r,
+                            ),
+                            child: Text(
+                              'Expert BEST',
+                              style: TextStyle(
+                                fontSize: 14.sp,
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                          const Spacer(flex: 2),
+                          Text(
+                            // Basic best level
+                            levelList[1],
+                            style: TextStyle(
+                              fontSize: 14.sp,
+                              fontWeight: FontWeight.bold,
                             ),
                           ),
                         ],
@@ -501,11 +530,11 @@ class _LearningAnalysisState extends ConsumerState<LearningAnalysis> {
                   left: 0,
                   bottom: 0,
                   child: Container(
-                    width: 242.r,
+                    width: 274.r,
                     height: 170.r,
                     padding: const EdgeInsets.fromLTRB(
                       0,
-                      13,
+                      16,
                       0,
                       0,
                     ),
@@ -513,38 +542,26 @@ class _LearningAnalysisState extends ConsumerState<LearningAnalysis> {
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(8).r,
                     ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.center,
+                    child: Stack(
                       children: [
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 10,
-                            vertical: 4,
-                          ).r,
-                          decoration: BoxDecoration(
-                            color: const Color(0xFF414141),
-                            borderRadius: BorderRadius.circular(14).r,
-                          ),
+                        Align(
+                          alignment: Alignment.topCenter,
                           child: Text(
                             '단원별 정답률',
                             style: TextStyle(
-                              fontSize: 11.sp,
-                              color: Colors.white,
+                              fontSize: 14.sp,
+                              color: Colors.black,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
                         ),
-                        const Spacer(),
-                        SizedBox(
-                          //width: 215.r,
-                          height: 130.r,
-                          child: Padding(
-                            padding: EdgeInsets.only(
-                              right: 15.r,
-                            ),
-                            child: LineChartWidget(
-                              rate: forCorrectRate,
-                            ),
+                        Positioned(
+                          left: 53.r,
+                          bottom: 12.r,
+                          child: SizedBox(
+                            width: 200.r,
+                            height: 112.5.r,
+                            child: BarChartWidget(),
                           ),
                         ),
                       ],
@@ -591,7 +608,8 @@ class _IncorrectState extends ConsumerState<Incorrect> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    waitForData();
+    //waitForData();
+    isLoading = false;
   }
 
   waitForData() async {
@@ -839,7 +857,8 @@ class _ManageStudentState extends ConsumerState<ManageStudent> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    waitForData();
+    //waitForData();
+    isLoading = false;
   }
 
   waitForData() async {
