@@ -2,12 +2,10 @@ import 'package:block_english/models/MonitoringModel/study_info_model.dart';
 import 'package:block_english/models/MonitoringModel/weak_part_model.dart';
 import 'package:block_english/utils/color.dart';
 import 'package:block_english/widgets/ChartWidget/bar_chart_widget.dart';
-import 'package:block_english/widgets/ChartWidget/line_chart_widget.dart';
 import 'package:block_english/services/super_service.dart';
 import 'package:block_english/utils/constants.dart';
 import 'package:block_english/widgets/ChartWidget/pie_chart_widget.dart';
 import 'package:block_english/widgets/square_button.dart';
-import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -391,8 +389,7 @@ class _LearningAnalysisState extends ConsumerState<LearningAnalysis> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    //waitForData();
-    isLoading = false;
+    waitForData();
   }
 
   waitForData() async {
@@ -614,8 +611,7 @@ class _IncorrectState extends ConsumerState<Incorrect> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    //waitForData();
-    isLoading = false;
+    waitForData();
   }
 
   waitForData() async {
@@ -891,8 +887,7 @@ class _ManageStudentState extends ConsumerState<ManageStudent> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    //waitForData();
-    isLoading = false;
+    waitForData();
   }
 
   waitForData() async {

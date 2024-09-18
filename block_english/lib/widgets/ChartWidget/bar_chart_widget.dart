@@ -15,7 +15,7 @@ class BarChartWidget extends StatefulWidget {
         primaryGreen[500]!,
       ];
 
-  final Color barBackgroundColor = primaryPurple[100]!;
+  final Color barBackgroundColor = Colors.transparent;
   final Color barColor = primaryPurple[500]!;
   final Color touchedBarColor = primaryBlue[500]!;
 
@@ -41,15 +41,22 @@ class BarChartWidgetState extends State<BarChartWidget> {
       }
     });
 
-    // 2초 후에 isPlaying을 false로 설정
-    Future.delayed(const Duration(seconds: 2), () {
-      setState(() {
-        isPlaying = !isPlaying;
-        if (isPlaying) {
-          refreshState();
-        }
-      });
+    // 1.2초 후에 isPlaying을 false로 설정
+    Future.delayed(const Duration(milliseconds: 1200), () {
+      if (mounted) {
+        setState(() {
+          isPlaying = !isPlaying;
+          if (isPlaying) {
+            refreshState();
+          }
+        });
+      }
     });
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
   }
 
   @override
@@ -80,7 +87,7 @@ class BarChartWidgetState extends State<BarChartWidget> {
     double y, {
     bool isTouched = false,
     Color? barColor,
-    double width = 26,
+    double width = 24,
     List<int> showTooltips = const [],
   }) {
     barColor ??= widget.barColor;
@@ -337,11 +344,12 @@ class BarChartWidgetState extends State<BarChartWidget> {
   }
 
   Future<dynamic> refreshState() async {
+    if (!mounted) return;
     setState(() {});
     await Future<dynamic>.delayed(
       animDuration + const Duration(milliseconds: 50),
     );
-    if (isPlaying) {
+    if (isPlaying && mounted) {
       await refreshState();
     }
   }
