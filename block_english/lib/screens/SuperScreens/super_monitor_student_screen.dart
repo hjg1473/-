@@ -71,11 +71,9 @@ class _MonitorStudentScreenState extends State<MonitorStudentScreen> {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(7.02).r,
         ),
-        titlePadding: const EdgeInsets.fromLTRB(
-          24,
-          28,
-          24,
-          12,
+        titlePadding: const EdgeInsets.only(
+          top: 28,
+          bottom: 8,
         ).r,
         title: Center(
           child: Text(
@@ -87,7 +85,7 @@ class _MonitorStudentScreenState extends State<MonitorStudentScreen> {
           ),
         ),
         contentPadding: const EdgeInsets.symmetric(
-          horizontal: 24,
+          horizontal: 20,
         ).r,
         content: Text(
           '학습자를 삭제하면\n더이상 모니터링이 불가합니다\n\n정말 삭제하시겠습니까?',
@@ -99,46 +97,50 @@ class _MonitorStudentScreenState extends State<MonitorStudentScreen> {
           ),
         ),
         actionsPadding: const EdgeInsets.fromLTRB(
-          24,
-          24,
-          24,
-          28,
+          20,
+          32,
+          20,
+          20,
         ).r,
         actions: [
-          FilledButton(
-            onPressed: () {
-              Navigator.of(context).pop();
-            },
-            style: FilledButton.styleFrom(
-              padding: const EdgeInsets.symmetric(
-                vertical: 15,
-                horizontal: 51.5,
-              ).r,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(7.02).r,
+          Padding(
+            padding: const EdgeInsets.only(right: 6).r,
+            child: FilledButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              style: FilledButton.styleFrom(
+                padding: const EdgeInsets.symmetric(
+                  vertical: 11,
+                  horizontal: 53,
+                ).r,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(7.02).r,
+                ),
+                backgroundColor: const Color(0xFF919191),
               ),
-              backgroundColor: const Color(0xFF919191),
-            ),
-            child: Text(
-              '취소',
-              style: TextStyle(
-                fontSize: 16.sp,
-                fontWeight: FontWeight.bold,
+              child: Text(
+                '취소',
+                style: TextStyle(
+                  fontSize: 16.sp,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ),
           ),
+
           //TODO: Add delete function
           FilledButton(
             onPressed: () {},
             style: FilledButton.styleFrom(
               padding: const EdgeInsets.symmetric(
-                vertical: 15,
-                horizontal: 51.5,
+                vertical: 11,
+                horizontal: 53,
               ).r,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(7.02).r,
               ),
-              backgroundColor: const Color(0xFF93E54C),
+              backgroundColor: primaryPink[500],
             ),
             child: Text(
               '삭제',
@@ -555,13 +557,15 @@ class _LearningAnalysisState extends ConsumerState<LearningAnalysis> {
                                 ),
                               ),
                             ),
-                            Positioned(
-                              left: 53.r,
-                              bottom: 12.r,
-                              child: SizedBox(
-                                width: 200.r,
-                                height: 112.5.r,
-                                child: BarChartWidget(),
+                            Align(
+                              alignment: Alignment.bottomCenter,
+                              child: Padding(
+                                padding: const EdgeInsets.only(bottom: 12).r,
+                                child: SizedBox(
+                                  width: 234.r,
+                                  height: 112.r,
+                                  child: BarChartWidget(),
+                                ),
                               ),
                             ),
                           ],

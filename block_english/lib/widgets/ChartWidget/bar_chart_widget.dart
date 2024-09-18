@@ -31,6 +31,28 @@ class BarChartWidgetState extends State<BarChartWidget> {
   bool isPlaying = false;
 
   @override
+  void initState() {
+    super.initState();
+    // Build되자마자 isPlaying을 true로 설정
+    setState(() {
+      isPlaying = !isPlaying;
+      if (isPlaying) {
+        refreshState();
+      }
+    });
+
+    // 2초 후에 isPlaying을 false로 설정
+    Future.delayed(const Duration(seconds: 2), () {
+      setState(() {
+        isPlaying = !isPlaying;
+        if (isPlaying) {
+          refreshState();
+        }
+      });
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
     return SizedBox(
       width: 200.r,
@@ -38,7 +60,7 @@ class BarChartWidgetState extends State<BarChartWidget> {
       child: Stack(
         children: <Widget>[
           Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
+            //crossAxisAlignment: CrossAxisAlignment.stretch,
             children: <Widget>[
               Expanded(
                 child: BarChart(
@@ -48,23 +70,6 @@ class BarChartWidgetState extends State<BarChartWidget> {
               ),
             ],
           ),
-          Align(
-            alignment: Alignment.topRight,
-            child: IconButton(
-              icon: Icon(
-                isPlaying ? Icons.pause : Icons.play_arrow,
-                color: primaryGreen[500],
-              ),
-              onPressed: () {
-                setState(() {
-                  isPlaying = !isPlaying;
-                  if (isPlaying) {
-                    refreshState();
-                  }
-                });
-              },
-            ),
-          )
         ],
       ),
     );
@@ -75,7 +80,7 @@ class BarChartWidgetState extends State<BarChartWidget> {
     double y, {
     bool isTouched = false,
     Color? barColor,
-    double width = 27,
+    double width = 26,
     List<int> showTooltips = const [],
   }) {
     barColor ??= widget.barColor;
@@ -184,9 +189,10 @@ class BarChartWidgetState extends State<BarChartWidget> {
         ),
         leftTitles: AxisTitles(
           sideTitles: SideTitles(
-            showTitles: false,
+            showTitles: true,
             getTitlesWidget: getLeftTitles,
-            reservedSize: 30,
+            reservedSize: 45.r,
+            interval: 25,
           ),
         ),
       ),
@@ -195,7 +201,7 @@ class BarChartWidgetState extends State<BarChartWidget> {
       ),
       barGroups: showingGroups(),
       gridData: const FlGridData(
-        show: false,
+        show: true,
         horizontalInterval: 25,
         verticalInterval: 1,
       ),
@@ -203,10 +209,10 @@ class BarChartWidgetState extends State<BarChartWidget> {
   }
 
   Widget getTitles(double value, TitleMeta meta) {
-    const style = TextStyle(
+    TextStyle style = TextStyle(
       color: Colors.black,
       fontWeight: FontWeight.bold,
-      fontSize: 14,
+      fontSize: 11.sp,
     );
     Widget text;
     switch (value.toInt()) {
@@ -220,7 +226,7 @@ class BarChartWidgetState extends State<BarChartWidget> {
         text = Text(levelList[2], style: style);
         break;
       default:
-        text = const Text('', style: style);
+        text = Text('', style: style);
         break;
     }
     return SideTitleWidget(
@@ -231,24 +237,24 @@ class BarChartWidgetState extends State<BarChartWidget> {
   }
 
   Widget getLeftTitles(double value, TitleMeta meta) {
-    const style = TextStyle(
+    TextStyle style = TextStyle(
       color: Colors.black,
       fontWeight: FontWeight.bold,
-      fontSize: 14,
+      fontSize: 11.sp,
     );
     Widget text;
     switch (value.toInt()) {
       case 0:
-        text = const Text('1', style: style);
+        text = Text(' 0%  ', style: style);
         break;
-      case 1:
-        text = const Text('2', style: style);
+      case 50:
+        text = Text('50% ', style: style);
         break;
-      case 2:
-        text = const Text('3', style: style);
+      case 100:
+        text = Text('100%', style: style);
         break;
       default:
-        text = const Text('', style: style);
+        text = Text('', style: style);
         break;
     }
     return SideTitleWidget(
@@ -269,11 +275,15 @@ class BarChartWidgetState extends State<BarChartWidget> {
           sideTitles: SideTitles(
             showTitles: true,
             getTitlesWidget: getTitles,
+            reservedSize: 38,
           ),
         ),
-        leftTitles: const AxisTitles(
+        leftTitles: AxisTitles(
           sideTitles: SideTitles(
-            showTitles: false,
+            showTitles: true,
+            getTitlesWidget: getLeftTitles,
+            reservedSize: 45.r,
+            interval: 25,
           ),
         ),
         topTitles: const AxisTitles(
@@ -295,21 +305,21 @@ class BarChartWidgetState extends State<BarChartWidget> {
           case 0:
             return makeGroupData(
               0,
-              Random().nextInt(15).toDouble() + 6,
+              Random().nextInt(75).toDouble() + 16,
               barColor: widget.availableColors[
                   Random().nextInt(widget.availableColors.length)],
             );
           case 1:
             return makeGroupData(
               1,
-              Random().nextInt(15).toDouble() + 6,
+              Random().nextInt(75).toDouble() + 16,
               barColor: widget.availableColors[
                   Random().nextInt(widget.availableColors.length)],
             );
           case 2:
             return makeGroupData(
               2,
-              Random().nextInt(15).toDouble() + 6,
+              Random().nextInt(75).toDouble() + 16,
               barColor: widget.availableColors[
                   Random().nextInt(widget.availableColors.length)],
             );
@@ -319,7 +329,7 @@ class BarChartWidgetState extends State<BarChartWidget> {
         }
       }),
       gridData: const FlGridData(
-        show: false,
+        show: true,
         horizontalInterval: 25,
         verticalInterval: 1,
       ),
