@@ -53,3 +53,9 @@ class UserStep2(BaseModel):
 class LogResponse(BaseModel):
     problem: str
     answer: str
+
+class TableData:
+    def __init__(self, table_id, table_count, problems):
+        self.table_id = table_id
+        self.table_count = table_count
+        self.problems = problems

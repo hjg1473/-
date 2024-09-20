@@ -54,8 +54,8 @@ async def create_released(db, user_id: int, seasons: list):
         db.add(released)
     await db.commit()
 
-# Get Username in db
-async def get_user_to_username(username: str, db: db_dependency):
+# Find user data in db
+async def find_user_by_username(username: str, db: db_dependency):
     result = await db.execute(select(Users).filter(Users.username == username))
     return result.scalars().first()
 

@@ -160,3 +160,15 @@ def lettercase_filter(problem:str, response:str):
 
     filteredR = ' '.join(r_split)
     return letter_wrong, filteredR
+
+
+# 공통 로직: 사용자의 문제 상태 초기화 . utils.
+def init_user_problem(user_id: str, season: int, level: int, step: int, problem_type: str):
+    from problem.schemas import TempUserProblem, TempUserProblems
+    TempUserProblems[user_id] = TempUserProblem(0, 0, 0, 0, 0)
+    tempUserProblem = TempUserProblems.get(user_id)
+    tempUserProblem.solved_season = season
+    tempUserProblem.solved_level = level
+    tempUserProblem.solved_step = step
+    tempUserProblem.solved_type = problem_type
+
