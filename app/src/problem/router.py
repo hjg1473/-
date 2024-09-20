@@ -216,97 +216,60 @@ async def read_problem_wrongs(mode_str:str, season:int, level:int, user:user_dep
     return {"detail":"success"}
 
 # 연습 문제 반환
-@router.get("/practice/set/", status_code = status.HTTP_200_OK)
-async def read_problem_all(season:int, level:int, step:int, user: user_dependency, db: db_dependency):
+@router.get("/practice/set/", status_code=status.HTTP_200_OK)
+async def read_practice_problem(season: int, level: int, step: int, user: user_dependency, db: db_dependency):
     get_user_exception(user)
-
-    logger = logger_setup.get_logger(user.get("id"))
-    logger.info("--- studyStart ---")
-    result = await db.execute(select(Problems).filter(Problems.level == level, Problems.season == season).filter(Problems.step == step).filter(Problems.type == "normal"))
-    stepinfo_model = result.scalars().all()
-    get_problem_exception(stepinfo_model)
-
-    TempUserProblems[user.get("id")] = TempUserProblem(0, 0, 0, 0, 0) # 객체 생성. 시작할 때.
-    tempUserProblem = TempUserProblems.get(user.get("id"))
-    tempUserProblem.solved_season = season
-    tempUserProblem.solved_level = level
-    tempUserProblem.solved_step = step
-    tempUserProblem.solved_type = 'normal'
-
-    return {'problems': await read_problem_block_colors(stepinfo_model, db)}
-
-# 연습문제: 레벨과 스텝 정보 반환
-@router.get("/practice/info/", status_code = status.HTTP_200_OK)
-async def practice_read_level_and_step(season:int, user: user_dependency, db: db_dependency):
-    get_user_exception(user)
-
-    result = await db.execute(select(Released).filter(Released.owner_id == user.get("id")).filter(Released.released_season == season))
-    Released_model = result.scalars().first()
-    get_season_exception(Released_model)
     
-    result = await db.execute(select(Problems).filter(Problems.type == 'normal', Problems.season == season))
-    problem_model = result.scalars().all()
-    problems = set()
-    result = []
-
-    for problem in problem_model:
-        if problem.level == 0 or problem.level:
-            problems.add(problem.level)
-
-    problems = list(problems)
-    for level in problems:
-        problem_step = set()  # 중복 제거를 위해 set 사용
-        for problem in problem_model:
-            if problem.level == level: 
-                if problem.step == 0 or problem.step:
-                    problem_step.add(problem.step) 
-        result.append({'level_name': level, 'steps': list(problem_step)})
-
-    return {'levels' : result }
+    stepinfo_model = await fetch_problem_set(season, level, step, "normal", db)
+    get_problem_exception(stepinfo_model)
+    init_user_problem(user.get("id"), season, level, step, "normal")
+    
+    return {'problems': await read_problem_block_colors(stepinfo_model, db)}
 
 # 확장 문제 반환
-@router.get("/expert/set/", status_code = status.HTTP_200_OK)
-async def read_problem_all(season:int, level:int, step:int, user: user_dependency, db: db_dependency):
+@router.get("/expert/set/", status_code=status.HTTP_200_OK)
+async def read_expert_problem(season: int, level: int, step: int, user: user_dependency, db: db_dependency):
     get_user_exception(user)
     
-    logger = logger_setup.get_logger(user.get("id"))
-    logger.info("--- studyStart ---")
-    result = await db.execute(select(Problems).filter(Problems.level == level, Problems.season == season).filter(Problems.step == step).filter(Problems.type == "ai"))
-    stepinfo_model = result.scalars().all()
+    stepinfo_model = await fetch_problem_set(season, level, step, "ai", db)
     get_problem_exception(stepinfo_model)
-
-    TempUserProblems[user.get("id")] = TempUserProblem(0, 0, 0, 0, 0) # 객체 생성. 시작할 때.
-    tempUserProblem = TempUserProblems.get(user.get("id"))
-    tempUserProblem.solved_season = season
-    tempUserProblem.solved_level = level
-    tempUserProblem.solved_step = step
-    tempUserProblem.solved_type = 'ai'
+    init_user_problem(user.get("id"), season, level, step, "ai")
     
     return {'problems': await read_problem_block_colors(stepinfo_model, db)}
 
-# 확장 문제: 스텝 정보 반환
-@router.get("/expert/info/", status_code = status.HTTP_200_OK)
-async def read_level_and_step_expert(season:int, level:int, difficulty:int, user: user_dependency, db: db_dependency):
+# 연습 문제: 레벨과 스텝 정보 반환
+@router.get("/practice/info/", status_code=status.HTTP_200_OK)
+async def practice_read_level_and_step(season: int, user: user_dependency, db: db_dependency):
     get_user_exception(user)
-
-    result = await db.execute(select(Released).filter(Released.owner_id == user.get("id")).filter(Released.released_season == season))
-    Released_model = result.scalars().first()
+    
+    Released_model = await fetch_user_releasedSeason(user, season, db)
     get_season_exception(Released_model)
 
-    result = await db.execute(select(Problems).filter(Problems.type == 'ai', Problems.season == season).filter(Problems.level == level, Problems.difficulty == difficulty))
+    levels_info = await get_steps_info(season, "normal", db)
+    
+    return {'levels': levels_info}
+
+# 확장 문제: 스텝 정보 반환
+@router.get("/expert/info/", status_code=status.HTTP_200_OK)
+async def read_level_and_step_expert(season: int, level: int, difficulty: int, user: user_dependency, db: db_dependency):
+    get_user_exception(user)
+    
+    Released_model = await fetch_user_releasedSeason(user, season, db)
+    get_season_exception(Released_model)
+
+    result = await db.execute(select(Problems)
+                              .filter(Problems.type == 'ai', Problems.season == season)
+                              .filter(Problems.level == level, Problems.difficulty == difficulty))
     problem_model = result.scalars().all()
-    problem_model = list(problem_model)
-    tail_step = problem_model[0].step
-    head_step = problem_model[0].step
-
-    for problem in problem_model:
-        p_step = problem.step
-        if p_step > head_step:
-            head_step = p_step
-        elif p_step < tail_step:
-            tail_step = p_step
-
-    return {'steps' : list(range(tail_step, head_step+1))}
+    
+    if problem_model:
+        tail_step = min(problem.step for problem in problem_model)
+        head_step = max(problem.step for problem in problem_model)
+        steps = list(range(tail_step, head_step + 1))
+    else:
+        steps = []
+    
+    return {'steps': steps}
 
 async def ocr(file):
     img_binary = await file.read()

@@ -2,7 +2,7 @@ import sys, os
 from sqlalchemy.dialects.mysql import insert
 from sqlalchemy import select, update
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))))
-from app.src.models import Problems, correct_problem_table, incorrect_problem_table, Words, WrongType, Blocks
+from app.src.models import Problems, correct_problem_table, incorrect_problem_table, Words, WrongType, Blocks, Released
 from problem.schemas import Problem, TempUserProblem
 from problem.dependencies import db_dependency
 from problem.utils import *
@@ -237,3 +237,35 @@ async def clear_incorrect_problem_count(study_info_id: int, problem_id: int, isG
     # 업데이트 문 실행
     await db.execute(stmt)
     await db.commit()
+
+
+# 공통 로직: 문제 집합을 가져오는 함수 service. 
+async def fetch_problem_set(season: int, level: int, step: int, problem_type: str, db: db_dependency):
+    result = await db.execute(select(Problems)
+                              .filter(Problems.level == level, Problems.season == season)
+                              .filter(Problems.step == step, Problems.type == problem_type))
+    stepinfo_model = result.scalars().all()
+    
+    return stepinfo_model
+
+# 공통 로직: 문제 레벨과 스텝 정보 가져오는 함수 . service
+async def get_steps_info(season: int, problem_type: str, db: db_dependency):
+    result = await db.execute(select(Problems)
+                              .filter(Problems.type == problem_type, Problems.season == season))
+    problem_model = result.scalars().all()
+    
+    problems_by_level = {}
+    for problem in problem_model:
+        if problem.level not in problems_by_level:
+            problems_by_level[problem.level] = set()
+        problems_by_level[problem.level].add(problem.step)
+
+    levels_info = [{'level_name': level, 'steps': list(steps)} for level, steps in problems_by_level.items()]
+    return levels_info
+
+# Helper function to fetch user data . service.
+async def fetch_user_releasedSeason(user, season, db):
+    result = await db.execute(select(Released)
+                              .filter(Released.owner_id == user.get("id"))
+                              .filter(Released.released_season == season))
+    return result.scalars().first()

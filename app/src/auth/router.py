@@ -41,9 +41,9 @@ def get_current_user(token: Annotated[str, Depends(oauth2_bearer)]):
 # Check Username Duplication 
 @router.post("/username_duplication", status_code=status.HTTP_200_OK)
 async def username_duplication(db: db_dependency, create_user: Username):
-
+    
     # Fetch user with the provided username from the database
-    user = await get_user_to_username(create_user.username, db)
+    user = await find_user_by_username(create_user.username, db)
     if user:
         return {'detail': 0} # Duplicate 
     return {'detail': 1 } # Not duplicate
@@ -74,7 +74,7 @@ async def find_password1(db: db_dependency, user: Username):
 async def find_password2(db: db_dependency, user: FindPassword):
     await username_find_exception(user.username, db)
     redis_client = await aioredis.create_redis_pool('redis://localhost')
-    user_model = await get_user_to_username(user.username, db)
+    user_model = await find_user_by_username(user.username, db)
 
     # Verify the security question and answer
     if user_model.questionType == user.questionType and user_model.question == user.question:
@@ -90,7 +90,7 @@ async def find_password2(db: db_dependency, user: FindPassword):
 async def find_password3(db: db_dependency, user: UpdatePassword):
     await username_find_exception(user.username, db)
     redis_client = await aioredis.create_redis_pool('redis://localhost')
-    user_model = await get_user_to_username(user.username, db)
+    user_model = await find_user_by_username(user.username, db)
 
     # Check to same NewPassword to NewPasswordVerify 
     password_verify_exception(user.newPassword, user.newPasswordVerify)
@@ -203,7 +203,7 @@ async def refresh_access_token(db: db_dependency, refresh_token: str = Header(de
     # Does not match the stored token.
     token_match_exception(stored_refresh_token, refresh_token)
 
-    user = await get_user_to_username(username, db)
+    user = await find_user_by_username(username, db)
     get_user_exception(user)
 
     # Create new tokens (access, refresh)

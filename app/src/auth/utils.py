@@ -25,18 +25,21 @@ def verify_password_sync(plain_password, hashed_password):
     return bcrypt_context.verify(plain_password, hashed_password)
 
 # Change a synchronous function to an asynchronous function using run_in_executor
-async def verify_password(plain_password, hashed_password): 
-    loop = asyncio.get_event_loop()
-    return await loop.run_in_executor(None, verify_password_sync, plain_password, hashed_password)
+# async def verify_password(plain_password, hashed_password): 
+#     loop = asyncio.get_event_loop()
+#     return await loop.run_in_executor(None, verify_password_sync, plain_password, hashed_password)
 
 async def authenticate_user(username: str, password: str, db):
-    result = await db.execute(select(Users).filter(Users.username == username))
-    user = result.scalars().first()
+    from auth.service import find_user_by_username
+    user = await find_user_by_username(username ,db)
+
     if not user:
         raise CustomResponseException(code=200, content={"username_correct": False, "password_correct": False})
-    password_vaild = await verify_password(password, user.hashed_password)
+    
+    password_vaild = verify_password_sync(password, user.hashed_password)
     if not password_vaild:
         raise CustomResponseException(code=200, content={"username_correct": True, "password_correct": False})
+    
     return user
 
 def decode_token(token: str):
