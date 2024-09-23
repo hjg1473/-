@@ -17,6 +17,16 @@ rooms: Dict[str, Room] = {}
 
 roomProblem: Dict[str, List] = {}
 
+room_settings: Dict = {}
+
+# 문제 선택 기준
+class ProblemSelectionCriteria:
+    def __init__(self, season, level, difficulty):
+        self.season = season
+        self.level = level
+        self.difficulty = difficulty
+
+
 # 호스트가 방 생성할 때 쓰는 객체 
 class CreateRoomRequest(BaseModel):
     host_id: str
@@ -34,8 +44,8 @@ class GetStudentScoreRequest(BaseModel):
     
 class GetGameAgainRequest(BaseModel):
     room_id: str
-    choiceLevel: int
-    problemsCount: int
+    # choiceLevel: int
+    # problemsCount: int
     room_max: int
 
 class ParticipantSolveRequest(BaseModel):

@@ -7,70 +7,60 @@ from sqlalchemy.orm import joinedload
 ### CREATE
 
 async def create_group_released(group_id:int, season:int, db:db_dependency):
-    new_released_group = ReleasedGroup(
+    new_released_group_normal = ReleasedGroup(
         owner_id = group_id,
         released_season=season,
         released_type="normal",
         released_level=0,
         released_step=0
     )
-    db.add(new_released_group)
-    new_released_group2 = ReleasedGroup(
+    db.add(new_released_group_normal)
+    new_released_group_ai = ReleasedGroup(
         owner_id = group_id,
         released_season=season,
         released_type="ai",
         released_level=0,
         released_step=0
     )
-    db.add(new_released_group2)
+    db.add(new_released_group_ai)
     await db.commit()
-    return [new_released_group, new_released_group2]
+    return [new_released_group_normal, new_released_group_ai]
+
 
 ### FETCH
 
-# service
 async def fetch_problems(level, step, db: db_dependency):
     result = await db.execute(select(func.count()).select_from(Problems).filter(Problems.level == level, Problems.step == step))
     return result.scalar()
 
-# service
 async def fetch_user_correct_problems(user_id, db: db_dependency):
     result = await db.execute(select(StudyInfo).options(joinedload(StudyInfo.correct_problems)).filter(StudyInfo.owner_id == user_id))
     return result.scalars().first()
 
-# service
 async def fetch_groups(group_id, db: db_dependency):
     result = await db.execute(select(Groups).filter(Groups.id == group_id))
     return result.scalars().all()
 
-# service
 async def fetch_released_user(user_id, db: db_dependency):
     result = await db.execute(select(Released).filter(Released.owner_id == user_id))
     return result.scalars().all()
 
-# service
 async def fetch_wrongType_id_season(id, season, db: db_dependency):
     result = await db.execute(select(WrongType).filter(WrongType.info_id == id).filter(WrongType.season == season))
     return result.scalars().all()
 
-
-# service
 async def fetch_user_problems(user_id, db: db_dependency):
     result = await db.execute(select(StudyInfo).options(joinedload(StudyInfo.correct_problems)).options(joinedload(StudyInfo.incorrect_problems)).filter(StudyInfo.owner_id == user_id))
     return result.scalars().first()
 
-
-# service
 async def fetch_user_teamId(group_id, db: db_dependency):
     result = await db.execute(select(Users).filter(Users.team_id == group_id))
     return result.scalars().all()
 
-# service
 async def fetch_user_id_all(user_id, db: db_dependency):
     result = await db.execute(select(Users).filter(Users.id == user_id))
     return result.scalars().all()
 
-# service
 async def fetch_problem_count(user_id, db: db_dependency):
     result = await db.execute(select(StudyInfo)
                               .options(joinedload(StudyInfo.correct_problems))
@@ -78,7 +68,6 @@ async def fetch_problem_count(user_id, db: db_dependency):
                               .filter(StudyInfo.owner_id == user_id))
     return result.scalars().first()
 
-# service
 async def fetch_studyInfo(user_id, db: db_dependency):
     result = await db.execute(select(StudyInfo).filter(StudyInfo.owner_id == user_id))
     return result.scalars().first()
@@ -135,37 +124,38 @@ async def fetch_user_teamId(user_id, db: db_dependency):
 
 async def fetch_count_data(study_info_id, db):
     # 틀린 문제 count 배열 받아오기
-    ic_count_query = select(incorrect_problem_table.c.count).filter(incorrect_problem_table.c.study_info_id == study_info_id)
+    incorrect_count_query = select(incorrect_problem_table.c.count).filter(incorrect_problem_table.c.study_info_id == study_info_id)
     
     # 틀린 문제 id 배열 받아오기
-    ic_id_query = select(incorrect_problem_table.c.problem_id).filter(incorrect_problem_table.c.study_info_id == study_info_id)
+    incorrect_id_query = select(incorrect_problem_table.c.problem_id).filter(incorrect_problem_table.c.study_info_id == study_info_id)
     
     # 맞은 문제 count 배열 받아오기
-    c_count_query = select(correct_problem_table.c.count).filter(correct_problem_table.c.study_info_id == study_info_id)
+    correct_count_query = select(correct_problem_table.c.count).filter(correct_problem_table.c.study_info_id == study_info_id)
     
     # 맞은 문제 id 배열 받아오기
-    c_id_query = select(correct_problem_table.c.problem_id).filter(correct_problem_table.c.study_info_id == study_info_id)
+    correct_id_query = select(correct_problem_table.c.problem_id).filter(correct_problem_table.c.study_info_id == study_info_id)
     
     # 모든 쿼리를 비동기적으로 실행
     import asyncio
     results = await asyncio.gather(
-        db.execute(ic_count_query),
-        db.execute(ic_id_query),
-        db.execute(c_count_query),
-        db.execute(c_id_query)
+        db.execute(incorrect_count_query),
+        db.execute(incorrect_id_query),
+        db.execute(correct_count_query),
+        db.execute(correct_id_query)
     )
     
     # 결과를 추출하고 변환
-    ic_table_count = results[0].scalars().all()
-    ic_table_id = results[1].scalars().all()
-    c_table_count = results[2].scalars().all()
-    c_table_id = results[3].scalars().all()
+    incorrect_table_count = results[0].scalars().all()
+    incorrect_table_id = results[1].scalars().all()
+    correct_table_count = results[2].scalars().all()
+    correct_table_id = results[3].scalars().all()
     
-    return ic_table_count, ic_table_id, c_table_count, c_table_id
+    return incorrect_table_count, incorrect_table_id, correct_table_count, correct_table_id
+
 
 ### UPDATE
 
-async def update_std_group(group_id, user_id, db: db_dependency):
+async def update_student_group(group_id, user_id, db: db_dependency):
     result = await db.execute(select(Users).where(Users.id == user_id))
     student_model = result.scalars().first()
     student_model.team_id = group_id
@@ -197,12 +187,11 @@ async def update_group_name(group_id, name, detail, db: db_dependency):
     db.add(group_model)
     await db.commit()
 
-# 업데이트를 하는데, 대상은 그룹 소유의 시즌이 같고, 타입이 같은 건 1개. 
 async def update_group_level_and_step(group_id, season, level, type, step, db):
     result = await db.execute(select(ReleasedGroup).filter(ReleasedGroup.owner_id == group_id, ReleasedGroup.released_type == type, ReleasedGroup.released_season == season))
-    rg_model = result.scalars().first()
-    rg_model.released_level = level
-    rg_model.released_step = step
-    db.add(rg_model)
+    releasedGroup_model = result.scalars().first()
+    releasedGroup_model.released_level = level
+    releasedGroup_model.released_step = step
+    db.add(releasedGroup_model)
     await db.commit()
 
