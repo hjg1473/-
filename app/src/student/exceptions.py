@@ -1,28 +1,31 @@
 from fastapi import HTTPException
 
-def http_exception():
+def not_found_exception():
     return HTTPException(status_code=404, detail="Not found")
 
-def get_user_exception(user):
+def user_credentials_exception(user):
     if user is None:
         raise HTTPException(status_code=404, detail="Could not validate credentials")
-
-def get_user_exception2(user):
     if not user:
         raise HTTPException(status_code=404, detail="Could not validate credentials")
-    
-def auth_exception(user_role):
+
+def student_role_exception(user_role):
     if user_role != 'student': 
         raise HTTPException(status_code=404, detail="Authentication Failed")
 
-def select_exception1(teacher_id, user_id):
+def self_select_exception(teacher_id, user_id):
     if teacher_id == user_id:
         raise HTTPException(status_code=404, detail='자기 자신은 지정할 수 없습니다.')
 
-def select_exception2(teacher):
+def find_teacher_exception(teacher):
     if not teacher:
         raise HTTPException(status_code=404, detail='선생님을 찾을 수 없습니다.')
 
-def select_exception3(teacher, student_teachers):
+def duplicate_connection_exception(teacher, student_teachers):
     if teacher in student_teachers:
         raise HTTPException(status_code=404, detail='이미 연결되었습니다.')
+    
+
+# def get_user_exception2(user):
+#     if not user:
+#         raise HTTPException(status_code=404, detail="Could not validate credentials")

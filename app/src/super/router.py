@@ -113,7 +113,7 @@ async def update_user_team(user_id: int, user: user_dependency, db: db_dependenc
     std_team_id = await fetch_user_teamId(user_id, db)
     group_list = await fetch_group_list(user.get("id"), db)
     validate_student_group_access(group_list, std_team_id)
-    await update_std_group(None, user_id, db)
+    await update_student_group(None, user_id, db)
     return {'detail' : 'Success'}
 
 # Check group info

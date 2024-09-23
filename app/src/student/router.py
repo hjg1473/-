@@ -7,11 +7,11 @@ import sys, os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))))
 from app.src.models import Users, StudyInfo, Released, Groups, incorrect_problem_table, correct_problem_table, WrongType, ReleasedGroup
 from student.dependencies import user_dependency, db_dependency
-from student.exceptions import get_user_exception, auth_exception, http_exception, select_exception1, select_exception2, select_exception3
+from student.exceptions import *
 from student.schemas import PinNumber, SeasonList
-from studnet.service import *
+from student.service import *
 from app.src.super.exceptions import find_student_exception, find_group_exception
-from app.src.super.service import update_std_group, fetch_group_id
+from app.src.super.service import update_student_group, fetch_group_id
 
 router = APIRouter( 
     prefix="/student",
@@ -22,8 +22,8 @@ router = APIRouter(
 # 학생 보유한 시즌 정보 반환
 @router.get("/season_info", status_code=status.HTTP_200_OK)
 async def user_season_info(user: user_dependency, db:db_dependency):
-    get_user_exception(user)
-    auth_exception(user.get('user_role'))
+    user_credentials_exception(user)
+    student_role_exception(user.get('user_role'))
     released_model = await fetch_user_released(user.get('id'), db)
     seasons = [item.released_season for item in released_model]
     return {"seasons" : seasons}
@@ -31,25 +31,23 @@ async def user_season_info(user: user_dependency, db:db_dependency):
 # 시즌 업데이트
 @router.put("/update_season", status_code=status.HTTP_200_OK)
 async def update_user_season(season: SeasonList, user: user_dependency, db: db_dependency):
-    get_user_exception(user)
-    auth_exception(user.get('user_role'))
+    user_credentials_exception(user)
+    student_role_exception(user.get('user_role'))
 
     released_model = await fetch_user_released(user.get('id'), db)
     # List {id, season, level, step, owner_id} 
     seasons = [item.released_season for item in released_model]
     # 가진 것 [1, 3] - [1, 2] = ? or [1, 2, 3] - [4, 5]
-    difference = list(set(seasons) - set(season.season))# 유저가 가진 시즌 - 새로 입력한 시즌
+    difference = list(set(seasons) - set(season.season)) # 유저가 가진 시즌 - 새로 입력한 시즌
     for sz in difference:
         await db.execute(delete(Released).filter(Released.owner_id == user.get('id')).filter(Released.released_season == sz))
     await db.commit()
     # [4, 5] - [1, 2, 3]
-    difference = list(set(season.season) - set(seasons))# 새로 입력한 시즌 - 유저가 가진 시즌
+    difference = list(set(season.season) - set(seasons)) # 새로 입력한 시즌 - 유저가 가진 시즌
     for sz in difference:
         released = Released(
-            owner_id=user.get('id'),
-            released_season=sz,
-            released_level=0,
-            released_step=0
+            owner_id=user.get('id'), released_season=sz,
+            released_level=0, released_step=0
         )
         db.add(released)
     await db.commit()
@@ -72,7 +70,7 @@ async def user_solve_problem(pin_number: PinNumber, user: user_dependency, db: d
 
         await find_student_exception(user.get("id"), db)
         await find_group_exception(group_id, db)
-        await update_std_group(group_id, user.get("id"), db)
+        await update_student_group(group_id, user.get("id"), db)
 
         group = await get_group_to_groupid(group_id, db)
         result = await db.execute(select(ReleasedGroup).filter(ReleasedGroup.owner_id == group_id))
@@ -94,9 +92,9 @@ async def user_solve_problem(pin_number: PinNumber, user: user_dependency, db: d
         redis_client.close()
         await redis_client.wait_closed()
 
-        select_exception1(string_id, user.get('id'))
-        select_exception2(string_id)
-        select_exception3(user.get('id'), parent.student_teachers)
+        self_select_exception(string_id, user.get('id'))
+        find_teacher_exception(string_id)
+        duplicate_connection_exception(user.get('id'), parent.student_teachers)
 
         if parent not in student.teachers_students:
             student.teachers_students.append(parent)
@@ -109,8 +107,8 @@ async def user_solve_problem(pin_number: PinNumber, user: user_dependency, db: d
 # 학생(self)과 연결된 학부모의 아이디 반환
 @router.get("/parent/info", status_code = status.HTTP_200_OK)
 async def read_connect_parent(user: user_dependency, db: db_dependency):
-    get_user_exception(user)
-    auth_exception(user.get('user_role'))
+    user_credentials_exception(user)
+    student_role_exception(user.get('user_role'))
     result = await db.execute(select(Users).options(joinedload(Users.student_teachers)).options(joinedload(Users.teachers_students)).filter(Users.id == user.get('id')))
     parent = result.scalars().first()
     name = ""
@@ -121,8 +119,8 @@ async def read_connect_parent(user: user_dependency, db: db_dependency):
 # 학생 정보 반환
 @router.get("/info", status_code = status.HTTP_200_OK)
 async def read_user_info(user: user_dependency, db: db_dependency):
-    get_user_exception(user)
-    auth_exception(user.get('user_role'))
+    user_credentials_exception(user)
+    student_role_exception(user.get('user_role'))
     result = await db.execute(select(Users).filter(Users.id == user.get('id')))
     user_model = result.scalars().first()
     result2 = await db.execute(select(Groups).where(Groups.id == user_model.team_id))
@@ -154,14 +152,14 @@ def calculate_rates(c_table_id, ic_table_id, c_table_count, ic_table_count, rm, 
 # 학생의 self 학습 정보 반환.
 @router.get("/monitoring_correct_rate/", status_code = status.HTTP_200_OK)
 async def read_user_studyinfo(season: int, user: user_dependency, db: db_dependency):
-    get_user_exception(user)
-    auth_exception(user.get('user_role'))
+    user_credentials_exception(user)
+    student_role_exception(user.get('user_role'))
     result = await db.execute(select(Released).filter(Released.owner_id == user.get("id")).filter(Released.released_season == season))
     released_model = result.scalars().all()
     result2 = await db.execute(select(StudyInfo).options(joinedload(StudyInfo.correct_problems)).options(joinedload(StudyInfo.incorrect_problems)).filter(StudyInfo.owner_id == user.get("id")))
     study_info = result2.scalars().first()
     if study_info is None:
-        raise http_exception()
+        raise not_found_exception()
     
     from app.src.super.service import fetch_data
     ic_table_count, ic_table_id, c_table_count, c_table_id = await fetch_data(study_info.id , db)
@@ -185,8 +183,8 @@ async def read_user_studyinfo(season: int, user: user_dependency, db: db_depende
 # 유저 모니터링 정보 2
 @router.get("/monitoring_incorrect/", status_code = status.HTTP_200_OK)
 async def read_self_monitoring(season: int, user: user_dependency, db: db_dependency):
-    get_user_exception(user)
-    auth_exception(user.get('user_role'))
+    user_credentials_exception(user)
+    student_role_exception(user.get('user_role'))
 
     study_info = await fetch_user_studyInfo(user.get('id'), db)
     temp_result = await db.execute(select(WrongType).filter(WrongType.info_id == study_info.id).filter(WrongType.season == season))
@@ -222,7 +220,7 @@ async def read_self_monitoring(season: int, user: user_dependency, db: db_depend
 # 유저 모니터링 정보 3
 @router.get("/monitoring_etc", status_code = status.HTTP_200_OK)
 async def read_user_id(user: user_dependency, db: db_dependency):
-    get_user_exception(user)
-    auth_exception(user.get('user_role'))
+    user_credentials_exception(user)
+    student_role_exception(user.get('user_role'))
     studyinfo_model = await fetch_user_studyInfo(user.get('id'), db)
     return  {"totalStudyTime": studyinfo_model.totalStudyTime, 'streamStudyDay': studyinfo_model.streamStudyDay}
