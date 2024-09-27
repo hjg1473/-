@@ -6,12 +6,15 @@ import sys
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))))
 from fastapi import File, Form, UploadFile, WebSocket, WebSocketDisconnect
+
 import json
 from game.schemas import Room, CreateRoomRequest, JoinRoomRequest, GetStudentScoreRequest, GetGameAgainRequest, ConnectionManager, rooms, roomProblem, ProblemSelectionCriteria, room_settings
 from game.utils import create_pin_number, list_problems_correct_cnt
 from game.exceptions import room_exception, participant_exception, host_exception, host_exception1, host_exception2, participant_exception1, participant_exception2, participant_exception3, participant_exception4, room_exception2
-from game.dependencies import db_dependency
+from game.dependencies import db_dependency, user_dependency
 from game.service import select_random_problems
+from app.src.models import ReleasedGroup
+from sqlalchemy import select
 
 router = APIRouter(
     prefix="/game",
@@ -20,6 +23,28 @@ router = APIRouter(
 )
 
 manager = ConnectionManager()
+
+# Get group managed by the teacher.
+@router.get("/group")
+async def read_group_info(user: user_dependency, db: db_dependency):
+    from super.exceptions import validate_super_user_role
+    validate_super_user_role(user)
+    from super.service import fetch_group_list
+    group_list = await fetch_group_list(user.get("id"), db)
+    result = {'groups': [{'id': u.id, 'name': u.name} for u in group_list]}
+    return result
+
+# Check group info
+@router.get("/group/{group_id}/info")
+async def read_group_info(group_id:int, user:user_dependency, db:db_dependency):
+    from super.exceptions import validate_super_user_role, validate_group_access, find_group_exception
+    validate_super_user_role(user)
+    await validate_group_access(user.get("id"), group_id, db)
+    await find_group_exception(group_id, db)
+    # group_model = await get_group_to_groupid(group_id, db)
+    result3 = await db.execute(select(ReleasedGroup).filter(ReleasedGroup.owner_id == group_id))
+    target_season = result3.scalars().all()
+    return target_season
 
 
 def reset_room(room: Room) -> None:
