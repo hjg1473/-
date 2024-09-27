@@ -194,7 +194,8 @@ async def read_problem_wrongs(mode_str:str, season:int, level:int, user:user_dep
     isGroup = 0
     if mode_str == 'group':
         isGroup = 1
-    # study info 찾아오기
+
+    # fetch study info
     result = await db.execute(select(StudyInfo).options(joinedload(StudyInfo.incorrect_problems)).filter(StudyInfo.owner_id == user.get("id")))
     study_info = result.scalars().first()
 
@@ -215,7 +216,9 @@ async def read_problem_wrongs(mode_str:str, season:int, level:int, user:user_dep
     await db.commit()
     return {"detail":"success"}
 
-# 연습 문제 반환
+
+# fetch practice problems as season, level, step
+# for each problem, its id, question(korean, str), answer(english, list of words) with each word's color.
 @router.get("/practice/set/", status_code=status.HTTP_200_OK)
 async def read_practice_problem(season: int, level: int, step: int, user: user_dependency, db: db_dependency):
     get_user_exception(user)
@@ -226,7 +229,9 @@ async def read_practice_problem(season: int, level: int, step: int, user: user_d
     
     return {'problems': await read_problem_block_colors(stepinfo_model, db)}
 
-# 확장 문제 반환
+
+# fetch expert problems as season, level, step.
+# for each problem, its id, question(korean, str), answer(english, list of words) with each word's color.
 @router.get("/expert/set/", status_code=status.HTTP_200_OK)
 async def read_expert_problem(season: int, level: int, step: int, user: user_dependency, db: db_dependency):
     get_user_exception(user)
@@ -237,7 +242,8 @@ async def read_expert_problem(season: int, level: int, step: int, user: user_dep
     
     return {'problems': await read_problem_block_colors(stepinfo_model, db)}
 
-# 연습 문제: 레벨과 스텝 정보 반환
+
+# return the user's released practice problems level & step as specific season.
 @router.get("/practice/info/", status_code=status.HTTP_200_OK)
 async def practice_read_level_and_step(season: int, user: user_dependency, db: db_dependency):
     get_user_exception(user)
@@ -249,7 +255,8 @@ async def practice_read_level_and_step(season: int, user: user_dependency, db: d
     
     return {'levels': levels_info}
 
-# 확장 문제: 스텝 정보 반환
+
+# return the user's released expert problems level & step as specific season, level, and difficulty
 @router.get("/expert/info/", status_code=status.HTTP_200_OK)
 async def read_level_and_step_expert(season: int, level: int, difficulty: int, user: user_dependency, db: db_dependency):
     get_user_exception(user)
@@ -271,6 +278,8 @@ async def read_level_and_step_expert(season: int, level: int, difficulty: int, u
     
     return {'steps': steps}
 
+
+# execute ocr and return a list of recognized words.
 async def ocr(file):
     img_binary = await file.read()
     image = await asyncio.to_thread(Image.open, io.BytesIO(img_binary))
@@ -317,7 +326,8 @@ async def ocr(file):
     
     return word_list
 
-# 사진을 넣어서 사진의 text 추출
+
+# check the user's answer
 @router.post("/solve_OCR", status_code = status.HTTP_200_OK)
 async def user_solve_problem(user: user_dependency, db: db_dependency, background_tasks: BackgroundTasks,
                              problem_id: int = Form(...),file: UploadFile = File(...)):

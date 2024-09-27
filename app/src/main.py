@@ -2,8 +2,8 @@ from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 import models
 import easyocr
-from src import models, database
-from src.exceptions import add_exception_handler
+import models, database
+from exceptions import add_exception_handler
 from auth import router as auth_router
 from problem import router as problem_router
 from game import router as game_router
