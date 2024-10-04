@@ -1,5 +1,3 @@
-import math
-
 punctuations = ['.', ',', '?', '!']
 
 def parse_sentence(sentence:str):

@@ -2,10 +2,20 @@ import sys, os
 from sqlalchemy.dialects.mysql import insert
 from sqlalchemy import select, update
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))))
-from app.src.models import Problems, correct_problem_table, incorrect_problem_table, Words, WrongType, Blocks, Released
-from problem.schemas import Problem, TempUserProblem
+from app.src.models import Problems, correct_problem_table, incorrect_problem_table, Words, WrongType, Blocks, Released, StudyInfo
+from problem.schemas import Problem, TempUserProblem, SolvedData
 from problem.dependencies import db_dependency
 from problem.utils import *
+from problem.constants import INDEX, QUERY_MATCH_ALL, MAX_LEVEL
+from datetime import datetime, timezone
+from elasticsearch import AsyncElasticsearch
+import logging
+from app.src.logging_setup import LoggerSetup
+
+LOGGER = logging.getLogger(__name__)
+logger_setup = LoggerSetup()
+
+es = AsyncElasticsearch(['http://3.34.58.76:9200'])
 
 # async def create_Types_in_db(id, db: db_dependency, tempUserProblem: TempUserProblem) -> Types:
 #     print(type(tempUserProblem.totalFullStop))
@@ -282,3 +292,110 @@ async def fetch_user_releasedSeason(user, season, db):
                               .filter(Released.owner_id == user.get("id"))
                               .filter(Released.released_season == season))
     return result.scalars().first()
+
+
+        
+# Utils
+async def problem_unlock(user_id, solvedData: SolvedData, db):
+    result = await db.execute(select(Released).filter(Released.owner_id == user_id))
+    released_model = result.scalars().first()
+    result = await db.execute(select(Problems.step)
+                              .filter(Problems.season == solvedData.season, 
+                                      Problems.type== solvedData.type, 
+                                      Problems.level == solvedData.level))
+    all_steps = result.scalars().all()
+    if not all_steps: # Invaild Access (Out of Bound)
+        return
+    
+    max_step = max(all_steps)
+    # Problem Unlock Process
+    if released_model.released_level == solvedData.level and released_model.released_step == solvedData.step:
+        if max_step == solvedData.step:
+            if solvedData.level < MAX_LEVEL:
+                released_model.released_level += 1
+                released_model.released_step = 0
+        else:
+            released_model.released_step += 1
+        db.add(released_model)
+
+# Utils
+async def update_solved_problem_data(study_info, tempUserProblem, isGroup, db):
+    solved_problem_ids = list(tempUserProblem.problem_incorrect_count.keys())
+
+    result = await db.execute(select(Problems).filter(Problems.id.in_(solved_problem_ids)))
+    solved_problems = result.scalars().all()
+
+    for i in range(len(solved_problem_ids)):
+        # If all steps have been completed, every problem has been solved at least once.
+        # If it doesn't already exist in correct_problems, it must be added.
+        if solved_problems[i] not in study_info.correct_problems:
+            study_info.correct_problems.append(solved_problems[i])
+
+        # "problem_incorrect_count != 0" means "The problem has been answered incorrectly before" 
+        # So, It should be added to incorrect_problems as well.
+        if tempUserProblem.problem_incorrect_count[solved_problem_ids[i]] != 0:            
+            if solved_problems[i] not in study_info.incorrect_problems:
+                study_info.incorrect_problems.append(solved_problems[i])
+
+    for problem_id, incorrect_count in tempUserProblem.problem_incorrect_count.items():
+        await increment_correct_problem_count(study_info.id, problem_id, 1, isGroup, db)
+        if incorrect_count != 0:
+            await increment_incorrect_problem_count(study_info.id, problem_id, incorrect_count, isGroup, db)
+
+    db.add(study_info)
+    await db.commit()
+
+# Utils
+async def add_wrong_type_value(solvedData: SolvedData, study_info, tempUserProblem, db):
+    result = await db.execute(select(WrongType)
+                              .filter(WrongType.info_id == study_info.id, 
+                                    WrongType.season == solvedData.season, 
+                                    WrongType.level == solvedData.level))
+    wrong_type = result.scalars().first()
+
+    if wrong_type is None:
+        await create_wrong_type(solvedData.season, solvedData.level, study_info.id, db)
+        result = await db.execute(select(WrongType)
+                                  .filter(WrongType.info_id == study_info.id, 
+                                        WrongType.season == solvedData.season, 
+                                        WrongType.level == solvedData.level))
+        wrong_type = result.scalars().first()
+
+    # Update wrong type
+    wrong_type.wrong_letter += tempUserProblem.totalIncorrectLetter
+    wrong_type.wrong_punctuation += tempUserProblem.totalIncorrectPunc
+    wrong_type.wrong_block += tempUserProblem.totalIncorrectBlock
+    wrong_type.wrong_order += tempUserProblem.totalIncorrectOrder
+    wrong_type.wrong_word += tempUserProblem.totalIncorrectWords
+    db.add(wrong_type)
+
+
+async def calculate_study_times(user, db):
+    res = await es.search(index=INDEX, body=QUERY_MATCH_ALL)
+    studyStart_timestamp = search_log_timestamp(res, "studyStart", user.get("id"))
+
+    if studyStart_timestamp is None: # No StudyStart Data
+        return
+
+    recent_studyEnd_timestamp = search_log_timestamp(res, "studyEnd", user.get("id"))
+    if recent_studyEnd_timestamp is None: # Not Found "StudyEnd"
+        recent_studyEnd_timestamp = datetime.fromisoformat("2024-01-01T00:00:00.847Z".replace('Z', '+00:00'))
+
+    if studyStart_timestamp < recent_studyEnd_timestamp: # Double "StudyEnd" Error
+        return
+
+    logger = logger_setup.get_logger(user.get("id"))
+    logger.info("--- studyEnd ---")
+
+    time_difference = datetime.utcnow().replace(tzinfo=timezone.utc) - studyStart_timestamp
+    seconds_difference = time_difference.total_seconds()
+
+    # Calculate User's Total Study Time.
+    result = await db.execute(select(StudyInfo).filter(StudyInfo.owner_id == user.get("id")))
+    studyinfo_model = result.scalars().first()
+    studyinfo_model.totalStudyTime += int(seconds_difference)
+    
+    db.add(studyinfo_model)
+    await db.commit()
+
+    return

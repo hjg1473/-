@@ -2,27 +2,20 @@ import asyncio
 import numpy as np
 from PIL import Image
 import io
-from sqlalchemy import collate, func, select, update
+from sqlalchemy import select
 from sqlalchemy.orm import joinedload
 from fastapi import APIRouter, BackgroundTasks
 from starlette import status
 import sys, os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))))
-from app.src.models import StudyInfo, Problems, Words, Blocks, Released, WrongType
+from app.src.models import StudyInfo, Problems, Words, Blocks, Released
 from fastapi import UploadFile, File, Form
 from problem.dependencies import user_dependency, db_dependency
-from problem.schemas import TempUserProblem, TempUserProblems
+from problem.schemas import TempUserProblems, SolvedData
 from problem.exceptions import *
 from problem.service import *
-from problem.utils import check_answer, search_log_timestamp
-from problem.constants import INDEX, QUERY_MATCH_ALL
-from elasticsearch import AsyncElasticsearch
-from datetime import datetime, timezone
-import logging
-from app.src.logging_setup import LoggerSetup
+from problem.utils import check_answer
 
-LOGGER = logging.getLogger(__name__)
-logger_setup = LoggerSetup()
 
 router = APIRouter(
     prefix="/problem",
@@ -30,35 +23,8 @@ router = APIRouter(
     responses={404: {"description": "Not found"}}
 )
 
-es = AsyncElasticsearch(['http://3.34.58.76:9200'])
 
-async def calculate_study_times(user, db):
-
-    res = await es.search(index=INDEX, body=QUERY_MATCH_ALL)
-    studyStart_timestamp = search_log_timestamp(res, "studyStart", user.get("id"))
-    # get_studyStart_exception(studyStart_timestamp)
-    if studyStart_timestamp is None: #
-        return
-
-    recent_studyEnd_timestamp = search_log_timestamp(res, "studyEnd", user.get("id"))
-    if recent_studyEnd_timestamp is None:
-        recent_studyEnd_timestamp = datetime.fromisoformat("2024-01-01T00:00:00.847Z".replace('Z', '+00:00'))
-    # get_doubleEnd_exception(studyStart_timestamp, recent_studyEnd_timestamp)
-    if studyStart_timestamp < recent_studyEnd_timestamp:
-        return
-
-    logger = logger_setup.get_logger(user.get("id"))
-    logger.info("--- studyEnd ---")
-
-    time_difference = datetime.utcnow().replace(tzinfo=timezone.utc) - studyStart_timestamp
-    seconds_difference = time_difference.total_seconds() // 60
-    result = await db.execute(select(StudyInfo).filter(StudyInfo.owner_id == user.get("id")))
-    studyinfo_model = result.scalars().first()
-    studyinfo_model.totalStudyTime += int(seconds_difference)
-    db.add(studyinfo_model)
-    await db.commit()
-
-    return
+# Utils
 
 @router.post("/study_end", status_code=status.HTTP_200_OK)
 async def study_end(mode_str: str, user: user_dependency, db: db_dependency, background_tasks: BackgroundTasks):
