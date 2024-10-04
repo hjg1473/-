@@ -6,6 +6,7 @@ import 'package:block_english/screens/AuthScreens/reg_super_type_screen.dart';
 import 'package:block_english/screens/StudentScreens/student_add_super_screen.dart';
 import 'package:block_english/screens/StudentScreens/student_available_season_screen.dart';
 import 'package:block_english/screens/SuperScreens/parent_add_child_screen.dart';
+import 'package:block_english/screens/SuperScreens/super_monitor_group_screen.dart';
 import 'package:block_english/screens/UserScreens/user_change_password_screen.dart';
 import 'package:block_english/screens/StudentScreens/student_main_screen.dart';
 import 'package:block_english/screens/StudentScreens/student_mode_select_screen.dart';
@@ -55,7 +56,7 @@ class MyApp extends StatelessWidget {
           fontFamily: 'NanumSquareRound',
         ),
         title: "Block English",
-        initialRoute: '/loading_screen',
+        initialRoute: '/super_group_monitor_screen',
         routes: {
           '/loading_screen': (context) => const LoadingScreen(),
           '/login_screen': (context) => const LoginScreen(),
@@ -82,6 +83,11 @@ class MyApp extends StatelessWidget {
           '/super_monitor_screen': (context) => const SuperMonitorScreen(),
           '/super_group_create_screen': (context) =>
               const SuperGroupCreateScreen(),
+          '/super_group_monitor_screen': (context) => const MonitorGroupScreen(
+                groupId: 1,
+                groupName: '그루비룸',
+                detailText: 'groovyroom',
+              ),
           '/parent_add_child_screen': (context) => const ParentAddChildScreen(),
           '/super_game_code_screen': (context) => const SuperGameCodeScreen(),
           '/super_game_screen': (context) => const SuperGameScreen(),

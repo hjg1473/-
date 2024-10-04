@@ -190,7 +190,7 @@ class _MonitorStudentScreenState extends State<MonitorStudentScreen> {
                           fontWeight: FontWeight.w800,
                         ),
                       ),
-                      SizedBox(height: 7.r),
+                      SizedBox(height: 2.r),
                       Text(
                         widget.groupName,
                         style: TextStyle(
@@ -425,7 +425,7 @@ class _LearningAnalysisState extends ConsumerState<LearningAnalysis> {
     return Container(
       color: const Color(0xFFECECEC),
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(24, 24, 44, 24).r,
+        padding: const EdgeInsets.fromLTRB(24, 24, 64, 24).r,
         child: isLoading
             ? const Center(
                 child: CircularProgressIndicator(
@@ -442,7 +442,7 @@ class _LearningAnalysisState extends ConsumerState<LearningAnalysis> {
                       left: 0,
                       top: 0,
                       child: Container(
-                        width: 307.r,
+                        width: 297.r,
                         height: 142.r,
                         decoration: BoxDecoration(
                           color: Colors.white,
@@ -454,7 +454,7 @@ class _LearningAnalysisState extends ConsumerState<LearningAnalysis> {
                       right: 0,
                       top: 0,
                       child: Container(
-                        width: 148.r,
+                        width: 138.r,
                         height: 142.r,
                         decoration: BoxDecoration(
                           color: Colors.white,
@@ -468,7 +468,7 @@ class _LearningAnalysisState extends ConsumerState<LearningAnalysis> {
                               Container(
                                 padding: const EdgeInsets.symmetric(
                                   horizontal: 12,
-                                  vertical: 4,
+                                  vertical: 3,
                                 ).r,
                                 decoration: BoxDecoration(
                                   color: primaryPurple[500],
@@ -496,7 +496,7 @@ class _LearningAnalysisState extends ConsumerState<LearningAnalysis> {
                               Container(
                                 padding: const EdgeInsets.symmetric(
                                   horizontal: 12,
-                                  vertical: 4,
+                                  vertical: 3,
                                 ).r,
                                 decoration: BoxDecoration(
                                   color: primaryPurple[500],
@@ -645,9 +645,9 @@ class _IncorrectState extends ConsumerState<Incorrect> {
     return Container(
       color: const Color(0xFFECECEC),
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(24, 24, 44, 24).r,
+        padding: const EdgeInsets.fromLTRB(24, 24, 64, 24).r,
         child: Container(
-          width: 465.r,
+          width: 445.r,
           height: 327.r,
           decoration: BoxDecoration(
             color: Colors.white,
@@ -688,7 +688,10 @@ class _IncorrectState extends ConsumerState<Incorrect> {
                       left: 28.r,
                       child: SizedBox(
                         width: 171.r,
-                        child: const PieChartWidget(),
+                        child: const PieChartWidget(
+                          width: 171,
+                          height: 171,
+                        ),
                       ),
                     ),
                     Positioned(
@@ -930,7 +933,7 @@ class _ManageStudentState extends ConsumerState<ManageStudent> {
                     padding: const EdgeInsets.only(top: 46).r,
                     child: Container(
                       width: 256.r,
-                      height: 60.r,
+                      height: 65.r,
                       decoration: BoxDecoration(
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(8).r,
@@ -944,6 +947,7 @@ class _ManageStudentState extends ConsumerState<ManageStudent> {
                           ),
                           SizedBox(width: 8.r),
                           Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
                             crossAxisAlignment: CrossAxisAlignment.center,
                             children: [
                               Text(
@@ -970,6 +974,7 @@ class _ManageStudentState extends ConsumerState<ManageStudent> {
                           ),
                           SizedBox(width: 8.r),
                           Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
                             crossAxisAlignment: CrossAxisAlignment.center,
                             children: [
                               Text(

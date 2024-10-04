@@ -1,10 +1,16 @@
 import 'package:block_english/utils/color.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class PieChartWidget extends StatefulWidget {
-  const PieChartWidget({super.key});
+  const PieChartWidget({
+    super.key,
+    required this.width,
+    required this.height,
+  });
+
+  final double width;
+  final double height;
 
   @override
   State<StatefulWidget> createState() => PieChart2State();
@@ -16,8 +22,8 @@ class PieChart2State extends State {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      width: 170.r,
-      height: 170.r,
+      width: (widget as PieChartWidget).width,
+      height: (widget as PieChartWidget).height,
       child: PieChart(
         PieChartData(
           pieTouchData: PieTouchData(
@@ -38,7 +44,7 @@ class PieChart2State extends State {
             show: false,
           ),
           sectionsSpace: 1,
-          centerSpaceRadius: 171.r * 0.2,
+          centerSpaceRadius: (widget as PieChartWidget).width * 0.2,
           sections: showingSections(),
         ),
       ),
@@ -48,7 +54,9 @@ class PieChart2State extends State {
   List<PieChartSectionData> showingSections() {
     return List.generate(5, (i) {
       final isTouched = i == touchedIndex;
-      final radius = isTouched ? 171.r * 0.35 : 171.r * 0.3;
+      final radius = isTouched
+          ? (widget as PieChartWidget).width * 0.35
+          : (widget as PieChartWidget).width * 0.3;
       switch (i) {
         case 0:
           return PieChartSectionData(
