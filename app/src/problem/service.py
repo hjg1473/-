@@ -3,9 +3,10 @@ from sqlalchemy.dialects.mysql import insert
 from sqlalchemy import select, update
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))))
 from app.src.models import Problems, correct_problem_table, incorrect_problem_table, Words, WrongType, Blocks, Released
-from problem.schemas import Problem, TempUserProblem
+from problem.schemas import Problem, TempUserProblem, SolvedData
 from problem.dependencies import db_dependency
 from problem.utils import *
+from problem.constants import MAX_LEVEL
 
 # async def create_Types_in_db(id, db: db_dependency, tempUserProblem: TempUserProblem) -> Types:
 #     print(type(tempUserProblem.totalFullStop))
@@ -248,8 +249,8 @@ async def fetch_problem_set(season: int, level: int, step: int, problem_type: st
     
     return stepinfo_model
 
-# 공통 로직: 문제 레벨과 스텝 정보 가져오는 함수 . service
-async def get_steps_info(season: int, problem_type: str, db: db_dependency):
+# 문제 레벨과 스텝 정보 가져오는 함수 . service
+async def get_level_steps_info(season: int, problem_type: str, db: db_dependency):
     result = await db.execute(select(Problems)
                               .filter(Problems.type == problem_type, Problems.season == season))
     problem_model = result.scalars().all()
@@ -269,3 +270,79 @@ async def fetch_user_releasedSeason(user, season, db):
                               .filter(Released.owner_id == user.get("id"))
                               .filter(Released.released_season == season))
     return result.scalars().first()
+
+
+        
+# Utils
+async def problem_unlock(user_id, solvedData: SolvedData, db):
+    result = await db.execute(select(Released).filter(Released.owner_id == user_id))
+    released_model = result.scalars().first()
+    result = await db.execute(select(Problems.step)
+                              .filter(Problems.season == solvedData.season, 
+                                      Problems.type== solvedData.type, 
+                                      Problems.level == solvedData.level))
+    all_steps = result.scalars().all()
+    if not all_steps: # Invaild Access (Out of Bound)
+        return
+    
+    max_step = max(all_steps)
+    # Problem Unlock Process
+    if released_model.released_level == solvedData.level and released_model.released_step == solvedData.step:
+        if max_step == solvedData.step:
+            if solvedData.level < MAX_LEVEL:
+                released_model.released_level += 1
+                released_model.released_step = 0
+        else:
+            released_model.released_step += 1
+        db.add(released_model)
+
+# Utils
+async def update_solved_problem_data(study_info, tempUserProblem, isGroup, db):
+    solved_problem_ids = list(tempUserProblem.problem_incorrect_count.keys())
+
+    result = await db.execute(select(Problems).filter(Problems.id.in_(solved_problem_ids)))
+    solved_problems = result.scalars().all()
+
+    for i in range(len(solved_problem_ids)):
+        # If all steps have been completed, every problem has been solved at least once.
+        # If it doesn't already exist in correct_problems, it must be added.
+        if solved_problems[i] not in study_info.correct_problems:
+            study_info.correct_problems.append(solved_problems[i])
+
+        # "problem_incorrect_count != 0" means "The problem has been answered incorrectly before" 
+        # So, It should be added to incorrect_problems as well.
+        if tempUserProblem.problem_incorrect_count[solved_problem_ids[i]] != 0:            
+            if solved_problems[i] not in study_info.incorrect_problems:
+                study_info.incorrect_problems.append(solved_problems[i])
+
+    for problem_id, incorrect_count in tempUserProblem.problem_incorrect_count.items():
+        await increment_correct_problem_count(study_info.id, problem_id, 1, isGroup, db)
+        if incorrect_count != 0:
+            await increment_incorrect_problem_count(study_info.id, problem_id, incorrect_count, isGroup, db)
+
+    db.add(study_info)
+    await db.commit()
+
+# Utils
+async def add_wrong_type_value(solvedData: SolvedData, study_info, tempUserProblem, db):
+    result = await db.execute(select(WrongType)
+                              .filter(WrongType.info_id == study_info.id, 
+                                    WrongType.season == solvedData.season, 
+                                    WrongType.level == solvedData.level))
+    wrong_type = result.scalars().first()
+
+    if wrong_type is None:
+        await create_wrong_type(solvedData.season, solvedData.level, study_info.id, db)
+        result = await db.execute(select(WrongType)
+                                  .filter(WrongType.info_id == study_info.id, 
+                                        WrongType.season == solvedData.season, 
+                                        WrongType.level == solvedData.level))
+        wrong_type = result.scalars().first()
+
+    # Update wrong type
+    wrong_type.wrong_letter += tempUserProblem.totalIncorrectLetter
+    wrong_type.wrong_punctuation += tempUserProblem.totalIncorrectPunc
+    wrong_type.wrong_block += tempUserProblem.totalIncorrectBlock
+    wrong_type.wrong_order += tempUserProblem.totalIncorrectOrder
+    wrong_type.wrong_word += tempUserProblem.totalIncorrectWords
+    db.add(wrong_type)

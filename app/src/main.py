@@ -1,7 +1,8 @@
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 import models
-import easyocr
+# import easyocr
+from paddleocr import PaddleOCR
 from src import models, database
 from src.exceptions import add_exception_handler
 from auth import router as auth_router
@@ -28,8 +29,11 @@ async def init_db():
     async with database.engine.begin() as conn:
         await conn.run_sync(models.Base.metadata.create_all)
 
-reader = easyocr.Reader(['en'], model_storage_directory='/root/.EasyOCR/model/')
+# reader = easyocr.Reader(['en'], model_storage_directory='/root/.EasyOCR/model/')
 
+ocr = PaddleOCR(det_model_dir= "/root/OCR_models/det",rec_model_dir = "/root/OCR_models/rec",\
+                det_db_thresh=0.1, det_db_box_thresh = 0.1,det_db_score_mode = "fast",det_db_unclip_ratio = 1.7, lang='en',\
+                rec_char_dict_path = "/root/OCR_models/block_en_dict.txt",dorp_box=0.3)
 @app.on_event("startup")
 async def on_startup():
     await init_db()
