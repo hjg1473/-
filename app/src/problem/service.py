@@ -133,7 +133,6 @@ async def calculate_wrongs(problem_parse:list, response_parse:list, db=db_depend
     for item in response_parse:
         result = await db.execute(select(Words).filter(Words.words == item))
         word_model = result.scalars().first()
-
         if word_model is None:
             popList.append(item)
         
@@ -160,19 +159,21 @@ async def calculate_wrongs(problem_parse:list, response_parse:list, db=db_depend
     r_len_v2 = len(response_v2_split)
     p_len_v2 = len(problem_v2_split)
 
-    # problem 블록 id 리스트
-    problem_block = []
-    for item in problem_v2_split:
-        result = await db.execute(select(Words).filter(Words.words == item))
-        word_model = result.scalars().first()
-        problem_block.append(word_model.block_id)
+    # 정답과 응답에 있는 모든 단어
+    all_words = set()
+    all_words.update(response_v2_split)
+    all_words.update(problem_v2_split)
 
-    # response 블록 id 리스트
-    response_block = []
-    for item in response_v2_split:
-        result = await db.execute(select(Words).filter(Words.words == item))
-        word_model = result.scalars().first()
-        response_block.append(word_model.block_id)
+    # 한 번의 쿼리로 모든 word와 block 정보 가져오기
+    result = await db.execute(
+        select(Words, Blocks).join(Blocks, Words.block_id == Blocks.id).filter(Words.words.in_(all_words))
+    )
+
+    # 필요한 데이터를 딕셔너리로 매핑
+    word_to_block_id = {word_model.words: block_model.id for word_model, block_model in result.fetchall()}
+
+    problem_block = [word_to_block_id[word] for word in problem_v2_split]
+    response_block = [word_to_block_id[word] for word in response_v2_split]
 
     # add if the length of problem and response is different
     block_wrong += max(r_len_v2 - p_len_v2, p_len_v2-r_len_v2)
@@ -207,7 +208,6 @@ async def calculate_wrong_info(problem_id, problem_parse:list, response_parse:li
     tempUserProblem.totalIncorrectOrder += order_wrong
 
     return
-    # return {"problem_v1":problem, "response_v1":response_v1, "problem_v2":problem_v2, "r_v2":response_v2, "r_v3":response_v3_split, "letter":letter_wrong, "punc":punc_wrong, "block":block_wrong, "word":word_wrong, "order":order_wrong}
 
 
 async def read_problem_block_colors(stepinfo_model,db):
