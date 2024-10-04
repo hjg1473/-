@@ -41,3 +41,12 @@ class TempUserProblem:
         self.solved_type: str
 
 TempUserProblems: Dict[int, TempUserProblem] = {}
+
+
+# Schemas
+class SolvedData:
+    def __init__(self, season, type, level, step):
+        self.season = season
+        self.type = type
+        self.level = level
+        self.step = step
