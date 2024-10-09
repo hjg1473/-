@@ -11,7 +11,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(
 from app.src.models import StudyInfo, Problems, Words, Blocks, Released, WrongType
 from fastapi import UploadFile, File, Form
 from problem.dependencies import user_dependency, db_dependency
-from problem.schemas import TempUserProblem, TempUserProblems
+from problem.schemas import TempUserProblem, TempUserProblems, SolvedData
 from problem.exceptions import *
 from problem.service import *
 from problem.utils import check_answer, search_log_timestamp
@@ -32,109 +32,71 @@ router = APIRouter(
 
 es = AsyncElasticsearch(['http://3.34.58.76:9200'])
 
+# Utils
 async def calculate_study_times(user, db):
-
     res = await es.search(index=INDEX, body=QUERY_MATCH_ALL)
     studyStart_timestamp = search_log_timestamp(res, "studyStart", user.get("id"))
-    # get_studyStart_exception(studyStart_timestamp)
-    if studyStart_timestamp is None: #
+
+    if studyStart_timestamp is None: # No StudyStart Data
         return
 
     recent_studyEnd_timestamp = search_log_timestamp(res, "studyEnd", user.get("id"))
-    if recent_studyEnd_timestamp is None:
+    if recent_studyEnd_timestamp is None: # Not Found "StudyEnd"
         recent_studyEnd_timestamp = datetime.fromisoformat("2024-01-01T00:00:00.847Z".replace('Z', '+00:00'))
-    # get_doubleEnd_exception(studyStart_timestamp, recent_studyEnd_timestamp)
-    if studyStart_timestamp < recent_studyEnd_timestamp:
+
+    if studyStart_timestamp < recent_studyEnd_timestamp: # Double "StudyEnd" Error
         return
 
     logger = logger_setup.get_logger(user.get("id"))
     logger.info("--- studyEnd ---")
 
     time_difference = datetime.utcnow().replace(tzinfo=timezone.utc) - studyStart_timestamp
-    seconds_difference = time_difference.total_seconds() // 60
+    seconds_difference = time_difference.total_seconds()
+
+    # Calculate User's Total Study Time.
     result = await db.execute(select(StudyInfo).filter(StudyInfo.owner_id == user.get("id")))
     studyinfo_model = result.scalars().first()
     studyinfo_model.totalStudyTime += int(seconds_difference)
+    
     db.add(studyinfo_model)
     await db.commit()
 
     return
 
+
 @router.post("/study_end", status_code=status.HTTP_200_OK)
 async def study_end(mode_str: str, user: user_dependency, db: db_dependency, background_tasks: BackgroundTasks):
     get_user_exception(user)
-    isGroup = 0
+    isGroup = 0 # default mode is 'solo'
     if mode_str == 'group':
         isGroup = 1
-    # study info 찾아오기
-    result2 = await db.execute(select(StudyInfo).options(joinedload(StudyInfo.correct_problems)).options(joinedload(StudyInfo.incorrect_problems)).filter(StudyInfo.owner_id == user.get("id")))
-    study_info = result2.scalars().first()
-    if study_info is None:
+
+    result = await db.execute(select(StudyInfo).options(joinedload(StudyInfo.correct_problems))
+                              .options(joinedload(StudyInfo.incorrect_problems))
+                              .filter(StudyInfo.owner_id == user.get("id")))
+    study_info = result.scalars().first()
+    if study_info is None: # Not Found
         raise http_exception()
-    # tempUserProblem 찾아오기 + 푼 문제 id 리스트
-    tempUserProblem = TempUserProblems.get(user.get("id")) #
+    
+    tempUserProblem = TempUserProblems.get(user.get("id")) 
 
-    get_studyStart_exception(tempUserProblem)
+    get_studyStart_exception(tempUserProblem) # Don't start study
 
-    # 푼 시즌, 레벨, 스텝, 타입 정보 할당
     solved_season = tempUserProblem.solved_season
     solved_level = tempUserProblem.solved_level
     solved_step = tempUserProblem.solved_step
     solved_type = tempUserProblem.solved_type
-    # 푼 시즌-레벨의 wrong type 객체가 있는 지 조회하고, 없으면 만듦
-    result = await db.execute(select(WrongType).filter(WrongType.info_id == study_info.id, WrongType.season == solved_season, WrongType.level == solved_level))
-    wrong_type = result.scalars().first()
-    if wrong_type is None:
-        await create_wrong_type(solved_season, solved_level, study_info.id, db)
-        result = await db.execute(select(WrongType).filter(WrongType.info_id == study_info.id, WrongType.season == solved_season, WrongType.level == solved_level))
-        wrong_type = result.scalars().first()
-    # update wrong type
-    wrong_type.wrong_letter += tempUserProblem.totalIncorrectLetter
-    wrong_type.wrong_punctuation += tempUserProblem.totalIncorrectPunc
-    wrong_type.wrong_block += tempUserProblem.totalIncorrectBlock
-    wrong_type.wrong_order += tempUserProblem.totalIncorrectOrder
-    wrong_type.wrong_word += tempUserProblem.totalIncorrectWords
-    db.add(wrong_type)
-    # 개인 학습 and 연습 문제 다 풀었음--> 다음 스텝 or 레벨 해금
+    solvedData = SolvedData(solved_season, solved_type, solved_level, solved_step)
+
+    # Check whether there is a wrong type object of the solved season-level, and create it if it does not exist.
+    await add_wrong_type_value(solvedData ,study_info, tempUserProblem, db)
+
+    # Solved all personal study and practice problems, You unlocks next step or level.
     if isGroup == 0 and solved_type == 'normal':
-        result = await db.execute(select(Released).filter(Released.owner_id == user.get("id")))
-        released_model = result.scalars().first()
-        result = await db.execute(select(Problems.step).filter(Problems.season == solved_season, Problems.type==solved_type, Problems.level == solved_level))
-        all_steps = result.scalars().all()
-        max_step = max(all_steps)
-        # released_level && released_step에 해당하는 문제를 풀어야 다음거 해금
-        if released_model.released_level == solved_level and released_model.released_step == solved_step:
-            if max_step == solved_step:
-                if solved_level < 3:    # 한 시즌 당 레벨은 2까지만 있다고 가정...
-                    released_model.released_level += 1
-                    released_model.released_step = 0
-            else:
-                released_model.released_step += 1
-            db.add(released_model)
-    # 푼 문제 id 리스트
-    solved_problem_ids = list(tempUserProblem.problem_incorrect_count.keys())
-    # 푼 문제들의 id로 문제 객체들 찾아오기
-    result = await db.execute(select(Problems).filter(Problems.id.in_(solved_problem_ids)))
-    solved_problems = result.scalars().all()
+        await problem_unlock(user.get("id"), solvedData, db)
 
-    # 푼 문제들의 정오답 여부에 따른 정오답 횟수 저장
-    for i in range(len(solved_problem_ids)):
-        # step을 모두 풀었다면, 모든 문제는 적어도 한 번은 맞은 것 --> 기존 correct_problems에 없으면 무조건 추가해야함
-        if solved_problems[i] not in study_info.correct_problems:
-            study_info.correct_problems.append(solved_problems[i])
-
-        # problem_incorrect_count != 0 --> 틀린 적이 있다, incorrect_problems에도 추가
-        if tempUserProblem.problem_incorrect_count[solved_problem_ids[i]] != 0:            
-            if solved_problems[i] not in study_info.incorrect_problems:
-                study_info.incorrect_problems.append(solved_problems[i])
-
-    for problem_id, incorrect_count in tempUserProblem.problem_incorrect_count.items():
-        await increment_correct_problem_count(study_info.id, problem_id, 1, isGroup, db)
-        if incorrect_count != 0:
-            await increment_incorrect_problem_count(study_info.id, problem_id, incorrect_count, isGroup, db)
-
-    db.add(study_info)
-    await db.commit()
+    # Stores the number of incorrect answers depending on whether or not the solved problems have incorrect answers.
+    await update_solved_problem_data(study_info, tempUserProblem, isGroup, db)
 
     TempUserProblems.pop(user.get("id"))
 
@@ -145,18 +107,21 @@ async def study_end(mode_str: str, user: user_dependency, db: db_dependency, bac
     released = []
     for r in released_model:
         released.append({'season':r.released_season, 'level':r.released_level, 'step':r.released_step})
+
     return {'released': released}
 
-# 시즌, 레벨에 맞는 오답 노트 문제 정보 반환
+# Return incorrect answer note problem information appropriate for season and level.
 @router.get("/practice/wrong_note/set/", status_code=status.HTTP_200_OK)
 async def read_problem_wrongs(mode_str:str, season:int, level:int, user:user_dependency, db:db_dependency):
     get_user_exception(user)
     isGroup = 0
     if mode_str == 'group':
         isGroup = 1
-    # study info 찾아오기
-    result2 = await db.execute(select(StudyInfo).options(joinedload(StudyInfo.incorrect_problems)).filter(StudyInfo.owner_id == user.get("id")))
-    study_info = result2.scalars().first()
+
+    result = await db.execute(select(StudyInfo).options(joinedload(StudyInfo.incorrect_problems))
+                               .filter(StudyInfo.owner_id == user.get("id")))
+    study_info = result.scalars().first()
+
     result = await db.execute(select(incorrect_problem_table.c.problem_id).\
                               where(
                                     incorrect_problem_table.c.study_info_id == study_info.id,
@@ -165,16 +130,21 @@ async def read_problem_wrongs(mode_str:str, season:int, level:int, user:user_dep
                               ))
     wrong_problems = result.scalars().all()
 
+    # Filter problems corresponding to the season level in incorrect problems.
     filterd_problems = []
-    for ip in list(study_info.incorrect_problems):
-        if ip.id in wrong_problems and ip.type=='normal' and int(ip.season) == season and ip.level == level:
-            filterd_problems.append(ip)
+    for incorrect_problem in list(study_info.incorrect_problems):
+        if incorrect_problem.id in wrong_problems \
+        and incorrect_problem.type=='normal' \
+        and int(incorrect_problem.season) == season \
+        and incorrect_problem.level == level:
+            filterd_problems.append(incorrect_problem)
 
     result = await db.execute(select(Blocks))
     blocks = result.scalars().all()
 
     result = await db.execute(select(Words))
     words = result.scalars().all()
+
     problems = []
     for item in filterd_problems:
         p_list = parse_sentence(item.englishProblem)
@@ -187,15 +157,15 @@ async def read_problem_wrongs(mode_str:str, season:int, level:int, user:user_dep
     return {"incorrects":problems}
 
 
-# 오답노트 종료 --> 해당 레벨의 오답들 빼기
 @router.post("/practice/wrong_note/end/", status_code=status.HTTP_200_OK)
 async def read_problem_wrongs(mode_str:str, season:int, level:int, user:user_dependency, db:db_dependency):
     get_user_exception(user)
     isGroup = 0
     if mode_str == 'group':
         isGroup = 1
-    # study info 찾아오기
-    result = await db.execute(select(StudyInfo).options(joinedload(StudyInfo.incorrect_problems)).filter(StudyInfo.owner_id == user.get("id")))
+        
+    result = await db.execute(select(StudyInfo).options(joinedload(StudyInfo.incorrect_problems))
+                              .filter(StudyInfo.owner_id == user.get("id")))
     study_info = result.scalars().first()
 
     result = await db.execute(select(incorrect_problem_table.c.problem_id).\
@@ -205,39 +175,42 @@ async def read_problem_wrongs(mode_str:str, season:int, level:int, user:user_dep
                                     incorrect_problem_table.c.count > 0
                               ))
     wrong_problems = result.scalars().all()
-    filterd_problems = []
-    for ip in list(study_info.incorrect_problems):
-        if ip.id in wrong_problems and ip.type=='normal' and int(ip.season) == season and ip.level == level:
-            study_info.incorrect_problems.remove(ip)
-            await clear_incorrect_problem_count(study_info.id, ip.id, isGroup, db)
+
+    # Subtract wrong answers for that season, level
+    for incorrect_problem in list(study_info.incorrect_problems):
+        if incorrect_problem.id in wrong_problems \
+        and incorrect_problem.type=='normal' \
+        and int(incorrect_problem.season) == season \
+        and incorrect_problem.level == level:
+            study_info.incorrect_problems.remove(incorrect_problem)
+            await clear_incorrect_problem_count(study_info.id, incorrect_problem.id, isGroup, db)
 
     db.add(study_info)
     await db.commit()
     return {"detail":"success"}
 
-# 연습 문제 반환
 @router.get("/practice/set/", status_code=status.HTTP_200_OK)
 async def read_practice_problem(season: int, level: int, step: int, user: user_dependency, db: db_dependency):
     get_user_exception(user)
     
-    stepinfo_model = await fetch_problem_set(season, level, step, "normal", db)
-    get_problem_exception(stepinfo_model)
+    problems_model = await fetch_problem_set(season, level, step, "normal", db)
+    get_problem_exception(problems_model)
     init_user_problem(user.get("id"), season, level, step, "normal")
     
-    return {'problems': await read_problem_block_colors(stepinfo_model, db)}
+    return {'problems': await read_problem_block_colors(problems_model, db)}
 
-# 확장 문제 반환
+# Return expert problem set.
 @router.get("/expert/set/", status_code=status.HTTP_200_OK)
 async def read_expert_problem(season: int, level: int, step: int, user: user_dependency, db: db_dependency):
     get_user_exception(user)
     
-    stepinfo_model = await fetch_problem_set(season, level, step, "ai", db)
-    get_problem_exception(stepinfo_model)
+    problems_model = await fetch_problem_set(season, level, step, "ai", db)
+    get_problem_exception(problems_model)
     init_user_problem(user.get("id"), season, level, step, "ai")
     
-    return {'problems': await read_problem_block_colors(stepinfo_model, db)}
+    return {'problems': await read_problem_block_colors(problems_model, db)}
 
-# 연습 문제: 레벨과 스텝 정보 반환
+# Practice Problem: Returning Level and Step Information
 @router.get("/practice/info/", status_code=status.HTTP_200_OK)
 async def practice_read_level_and_step(season: int, user: user_dependency, db: db_dependency):
     get_user_exception(user)
@@ -245,11 +218,11 @@ async def practice_read_level_and_step(season: int, user: user_dependency, db: d
     Released_model = await fetch_user_releasedSeason(user, season, db)
     get_season_exception(Released_model)
 
-    levels_info = await get_steps_info(season, "normal", db)
+    level_steps_info = await get_level_steps_info(season, "normal", db)
     
-    return {'levels': levels_info}
+    return {'levels': level_steps_info}
 
-# 확장 문제: 스텝 정보 반환
+# Expert Problem: Returning Level and Step Information
 @router.get("/expert/info/", status_code=status.HTTP_200_OK)
 async def read_level_and_step_expert(season: int, level: int, difficulty: int, user: user_dependency, db: db_dependency):
     get_user_exception(user)
@@ -271,6 +244,14 @@ async def read_level_and_step_expert(season: int, level: int, difficulty: int, u
     
     return {'steps': steps}
 
+def insert_word_list(low_y, high_y, sorted_data, word_list):
+    for block in sorted_data:
+        if (min(low_y, block[0][3][1]) >= max(high_y, block[0][0][1])):
+            low_y = block[0][3][1]
+            high_y = block[0][0][1]
+            word_list.insert(0,block[1])
+
+# PaddlePaddle 2.5.2
 async def ocr(file):
     img_binary = await file.read()
     image = await asyncio.to_thread(Image.open, io.BytesIO(img_binary))
@@ -282,20 +263,22 @@ async def ocr(file):
 
     img_array = np.array(image)
     # 이미지 읽는게 img_array 크기 줄이니까 빨라짐.
-    from app.src.main import reader
-    result = await asyncio.to_thread(reader.readtext, img_array, allowlist='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz!,?.', rotation_info=[180] ,text_threshold=0.4,low_text=0.3)
+    from app.src.main import ocr
+    result = await asyncio.to_thread(ocr.ocr, img_array, cls=False)
     if not result:
         return result
-    
+    result = result[0]
     sorted_data = sorted(result, key=lambda item: item[0][0][0])
     max_height = 0
     ref_block_idx = 0
+
     for block_idx, block in enumerate(sorted_data):
-        height = block[0][2][1] - block[0][0][1]
+        height = block[0][2][1] - block[0][0][1] # IndexError
         if height > max_height:
             max_height = height
             ref_block_idx = block_idx
-    word_list=[sorted_data[ref_block_idx][1]]
+    word_list=[sorted_data[ref_block_idx][1][0]]
+
     # 오른쪽부터
     if(ref_block_idx+1<len(sorted_data)):
         low_y = sorted_data[ref_block_idx][0][3][1]
@@ -304,7 +287,8 @@ async def ocr(file):
             if (min(low_y, block[0][3][1]) >= max(high_y, block[0][0][1])):
                 low_y = block[0][3][1]
                 high_y = block[0][0][1]
-                word_list.append(block[1])
+                word_list.append(block[1][0])
+
     # 왼쪽
     if(ref_block_idx>0):
         low_y = sorted_data[ref_block_idx][0][3][1]
@@ -313,8 +297,8 @@ async def ocr(file):
             if (min(low_y, block[0][3][1]) >= max(high_y, block[0][0][1])):
                 low_y = block[0][3][1]
                 high_y = block[0][0][1]
-                word_list.insert(0,block[1])
-    
+                word_list.insert(0,block[1][0])
+
     return word_list
 
 # 사진을 넣어서 사진의 text 추출
@@ -326,13 +310,14 @@ async def user_solve_problem(user: user_dependency, db: db_dependency, backgroun
     
     stripped_list = []
     for item in word_list:
-        if item.strip() != "":
+        if item.strip() != "": # not tuple 
             stripped_list.append(item.strip())
     # Empty List
     if not stripped_list:
         return {"user_input": [], "colors": []}
 
     user_string = ' '.join(stripped_list)
+    
     # 1. 모든 단어를 한 번에 추출
     all_words = set()
     p_str = user_string

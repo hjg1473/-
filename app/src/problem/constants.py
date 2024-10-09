@@ -7,3 +7,6 @@ QUERY_MATCH_ALL = {
     "size": 10000,  # 필요한 로그 수에 따라 조정
     "sort": [{"@timestamp": {"order": "desc"}}] 
 }
+
+# Constant
+MAX_LEVEL = 3
