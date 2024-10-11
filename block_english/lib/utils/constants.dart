@@ -137,6 +137,7 @@ enum StudyMode {
 }
 
 const String BASEURL = 'http://3.34.58.76';
+const String BASEWSURL = 'ws://3.34.58.76/game/ws';
 const String ACCESSTOKEN = 'accessToken';
 const String REFRESHTOKEN = 'refreshToken';
 const String TOKENVALIDATE = 'tokenValidate';
