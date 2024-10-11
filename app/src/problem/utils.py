@@ -1,5 +1,3 @@
-import math
-
 punctuations = ['.', ',', '?', '!']
 
 def parse_sentence(sentence:str):
@@ -90,7 +88,7 @@ def check_answer(problem:list, response:list):
 
     return isAnswer, false_check
 
-
+# 구두점 체크 + 구두점 없앤 problem, response 반환
 def punctuation_filter(problem:str, response:str):
     punc_wrong = 0
     r_parse = parse_sentence(response)
@@ -100,7 +98,7 @@ def punctuation_filter(problem:str, response:str):
     for item in p_parse:
         if item in punctuations:
             p_puncs.append(item)
-    # 두 케이스 중복되는거 해결해야됨?
+            
     # 없어야 하는데 있는 구두점
     punc_list = []
     for item in r_parse:
@@ -131,7 +129,7 @@ def punctuation_filter(problem:str, response:str):
     filteredP = ' '.join(p_parse)
     return punc_wrong, filteredP, filteredR
 
-
+# 대소문자 체크 + 틀린 부분 수정한 response 반환
 def lettercase_filter(problem:str, response:str):
     letter_wrong = 0
     low_p = problem.lower()

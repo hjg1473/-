@@ -2,27 +2,20 @@ import asyncio
 import numpy as np
 from PIL import Image
 import io
-from sqlalchemy import collate, func, select, update
+from sqlalchemy import select
 from sqlalchemy.orm import joinedload
 from fastapi import APIRouter, BackgroundTasks
 from starlette import status
 import sys, os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))))
-from app.src.models import StudyInfo, Problems, Words, Blocks, Released, WrongType
+from app.src.models import StudyInfo, Problems, Words, Blocks, Released
 from fastapi import UploadFile, File, Form
 from problem.dependencies import user_dependency, db_dependency
-from problem.schemas import TempUserProblem, TempUserProblems, SolvedData
+from problem.schemas import TempUserProblems, SolvedData
 from problem.exceptions import *
 from problem.service import *
-from problem.utils import check_answer, search_log_timestamp
-from problem.constants import INDEX, QUERY_MATCH_ALL
-from elasticsearch import AsyncElasticsearch
-from datetime import datetime, timezone
-import logging
-from app.src.logging_setup import LoggerSetup
+from problem.utils import check_answer
 
-LOGGER = logging.getLogger(__name__)
-logger_setup = LoggerSetup()
 
 router = APIRouter(
     prefix="/problem",
@@ -30,38 +23,8 @@ router = APIRouter(
     responses={404: {"description": "Not found"}}
 )
 
-es = AsyncElasticsearch(['http://3.34.58.76:9200'])
 
 # Utils
-async def calculate_study_times(user, db):
-    res = await es.search(index=INDEX, body=QUERY_MATCH_ALL)
-    studyStart_timestamp = search_log_timestamp(res, "studyStart", user.get("id"))
-
-    if studyStart_timestamp is None: # No StudyStart Data
-        return
-
-    recent_studyEnd_timestamp = search_log_timestamp(res, "studyEnd", user.get("id"))
-    if recent_studyEnd_timestamp is None: # Not Found "StudyEnd"
-        recent_studyEnd_timestamp = datetime.fromisoformat("2024-01-01T00:00:00.847Z".replace('Z', '+00:00'))
-
-    if studyStart_timestamp < recent_studyEnd_timestamp: # Double "StudyEnd" Error
-        return
-
-    logger = logger_setup.get_logger(user.get("id"))
-    logger.info("--- studyEnd ---")
-
-    time_difference = datetime.utcnow().replace(tzinfo=timezone.utc) - studyStart_timestamp
-    seconds_difference = time_difference.total_seconds()
-
-    # Calculate User's Total Study Time.
-    result = await db.execute(select(StudyInfo).filter(StudyInfo.owner_id == user.get("id")))
-    studyinfo_model = result.scalars().first()
-    studyinfo_model.totalStudyTime += int(seconds_difference)
-    
-    db.add(studyinfo_model)
-    await db.commit()
-
-    return
 
 
 @router.post("/study_end", status_code=status.HTTP_200_OK)
@@ -163,9 +126,9 @@ async def read_problem_wrongs(mode_str:str, season:int, level:int, user:user_dep
     isGroup = 0
     if mode_str == 'group':
         isGroup = 1
-        
-    result = await db.execute(select(StudyInfo).options(joinedload(StudyInfo.incorrect_problems))
-                              .filter(StudyInfo.owner_id == user.get("id")))
+
+    # fetch study info
+    result = await db.execute(select(StudyInfo).options(joinedload(StudyInfo.incorrect_problems)).filter(StudyInfo.owner_id == user.get("id")))
     study_info = result.scalars().first()
 
     result = await db.execute(select(incorrect_problem_table.c.problem_id).\
@@ -189,6 +152,9 @@ async def read_problem_wrongs(mode_str:str, season:int, level:int, user:user_dep
     await db.commit()
     return {"detail":"success"}
 
+
+# fetch practice problems as season, level, step
+# for each problem, its id, question(korean, str), answer(english, list of words) with each word's color.
 @router.get("/practice/set/", status_code=status.HTTP_200_OK)
 async def read_practice_problem(season: int, level: int, step: int, user: user_dependency, db: db_dependency):
     get_user_exception(user)
@@ -297,16 +263,12 @@ async def ocr(file):
             if (min(low_y, block[0][3][1]) >= max(high_y, block[0][0][1])):
                 low_y = block[0][3][1]
                 high_y = block[0][0][1]
-                word_list.insert(0,block[1][0])
+                word_list.insert(0,block[1])
+    
+    return word_list
 
-    stripped_word_list=[]
 
-    for word in word_list:
-        stripped_word_list.append(word.strip("\" "))
-
-    return stripped_word_list
-
-# 사진을 넣어서 사진의 text 추출
+# check the user's answer
 @router.post("/solve_OCR", status_code = status.HTTP_200_OK)
 async def user_solve_problem(user: user_dependency, db: db_dependency, background_tasks: BackgroundTasks,
                              problem_id: int = Form(...),file: UploadFile = File(...)):
