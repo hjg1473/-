@@ -299,30 +299,22 @@ async def ocr(file):
                 high_y = block[0][0][1]
                 word_list.insert(0,block[1][0])
 
-    return word_list
+    stripped_word_list=[]
+
+    for word in word_list:
+        stripped_word_list.append(word.strip("\" "))
+
+    return stripped_word_list
 
 # 사진을 넣어서 사진의 text 추출
 @router.post("/solve_OCR", status_code = status.HTTP_200_OK)
 async def user_solve_problem(user: user_dependency, db: db_dependency, background_tasks: BackgroundTasks,
                              problem_id: int = Form(...),file: UploadFile = File(...)):
     get_user_exception(user)
-    word_list = await ocr(file)
+    user_word_list = await ocr(file)
     
-    stripped_list = []
-    for item in word_list:
-        if item.strip() != "": # not tuple 
-            stripped_list.append(item.strip())
-    # Empty List
-    if not stripped_list:
-        return {"user_input": [], "colors": []}
-
-    user_string = ' '.join(stripped_list)
-    
-    # 1. 모든 단어를 한 번에 추출
     all_words = set()
-    p_str = user_string
-    p_list = parse_sentence(p_str)
-    all_words.update(p_list)
+    all_words.update(user_word_list)
     # 2. 한 번의 쿼리로 모든 word와 block 정보 가져오기
     result = await db.execute(
         select(Words, Blocks).join(Blocks, Words.block_id == Blocks.id).filter(Words.words.in_(all_words))
@@ -331,16 +323,16 @@ async def user_solve_problem(user: user_dependency, db: db_dependency, backgroun
     word_to_color = {word_model.words: block_model.color for word_model, block_model in result.fetchall()}
     # U liked him. 이 인식이 됨 -> 각 단어별로 word 에 포함되어 있는 단어인지 검사. -> word에 단어가 없으면, 그 단어는 p_list 에서 제외.
     popList = []
-    for p_word in p_list:
+    for p_word in user_word_list:
         if p_word in word_to_color:
             pass
         else:
             popList.append(p_word)
 
     for item in popList:
-        p_list.remove(item)
+        user_word_list.remove(item)
     # 4. 필요한 색상을 가져오기
-    p_colors = [word_to_color[word] for word in p_list]
+    p_colors = [word_to_color[word] for word in user_word_list]
 
     temp_result = await db.execute(select(Problems).filter(Problems.id == problem_id))
     problem_model = temp_result.scalars().first()
@@ -348,9 +340,9 @@ async def user_solve_problem(user: user_dependency, db: db_dependency, backgroun
         raise http_exception()
 
     correct_answer = problem_model.englishProblem
-    problem_parse = parse_sentence(correct_answer)
-    response_parse = parse_sentence(user_string)
-    isAnswer, false_location = check_answer(problem_parse[:-1], list(response_parse))
+    answer_word_list = parse_sentence(correct_answer)
+    user_string = ' '.join(user_word_list)
+    isAnswer, false_location = check_answer(answer_word_list, user_word_list)
     tempUserProblem = TempUserProblems.get(user.get("id"))
     # 없으면 0으로 초기화하면서 추가
     if not(problem_id in tempUserProblem.problem_incorrect_count):
@@ -359,9 +351,9 @@ async def user_solve_problem(user: user_dependency, db: db_dependency, backgroun
     if isAnswer:
         pass
     else:
-        background_tasks.add_task(calculate_wrong_info, problem_id, problem_parse, response_parse, tempUserProblem, db)
+        background_tasks.add_task(calculate_wrong_info, problem_id, answer_word_list, user_word_list, tempUserProblem, db)
         tempUserProblem.problem_incorrect_count[problem_id] += 1
         logger = logger_setup.get_logger(user.get("id"))
         logger.info(f"problem={correct_answer},answer={user_string}")
 
-    return {"user_input": p_list, "colors": p_colors}
+    return {"user_input": user_word_list, "colors": p_colors}
