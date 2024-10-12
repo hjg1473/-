@@ -32,7 +32,7 @@ class CreateRoomRequest(BaseModel):
     host_id: str
     # choiceLevel: int
     # problemsCount: int
-    room_max: int
+    # room_max: int
 
 # 참여자가 방 참가할 때 쓰는 객체
 class JoinRoomRequest(BaseModel):

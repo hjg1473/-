@@ -1,6 +1,7 @@
 import asyncio
+
 import random
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
 import os
 import sys
 
@@ -12,9 +13,10 @@ from game.schemas import Room, CreateRoomRequest, JoinRoomRequest, GetStudentSco
 from game.utils import create_pin_number, list_problems_correct_cnt
 from game.exceptions import room_exception, participant_exception, host_exception, host_exception1, host_exception2, participant_exception1, participant_exception2, participant_exception3, participant_exception4, room_exception2
 from game.dependencies import db_dependency, user_dependency
-from game.service import select_random_problems
+from game.service import select_random_problems, clear_used_problems_in_room
 from app.src.models import ReleasedGroup
 from sqlalchemy import select
+from starlette.websockets import WebSocketState
 
 router = APIRouter(
     prefix="/game",
@@ -23,6 +25,35 @@ router = APIRouter(
 )
 
 manager = ConnectionManager()
+
+@router.post("/socket_close")
+async def socket_close():
+
+    for room_id in list(rooms.keys()): 
+        room = rooms[room_id]
+
+        # 참여자들의 웹소켓 닫기 (주석 해제 가능)
+        # for client_id, websocket in room.participants.items():
+        #     try:
+        #         if websocket.client_state != WebSocketState.DISCONNECTED:
+        #             await websocket.close()
+        #     except RuntimeError as e:
+        #         print(f"웹소켓 닫기 오류: {e}")
+
+        # 방장의 웹소켓 닫기
+        if room.host_websocket:
+            try:
+                # 웹소켓이 닫혀있지 않다면 닫기
+                if room.host_websocket.client_state != WebSocketState.DISCONNECTED:
+                    await room.host_websocket.close()
+            except RuntimeError as e:
+                print(f"방장 웹소켓 닫기 오류: {e}")
+        
+        # 방 제거
+        del rooms[room_id]
+
+    return {"detail": "모든 소켓 삭제됨"}
+
 
 # Get group managed by the teacher.
 @router.get("/group")
@@ -42,40 +73,36 @@ async def read_group_info(group_id:int, user:user_dependency, db:db_dependency):
     await validate_group_access(user.get("id"), group_id, db)
     await find_group_exception(group_id, db)
     # group_model = await get_group_to_groupid(group_id, db)
-    result3 = await db.execute(select(ReleasedGroup).filter(ReleasedGroup.owner_id == group_id))
-    target_season = result3.scalars().all()
-    return target_season
+    result = await db.execute(select(ReleasedGroup).filter(ReleasedGroup.owner_id == group_id))
+    target_season = result.scalars().all()
+    # Remove id, owner_id 
+    for item in target_season:
+        del item.id
+        del item.owner_id
 
+    return target_season
 
 def reset_room(room: Room) -> None:
     for participant in room.participants:
-        room.participants[participant] = 0 # 참여자 리스트의 값만 0으로 초기화
-        room.participants_bonus[participant] = [] # 참여자 문제 정답 배열 초기화
+        room.participants[participant] = 0 # Reset score
+        room.participants_bonus[participant] = []
     room.InGame = False 
 
 # 같은 인원, 같은 핀번호로 게임 이어서 하기 + 추가 입장도 되도록
+# 계속하기가 있긴함. 근데 핀번호는... 뭐 유효기간은 없으니까 상관없나.
 @router.post("/super/game_again")
 async def get_student_score(db: db_dependency, request: GetGameAgainRequest):
     room = rooms.get(request.room_id)
     room_exception(room)
     reset_room(room)
-    if room.room_max <= request.room_max: # 인원 같거나 늘리기만 가능
+    if room.room_max <= request.room_max: # 같거나 늘리기만 가능
         room.room_max = request.room_max 
     else:
         raise room_exception2()
     
-    final_problems = await select_random_problems(request.choiceLevel,request.problemsCount, db)
+    return {"pin_number": request.room_id} 
 
-    problems = []
-    pnum = 0
-    roomProblem[request.room_id] = {}
-    for problem in final_problems:
-        problems.append({"problem_id": problem.id, "koreaProblem": problem.koreaProblem})
-        roomProblem[request.room_id][pnum] = problem.englishProblem
-        pnum += 1
-    return {"pin_number": request.room_id, "problems": problems} 
-
-# 게임방 호스트가 참여자의 모든 누적 점수 요청 (내림차순 정렬)
+# Requests all scores of participants (sorted in descending order)
 @router.post("/super/student_score")
 async def get_student_score(request: GetStudentScoreRequest):
     room = rooms.get(request.room_id)
@@ -84,16 +111,16 @@ async def get_student_score(request: GetStudentScoreRequest):
     return sorted_rank
 
 # 선생님이 게임 시작할 때, 시작 후 참여 방어 안됨
-@router.post("/super/game_start")
-async def participant_action(request: GetStudentScoreRequest):
-    room = rooms.get(request.room_id)
-    room_exception(room)
-    if room.host_websocket:
-        room.InGame = True
-        for participant_id, participant_ws in manager.active_connections[request.room_id].items(): # 이렇게 써도 되는지 모르겠네 gpt는 된다는데
-                await manager.send_personal_message({"client_id": participant_id, "message": "GameStart"}, participant_ws)
-    else:
-        raise host_exception()
+# @router.post("/super/game_start")
+# async def participant_action(request: GetStudentScoreRequest):
+#     room = rooms.get(request.room_id)
+#     room_exception(room)
+#     if room.host_websocket:
+#         room.InGame = True
+#         for participant_id, participant_ws in manager.active_connections[request.room_id].items(): 
+#                 await manager.send_personal_message({"client_id": participant_id, "message": "GameStart"}, participant_ws)
+#     else:
+#         raise host_exception()
 
 # 게임에서 학생이 정답을 제출할 때
 @router.post("/student_solve")
@@ -140,7 +167,7 @@ async def create_room(db: db_dependency, request: CreateRoomRequest):
     # 핀 번호 중복 검사
     if host_exception2(rooms.values(), pin_number):
         pin_number = create_pin_number()
-    rooms[pin_number] = Room(pin_number, request.host_id, request.room_max) # 방 생성
+    rooms[pin_number] = Room(pin_number, request.host_id, 99) # 방 생성
 
     return {"pin_number": pin_number}
 
@@ -165,6 +192,16 @@ async def join_room(request: JoinRoomRequest):
 
 
 async def send_problems_all_participants(message, start_index, final_problems, room_id):
+    # final_problems가 문자열("error")이면 중단하고 반환
+    if isinstance(final_problems, str):
+        for participant_id, participant_ws in manager.active_connections[room_id].items():
+            # if participant_id != client_id:  # 호스트 자신에게는 전송하지 않음
+            await manager.send_personal_message({
+                "message": final_problems
+                # "problems": json.dumps(problems, ensure_ascii=False) # 한글 디코딩이 포스트맨에서 안되서
+            }, participant_ws)
+        return
+    
     problems = []
     for pnum, problem in enumerate(final_problems, start=start_index):
         problems.append({"problem_id": problem.id, "koreaProblem": problem.koreaProblem})
@@ -254,13 +291,15 @@ async def websocket_endpoint(websocket: WebSocket, room_id: str, client_id: str,
                         await manager.send_personal_message({"client_id": client_id, "message": message_text}, participant_ws)
 
     except WebSocketDisconnect:
+        if client_id != room.host_id:
+            await manager.send_personal_message({"disconnect_room": room_id, "client_id": client_id}, room.host_websocket)
         manager.disconnect(room_id, client_id)
-        await manager.send_personal_message({"disconnect_room": room_id, "client_id": client_id}, room.host_websocket)
         if client_id in room.participants: # 리스트에 참여자가 있다면
             room.participants.pop(client_id) # 참여자 딕셔너리에서 삭제
-            del room.participants_bonus[client_id] # 보너스 점수도 삭제d
+            del room.participants_bonus[client_id] # 보너스 점수도 삭제
         if client_id == room.host_id:
-            room.host_websocket = None
+            del rooms[room_id] # 호스트 disconnect 면 삭제
+            clear_used_problems_in_room(room_id) # 출제된 문제 리스트 삭제
 
 
 

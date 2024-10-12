@@ -4,7 +4,8 @@ torchvision==0.18.1
 scipy==1.13.0 
 scikit-image==0.24.0
 torch==2.3.1
-easyocr==1.7.1
+paddleocr==2.8.1
+paddlepaddle==2.5.2
 anyio==3.6.2
 asyncio==3.4.3
 bcrypt==4.0.1

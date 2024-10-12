@@ -21,6 +21,8 @@ from datetime import datetime, timezone
 import logging
 from app.src.logging_setup import LoggerSetup
 
+# from app.src.cache import get_word_color
+
 LOGGER = logging.getLogger(__name__)
 logger_setup = LoggerSetup()
 
@@ -105,8 +107,8 @@ async def study_end(mode_str: str, user: user_dependency, db: db_dependency, bac
     result = await db.execute(select(Released).filter(Released.owner_id == user.get("id")))
     released_model = result.scalars().all()
     released = []
-    for r in released_model:
-        released.append({'season':r.released_season, 'level':r.released_level, 'step':r.released_step})
+    for release in released_model:
+        released.append({'season':release.released_season, 'level':release.released_level, 'step':release.released_step})
 
     return {'released': released}
 
@@ -199,7 +201,6 @@ async def read_practice_problem(season: int, level: int, step: int, user: user_d
     
     return {'problems': await read_problem_block_colors(problems_model, db)}
 
-# Return expert problem set.
 @router.get("/expert/set/", status_code=status.HTTP_200_OK)
 async def read_expert_problem(season: int, level: int, step: int, user: user_dependency, db: db_dependency):
     get_user_exception(user)
@@ -244,84 +245,91 @@ async def read_level_and_step_expert(season: int, level: int, difficulty: int, u
     
     return {'steps': steps}
 
-def insert_word_list(low_y, high_y, sorted_data, word_list):
-    for block in sorted_data:
-        if (min(low_y, block[0][3][1]) >= max(high_y, block[0][0][1])):
+# Utils
+def process_blocks(sorted_data, ref_block_idx, word_list, direction='right'):
+    if direction == 'right':
+        blocks = sorted_data[ref_block_idx+1:]
+        append_func = word_list.append
+    else:  # direction == 'left'
+        blocks = reversed(sorted_data[:ref_block_idx])
+        append_func = lambda word: word_list.insert(0, word)
+
+    low_y = sorted_data[ref_block_idx][0][3][1]
+    high_y = sorted_data[ref_block_idx][0][0][1]
+
+    for block in blocks:
+        if min(low_y, block[0][3][1]) >= max(high_y, block[0][0][1]):
             low_y = block[0][3][1]
             high_y = block[0][0][1]
-            word_list.insert(0,block[1])
+            append_func(block[1][0])
 
 # PaddlePaddle 2.5.2
 async def ocr(file):
     img_binary = await file.read()
     image = await asyncio.to_thread(Image.open, io.BytesIO(img_binary))
-    # 이미지 크기 줄이기
-    max_dimension = 1000  # 예: 최대 1000픽셀
+    # Reduce image size
+    max_dimension = 1000  # 1000 px
     if max(image.size) > max_dimension:
         scale = max_dimension / max(image.size)
         image = image.resize((int(image.width * scale), int(image.height * scale)))
 
     img_array = np.array(image)
-    # 이미지 읽는게 img_array 크기 줄이니까 빨라짐.
+    # Reading images becomes faster by reducing the img_array size.
     from app.src.main import ocr
     result = await asyncio.to_thread(ocr.ocr, img_array, cls=False)
     if not result:
         return result
     result = result[0]
+    print("ocr:result ", result)
     sorted_data = sorted(result, key=lambda item: item[0][0][0])
     max_height = 0
     ref_block_idx = 0
 
     for block_idx, block in enumerate(sorted_data):
-        height = block[0][2][1] - block[0][0][1] # IndexError
+        height = block[0][2][1] - block[0][0][1] # Index Error ? 
         if height > max_height:
             max_height = height
             ref_block_idx = block_idx
     word_list=[sorted_data[ref_block_idx][1][0]]
 
-    # 오른쪽부터
+    # low_y = sorted_data[ref_block_idx][0][3][1]
+    # high_y = sorted_data[ref_block_idx][0][0][1]
+    
+    # Check right
     if(ref_block_idx+1<len(sorted_data)):
-        low_y = sorted_data[ref_block_idx][0][3][1]
-        high_y = sorted_data[ref_block_idx][0][0][1]
-        for block in sorted_data[ref_block_idx+1:]:
-            if (min(low_y, block[0][3][1]) >= max(high_y, block[0][0][1])):
-                low_y = block[0][3][1]
-                high_y = block[0][0][1]
-                word_list.append(block[1][0])
+        process_blocks(sorted_data, ref_block_idx, word_list, direction='right')
 
-    # 왼쪽
+    # Check left
     if(ref_block_idx>0):
-        low_y = sorted_data[ref_block_idx][0][3][1]
-        high_y = sorted_data[ref_block_idx][0][0][1]
-        for block in reversed(sorted_data[:ref_block_idx]):
-            if (min(low_y, block[0][3][1]) >= max(high_y, block[0][0][1])):
-                low_y = block[0][3][1]
-                high_y = block[0][0][1]
-                word_list.insert(0,block[1][0])
+        process_blocks(sorted_data, ref_block_idx, word_list, direction='left')
 
     stripped_word_list=[]
-
     for word in word_list:
         stripped_word_list.append(word.strip("\" "))
 
     return stripped_word_list
 
-# 사진을 넣어서 사진의 text 추출
+# Determine whether the answer is correct or not 
 @router.post("/solve_OCR", status_code = status.HTTP_200_OK)
 async def user_solve_problem(user: user_dependency, db: db_dependency, background_tasks: BackgroundTasks,
                              problem_id: int = Form(...),file: UploadFile = File(...)):
     get_user_exception(user)
     user_word_list = await ocr(file)
-    
+
     all_words = set()
     all_words.update(user_word_list)
-    # 2. 한 번의 쿼리로 모든 word와 block 정보 가져오기
+    # 2. Get all word and block information with 1 query
+    
     result = await db.execute(
         select(Words, Blocks).join(Blocks, Words.block_id == Blocks.id).filter(Words.words.in_(all_words))
     )
-    # 3. 필요한 데이터를 딕셔너리로 매핑
+    # 3. Mapping the required data into a dictionary
     word_to_color = {word_model.words: block_model.color for word_model, block_model in result.fetchall()}
-    # U liked him. 이 인식이 됨 -> 각 단어별로 word 에 포함되어 있는 단어인지 검사. -> word에 단어가 없으면, 그 단어는 p_list 에서 제외.
+    # word_to_color = get_word_color(word)
+
+    # You liked him is recognized 
+    # -> Check whether each word is included in the word. 
+    # -> If there is no word in word, the word is excluded from p_list.
     popList = []
     for p_word in user_word_list:
         if p_word in word_to_color:
@@ -331,7 +339,7 @@ async def user_solve_problem(user: user_dependency, db: db_dependency, backgroun
 
     for item in popList:
         user_word_list.remove(item)
-    # 4. 필요한 색상을 가져오기
+    # 4. Get the colors you need
     p_colors = [word_to_color[word] for word in user_word_list]
 
     temp_result = await db.execute(select(Problems).filter(Problems.id == problem_id))
@@ -344,13 +352,14 @@ async def user_solve_problem(user: user_dependency, db: db_dependency, backgroun
     user_string = ' '.join(user_word_list)
     isAnswer, false_location = check_answer(answer_word_list, user_word_list)
     tempUserProblem = TempUserProblems.get(user.get("id"))
-    # 없으면 0으로 초기화하면서 추가
+    # init
     if not(problem_id in tempUserProblem.problem_incorrect_count):
         tempUserProblem.problem_incorrect_count[problem_id] = 0
-    # 백그라운드 실행
+
     if isAnswer:
         pass
     else:
+        # background execution 
         background_tasks.add_task(calculate_wrong_info, problem_id, answer_word_list, user_word_list, tempUserProblem, db)
         tempUserProblem.problem_incorrect_count[problem_id] += 1
         logger = logger_setup.get_logger(user.get("id"))

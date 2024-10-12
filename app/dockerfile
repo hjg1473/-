@@ -2,13 +2,27 @@ FROM python:3.9-slim
 
 WORKDIR /app
 
+# 필요한 패키지 설치
+# RUN apt-get update && apt-get install -y libgomp1 && apt-get install -y libgl1-mesa-glx && apt-get install -y libglib2.0-0
+
+RUN apt-get update && apt-get install -y \
+    libgomp1 \
+    libgl1-mesa-glx \
+    libglib2.0-0 \
+    libsm6 \
+    libxext6 \
+    libxrender-dev 
+
 COPY requirements.txt .
 RUN pip install -r requirements.txt
 
 COPY src /app/src
 
-COPY src/EasyOCR/model/craft_mlt_25k.pth /root/.EasyOCR/model/craft_mlt_25k.pth
-COPY src/EasyOCR/model/english_g2.pth /root/.EasyOCR/model/english_g2.python
+# COPY src/EasyOCR/model/craft_mlt_25k.pth /root/.EasyOCR/model/craft_mlt_25k.pth
+# COPY src/EasyOCR/model/english_g2.pth /root/.EasyOCR/model/english_g2.python
+
+COPY src/OCR_models/ /root/OCR_models/
+
 
 # Set environment variable to include /app/src in PYTHONPATH
 ENV PYTHONPATH="${PYTHONPATH}:/app/src"
