@@ -16,3 +16,13 @@ def get_settings():
     return Settings()
 
 settings = get_settings()
+
+class TokenSettings():
+  SECRET_KEY = os.environ.get("SECRET_KEY")
+  ALGORITHM = os.environ.get("ALGORITHM")
+  
+@lru_cache
+def get_TokenSettings():
+    return TokenSettings()
+
+TokenSettings = get_TokenSettings()
