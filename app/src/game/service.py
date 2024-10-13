@@ -34,7 +34,7 @@ async def select_random_problems(criteria: ProblemSelectionCriteria, db, room_id
     )
 
     if total_count == 0:
-        return "Problem does not exist."
+        return "No more Problem"
 
     random_offset = random.randint(0, max(0, total_count - PROBLEM_OFFSET))
 
