@@ -56,7 +56,7 @@ class MyApp extends StatelessWidget {
           fontFamily: 'NanumSquareRound',
         ),
         title: "Block English",
-        initialRoute: '/super_group_monitor_screen',
+        initialRoute: '/loading_screen',
         routes: {
           '/loading_screen': (context) => const LoadingScreen(),
           '/login_screen': (context) => const LoginScreen(),

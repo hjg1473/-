@@ -37,11 +37,13 @@ class MonitorStudentScreen extends StatefulWidget {
     required this.studentName,
     required this.studentId,
     this.groupName = '',
+    required this.initialPage,
   });
 
   final String studentName;
   final int studentId;
   final String groupName;
+  final int initialPage;
 
   @override
   State<MonitorStudentScreen> createState() => _MonitorStudentScreenState();
@@ -151,6 +153,13 @@ class _MonitorStudentScreenState extends State<MonitorStudentScreen> {
         ],
       ),
     );
+  }
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    currentPage = widget.initialPage;
   }
 
   @override
@@ -331,7 +340,17 @@ class _MonitorStudentScreenState extends State<MonitorStudentScreen> {
                 color: const Color(0xFFECECEC),
                 child: Navigator(
                   key: _navigatorKey,
-                  initialRoute: learning,
+                  initialRoute: () {
+                    if (widget.initialPage == 1) {
+                      return learning;
+                    } else if (widget.initialPage == 2) {
+                      return incorrect;
+                    } else if (widget.initialPage == 3) {
+                      return manage;
+                    } else {
+                      return learning;
+                    }
+                  }(),
                   onGenerateRoute: (settings) {
                     return CustomRoute(
                       builder: (context) {

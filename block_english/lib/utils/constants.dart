@@ -86,7 +86,9 @@ String wrongToString(String wrong) {
     case 'wrong_punctuation':
       return '문장 부호';
     case 'wrong_order':
-      return '어순';
+      return '단어 순서';
+    case 'wrong_letter':
+      return '대소문자';
     default:
       return ''; // Add a default return statement to handle unexpected input
   }

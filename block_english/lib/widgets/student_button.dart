@@ -26,6 +26,7 @@ class StudentButton extends StatelessWidget {
               studentName: name,
               studentId: studentId,
               groupName: groupName,
+              initialPage: 1,
             ),
           ),
         );
