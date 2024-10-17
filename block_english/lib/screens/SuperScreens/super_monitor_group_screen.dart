@@ -217,7 +217,8 @@ class _GroupState extends ConsumerState<Group> {
 
   bool isLoading = true;
   GroupMonitoringModel? groupDetail;
-  List<double> forCorrectRate = [];
+  List<double> correctRate = [0, 0, 0];
+  int bestLevel = -1;
   int basicBest = -1;
   int expertBest = -1;
 
@@ -242,8 +243,12 @@ class _GroupState extends ConsumerState<Group> {
       groupDetail = data;
       StudyInfoModel last = groupDetail!.studyInfo.last;
       for (int i = 0; i < last.releasedLevel!; i++) {
-        forCorrectRate.add(last.correctRateNormal![i] + last.correctRateAI![i]);
+        correctRate[i] = (last.correctRateNormal![i] + last.correctRateAI![i]);
+        if (bestLevel == -1 || correctRate[i] > correctRate[bestLevel]) {
+          bestLevel = i;
+        }
       }
+      print(correctRate);
       // TODO: 시즌 리스트 업데이트, 시즌 별 데이터 업데이트
       for (int i = 0; i < groupDetail!.studyInfo.length; i++) {
         for (int j = 0; j < 3; j++) {
@@ -464,6 +469,7 @@ class _GroupState extends ConsumerState<Group> {
                       PieChartWidget(
                         width: 111.86.r,
                         height: 111.86.r,
+                        data: const [70, 30, 10], // TODO: 실제 데이터로 변경
                       ),
                       SizedBox(height: 17.r),
                       Text(
@@ -472,14 +478,48 @@ class _GroupState extends ConsumerState<Group> {
                       ),
                       SizedBox(height: 9.r),
                       Text(
-                        '우리 반은 어순과 격에서 오답율이\n가장 적어요.',
+                        '우리 반은 ${levelList[bestLevel]}에서 정답률이\n가장 높아요.',
                         style: textStyle14,
                       ),
                     ],
                   ),
                 ),
               ),
-              // // best level
+              Positioned(
+                top: 77.r,
+                right: 327.r,
+                child: SvgPicture.asset(
+                  'assets/images/connecting_line.svg',
+                  width: 35.r,
+                ),
+              ),
+              Positioned(
+                top: 67.5.r,
+                right: 242.r,
+                child: Container(
+                  width: 79.r,
+                  height: 26.r,
+                  decoration: BoxDecoration(
+                    color: primaryPurple[500],
+                    borderRadius: BorderRadius.circular(20).r,
+                  ),
+                  child: Center(
+                    child: Text(
+                      levelList[bestLevel],
+                      style: textStyle14.copyWith(color: Colors.white),
+                    ),
+                  ),
+                ),
+              ),
+              Positioned(
+                top: 102.r,
+                right: 251.r,
+                child: Text(
+                  '${correctRate[bestLevel].toInt()}%',
+                  style: textStyle14,
+                ),
+              ),
+              // best level
               Positioned(
                 top: 54.r,
                 right: 64.r,
@@ -653,7 +693,10 @@ class _IndividualState extends ConsumerState<Individual> {
   List<String> seasonList = ['시즌 1', '시즌 2'];
   int seasonForStatics = 0;
   int selectedStudent = 0;
-  List<double> forCorrectRate = [];
+  List<double> correctRate = [0, 0, 0];
+  int bestLevel = -1;
+  int basicBest = -1;
+  int expertBest = -1;
 
   void waitForStudents() async {
     var response =
@@ -695,12 +738,29 @@ class _IndividualState extends ConsumerState<Individual> {
       },
       (data) {
         summary = data;
+        summary.weakParts.topRates = summary.weakParts.getTopNRates(3);
         StudyInfoModel rates = summary.rates;
-        forCorrectRate.clear();
+        print(rates.releasedLevel);
+        for (int i = 0; i < rates.releasedLevel! + 1; i++) {
+          correctRate[i] =
+              (rates.correctRateNormal![i] + rates.correctRateAI![i]);
+          if (bestLevel == -1 || correctRate[i] > correctRate[bestLevel]) {
+            bestLevel = i;
+          }
+        }
+        print(correctRate);
 
-        for (int i = 0; i < rates.releasedLevel!; i++) {
-          forCorrectRate
-              .add(rates.correctRateNormal![i] + rates.correctRateAI![i]);
+        for (int i = 0; i < 3; i++) {
+          double basicBestCorrectRate = 0;
+          double expertBestCorrectRate = 0;
+          if (rates.correctRateNormal![i] > basicBestCorrectRate) {
+            basicBest = i;
+            basicBestCorrectRate = rates.correctRateNormal![i];
+          }
+          if (rates.correctRateAI![i] > expertBestCorrectRate) {
+            expertBest = i;
+            basicBestCorrectRate = rates.correctRateAI![i];
+          }
         }
       },
     );
@@ -770,6 +830,45 @@ class _IndividualState extends ConsumerState<Individual> {
                                 child: PieChartWidget(
                                   width: 110.r,
                                   height: 110.r,
+                                  data: correctRate,
+                                ),
+                              ),
+                              Positioned(
+                                top: 32.r,
+                                left: 104.r,
+                                child: SvgPicture.asset(
+                                  'assets/images/angled_connecting_line.svg',
+                                  height: 28.r,
+                                ),
+                              ),
+                              Positioned(
+                                top: 21.r,
+                                left: 140.r,
+                                child: Row(
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  children: [
+                                    Text(
+                                      '${correctRate[bestLevel].toInt()}%',
+                                      style: textStyle14,
+                                    ),
+                                    SizedBox(width: 8.r),
+                                    Container(
+                                      width: 79.r,
+                                      height: 26.r,
+                                      decoration: BoxDecoration(
+                                        color: primaryPurple[500],
+                                        borderRadius:
+                                            BorderRadius.circular(20).r,
+                                      ),
+                                      child: Center(
+                                        child: Text(
+                                          levelList[bestLevel],
+                                          style: textStyle14.copyWith(
+                                              color: Colors.white),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ),
                               Positioned(
@@ -784,7 +883,7 @@ class _IndividualState extends ConsumerState<Individual> {
                                     ),
                                     SizedBox(height: 8.r),
                                     Text(
-                                      '지금까지 어순과 격에서의\n오답율이 가장 적어요.',
+                                      '지금까지 어순과 격에서의\n정답률이 가장 높아요.',
                                       style: textStyle14.copyWith(),
                                     ),
                                   ],
@@ -815,7 +914,9 @@ class _IndividualState extends ConsumerState<Individual> {
                                     ),
                                     SizedBox(height: 12.r),
                                     Text(
-                                      '어순과 격',
+                                      basicBest == -1
+                                          ? '데이터 없음'
+                                          : levelList[basicBest],
                                       style: textStyle14,
                                     ),
                                   ],
@@ -856,7 +957,9 @@ class _IndividualState extends ConsumerState<Individual> {
                                     ),
                                     SizedBox(height: 12.r),
                                     Text(
-                                      '부정문',
+                                      expertBest == -1
+                                          ? '데이터 없음'
+                                          : levelList[expertBest],
                                       style: textStyle14,
                                     ),
                                   ],
@@ -1066,7 +1169,7 @@ class _IndividualState extends ConsumerState<Individual> {
                                       ),
                                     ),
                                     Text(
-                                      '단어 순서 오류',
+                                      '${wrongToString(summary.weakParts.topRates[0].key)} 오류',
                                       style: textStyle18.copyWith(
                                         color: primaryPurple[500],
                                       ),
@@ -1081,17 +1184,20 @@ class _IndividualState extends ConsumerState<Individual> {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(
-                                      '어순과 격',
+                                      wrongToString(
+                                          summary.weakParts.topRates[0].key),
                                       style: textStyle11,
                                     ),
                                     const SizedBox(height: 6),
                                     Text(
-                                      '부정문',
+                                      wrongToString(
+                                          summary.weakParts.topRates[1].key),
                                       style: textStyle11,
                                     ),
                                     const SizedBox(height: 6),
                                     Text(
-                                      '의문문',
+                                      wrongToString(
+                                          summary.weakParts.topRates[2].key),
                                       style: textStyle11,
                                     ),
                                   ],
@@ -1104,17 +1210,17 @@ class _IndividualState extends ConsumerState<Individual> {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(
-                                      '57%',
+                                      '${(summary.weakParts.topRates[0].value * 100).toInt()}%',
                                       style: textStyle11,
                                     ),
                                     const SizedBox(height: 6),
                                     Text(
-                                      '83%',
+                                      '${(summary.weakParts.topRates[1].value * 100).toInt()}%',
                                       style: textStyle11,
                                     ),
                                     const SizedBox(height: 6),
                                     Text(
-                                      '42%',
+                                      '${(summary.weakParts.topRates[2].value * 100).toInt()}%',
                                       style: textStyle11,
                                     ),
                                   ],

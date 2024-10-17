@@ -23,7 +23,7 @@ class WeakParts {
   ];
 
   List<double> rates = [];
-  late List<MapEntry<String, double>> top3Rates;
+  List<MapEntry<String, double>> topRates = [];
 
   WeakParts.fromJson(Map<String, dynamic> json) {
     rates.add(double.parse(json['wrong_block']));

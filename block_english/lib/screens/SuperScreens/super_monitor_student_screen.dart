@@ -710,6 +710,7 @@ class _IncorrectState extends ConsumerState<Incorrect> {
                         child: const PieChartWidget(
                           width: 171,
                           height: 171,
+                          data: [20, 20, 20, 20, 20],
                         ),
                       ),
                     ),
