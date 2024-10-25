@@ -34,37 +34,46 @@ router = APIRouter(
 
 es = AsyncElasticsearch(['http://3.34.58.76:9200'])
 
-# Utils
+### CALCULATE TOTAL STUDY TIME
+
+# A function that calculates training time based on user training start and end timestamps.
 async def calculate_study_times(user, db):
-    res = await es.search(index=INDEX, body=QUERY_MATCH_ALL)
-    studyStart_timestamp = search_log_timestamp(res, "studyStart", user.get("id"))
-
-    if studyStart_timestamp is None: # No StudyStart Data
+    studyStart_timestamp, studyEnd_timestamp = await get_study_timestamps(user, es)
+    if studyStart_timestamp is None or studyEnd_timestamp is None:
         return
 
-    recent_studyEnd_timestamp = search_log_timestamp(res, "studyEnd", user.get("id"))
-    if recent_studyEnd_timestamp is None: # Not Found "StudyEnd"
-        recent_studyEnd_timestamp = datetime.fromisoformat("2024-01-01T00:00:00.847Z".replace('Z', '+00:00'))
-
-    if studyStart_timestamp < recent_studyEnd_timestamp: # Double "StudyEnd" Error
+    # Error handling when learning end time is earlier than learning start time
+    if studyStart_timestamp < studyEnd_timestamp:
         return
-
-    logger = logger_setup.get_logger(user.get("id"))
-    logger.info("--- studyEnd ---")
 
     time_difference = datetime.utcnow().replace(tzinfo=timezone.utc) - studyStart_timestamp
     seconds_difference = time_difference.total_seconds()
 
-    # Calculate User's Total Study Time.
+    await update_study_time_in_db(user, db, seconds_difference)
+
+# Function to retrieve training start and end timestamps from the log.
+async def get_study_timestamps(user, es):
+    res = await es.search(index=INDEX, body=QUERY_MATCH_ALL)
+    studyStart_timestamp = search_log_timestamp(res, "studyStart", user.get("id"))
+    studyEnd_timestamp = search_log_timestamp(res, "studyEnd", user.get("id"))
+
+    if studyEnd_timestamp is None:  # Set default time if there is no StudyEnd
+        studyEnd_timestamp = datetime.fromisoformat("2024-01-01T00:00:00.847Z".replace('Z', '+00:00'))
+
+    return studyStart_timestamp, studyEnd_timestamp
+
+# A function that updates the total training time in the user database.
+async def update_study_time_in_db(user, db, seconds_difference):
     result = await db.execute(select(StudyInfo).filter(StudyInfo.owner_id == user.get("id")))
     studyinfo_model = result.scalars().first()
     studyinfo_model.totalStudyTime += int(seconds_difference)
-    
+
     db.add(studyinfo_model)
     await db.commit()
 
-    return
+    return 
 
+### CALCULATE TOTAL STUDY TIME END
 
 @router.post("/study_end", status_code=status.HTTP_200_OK)
 async def study_end(mode_str: str, user: user_dependency, db: db_dependency, background_tasks: BackgroundTasks):
@@ -108,7 +117,8 @@ async def study_end(mode_str: str, user: user_dependency, db: db_dependency, bac
     released_model = result.scalars().all()
     released = []
     for release in released_model:
-        released.append({'season':release.released_season, 'level':release.released_level, 'step':release.released_step})
+        released.append({'season':release.released_season, 'level':release.released_level,
+                        'step':release.released_step})
 
     return {'released': released}
 
@@ -154,7 +164,8 @@ async def read_problem_wrongs(mode_str:str, season:int, level:int, user:user_dep
         for word in p_list:
             word_block_id = list(filter(lambda item : item.words == word, words))[0].block_id
             colors.append(list(filter(lambda item : item.id == word_block_id, blocks))[0].color)
-        problems.append({'id':item.id, 'englishProblem':item.englishProblem, 'koreaProblem':item.koreaProblem, 'blockColors':colors})
+        problems.append({'id':item.id, 'englishProblem':item.englishProblem, 
+                        'koreaProblem':item.koreaProblem, 'blockColors':colors})
     
     return {"incorrects":problems}
 
@@ -198,6 +209,9 @@ async def read_practice_problem(season: int, level: int, step: int, user: user_d
     problems_model = await fetch_problem_set(season, level, step, "normal", db)
     get_problem_exception(problems_model)
     init_user_problem(user.get("id"), season, level, step, "normal")
+
+    logger = logger_setup.get_logger(user.get("id"))
+    logger.info("--- studyStart ---")
     
     return {'problems': await read_problem_block_colors(problems_model, db)}
 
@@ -208,6 +222,9 @@ async def read_expert_problem(season: int, level: int, step: int, user: user_dep
     problems_model = await fetch_problem_set(season, level, step, "ai", db)
     get_problem_exception(problems_model)
     init_user_problem(user.get("id"), season, level, step, "ai")
+
+    logger = logger_setup.get_logger(user.get("id"))
+    logger.info("--- studyStart ---")
     
     return {'problems': await read_problem_block_colors(problems_model, db)}
 
@@ -246,7 +263,10 @@ async def read_level_and_step_expert(season: int, level: int, difficulty: int, u
     return {'steps': steps}
 
 # Utils
-def process_blocks(sorted_data, ref_block_idx, word_list, direction='right'):
+# This function selects a text block according to direction \
+# based on a specific object block (ref_block_idx) in the list called sorted_data \
+# and adds the words of the block to the word_list.
+def collect_adjacent_blocks(sorted_data, ref_block_idx, word_list, direction='right'):
     if direction == 'right':
         blocks = sorted_data[ref_block_idx+1:]
         append_func = word_list.append
@@ -280,7 +300,7 @@ async def ocr(file):
     if not result:
         return result
     result = result[0]
-    print("ocr:result ", result)
+    # print("ocr:result ", result)
     sorted_data = sorted(result, key=lambda item: item[0][0][0])
     max_height = 0
     ref_block_idx = 0
@@ -297,11 +317,11 @@ async def ocr(file):
     
     # Check right
     if(ref_block_idx+1<len(sorted_data)):
-        process_blocks(sorted_data, ref_block_idx, word_list, direction='right')
+        collect_adjacent_blocks(sorted_data, ref_block_idx, word_list, direction='right')
 
     # Check left
     if(ref_block_idx>0):
-        process_blocks(sorted_data, ref_block_idx, word_list, direction='left')
+        collect_adjacent_blocks(sorted_data, ref_block_idx, word_list, direction='left')
 
     stripped_word_list=[]
     for word in word_list:
@@ -327,7 +347,7 @@ async def user_solve_problem(user: user_dependency, db: db_dependency, backgroun
     word_to_color = {word_model.words: block_model.color for word_model, block_model in result.fetchall()}
     # word_to_color = get_word_color(word)
 
-    # You liked him is recognized 
+    # ex) 'You liked him' is recognized 
     # -> Check whether each word is included in the word. 
     # -> If there is no word in word, the word is excluded from p_list.
     popList = []

@@ -207,7 +207,8 @@ async def get_latest_log(user_id: int):
     response = await fetch_logs_from_elasticsearch(user_id)
 
     if response["hits"]["total"]["value"] == 0:
-        raise HTTPException(status_code=404, detail="Log not found")
+        return 
+        # raise HTTPException(status_code=404, detail="Log not found") 
 
     # 가장 최근의 로그 추출
     latest_log = response["hits"]["hits"][0]["_source"]
