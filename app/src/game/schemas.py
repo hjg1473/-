@@ -11,6 +11,8 @@ class Room:
         self.InGame = False
         self.participants: Dict[str, int] = {} # 참여자 리스트 -> 딕셔너리 (개인 점수 계산용)
         self.participants_bonus: Dict[str, List] = {} # 참여자 문제 정답 배열 딕셔너리 (보너스 점수 계산용)
+        self.participants_nickname: Dict[str, str] = {} # 참여자 리스트 (id, 닉네임)
+        self.participants_websockets = {}  # 참가자별 WebSocket 저장
         self.host_websocket: WebSocket = None # 웹소켓
 
 rooms: Dict[str, Room] = {}
@@ -32,12 +34,13 @@ class CreateRoomRequest(BaseModel):
     host_id: str
     # choiceLevel: int
     # problemsCount: int
-    room_max: int
+    # room_max: int
 
 # 참여자가 방 참가할 때 쓰는 객체
 class JoinRoomRequest(BaseModel):
     room_id: str
     participant_id: str
+    participant_name: str
 
 class GetStudentScoreRequest(BaseModel):
     room_id: str

@@ -40,22 +40,6 @@ def combine_sentence(sentence:list):
     return combined
 
 
-def search_log_timestamp(res, action, user_id):
-    import re
-    from datetime import datetime
-    for hit in res['hits']['hits']:
-        message = hit['_source']['message']
-        timestamp = hit['_source']['@timestamp']
-        
-        # 정규 표현식을 사용하여 필요한 정보 추출
-        match = re.search(f'- --- {action} --- - \[user: {user_id}\]', message)
-        if match:
-            return datetime.fromisoformat(timestamp.replace('Z', '+00:00'))
-            break  # 최신 로그만 필요하므로 루프를 종료합니다.
-        else:
-            return None
-
-
 def check_answer(problem:list, response:list):
     isAnswer = False
     if problem == response:
@@ -160,7 +144,25 @@ def lettercase_filter(problem:str, response:str):
     return letter_wrong, filteredR
 
 
-# 공통 로직: 사용자의 문제 상태 초기화 . utils.
+
+def search_log_timestamp(res, action, user_id):
+    import re
+    from datetime import datetime
+    for hit in res['hits']['hits']:
+        message = hit['_source']['message']
+        timestamp = hit['_source']['@timestamp']
+        
+        # Extract the information you need using regular expressions
+        match = re.search(f'- --- {action} --- - \[user: {user_id}\]', message)
+        if match:
+            # only need the latest logs end the loop.
+            return datetime.fromisoformat(timestamp.replace('Z', '+00:00'))
+        else:
+            return None
+        
+        
+# Initializing the user's 'temp' problem state.
+# Temp problem is needed to calculate the number of incorrect answers given by the user.
 def init_user_problem(user_id: str, season: int, level: int, step: int, problem_type: str):
     from problem.schemas import TempUserProblem, TempUserProblems
     TempUserProblems[user_id] = TempUserProblem(0, 0, 0, 0, 0)
@@ -169,4 +171,3 @@ def init_user_problem(user_id: str, season: int, level: int, step: int, problem_
     tempUserProblem.solved_level = level
     tempUserProblem.solved_step = step
     tempUserProblem.solved_type = problem_type
-

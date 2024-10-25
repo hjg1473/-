@@ -1,0 +1,4 @@
+.env
+src/OCR_models/
+src/EasyOCR/
+app/src/logs/*

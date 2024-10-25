@@ -171,26 +171,43 @@ async def read_user_monitoring_summary(userStep: UserStep2, user: user_dependenc
     # Check if user has access
     await process_user_access(user, userStep.user_id, db)
         
-    # BEGIN_CHECKING_WEAKEST_PART
+    # BEGIN_CHECKING_WEAK_PART
     study_info = await fetch_studyInfo(userStep.user_id, db)
     wrongType_model = await fetch_wrongType_id_season(study_info.id, userStep.season, db)
     divided_data_list = calculate_wrongType_percentage(wrongType_model)
-    weakest = await find_weakest_type(userStep.user_id, db)
-    extracted_data = [
-        {
-            weakest: item.get(weakest, None),
-            "season": item["season"],
-            "level": item["level"]
-        }
-        for item in divided_data_list
-    ]
 
-    # END_CHECKING_WEAKEST_PART
+    # END_CHECKING_WEAK_PART
+
+    # BEGIN_CALCULATE_STUDY_RATE
+    result = await db.execute(select(Released).filter(Released.owner_id == userStep.user_id).filter(Released.released_season == userStep.season))
+    released_models = result.scalars().all()
+
+    study_info = await fetch_user_problems(userStep.user_id, db)
+    if study_info is None:
+        raise http_exception()
+    
+    # Get studyinfo data. ( incorrect / correct problem id, count )
+    ic_table_count, ic_table_id, c_table_count, c_table_id = await fetch_count_data(study_info.id , db)
+    # TableData 객체 생성
+    correct_data = TableData(c_table_id, c_table_count, study_info.correct_problems)
+    incorrect_data = TableData(ic_table_id, ic_table_count, study_info.incorrect_problems)
+
+    information = []
+    for released_model in released_models:
+        normal_rate, ai_rate = calculate_accuracy_rates(correct_data, incorrect_data, released_model)
+        information.append({"season":released_model.released_season,
+                                       "correct_rate_normal":normal_rate,
+                                       "correct_rate_ai":ai_rate,
+                                       "released_level":released_model.released_level,
+                                       "released_step":released_model.released_step
+                                       })
+        
+    # END_CALCULATE_STUDY_RATE
 
     # Read user Studyinfo.
     studyinfo_model = await fetch_studyInfo(userStep.user_id, db)
 
-    return  {"weakest_part":extracted_data,"totalStudyTime": studyinfo_model.totalStudyTime, 'streamStudyDay': studyinfo_model.streamStudyDay}
+    return  {"weak_parts":divided_data_list, "rates": information, "totalStudyTime": studyinfo_model.totalStudyTime, 'streamStudyDay': studyinfo_model.streamStudyDay}
 
 
 # Read user monitoring info. (problem correct rate)
@@ -299,9 +316,9 @@ async def read_group_monitoring(group: GroupId, user: user_dependency, db: db_de
 
     students = []
     for g in groups:
-        students_in_group = await fetch_user_teamId(g.id, db)
+        students_in_group = await fetch_user_teamId_group(g.id, db)
         students.extend(students_in_group)
-    # 학생들의 id 값만 추출
+    # Extract only student ID values
     student_ids = [student.id for student in students]
 
     # Initialize
@@ -386,7 +403,7 @@ async def read_group_monitoring(group: GroupId, user: user_dependency, db: db_de
 
     students = []
     for g in groups:
-        students_in_group = await fetch_user_teamId(g.id, db)
+        students_in_group = await fetch_user_teamId_group(g.id, db)
         students.extend(students_in_group)
         
     student_ids = [student.id for student in students]
@@ -401,7 +418,7 @@ async def read_group_monitoring(group: GroupId, user: user_dependency, db: db_de
             raise http_exception()
 
         ic_table_count, ic_table_id, c_table_count, c_table_id = await fetch_count_data(study_info.id , db)
-        # TableData 객체 생성
+        # Create TableData object
         correct_data = TableData(c_table_id, c_table_count, study_info.correct_problems)
         incorrect_data = TableData(ic_table_id, ic_table_count, study_info.incorrect_problems)
 

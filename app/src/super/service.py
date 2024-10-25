@@ -53,7 +53,7 @@ async def fetch_user_problems(user_id, db: db_dependency):
     result = await db.execute(select(StudyInfo).options(joinedload(StudyInfo.correct_problems)).options(joinedload(StudyInfo.incorrect_problems)).filter(StudyInfo.owner_id == user_id))
     return result.scalars().first()
 
-async def fetch_user_teamId(group_id, db: db_dependency):
+async def fetch_user_teamId_group(group_id, db: db_dependency):
     result = await db.execute(select(Users).filter(Users.team_id == group_id))
     return result.scalars().all()
 
@@ -123,19 +123,12 @@ async def fetch_user_teamId(user_id, db: db_dependency):
     return user_group.team_id
 
 async def fetch_count_data(study_info_id, db):
-    # 틀린 문제 count 배열 받아오기
     incorrect_count_query = select(incorrect_problem_table.c.count).filter(incorrect_problem_table.c.study_info_id == study_info_id)
-    
-    # 틀린 문제 id 배열 받아오기
     incorrect_id_query = select(incorrect_problem_table.c.problem_id).filter(incorrect_problem_table.c.study_info_id == study_info_id)
-    
-    # 맞은 문제 count 배열 받아오기
     correct_count_query = select(correct_problem_table.c.count).filter(correct_problem_table.c.study_info_id == study_info_id)
-    
-    # 맞은 문제 id 배열 받아오기
     correct_id_query = select(correct_problem_table.c.problem_id).filter(correct_problem_table.c.study_info_id == study_info_id)
     
-    # 모든 쿼리를 비동기적으로 실행
+    # Run all queries at once
     import asyncio
     results = await asyncio.gather(
         db.execute(incorrect_count_query),
@@ -144,7 +137,6 @@ async def fetch_count_data(study_info_id, db):
         db.execute(correct_id_query)
     )
     
-    # 결과를 추출하고 변환
     incorrect_table_count = results[0].scalars().all()
     incorrect_table_id = results[1].scalars().all()
     correct_table_count = results[2].scalars().all()
@@ -194,4 +186,3 @@ async def update_group_level_and_step(group_id, season, level, type, step, db):
     releasedGroup_model.released_step = step
     db.add(releasedGroup_model)
     await db.commit()
-

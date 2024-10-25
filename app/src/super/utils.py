@@ -43,33 +43,50 @@ def calculate_correct_answers(problem_table_id, ai_corrects ,normal_corrects, an
                 ai_corrects[problem.level] += count
 
 def calculate_wrongType_percentage(wrongType_model):
-    divided_data_list = []
+    combined_data = {
+        "wrong_block": 0,
+        "wrong_punctuation": 0,
+        "wrong_word": 0,
+        "wrong_order": 0,
+        "wrong_letter": 0
+    }
+    
+    total_wrongType = 0
+    season = None
 
     for wrongTypes in wrongType_model:
-        total_wrongType = (
-            wrongTypes.wrong_punctuation
-            + wrongTypes.wrong_order
-            + wrongTypes.wrong_letter
-            + wrongTypes.wrong_block
-            + wrongTypes.wrong_word
+        # 누적합 계산
+        combined_data["wrong_block"] += float(wrongTypes.wrong_block)
+        combined_data["wrong_punctuation"] += float(wrongTypes.wrong_punctuation)
+        combined_data["wrong_word"] += float(wrongTypes.wrong_word)
+        combined_data["wrong_order"] += float(wrongTypes.wrong_order)
+        combined_data["wrong_letter"] += float(wrongTypes.wrong_letter)
+
+        # 총합 계산
+        total_wrongType += (
+            float(wrongTypes.wrong_block) +
+            float(wrongTypes.wrong_punctuation) +
+            float(wrongTypes.wrong_word) +
+            float(wrongTypes.wrong_order) +
+            float(wrongTypes.wrong_letter)
         )
-        
-        # Sort wrongTypes in descending order
-        wrong_data = {k: v for k, v in vars(wrongTypes).items() if k.startswith("wrong")}
-        sorted_wrong_data = dict(sorted(wrong_data.items(), key=lambda item: item[1], reverse=True)) 
-                    # dict(sorted(wrong_data.items(), key=lambda item: item[1], reverse=True)[:3])
 
-        if total_wrongType != 0:
-            divided_data = {k: f"{v / total_wrongType:.2f}" for k, v in sorted_wrong_data.items()}
-        else:
-            divided_data = {k: f"{0:.2f}" for k, v in sorted_wrong_data.items()}
+        # 시즌은 동일하다는 가정
+        if season is None:
+            season = wrongTypes.season
 
-        # Add season, level info.
-        divided_data["season"] = wrongTypes.season
-        divided_data["level"] = wrongTypes.level
-        divided_data_list.append(divided_data)
+    if total_wrongType != 0:
+        # 비율 계산
+        for key in combined_data:
+            combined_data[key] = f"{combined_data[key] / total_wrongType:.2f}"
+    else:
+        # 총합이 0일 경우
+        for key in combined_data:
+            combined_data[key] = "0.00"
 
-    return divided_data_list
+    combined_data["season"] = season
+
+    return combined_data
 
 async def find_weakest_type(user_id, db):
     released_model = await fetch_released_user(user_id, db)
@@ -101,6 +118,30 @@ async def find_weakest_type(user_id, db):
 
     return f"{largest_variable}"
 
+async def find_weak_types_in_season(user_id, season, db):
+    released_model = await fetch_released_user(user_id, db)
+
+    study_info = await fetch_studyInfo(user_id, db)
+    result = await db.execute(select(WrongType).filter(WrongType.info_id == study_info.id).filter(WrongType.season == season))
+    wrongType_model = result.scalars().all()
+    
+    total_wrong_punctuation, total_wrong_order, total_wrong_letter, total_wrong_block, total_wrong_word = 0, 0, 0, 0, 0
+
+    for wrongTypes in wrongType_model:
+        # 총 wrong 타입 합계 계산
+        total_wrong_punctuation += wrongTypes.wrong_punctuation
+        total_wrong_order += wrongTypes.wrong_order
+        total_wrong_letter += wrongTypes.wrong_letter
+        total_wrong_block += wrongTypes.wrong_block
+        total_wrong_word += wrongTypes.wrong_word
+    
+    values = {
+        'wrong_punctuation': total_wrong_punctuation, 'wrong_order': total_wrong_order, 
+        'wrong_letter': total_wrong_letter, 'wrong_block': total_wrong_block, 
+        'wrong_word': total_wrong_word
+    }
+    
+    return values
 
 async def process_user_access(user, user_id, db):
     validate_super_user_role(user)
@@ -166,7 +207,8 @@ async def get_latest_log(user_id: int):
     response = await fetch_logs_from_elasticsearch(user_id)
 
     if response["hits"]["total"]["value"] == 0:
-        raise HTTPException(status_code=404, detail="Log not found")
+        return 
+        # raise HTTPException(status_code=404, detail="Log not found") 
 
     # 가장 최근의 로그 추출
     latest_log = response["hits"]["hits"][0]["_source"]

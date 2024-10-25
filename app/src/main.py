@@ -1,8 +1,10 @@
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 import models
+# import easyocr
 from paddleocr import PaddleOCR
 from src import models, database
+# from src.cache import load_word_to_color
 from src.exceptions import add_exception_handler
 from auth import router as auth_router
 from problem import router as problem_router
@@ -35,7 +37,9 @@ ocr = PaddleOCR(det_model_dir= "/root/OCR_models/det",rec_model_dir = "/root/OCR
                 rec_char_dict_path = "/root/OCR_models/block_en_dict.txt",dorp_box=0.3)
 @app.on_event("startup")
 async def on_startup():
+    # await load_word_to_color()
     await init_db()
+    
 
 app.include_router(auth_router.router)
 app.include_router(problem_router.router)
