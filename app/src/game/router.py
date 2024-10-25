@@ -178,18 +178,19 @@ async def send_problems_all_participants(message, start_index, final_problems, r
                 "message": final_problems
             }, participant_ws)
         return
-    
+    room = rooms.get(room_id)
     problems = []
     for pnum, problem in enumerate(final_problems, start=start_index):
         problems.append({"problem_id": problem.id, "koreaProblem": problem.koreaProblem})
         roomProblem[room_id][pnum] = problem.englishProblem 
     # Send message to all participants
     for participant_id, participant_ws in manager.active_connections[room_id].items():
-        await manager.send_personal_message({
-            "message": message,
-            "problems": problems
-            # "problems": json.dumps(problems, ensure_ascii=False) # 한글 디코딩이 포스트맨에서 안되서
-        }, participant_ws)
+        if participant_id != room.host_id:  # Do not send to host.
+            await manager.send_personal_message({
+                "message": message,
+                "problems": problems
+                # "problems": json.dumps(problems, ensure_ascii=False) # 한글 디코딩이 포스트맨에서 안되서
+            }, participant_ws)
 
 # Websocket
 @router.websocket("/ws/{room_id}/{client_id}")
