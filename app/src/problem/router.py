@@ -4,7 +4,7 @@ from PIL import Image
 import io
 from sqlalchemy import collate, func, select, update
 from sqlalchemy.orm import joinedload
-from fastapi import APIRouter, BackgroundTasks
+from fastapi import APIRouter, BackgroundTasks, Request
 from starlette import status
 import sys, os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))))
@@ -332,19 +332,15 @@ async def ocr(file):
 # Determine whether the answer is correct or not 
 @router.post("/solve_OCR", status_code = status.HTTP_200_OK)
 async def user_solve_problem(user: user_dependency, db: db_dependency, background_tasks: BackgroundTasks,
-                             problem_id: int = Form(...),file: UploadFile = File(...)):
+                            request: Request, problem_id: int = Form(...),file: UploadFile = File(...)):
     get_user_exception(user)
     user_word_list = await ocr(file)
 
     all_words = set()
     all_words.update(user_word_list)
-    # 2. Get all word and block information with 1 query
     
-    result = await db.execute(
-        select(Words, Blocks).join(Blocks, Words.block_id == Blocks.id).filter(Words.words.in_(all_words))
-    )
-    # 3. Mapping the required data into a dictionary
-    word_to_color = {word_model.words: block_model.color for word_model, block_model in result.fetchall()}
+    word_to_color_cache = request.app.state.word_to_color_cache
+    word_to_color = {word: block for word, block in word_to_color_cache.items() if word in all_words}
     # word_to_color = get_word_color(word)
 
     # ex) 'You liked him' is recognized 
@@ -386,3 +382,5 @@ async def user_solve_problem(user: user_dependency, db: db_dependency, backgroun
         logger.info(f"problem={correct_answer},answer={user_string}")
 
     return {"user_input": user_word_list, "colors": p_colors}
+
+
