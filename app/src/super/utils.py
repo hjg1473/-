@@ -17,8 +17,8 @@ def calculate_accuracy_rates(correct_data: TableData, incorrect_data: TableData,
     normal_corrects, ai_corrects = [0, 0, 0], [0, 0, 0]
     normal_incorrects, ai_incorrects = [0, 0, 0], [0, 0, 0]
 
-    calculate_correct_answers(correct_data.table_id, ai_corrects, normal_corrects, correct_data.table_count, released_model, correct_data.problems)
-    calculate_correct_answers(incorrect_data.table_id, ai_incorrects, normal_incorrects, incorrect_data.table_count, released_model, incorrect_data.problems)
+    Update_correct_answers(correct_data.table_id, ai_corrects, normal_corrects, correct_data.table_count, released_model, correct_data.problems)
+    Update_correct_answers(incorrect_data.table_id, ai_incorrects, normal_incorrects, incorrect_data.table_count, released_model, incorrect_data.problems)
 
     # Calculate totals
     normal_all = [normal_corrects[i] + normal_incorrects[i] for i in range(3)]
@@ -30,8 +30,8 @@ def calculate_accuracy_rates(correct_data: TableData, incorrect_data: TableData,
 
     return normal_rate, ai_rate
 
-# Calculate "normal" & "ai" correct answers 
-def calculate_correct_answers(problem_table_id, ai_corrects ,normal_corrects, answer_count, released_model, Studyinfo):
+# Update "normal" & "ai" correct answers 
+def Update_correct_answers(problem_table_id, ai_corrects ,normal_corrects, answer_count, released_model, Studyinfo):
     # "Studyinfo" includes the number of correct/incorrect answers to problems.
     for problem in Studyinfo:
         if problem.season == released_model.released_season:
@@ -43,6 +43,21 @@ def calculate_correct_answers(problem_table_id, ai_corrects ,normal_corrects, an
                 ai_corrects[problem.level] += count
 
 def calculate_wrongType_percentage(wrongType_model):
+    combined_data, total_wrongType, season = calculate_sum_of_wrongType(wrongType_model)
+
+    if total_wrongType != 0:
+        # ratio
+        for key in combined_data:
+            combined_data[key] = f"{combined_data[key] / total_wrongType:.2f}"
+    else: # There is nothing wrong
+        for key in combined_data:
+            combined_data[key] = "0.00"
+
+    combined_data["season"] = season
+
+    return combined_data
+
+def calculate_sum_of_wrongType(wrongType_model):
     combined_data = {
         "wrong_block": 0,
         "wrong_punctuation": 0,
@@ -50,19 +65,18 @@ def calculate_wrongType_percentage(wrongType_model):
         "wrong_order": 0,
         "wrong_letter": 0
     }
-    
+
     total_wrongType = 0
     season = None
 
     for wrongTypes in wrongType_model:
-        # 누적합 계산
+        # Count wrong answer by type.
         combined_data["wrong_block"] += float(wrongTypes.wrong_block)
         combined_data["wrong_punctuation"] += float(wrongTypes.wrong_punctuation)
         combined_data["wrong_word"] += float(wrongTypes.wrong_word)
         combined_data["wrong_order"] += float(wrongTypes.wrong_order)
         combined_data["wrong_letter"] += float(wrongTypes.wrong_letter)
 
-        # 총합 계산
         total_wrongType += (
             float(wrongTypes.wrong_block) +
             float(wrongTypes.wrong_punctuation) +
@@ -71,22 +85,12 @@ def calculate_wrongType_percentage(wrongType_model):
             float(wrongTypes.wrong_letter)
         )
 
-        # 시즌은 동일하다는 가정
+        # Assume that the wrongType_model is same season.
         if season is None:
             season = wrongTypes.season
 
-    if total_wrongType != 0:
-        # 비율 계산
-        for key in combined_data:
-            combined_data[key] = f"{combined_data[key] / total_wrongType:.2f}"
-    else:
-        # 총합이 0일 경우
-        for key in combined_data:
-            combined_data[key] = "0.00"
+    return combined_data, total_wrongType, season
 
-    combined_data["season"] = season
-
-    return combined_data
 
 async def find_weakest_type(user_id, db):
     released_model = await fetch_released_user(user_id, db)
@@ -99,7 +103,6 @@ async def find_weakest_type(user_id, db):
     total_wrong_punctuation, total_wrong_order, total_wrong_letter, total_wrong_block, total_wrong_word = 0, 0, 0, 0, 0
 
     for wrongTypes in wrongType_model:
-        # 총 wrong 타입 합계 계산
         total_wrong_punctuation += wrongTypes.wrong_punctuation
         total_wrong_order += wrongTypes.wrong_order
         total_wrong_letter += wrongTypes.wrong_letter
@@ -119,7 +122,7 @@ async def find_weakest_type(user_id, db):
     return f"{largest_variable}"
 
 async def find_weak_types_in_season(user_id, season, db):
-    released_model = await fetch_released_user(user_id, db)
+    # released_model = await fetch_released_user(user_id, db)
 
     study_info = await fetch_studyInfo(user_id, db)
     result = await db.execute(select(WrongType).filter(WrongType.info_id == study_info.id).filter(WrongType.season == season))
@@ -128,7 +131,6 @@ async def find_weak_types_in_season(user_id, season, db):
     total_wrong_punctuation, total_wrong_order, total_wrong_letter, total_wrong_block, total_wrong_word = 0, 0, 0, 0, 0
 
     for wrongTypes in wrongType_model:
-        # 총 wrong 타입 합계 계산
         total_wrong_punctuation += wrongTypes.wrong_punctuation
         total_wrong_order += wrongTypes.wrong_order
         total_wrong_letter += wrongTypes.wrong_letter
@@ -142,6 +144,20 @@ async def find_weak_types_in_season(user_id, season, db):
     }
     
     return values
+
+
+def calculate_each_type(wrongType_model):
+    total_wrong_punctuation, total_wrong_order, total_wrong_letter, total_wrong_block, total_wrong_word = 0, 0, 0, 0, 0
+
+    for wrongTypes in wrongType_model:
+        total_wrong_punctuation += wrongTypes.wrong_punctuation
+        total_wrong_order += wrongTypes.wrong_order
+        total_wrong_letter += wrongTypes.wrong_letter
+        total_wrong_block += wrongTypes.wrong_block
+        total_wrong_word += wrongTypes.wrong_word
+
+    return total_wrong_punctuation, total_wrong_order, total_wrong_letter, total_wrong_block, total_wrong_word
+
 
 async def process_user_access(user, user_id, db):
     validate_super_user_role(user)
