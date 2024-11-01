@@ -7,7 +7,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class BarChartWidget extends StatefulWidget {
-  BarChartWidget({super.key});
+  BarChartWidget({super.key, required this.data});
+
+  final List<double> data;
 
   List<Color> get availableColors => <Color>[
         primaryBlue[500]!,
@@ -71,7 +73,7 @@ class BarChartWidgetState extends State<BarChartWidget> {
             children: <Widget>[
               Expanded(
                 child: BarChart(
-                  isPlaying ? randomData() : mainBarData(),
+                  isPlaying ? randomData() : mainBarData(widget.data),
                   swapAnimationDuration: animDuration,
                 ),
               ),
@@ -112,20 +114,24 @@ class BarChartWidgetState extends State<BarChartWidget> {
     );
   }
 
-  List<BarChartGroupData> showingGroups() => List.generate(3, (i) {
+  List<BarChartGroupData> showingGroups(List<double> data) =>
+      List.generate(3, (i) {
         switch (i) {
           case 0:
-            return makeGroupData(0, 95, isTouched: i == touchedIndex);
+            return makeGroupData(0, 100 - data[i],
+                isTouched: i == touchedIndex);
           case 1:
-            return makeGroupData(1, 48, isTouched: i == touchedIndex);
+            return makeGroupData(1, 100 - data[i],
+                isTouched: i == touchedIndex);
           case 2:
-            return makeGroupData(2, 60, isTouched: i == touchedIndex);
+            return makeGroupData(2, 100 - data[i],
+                isTouched: i == touchedIndex);
           default:
             return throw Error();
         }
       });
 
-  BarChartData mainBarData() {
+  BarChartData mainBarData(List<double> data) {
     return BarChartData(
       barTouchData: BarTouchData(
         touchTooltipData: BarTouchTooltipData(
@@ -206,7 +212,7 @@ class BarChartWidgetState extends State<BarChartWidget> {
       borderData: FlBorderData(
         show: false,
       ),
-      barGroups: showingGroups(),
+      barGroups: showingGroups(data),
       gridData: const FlGridData(
         show: true,
         horizontalInterval: 25,

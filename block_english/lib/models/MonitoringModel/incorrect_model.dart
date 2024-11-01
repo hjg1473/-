@@ -1,17 +1,12 @@
 import 'package:block_english/models/MonitoringModel/weak_part_model.dart';
 
 class IncorrectModel {
-  List<WeakPartModel> weakParts = [];
+  WeakPartModel weakParts;
   String weakest = '';
-  String? recentProblem;
-  String? recentAnswer;
   String recentDetail;
 
   IncorrectModel.fromJson(Map<String, dynamic> json)
-      : weakParts = List<WeakPartModel>.from(
-            json['weak_parts'].map((x) => WeakPartModel.fromJson(x))),
+      : weakParts = WeakPartModel.fromJson(json['weak_parts']),
         weakest = json['weakest'],
-        recentProblem = json['recent_problem'],
-        recentAnswer = json['recent_answer'],
         recentDetail = json['recent_detail'];
 }

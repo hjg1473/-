@@ -1,6 +1,7 @@
 import 'package:block_english/models/MonitoringModel/study_info_model.dart';
-import 'package:block_english/models/MonitoringModel/weak_part_model.dart';
+import 'package:block_english/models/model.dart';
 import 'package:block_english/utils/color.dart';
+import 'package:block_english/utils/text_style.dart';
 import 'package:block_english/widgets/ChartWidget/bar_chart_widget.dart';
 import 'package:block_english/services/super_service.dart';
 import 'package:block_english/utils/constants.dart';
@@ -403,7 +404,10 @@ class LearningAnalysis extends ConsumerStatefulWidget {
 class _LearningAnalysisState extends ConsumerState<LearningAnalysis> {
   bool isLoading = true;
   List<StudyInfoModel> studyInfo = [];
-  List<double> forCorrectRate = [];
+  List<double> correctRate = [0, 0, 0];
+  int bestLevel = -1;
+  int basicBest = -1;
+  int expertBest = -1;
 
   @override
   void didChangeDependencies() {
@@ -428,8 +432,24 @@ class _LearningAnalysisState extends ConsumerState<LearningAnalysis> {
         return;
       }
       StudyInfoModel last = studyInfo.last;
-      for (int i = 0; i < last.releasedLevel!; i++) {
-        forCorrectRate.add(last.correctRateNormal![i] + last.correctRateAI![i]);
+      for (int i = 0; i < last.releasedLevel! + 1; i++) {
+        correctRate[i] = last.correctRateNormal![i] + last.correctRateAI![i];
+        if (bestLevel == -1 || correctRate[i] > correctRate[bestLevel]) {
+          bestLevel = i;
+        }
+      }
+
+      for (int i = 0; i < 3; i++) {
+        double basicBestCorrectRate = 0;
+        double expertBestCorrectRate = 0;
+        if (last.correctRateNormal![i] > basicBestCorrectRate) {
+          basicBest = i;
+          basicBestCorrectRate = last.correctRateNormal![i];
+        }
+        if (last.correctRateAI![i] > expertBestCorrectRate) {
+          expertBest = i;
+          basicBestCorrectRate = last.correctRateAI![i];
+        }
       }
     });
     if (mounted) {
@@ -466,6 +486,74 @@ class _LearningAnalysisState extends ConsumerState<LearningAnalysis> {
                         decoration: BoxDecoration(
                           color: Colors.white,
                           borderRadius: BorderRadius.circular(8).r,
+                        ),
+                        child: Stack(
+                          children: [
+                            Positioned(
+                              top: 31.r,
+                              left: 31.r,
+                              child: PieChartWidget(
+                                width: 89.r,
+                                height: 88.r,
+                                data: correctRate,
+                              ),
+                            ),
+                            Positioned(
+                              top: 29.r,
+                              left: 96.r,
+                              child: SvgPicture.asset(
+                                'assets/images/angled_connecting_line_small.svg',
+                                height: 20.r,
+                              ),
+                            ),
+                            Positioned(
+                              top: 18.r,
+                              left: 125.r,
+                              child: Row(
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: [
+                                  Text(
+                                    '${correctRate[bestLevel].toInt()}%',
+                                    style: textStyle14,
+                                  ),
+                                  SizedBox(width: 8.r),
+                                  Container(
+                                    width: 79.r,
+                                    height: 26.r,
+                                    decoration: BoxDecoration(
+                                      color: primaryPurple[500],
+                                      borderRadius: BorderRadius.circular(20).r,
+                                    ),
+                                    child: Center(
+                                      child: Text(
+                                        levelList[bestLevel],
+                                        style: textStyle14.copyWith(
+                                            color: Colors.white),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            Positioned(
+                              bottom: 23.r,
+                              right: 20.r,
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    '이 문제를 잘했어요!',
+                                    style: textStyle16,
+                                  ),
+                                  SizedBox(height: 6.r),
+                                  Text(
+                                    '지금까지 ${levelList[bestLevel]}에서의\n정답률이 가장 높아요.',
+                                    style: textStyle11,
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     ),
@@ -505,7 +593,9 @@ class _LearningAnalysisState extends ConsumerState<LearningAnalysis> {
                               const Spacer(flex: 2),
                               Text(
                                 // Basic best level
-                                levelList[0],
+                                basicBest == -1
+                                    ? '데이터 없음'
+                                    : levelList[basicBest],
                                 style: TextStyle(
                                   fontSize: 14.sp,
                                   fontWeight: FontWeight.bold,
@@ -533,7 +623,9 @@ class _LearningAnalysisState extends ConsumerState<LearningAnalysis> {
                               const Spacer(flex: 2),
                               Text(
                                 // Basic best level
-                                levelList[1],
+                                expertBest == -1
+                                    ? '데이터 없음'
+                                    : levelList[expertBest],
                                 style: TextStyle(
                                   fontSize: 14.sp,
                                   fontWeight: FontWeight.bold,
@@ -565,12 +657,8 @@ class _LearningAnalysisState extends ConsumerState<LearningAnalysis> {
                             Align(
                               alignment: Alignment.topCenter,
                               child: Text(
-                                '단원별 정답률',
-                                style: TextStyle(
-                                  fontSize: 14.sp,
-                                  color: Colors.black,
-                                  fontWeight: FontWeight.bold,
-                                ),
+                                '단원별 오답률',
+                                style: textStyle14,
                               ),
                             ),
                             Align(
@@ -580,7 +668,7 @@ class _LearningAnalysisState extends ConsumerState<LearningAnalysis> {
                                 child: SizedBox(
                                   width: 234.r,
                                   height: 112.r,
-                                  child: BarChartWidget(),
+                                  child: BarChartWidget(data: correctRate),
                                 ),
                               ),
                             ),
@@ -621,11 +709,9 @@ class Incorrect extends ConsumerStatefulWidget {
 
 class _IncorrectState extends ConsumerState<Incorrect> {
   bool isLoading = true;
-  List<WeakPartModel> weakParts = [];
-  String weakest = '';
-  String recentProblem = '';
-  String recentAnswer = '';
-  String recentDetail = '';
+  IncorrectModel? incorrectData;
+  List<MapEntry<String, double>> sortedData = [];
+  List<double> chartData = [0, 0, 0, 0, 0];
 
   @override
   void didChangeDependencies() {
@@ -646,11 +732,14 @@ class _IncorrectState extends ConsumerState<Incorrect> {
       );
     }, (data) {
       //TODO: check mapping weakParts
-      weakParts = data.weakParts;
-      weakest = data.weakest;
-      recentProblem = data.recentProblem ?? 'I love block english.';
-      recentAnswer = data.recentAnswer ?? 'I block english love.';
-      recentDetail = data.recentDetail;
+      incorrectData = data;
+      if (incorrectData == null) {
+        return;
+      }
+      sortedData = incorrectData!.weakParts.getTopNRates(5);
+      for (int i = 0; i < 5; i++) {
+        chartData[i] = sortedData[i].value;
+      }
     });
     if (mounted) {
       setState(() {
@@ -707,10 +796,10 @@ class _IncorrectState extends ConsumerState<Incorrect> {
                       left: 28.r,
                       child: SizedBox(
                         width: 171.r,
-                        child: const PieChartWidget(
+                        child: PieChartWidget(
                           width: 171,
                           height: 171,
-                          data: [20, 20, 20, 20, 20],
+                          data: chartData,
                         ),
                       ),
                     ),
@@ -723,12 +812,15 @@ class _IncorrectState extends ConsumerState<Incorrect> {
                           Row(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Container(
-                                width: 20.r,
-                                height: 20.r,
-                                decoration: BoxDecoration(
-                                  color: primaryPink[500],
-                                  borderRadius: BorderRadius.circular(20).r,
+                              Padding(
+                                padding: const EdgeInsets.only(top: 1).r,
+                                child: Container(
+                                  width: 20.r,
+                                  height: 20.r,
+                                  decoration: BoxDecoration(
+                                    color: primaryPink[500],
+                                    borderRadius: BorderRadius.circular(20).r,
+                                  ),
                                 ),
                               ),
                               SizedBox(width: 13.r),
@@ -736,17 +828,15 @@ class _IncorrectState extends ConsumerState<Incorrect> {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                      '${wrongToString('wrong_order')} 오답 (20%)',
-                                      style: TextStyle(
-                                        fontSize: 16.r,
-                                        fontWeight: FontWeight.w800,
-                                      )),
-                                  Text('단어 순서를 헷갈렸어요.',
-                                      style: TextStyle(
-                                        fontSize: 11.r,
-                                        fontWeight: FontWeight.bold,
-                                        color: const Color(0xFF818181),
-                                      )),
+                                      '${wrongToString(sortedData[0].key)} 오답 (${(sortedData[0].value * 100).toInt()}%)',
+                                      style: textStyle16.copyWith(
+                                          fontWeight: FontWeight.w800)),
+                                  Text(
+                                    wrongDetailToString(sortedData[0].key),
+                                    style: textStyle11.copyWith(
+                                      color: const Color(0xFF818181),
+                                    ),
+                                  ),
                                 ],
                               ),
                             ],
@@ -755,12 +845,15 @@ class _IncorrectState extends ConsumerState<Incorrect> {
                           Row(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Container(
-                                width: 20.r,
-                                height: 20.r,
-                                decoration: BoxDecoration(
-                                  color: primaryYellow[500],
-                                  borderRadius: BorderRadius.circular(20).r,
+                              Padding(
+                                padding: const EdgeInsets.only(top: 1).r,
+                                child: Container(
+                                  width: 20.r,
+                                  height: 20.r,
+                                  decoration: BoxDecoration(
+                                    color: primaryYellow[500],
+                                    borderRadius: BorderRadius.circular(20).r,
+                                  ),
                                 ),
                               ),
                               SizedBox(width: 13.r),
@@ -768,17 +861,15 @@ class _IncorrectState extends ConsumerState<Incorrect> {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                      '${wrongToString('wrong_punctuation')} 오답 (20%)',
-                                      style: TextStyle(
-                                        fontSize: 16.r,
-                                        fontWeight: FontWeight.w800,
-                                      )),
-                                  Text('문장 부호를 잘못 넣었어요.',
-                                      style: TextStyle(
-                                        fontSize: 11.r,
-                                        fontWeight: FontWeight.bold,
-                                        color: const Color(0xFF818181),
-                                      )),
+                                      '${wrongToString(sortedData[1].key)} 오답 (${(sortedData[1].value * 100).toInt()}%)',
+                                      style: textStyle16.copyWith(
+                                          fontWeight: FontWeight.w800)),
+                                  Text(
+                                    wrongDetailToString(sortedData[1].key),
+                                    style: textStyle11.copyWith(
+                                      color: const Color(0xFF818181),
+                                    ),
+                                  ),
                                 ],
                               ),
                             ],
@@ -787,12 +878,15 @@ class _IncorrectState extends ConsumerState<Incorrect> {
                           Row(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Container(
-                                width: 20.r,
-                                height: 20.r,
-                                decoration: BoxDecoration(
-                                  color: primaryGreen[500],
-                                  borderRadius: BorderRadius.circular(20).r,
+                              Padding(
+                                padding: const EdgeInsets.only(top: 1).r,
+                                child: Container(
+                                  width: 20.r,
+                                  height: 20.r,
+                                  decoration: BoxDecoration(
+                                    color: primaryGreen[500],
+                                    borderRadius: BorderRadius.circular(20).r,
+                                  ),
                                 ),
                               ),
                               SizedBox(width: 13.r),
@@ -800,17 +894,15 @@ class _IncorrectState extends ConsumerState<Incorrect> {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                      '${wrongToString('wrong_block')} 오답 (20%)',
-                                      style: TextStyle(
-                                        fontSize: 16.r,
-                                        fontWeight: FontWeight.w800,
-                                      )),
-                                  Text('단어를 알맞게 변형하지 못했어요.',
-                                      style: TextStyle(
-                                        fontSize: 11.r,
-                                        fontWeight: FontWeight.bold,
-                                        color: const Color(0xFF818181),
-                                      )),
+                                      '${wrongToString(sortedData[2].key)} 오답 (${(sortedData[2].value * 100).toInt()}%)',
+                                      style: textStyle16.copyWith(
+                                          fontWeight: FontWeight.w800)),
+                                  Text(
+                                    wrongDetailToString(sortedData[2].key),
+                                    style: textStyle11.copyWith(
+                                      color: const Color(0xFF818181),
+                                    ),
+                                  ),
                                 ],
                               ),
                             ],
@@ -819,12 +911,15 @@ class _IncorrectState extends ConsumerState<Incorrect> {
                           Row(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Container(
-                                width: 20.r,
-                                height: 20.r,
-                                decoration: BoxDecoration(
-                                  color: primaryBlue[500],
-                                  borderRadius: BorderRadius.circular(20).r,
+                              Padding(
+                                padding: const EdgeInsets.only(top: 1).r,
+                                child: Container(
+                                  width: 20.r,
+                                  height: 20.r,
+                                  decoration: BoxDecoration(
+                                    color: primaryBlue[500],
+                                    borderRadius: BorderRadius.circular(20).r,
+                                  ),
                                 ),
                               ),
                               SizedBox(width: 13.r),
@@ -832,17 +927,15 @@ class _IncorrectState extends ConsumerState<Incorrect> {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                      '${wrongToString('wrong_word')} 오답 (20%)',
-                                      style: TextStyle(
-                                        fontSize: 16.r,
-                                        fontWeight: FontWeight.w800,
-                                      )),
-                                  Text('올바른 단어를 사용하지 않았어요.',
-                                      style: TextStyle(
-                                        fontSize: 11.r,
-                                        fontWeight: FontWeight.bold,
-                                        color: const Color(0xFF818181),
-                                      )),
+                                      '${wrongToString(sortedData[3].key)} 오답 (${(sortedData[3].value * 100).toInt()}%)',
+                                      style: textStyle16.copyWith(
+                                          fontWeight: FontWeight.w800)),
+                                  Text(
+                                    wrongDetailToString(sortedData[3].key),
+                                    style: textStyle11.copyWith(
+                                      color: const Color(0xFF818181),
+                                    ),
+                                  ),
                                 ],
                               ),
                             ],
@@ -851,29 +944,31 @@ class _IncorrectState extends ConsumerState<Incorrect> {
                           Row(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Container(
-                                width: 20.r,
-                                height: 20.r,
-                                decoration: BoxDecoration(
-                                  color: primaryPurple[500],
-                                  borderRadius: BorderRadius.circular(20).r,
+                              Padding(
+                                padding: const EdgeInsets.only(top: 1).r,
+                                child: Container(
+                                  width: 20.r,
+                                  height: 20.r,
+                                  decoration: BoxDecoration(
+                                    color: primaryPurple[500],
+                                    borderRadius: BorderRadius.circular(20).r,
+                                  ),
                                 ),
                               ),
                               SizedBox(width: 13.r),
                               Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text('기타 (20%)',
-                                      style: TextStyle(
-                                        fontSize: 16.r,
-                                        fontWeight: FontWeight.w800,
-                                      )),
-                                  // Text('올바른 단어를 사용하지 않았어요.',
-                                  //     style: TextStyle(
-                                  //       fontSize: 11.r,
-                                  //       fontWeight: FontWeight.bold,
-                                  //       color: const Color(0xFF818181),
-                                  //     )),
+                                  Text(
+                                      '${wrongToString(sortedData[4].key)} 오답 (${(sortedData[4].value * 100).toInt()}%)',
+                                      style: textStyle16.copyWith(
+                                          fontWeight: FontWeight.w800)),
+                                  Text(
+                                    wrongDetailToString(sortedData[4].key),
+                                    style: textStyle11.copyWith(
+                                      color: const Color(0xFF818181),
+                                    ),
+                                  ),
                                 ],
                               ),
                             ],

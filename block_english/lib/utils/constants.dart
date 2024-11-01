@@ -94,6 +94,23 @@ String wrongToString(String wrong) {
   }
 }
 
+String wrongDetailToString(String wrong) {
+  switch (wrong) {
+    case 'wrong_word':
+      return '올바른 단어를 사용하지 않았어요.';
+    case 'wrong_block':
+      return '단어를 알맞게 변경하지 못 했어요.';
+    case 'wrong_punctuation':
+      return '문장 부호를 잘못 넣었어요.';
+    case 'wrong_order':
+      return '단어 순서를 헷갈렸어요.';
+    case 'wrong_letter':
+      return '대소문자를 구분하지 않았어요.';
+    default:
+      return ''; // Add a default return statement to handle unexpected input
+  }
+}
+
 enum BlockColor { skyblue, pink, green, yellow, purple, none }
 
 BlockColor stringToBlockColor(String str) {

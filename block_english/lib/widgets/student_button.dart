@@ -1,5 +1,8 @@
 import 'package:block_english/screens/SuperScreens/super_monitor_student_screen.dart';
+import 'package:block_english/utils/text_style.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:lottie/lottie.dart';
 
 class StudentButton extends StatelessWidget {
   const StudentButton({
@@ -17,6 +20,9 @@ class StudentButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    double height = 72.r;
+    double padding = 16.r;
+
     return FilledButton(
       onPressed: () {
         Navigator.push(
@@ -32,32 +38,22 @@ class StudentButton extends StatelessWidget {
         );
       },
       style: FilledButton.styleFrom(
-        backgroundColor: const Color(0xFFEAEAEA),
-        minimumSize: const Size(330, 80),
-        padding: const EdgeInsets.all(10),
+        backgroundColor: Colors.white,
+        minimumSize: Size(334.r, height),
+        padding: EdgeInsets.all(padding),
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(10),
+          borderRadius: BorderRadius.circular(10).r,
         ),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Container(
-            height: 60,
-            width: 60,
-            decoration: BoxDecoration(
-              color: const Color(0xFFD9D9D9),
-              borderRadius: BorderRadius.circular(50),
-            ),
-            child: Center(
-              child: Text(
-                name[0],
-                style: TextStyle(
-                  color: Colors.grey[300],
-                  fontSize: 17,
-                ),
-              ),
+          ClipOval(
+            child: Lottie.asset(
+              'assets/lottie/motion_19.json',
+              width: 40.r,
+              height: 40.r,
             ),
           ),
           const SizedBox(
@@ -69,10 +65,7 @@ class StudentButton extends StatelessWidget {
             children: [
               Text(
                 name,
-                style: const TextStyle(
-                  fontSize: 15,
-                  color: Colors.black,
-                ),
+                style: textStyle16.copyWith(color: Colors.black),
               ),
             ],
           ),

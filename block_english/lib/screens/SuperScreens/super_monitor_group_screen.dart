@@ -242,7 +242,7 @@ class _GroupState extends ConsumerState<Group> {
     }, (data) {
       groupDetail = data;
       StudyInfoModel last = groupDetail!.studyInfo.last;
-      for (int i = 0; i < last.releasedLevel!; i++) {
+      for (int i = 0; i < last.releasedLevel! + 1; i++) {
         correctRate[i] = (last.correctRateNormal![i] + last.correctRateAI![i]);
         if (bestLevel == -1 || correctRate[i] > correctRate[bestLevel]) {
           bestLevel = i;
@@ -448,7 +448,7 @@ class _GroupState extends ConsumerState<Group> {
                   ),
                 ),
               ),
-              // error rate
+              // correct rate
               Positioned(
                 top: 0,
                 left: 333.r,
@@ -469,7 +469,9 @@ class _GroupState extends ConsumerState<Group> {
                       PieChartWidget(
                         width: 111.86.r,
                         height: 111.86.r,
-                        data: const [70, 30, 10], // TODO: 실제 데이터로 변경
+                        data: correctRate[bestLevel] == 0
+                            ? [100, 0, 0]
+                            : correctRate,
                       ),
                       SizedBox(height: 17.r),
                       Text(
@@ -505,7 +507,9 @@ class _GroupState extends ConsumerState<Group> {
                   ),
                   child: Center(
                     child: Text(
-                      levelList[bestLevel],
+                      correctRate[bestLevel] == 0
+                          ? '기록 없음'
+                          : levelList[bestLevel],
                       style: textStyle14.copyWith(color: Colors.white),
                     ),
                   ),
@@ -823,7 +827,7 @@ class _IndividualState extends ConsumerState<Individual> {
                           ),
                           child: Stack(
                             children: [
-                              // error rate
+                              // correct rate
                               Positioned(
                                 top: 43.r,
                                 left: 29.5.r,
@@ -883,8 +887,8 @@ class _IndividualState extends ConsumerState<Individual> {
                                     ),
                                     SizedBox(height: 8.r),
                                     Text(
-                                      '지금까지 어순과 격에서의\n정답률이 가장 높아요.',
-                                      style: textStyle14.copyWith(),
+                                      '지금까지 ${levelList[bestLevel]}에서의\n정답률이 가장 높아요.',
+                                      style: textStyle14,
                                     ),
                                   ],
                                 ),
