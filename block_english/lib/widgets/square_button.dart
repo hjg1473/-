@@ -39,7 +39,7 @@ class SquareButton extends StatelessWidget {
             Text(
               text,
               style: TextStyle(
-                fontSize: 16.sp,
+                fontSize: 18.sp,
                 color: Colors.white,
                 fontWeight: FontWeight.bold,
               ),
