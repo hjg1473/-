@@ -2,16 +2,16 @@ import asyncio
 import numpy as np
 from PIL import Image
 import io
-from sqlalchemy import collate, func, select, update
+from sqlalchemy import select
 from sqlalchemy.orm import joinedload
 from fastapi import APIRouter, BackgroundTasks, Request
 from starlette import status
 import sys, os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))))
-from app.src.models import StudyInfo, Problems, Words, Blocks, Released, WrongType
+from app.src.models import StudyInfo, Problems, Words, Blocks, Released
 from fastapi import UploadFile, File, Form
 from problem.dependencies import user_dependency, db_dependency
-from problem.schemas import TempUserProblem, TempUserProblems, SolvedData
+from problem.schemas import TempUserProblems, SolvedData
 from problem.exceptions import *
 from problem.service import *
 from problem.utils import check_answer, search_log_timestamp
@@ -32,7 +32,6 @@ router = APIRouter(
     responses={404: {"description": "Not found"}}
 )
 
-es = AsyncElasticsearch(['http://3.34.58.76:9200'])
 
 ### CALCULATE TOTAL STUDY TIME
 
@@ -176,9 +175,9 @@ async def read_problem_wrongs(mode_str:str, season:int, level:int, user:user_dep
     isGroup = 0
     if mode_str == 'group':
         isGroup = 1
-        
-    result = await db.execute(select(StudyInfo).options(joinedload(StudyInfo.incorrect_problems))
-                              .filter(StudyInfo.owner_id == user.get("id")))
+
+    # fetch study info
+    result = await db.execute(select(StudyInfo).options(joinedload(StudyInfo.incorrect_problems)).filter(StudyInfo.owner_id == user.get("id")))
     study_info = result.scalars().first()
 
     result = await db.execute(select(incorrect_problem_table.c.problem_id).\
@@ -202,6 +201,9 @@ async def read_problem_wrongs(mode_str:str, season:int, level:int, user:user_dep
     await db.commit()
     return {"detail":"success"}
 
+
+# fetch practice problems as season, level, step
+# for each problem, its id, question(korean, str), answer(english, list of words) with each word's color.
 @router.get("/practice/set/", status_code=status.HTTP_200_OK)
 async def read_practice_problem(season: int, level: int, step: int, user: user_dependency, db: db_dependency):
     get_user_exception(user)

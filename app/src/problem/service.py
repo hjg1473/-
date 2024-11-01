@@ -2,7 +2,7 @@ import sys, os
 from sqlalchemy.dialects.mysql import insert
 from sqlalchemy import select, update
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))))
-from app.src.models import Problems, correct_problem_table, incorrect_problem_table, Words, WrongType, Blocks, Released
+from app.src.models import Problems, correct_problem_table, incorrect_problem_table, Words, WrongType, Blocks, Released, StudyInfo
 from problem.schemas import Problem, TempUserProblem, SolvedData
 from problem.dependencies import db_dependency
 from problem.utils import *
@@ -106,12 +106,18 @@ async def create_wrong_type(season:int, level:int, studyinfo_id:int, db):
 async def calculate_wrongs(problem_parse:list, response_parse:list, db=db_dependency):
     problem = combine_sentence(problem_parse)
 
-    # 0. response의 단어들이 블록에 있는 단어인지 검사    
+    # initate wrong types
+    letter_wrong = 0
+    punc_wrong = 0
+    block_wrong = 0
+    word_wrong = 0
+    order_wrong = 0
+
+    # 0. response의 단어들이 블록에 있는 단어인지 검사
     popList = []
     for item in response_parse:
         result = await db.execute(select(Words).filter(Words.words == item))
         word_model = result.scalars().first()
-
         if word_model is None:
             popList.append(item)
         
@@ -121,9 +127,10 @@ async def calculate_wrongs(problem_parse:list, response_parse:list, db=db_depend
     if not response_parse:
         return 0,0,0,0,0
     response = combine_sentence(response_parse)
-    # v1: 대소문자 filter 거친 문장 --> 대소문자 맞는 걸로 바뀜
-    # v2: 구두점 filter 거친 문장   --> 구두점 사라짐
-    # v3: 블록 filter 거친 문장     --> 틀린 블록은 삭제됨
+    
+    # response_v1: 대소문자 filter 거친 문장 --> 대소문자 맞는 걸로 바뀜
+    # response_v2: 구두점 filter 거친 문장   --> 구두점 사라짐
+    # response_v3: 블록 filter 거친 문장     --> 틀린 블록은 삭제됨
 
     # 1. 대소문자 판단
     letter_wrong, response_v1 = lettercase_filter(problem, response)
@@ -132,30 +139,32 @@ async def calculate_wrongs(problem_parse:list, response_parse:list, db=db_depend
     punc_wrong, problem_v2, response_v2 = punctuation_filter(problem, response_v1)
 
     # 3. 블록이 맞는지
-    block_wrong = 0
     response_v2_split = response_v2.split(' ')
     problem_v2_split = problem_v2.split(' ')
     r_len_v2 = len(response_v2_split)
     p_len_v2 = len(problem_v2_split)
 
-    # problem 블록 id 리스트
-    problem_block = []
-    for item in problem_v2_split:
-        result = await db.execute(select(Words).filter(Words.words == item))
-        word_model = result.scalars().first()
-        problem_block.append(word_model.block_id)
+    # 정답과 응답에 있는 모든 단어
+    all_words = set()
+    all_words.update(response_v2_split)
+    all_words.update(problem_v2_split)
 
-    # response 블록 id 리스트
-    response_block = []
-    for item in response_v2_split:
-        result = await db.execute(select(Words).filter(Words.words == item))
-        word_model = result.scalars().first()
-        response_block.append(word_model.block_id)
+    # 한 번의 쿼리로 모든 word와 block 정보 가져오기
+    result = await db.execute(
+        select(Words, Blocks).join(Blocks, Words.block_id == Blocks.id).filter(Words.words.in_(all_words))
+    )
 
+    # 필요한 데이터를 딕셔너리로 매핑
+    word_to_block_id = {word_model.words: block_model.id for word_model, block_model in result.fetchall()}
 
+    problem_block = [word_to_block_id[word] for word in problem_v2_split]
+    response_block = [word_to_block_id[word] for word in response_v2_split]
+
+    # add if the length of problem and response is different
     block_wrong += max(r_len_v2 - p_len_v2, p_len_v2-r_len_v2)
     response_v3_split = response_v2_split.copy()
 
+    # check if each block is 'in' the problem(correct answer), regardless of the order.
     for i in range(r_len_v2):
         id = response_block[i]
         if id in problem_block:
@@ -164,9 +173,6 @@ async def calculate_wrongs(problem_parse:list, response_parse:list, db=db_depend
             block_wrong += 1
             response_v3_split.remove(response_v2_split[i])
 
-    # return {"problem_v2":problem_v2_split, "response_v1":response_v1, "r_v2":response_v2, "r_v3":response_v3_split, "letter":letter_wrong, "punc":punc_wrong, "block":block_wrong}
-    word_wrong = 0
-    order_wrong = 0
     # 4. 블록이 맞은 것 중, 단어가 틀렸는지 and 순서가 틀렸는지
     for item in response_v3_split:
         if item in problem_v2_split:
