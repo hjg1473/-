@@ -88,8 +88,8 @@ class SuperMainScreen extends ConsumerWidget {
                 ),
                 IconButton(
                   padding: EdgeInsets.zero,
-                  onPressed: () =>
-                      Navigator.of(context).pushNamed('/setting_screen'),
+                  onPressed: () => Navigator.of(context)
+                      .pushNamed('/super_game_init_screen'),
                   icon: SvgPicture.asset(
                     'assets/cards/super_main_2.svg',
                     width: 326.r,
