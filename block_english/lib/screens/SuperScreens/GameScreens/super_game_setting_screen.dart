@@ -1,10 +1,9 @@
 import 'dart:convert';
-import 'dart:io';
-import 'dart:math';
-
 import 'package:animated_custom_dropdown/custom_dropdown.dart';
+import 'package:block_english/screens/SuperScreens/GameScreens/super_game_main_screen.dart';
 import 'package:block_english/services/game_service.dart';
 import 'package:block_english/utils/constants.dart';
+import 'package:block_english/utils/game.dart';
 import 'package:block_english/utils/status.dart';
 import 'package:block_english/widgets/square_button.dart';
 import 'package:flutter/material.dart';
@@ -23,9 +22,22 @@ class SuperGameSettingScreen extends ConsumerStatefulWidget {
 
 class _SuperGameSettingScreenState
     extends ConsumerState<SuperGameSettingScreen> {
-  List<String> players = [];
+  Map<String, String> players = {};
   String pinNumber = '';
   late WebSocketChannel _channel;
+
+  final _seasonList = [
+    '시즌1',
+  ];
+  final _difficultyList = [
+    'Level 1',
+    'Level 2',
+    'Level 3',
+  ];
+
+  int season = 1;
+  int level = 1;
+  int difficulty = 1;
 
   getPinNumber() async {
     final response = await ref.watch(gameServiceProvider).postGameCreate();
@@ -45,9 +57,30 @@ class _SuperGameSettingScreenState
               '$BASEWSURL/$pinNumber/${ref.watch(statusProvider).username}'),
         );
         _channel.stream.listen((message) {
-          final newUser = jsonDecode(message);
-          players.add(newUser['participant_id']);
-          setState(() {});
+          final decodedMessage = jsonDecode(message) as Map<String, dynamic>;
+
+          for (final val in decodedMessage.entries) {
+            debugPrint('key: ${val.key}, value: ${val.value}');
+          }
+          if (decodedMessage.containsKey('participant_name')) {
+            players[decodedMessage['participant_id']] =
+                (decodedMessage['participant_name'] ?? 'UNKNOWN');
+            setState(() {});
+          } else if (decodedMessage.containsKey('problems')) {
+            for (final problem in decodedMessage['problems']) {
+              ref.watch(gameProvider).problems[problem['problem_id']] =
+                  problem['koreaProblem'];
+            }
+            Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (context) => SuperGameMainScreen(
+                  players: players,
+                  pinNumber: pinNumber,
+                  channel: _channel,
+                ),
+              ),
+            );
+          }
         }, onError: (error) {
           debugPrint('[WS:ERROR] $error');
         }, onDone: () {
@@ -65,6 +98,13 @@ class _SuperGameSettingScreenState
     WidgetsBinding.instance.addPostFrameCallback((_) {
       getPinNumber();
     });
+  }
+
+  @override
+  void dispose() {
+    // TODO: implement dispose
+    _channel.sink.close();
+    super.dispose();
   }
 
   @override
@@ -219,16 +259,17 @@ class _SuperGameSettingScreenState
                             height: 50.r,
                             child: CustomDropdown(
                               //TODO: need season list
-                              items: const [
-                                '시즌1',
-                              ],
+                              items: _seasonList,
+                              initialItem: _seasonList[0],
                               decoration: CustomDropdownDecoration(
                                 closedBorderRadius:
                                     BorderRadius.circular(8.0).r,
                                 closedFillColor: const Color(0xFFC6FEFF),
                                 expandedFillColor: const Color(0xFFC6FEFF),
                               ),
-                              onChanged: (val) {},
+                              onChanged: (val) {
+                                season = _seasonList.indexOf(val!) + 1;
+                              },
                             ),
                           ),
                           SizedBox(
@@ -237,13 +278,16 @@ class _SuperGameSettingScreenState
                             child: CustomDropdown(
                               //TODO: need grammar list for selected season
                               items: levelList,
+                              initialItem: levelList[0],
                               decoration: CustomDropdownDecoration(
                                 closedBorderRadius:
                                     BorderRadius.circular(8.0).r,
                                 closedFillColor: const Color(0xFFC6FEFF),
                                 expandedFillColor: const Color(0xFFC6FEFF),
                               ),
-                              onChanged: (val) {},
+                              onChanged: (val) {
+                                level = levelList.indexOf(val!) + 1;
+                              },
                             ),
                           ),
                           SizedBox(
@@ -251,18 +295,17 @@ class _SuperGameSettingScreenState
                             height: 50.r,
                             child: CustomDropdown(
                               //TODO: need season list
-                              items: const [
-                                'Level 1',
-                                'Level 2',
-                                'Level 3',
-                              ],
+                              items: _difficultyList,
+                              initialItem: _difficultyList[0],
                               decoration: CustomDropdownDecoration(
                                 closedBorderRadius:
                                     BorderRadius.circular(8.0).r,
                                 closedFillColor: const Color(0xFFC6FEFF),
                                 expandedFillColor: const Color(0xFFC6FEFF),
                               ),
-                              onChanged: (val) {},
+                              onChanged: (val) {
+                                difficulty = _difficultyList.indexOf(val!) + 1;
+                              },
                             ),
                           )
                         ],
@@ -302,9 +345,10 @@ class _SuperGameSettingScreenState
                                 Text(
                                   '참가 ${players.length}명',
                                   style: TextStyle(
-                                      fontWeight: FontWeight.w700,
-                                      fontSize: 11.sp,
-                                      color: const Color(0xFFAAAAAA)),
+                                    fontWeight: FontWeight.w700,
+                                    fontSize: 11.sp,
+                                    color: const Color(0xFFAAAAAA),
+                                  ),
                                 )
                               ],
                             ),
@@ -332,7 +376,7 @@ class _SuperGameSettingScreenState
                                         CrossAxisAlignment.center,
                                     children: [
                                       Text(
-                                        players[index],
+                                        players.values.elementAt(index),
                                         style: const TextStyle(
                                           fontSize: 18,
                                           fontWeight: FontWeight.w800,
@@ -369,7 +413,19 @@ class _SuperGameSettingScreenState
                 ),
               ),
             ),
-            SquareButton(text: '게임 시작하기', onPressed: () {}),
+            SquareButton(
+              text: '게임 시작하기',
+              onPressed: () {
+                final jsonString = jsonEncode({
+                  "message": "GameStart",
+                  "level": level,
+                  "season": season,
+                  "difficulty": difficulty,
+                });
+                debugPrint(jsonString);
+                _channel.sink.add(jsonString);
+              },
+            ),
           ],
         ),
       ),
