@@ -72,7 +72,7 @@ async def user_solve_problem(pin_number: PinNumber, user: user_dependency, db: d
         await find_group_exception(group_id, db)
         await update_student_group(group_id, user.get("id"), db)
 
-        group = await get_group_to_groupid(group_id, db)
+        group = await fetch_group_id(group_id, db)
         result = await db.execute(select(ReleasedGroup).filter(ReleasedGroup.owner_id == group_id))
         released_group = [
                 {"season": rg.released_season, "level": rg.released_level, "step": rg.released_step, "type": rg.released_type}
@@ -129,14 +129,14 @@ async def read_user_info(user: user_dependency, db: db_dependency):
 
 # utils
 def calculate_rates(c_table_id, ic_table_id, c_table_count, ic_table_count, rm, correct_problems, incorrect_problems):
-    from app.src.super.utils import calculate_correct_answers
+    from app.src.super.utils import calculate_corrects
     # Initialize counters
     normal_corrects, ai_corrects = [0, 0, 0], [0, 0, 0]
     normal_incorrects, ai_incorrects = [0, 0, 0], [0, 0, 0]
 
     # Calculate corrects and incorrects
-    calculate_correct_answers(c_table_id, ai_corrects, normal_corrects, c_table_count, rm, correct_problems)
-    calculate_correct_answers(ic_table_id, ai_incorrects, normal_incorrects, ic_table_count, rm, incorrect_problems)
+    calculate_corrects(c_table_id, ai_corrects, normal_corrects, c_table_count, rm, correct_problems)
+    calculate_corrects(ic_table_id, ai_incorrects, normal_incorrects, ic_table_count, rm, incorrect_problems)
 
     # Calculate totals
     normal_all = [normal_corrects[i] + normal_incorrects[i] for i in range(3)]
@@ -161,8 +161,9 @@ async def read_user_studyinfo(season: int, user: user_dependency, db: db_depende
     if study_info is None:
         raise not_found_exception()
     
-    from app.src.super.service import fetch_count_data
-    ic_table_count, ic_table_id, c_table_count, c_table_id = await fetch_count_data(study_info.id , db)
+    from app.src.super.service import fetch_data
+    ic_table_count, ic_table_id, c_table_count, c_table_id = await fetch_data(study_info.id , db)
+
     information = []
     for rm in released_model:
         normal_rate, ai_rate = calculate_rates(

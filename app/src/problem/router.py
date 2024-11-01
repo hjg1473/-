@@ -2,16 +2,16 @@ import asyncio
 import numpy as np
 from PIL import Image
 import io
-from sqlalchemy import select
+from sqlalchemy import collate, func, select, update
 from sqlalchemy.orm import joinedload
 from fastapi import APIRouter, BackgroundTasks, Request
 from starlette import status
 import sys, os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))))
-from app.src.models import StudyInfo, Problems, Words, Blocks, Released
+from app.src.models import StudyInfo, Problems, Words, Blocks, Released, WrongType
 from fastapi import UploadFile, File, Form
 from problem.dependencies import user_dependency, db_dependency
-from problem.schemas import TempUserProblems, SolvedData
+from problem.schemas import TempUserProblem, TempUserProblems, SolvedData
 from problem.exceptions import *
 from problem.service import *
 from problem.utils import check_answer, search_log_timestamp
@@ -32,6 +32,7 @@ router = APIRouter(
     responses={404: {"description": "Not found"}}
 )
 
+es = AsyncElasticsearch(['http://3.34.58.76:9200'])
 
 ### CALCULATE TOTAL STUDY TIME
 
@@ -75,7 +76,8 @@ async def update_study_time_in_db(user, db, seconds_difference):
 ### CALCULATE TOTAL STUDY TIME END
 
 @router.post("/study_end", status_code=status.HTTP_200_OK)
-async def study_end(mode_str: str, user: user_dependency, db: db_dependency, background_tasks: BackgroundTasks):
+async def study_end(mode_str: str, user: user_dependency, db: db_dependency, 
+                    background_tasks: BackgroundTasks):
     get_user_exception(user)
     isGroup = 0 # default mode is 'solo'
     if mode_str == 'group':
@@ -123,7 +125,8 @@ async def study_end(mode_str: str, user: user_dependency, db: db_dependency, bac
 
 # Return incorrect answer note problem information appropriate for season and level.
 @router.get("/practice/wrong_note/set/", status_code=status.HTTP_200_OK)
-async def read_problem_wrongs(mode_str:str, season:int, level:int, user:user_dependency, db:db_dependency):
+async def read_problem_wrongs(mode_str:str, season:int, level:int,
+                            user:user_dependency, db:db_dependency):
     get_user_exception(user)
     isGroup = 0
     if mode_str == 'group':
@@ -170,14 +173,15 @@ async def read_problem_wrongs(mode_str:str, season:int, level:int, user:user_dep
 
 
 @router.post("/practice/wrong_note/end/", status_code=status.HTTP_200_OK)
-async def read_problem_wrongs(mode_str:str, season:int, level:int, user:user_dependency, db:db_dependency):
+async def read_problem_wrongs(mode_str:str, season:int, level:int,
+                            user:user_dependency, db:db_dependency):
     get_user_exception(user)
     isGroup = 0
     if mode_str == 'group':
         isGroup = 1
-
-    # fetch study info
-    result = await db.execute(select(StudyInfo).options(joinedload(StudyInfo.incorrect_problems)).filter(StudyInfo.owner_id == user.get("id")))
+        
+    result = await db.execute(select(StudyInfo).options(joinedload(StudyInfo.incorrect_problems))
+                              .filter(StudyInfo.owner_id == user.get("id")))
     study_info = result.scalars().first()
 
     result = await db.execute(select(incorrect_problem_table.c.problem_id).\
@@ -201,11 +205,9 @@ async def read_problem_wrongs(mode_str:str, season:int, level:int, user:user_dep
     await db.commit()
     return {"detail":"success"}
 
-
-# fetch practice problems as season, level, step
-# for each problem, its id, question(korean, str), answer(english, list of words) with each word's color.
 @router.get("/practice/set/", status_code=status.HTTP_200_OK)
-async def read_practice_problem(season: int, level: int, step: int, user: user_dependency, db: db_dependency):
+async def read_practice_problem(season: int, level: int, step: int, 
+                            user: user_dependency, db: db_dependency):
     get_user_exception(user)
     
     problems_model = await fetch_problem_set(season, level, step, "normal", db)
@@ -218,7 +220,8 @@ async def read_practice_problem(season: int, level: int, step: int, user: user_d
     return {'problems': await read_problem_block_colors(problems_model, db)}
 
 @router.get("/expert/set/", status_code=status.HTTP_200_OK)
-async def read_expert_problem(season: int, level: int, step: int, user: user_dependency, db: db_dependency):
+async def read_expert_problem(season: int, level: int, step: int, 
+                            user: user_dependency, db: db_dependency):
     get_user_exception(user)
     
     problems_model = await fetch_problem_set(season, level, step, "ai", db)
@@ -244,7 +247,8 @@ async def practice_read_level_and_step(season: int, user: user_dependency, db: d
 
 # Expert Problem: Returning Level and Step Information
 @router.get("/expert/info/", status_code=status.HTTP_200_OK)
-async def read_level_and_step_expert(season: int, level: int, difficulty: int, user: user_dependency, db: db_dependency):
+async def read_level_and_step_expert(season: int, level: int, difficulty: int,
+                                    user: user_dependency, db: db_dependency):
     get_user_exception(user)
     
     Released_model = await fetch_user_releasedSeason(user, season, db)
@@ -346,8 +350,8 @@ async def user_solve_problem(user: user_dependency, db: db_dependency, backgroun
     # word_to_color = get_word_color(word)
 
     # ex) 'You liked him' is recognized 
-    # -> Check whether each word is included in the word. 
-    # -> If there is no word in word, the word is excluded from p_list.
+    # -> Check whether each word is included in the DB-word. 
+    # -> If there is no word in DB-word, the word is excluded from p_list.
     popList = []
     for p_word in user_word_list:
         if p_word in word_to_color:
@@ -357,9 +361,11 @@ async def user_solve_problem(user: user_dependency, db: db_dependency, backgroun
 
     for item in popList:
         user_word_list.remove(item)
-    # 4. Get the colors you need
+    # Get the colors you need
     p_colors = [word_to_color[word] for word in user_word_list]
 
+    # To determine whether the picture is the correct answer or not, 
+    # it brings up the problem model.
     temp_result = await db.execute(select(Problems).filter(Problems.id == problem_id))
     problem_model = temp_result.scalars().first()
     if problem_model is None:
@@ -368,7 +374,9 @@ async def user_solve_problem(user: user_dependency, db: db_dependency, backgroun
     correct_answer = problem_model.englishProblem
     answer_word_list = parse_sentence(correct_answer)
     user_string = ' '.join(user_word_list)
+
     isAnswer, false_location = check_answer(answer_word_list, user_word_list)
+
     tempUserProblem = TempUserProblems.get(user.get("id"))
     # init
     if not(problem_id in tempUserProblem.problem_incorrect_count):
@@ -377,9 +385,12 @@ async def user_solve_problem(user: user_dependency, db: db_dependency, backgroun
     if isAnswer:
         pass
     else:
-        # background execution 
+        # background execution : 
+        # Check the wrong part of the submitted picture in the background, 
+        # and increase the wrong part.
         background_tasks.add_task(calculate_wrong_info, problem_id, answer_word_list, user_word_list, tempUserProblem, db)
         tempUserProblem.problem_incorrect_count[problem_id] += 1
+        # report log
         logger = logger_setup.get_logger(user.get("id"))
         logger.info(f"problem={correct_answer},answer={user_string}")
 
