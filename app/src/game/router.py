@@ -192,87 +192,172 @@ async def send_problems_all_participants(message, start_index, final_problems, r
                 # "problems": json.dumps(problems, ensure_ascii=False) # 한글 디코딩이 포스트맨에서 안되서
             }, participant_ws)
 
-# Websocket
+async def check_non_ack_participants_after_delay(room_id):
+    room = rooms.get(room_id)
+    isMissing_key = False
+    # 5초 대기 후 실행할 코드
+    await asyncio.sleep(5)
+    missing_keys = set(room.participants.keys()) - set(room.participants_ack.keys())
+    if missing_keys:
+        isMissing_key = True        
+    # ack 못받은 참여자들 집합에서 제거. 나중에 함수로 빼기
+    for client_id in missing_keys:
+        # 연결 종료
+        websocket = room.participants_websockets.get(client_id)
+        manager.disconnect(room_id, client_id)
+        if websocket:
+            await websocket.close(code=1000)  # 또는 적절한 코드로 닫기
+        room.participants.pop(client_id, None)
+        room.participants_ack.pop(client_id, None)
+        room.participants_bonus.pop(client_id, None)
+        room.participants_nickname.pop(client_id, None)
+
+    print("***isMissing_key : ", isMissing_key)
+    # Send message to all participants
+    if isMissing_key:
+        for participant_id, participant_ws in manager.active_connections[room_id].items():
+            if participant_id != room.host_id:  # Do not send to host.
+                await manager.send_personal_message({
+                    "message": "startCountDown"
+                }, participant_ws)
+    return
+
+
 @router.websocket("/ws/{room_id}/{client_id}")
 async def websocket_endpoint(websocket: WebSocket, room_id: str, client_id: str, db: db_dependency):
-    room = rooms.get(room_id)  
-    if not room:
-        await websocket.close(code=1000) 
+    room = rooms.get(room_id)
+    
+    if not await validate_room(room, websocket):
         return
 
-    check_room_capacity(len(room.participants), room.room_max)
+    if not await validate_client(client_id, room, websocket):
+        return
 
-    if client_id == room.host_id: 
+    await setup_connection(client_id, room, room_id, websocket)
+
+    name = room.participants_nickname.get(client_id, "Unknown")
+
+    try:
+        while True:
+            data = await websocket.receive_text()
+            message_data = json.loads(data)
+            await handle_message(message_data, client_id, room_id, name, db)
+    except WebSocketDisconnect:
+        await handle_disconnect(client_id, room_id, room, name)
+
+
+async def validate_room(room, websocket):
+    if not room:
+        await websocket.close(code=1000)
+        return False
+    return True
+
+
+async def validate_client(client_id, room, websocket):
+    if client_id == room.host_id:
         room.host_websocket = websocket
     else:
-        # Check if the client is a participant in any room
         if not any(client_id in r.participants for r in rooms.values()):
             await websocket.close(code=1000)
             raise check_unregistered_participant()
         room.participants_websockets[client_id] = websocket
+    return True
 
-    await manager.connect(room_id, client_id, websocket) 
-    name = room.participants_nickname.get(client_id, "Unknown")
 
-    try:
-        while True: 
-            data = await websocket.receive_text()
-            # JSON Parsing 
-            message_data = json.loads(data) 
-            message_text = message_data.get("message") 
-            level = message_data.get("level") 
-            difficulty = message_data.get("difficulty")
-            season = message_data.get("season") 
-            problemNumber = message_data.get("problemNumber")
-            
-            # When sending a "GameStart" message, problem data is sent to students.
-            if message_text == "GameStart" and client_id == room.host_id:  
-                room_settings[room_id] = {
-                    "level": level,
-                    "difficulty": difficulty,
-                    "season": season
-                }
-                
-                criteria = ProblemSelectionCriteria(
-                    room_settings[room_id]["season"],
-                    room_settings[room_id]["level"],
-                    room_settings[room_id]["difficulty"]
-                )
-                final_problems = await select_random_problems(criteria, db, room_id)
-                
-                roomProblem[room_id] = {}
-                await send_problems_all_participants("GameStart", 0, final_problems, room_id)
-            # Add problem (When 5 problems remain)
-            elif message_text == "MoreProblems":
-                criteria = ProblemSelectionCriteria(
-                    room_settings[room_id]["season"],
-                    room_settings[room_id]["level"],
-                    room_settings[room_id]["difficulty"]
-                )
-                final_problems = await select_random_problems(criteria, db, room_id)
+async def setup_connection(client_id, room, room_id, websocket):
+    check_room_capacity(len(room.participants), room.room_max)
+    await manager.connect(room_id, client_id, websocket)
 
-                if room_id not in roomProblem:
-                    roomProblem[room_id] = {}   
-                # Check the number of problems already saved
-                start_index = len(roomProblem[room_id]) 
 
-                lock = asyncio.Lock()
-                async with lock:
-                    if start_index - (problemNumber or 0) <= 5: # Not Null
-                        await send_problems_all_participants("MoreProblems", start_index, final_problems, room_id)
-            else:
-                for participant_id, participant_ws in manager.active_connections[room_id].items():
-                    if participant_id != client_id: 
-                        await manager.send_personal_message({"client_id": client_id, "message": message_text, "name": name}, participant_ws)
+async def handle_message(message_data, client_id, room_id, name, db):
+    message_text = message_data.get("message")
+    level, difficulty, season, problemNumber = (
+        message_data.get("level"),
+        message_data.get("difficulty"),
+        message_data.get("season"),
+        message_data.get("problemNumber")
+    )
 
-    except WebSocketDisconnect: # Disconnect == Delete 
-        if client_id != room.host_id:
-            await manager.send_personal_message({"disconnect_room": room_id, "client_id": client_id, "name": name}, room.host_websocket)
-        manager.disconnect(room_id, client_id)
-        if client_id in room.participants: 
-            room.participants.pop(client_id) 
-            del room.participants_bonus[client_id]
-            del room.participants_nickname[client_id]
-        if client_id == room.host_id:
-            del rooms[room_id] 
-            clear_used_problems_in_room(room_id) 
+    room = rooms[room_id]
+
+    if message_text == "Ack":
+        room.participants_ack[client_id] = True
+        await manager.send_personal_message({"client_id": client_id, "message": message_text, "name": name}, room.host_websocket)
+    elif message_text == "ResetAck":
+        reset_ack(room)
+    elif message_text == "GameStart" and client_id == room.host_id:
+        await start_game(room_id, level, difficulty, season, db)
+    elif message_text == "MoreProblems":
+        await add_more_problems(room_id, problemNumber, db)
+    else:
+        await broadcast_message(room_id, client_id, message_text, name)
+
+    if all_ack_received(room):
+        await trigger_countdown(room_id)
+
+
+async def start_game(room_id, level, difficulty, season, db):
+    room_settings[room_id] = {"level": level, "difficulty": difficulty, "season": season}
+    criteria = ProblemSelectionCriteria(season, level, difficulty)
+    final_problems = await select_random_problems(criteria, db, room_id)
+
+    roomProblem[room_id] = {}
+    await send_problems_all_participants("GameStart", 0, final_problems, room_id)
+    asyncio.create_task(check_non_ack_participants_after_delay(room_id))
+
+
+async def add_more_problems(room_id, problemNumber, db):
+    criteria = ProblemSelectionCriteria(
+        room_settings[room_id]["season"],
+        room_settings[room_id]["level"],
+        room_settings[room_id]["difficulty"]
+    )
+    final_problems = await select_random_problems(criteria, db, room_id)
+
+    if room_id not in roomProblem:
+        roomProblem[room_id] = {}
+    
+    start_index = len(roomProblem[room_id])
+
+    if start_index - (problemNumber or 0) <= 5:
+        await send_problems_all_participants("MoreProblems", start_index, final_problems, room_id)
+
+
+async def broadcast_message(room_id, client_id, message_text, name):
+    for participant_id, participant_ws in manager.active_connections[room_id].items():
+        if participant_id != client_id:
+            await manager.send_personal_message(
+                {"client_id": client_id, "message": message_text, "name": name},
+                participant_ws
+            )
+
+
+async def trigger_countdown(room_id):
+    room = rooms[room_id]
+    for participant_id, participant_ws in manager.active_connections[room_id].items():
+        if participant_id != room.host_id:
+            await manager.send_personal_message({"message": "startCountDown"}, participant_ws)
+
+
+async def handle_disconnect(client_id, room_id, room, name):
+    if client_id != room.host_id:
+        await manager.send_personal_message({"disconnect_room": room_id, "client_id": client_id, "name": name}, room.host_websocket)
+    
+    manager.disconnect(room_id, client_id)
+    
+    if client_id in room.participants:
+        room.participants.pop(client_id)
+        del room.participants_bonus[client_id]
+        del room.participants_nickname[client_id]
+    
+    if client_id == room.host_id:
+        del rooms[room_id]
+        clear_used_problems_in_room(room_id)
+
+
+def reset_ack(room):
+    room.participants_ack.clear()
+
+
+def all_ack_received(room):
+    return len(room.participants) == len(room.participants_ack)
