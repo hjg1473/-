@@ -21,14 +21,26 @@ def calculate_accuracy_rates(correct_data: TableData, incorrect_data: TableData,
     Update_correct_answers(incorrect_data.table_id, ai_incorrects, normal_incorrects, incorrect_data.table_count, released_model, incorrect_data.problems)
 
     # Calculate totals
-    normal_all = [normal_corrects[i] + normal_incorrects[i] for i in range(3)]
-    ai_all = [ai_corrects[i] + ai_incorrects[i] for i in range(3)]
+    normal_all = calculate_totals_answer(normal_corrects, normal_incorrects)
+    ai_all = calculate_totals_answer(ai_corrects, ai_incorrects)
+    # normal_all = [normal_corrects[i] + normal_incorrects[i] for i in range(3)]
+    # ai_all = [ai_corrects[i] + ai_incorrects[i] for i in range(3)]
 
     # Calculate rates
-    normal_rate = [(normal_corrects[i] / float(normal_all[i]) * 100 if normal_all[i] != 0 else 0) for i in range(3)]
-    ai_rate = [(ai_corrects[i] / float(ai_all[i]) * 100 if ai_all[i] != 0 else 0) for i in range(3)]
+    normal_rate = calculate_answer_rates(normal_corrects, normal_all)
+    ai_rate = calculate_answer_rates(ai_corrects, ai_all)
+    # normal_rate = [(normal_corrects[i] / float(normal_all[i]) * 100 if normal_all[i] != 0 else 0) for i in range(3)]
+    # ai_rate = [(ai_corrects[i] / float(ai_all[i]) * 100 if ai_all[i] != 0 else 0) for i in range(3)]
 
     return normal_rate, ai_rate
+
+def calculate_totals_answer(correct_answer, incorrect_answer):
+    total_answer = [correct_answer[i] + incorrect_answer[i] for i in range(3)]
+    return total_answer
+
+def calculate_answer_rates(correct_answer, total_answer):
+    answer_rates = [(correct_answer[i] / float(total_answer[i]) * 100 if total_answer[i] != 0 else 0) for i in range(3)]
+    return answer_rates
 
 # Update "normal" & "ai" correct answers 
 def Update_correct_answers(problem_table_id, ai_corrects ,normal_corrects, answer_count, released_model, Studyinfo):
@@ -100,14 +112,13 @@ async def find_weakest_type(user_id, db):
     result = await db.execute(select(WrongType).filter(WrongType.info_id == study_info.id).filter(WrongType.season.in_(seasons)))
     wrongType_model = result.scalars().all()
     
-    total_wrong_punctuation, total_wrong_order, total_wrong_letter, total_wrong_block, total_wrong_word = 0, 0, 0, 0, 0
-
-    for wrongTypes in wrongType_model:
-        total_wrong_punctuation += wrongTypes.wrong_punctuation
-        total_wrong_order += wrongTypes.wrong_order
-        total_wrong_letter += wrongTypes.wrong_letter
-        total_wrong_block += wrongTypes.wrong_block
-        total_wrong_word += wrongTypes.wrong_word
+    total_wrong_types = calculate_each_type(wrongType_model)
+    total_wrong_punctuation, total_wrong_order, total_wrong_letter, total_wrong_block, total_wrong_word = total_wrong_types
+    # total_wrong_punctuation = total_wrong_types[0]
+    # total_wrong_order = total_wrong_types[1]
+    # total_wrong_letter = total_wrong_types[2]
+    # total_wrong_block = total_wrong_types[3]
+    # total_wrong_word = total_wrong_types[4]
     
     values = {
         'wrong_punctuation': total_wrong_punctuation, 'wrong_order': total_wrong_order, 
@@ -128,15 +139,9 @@ async def find_weak_types_in_season(user_id, season, db):
     result = await db.execute(select(WrongType).filter(WrongType.info_id == study_info.id).filter(WrongType.season == season))
     wrongType_model = result.scalars().all()
     
-    total_wrong_punctuation, total_wrong_order, total_wrong_letter, total_wrong_block, total_wrong_word = 0, 0, 0, 0, 0
+    total_wrong_types = calculate_each_type(wrongType_model)
+    total_wrong_punctuation, total_wrong_order, total_wrong_letter, total_wrong_block, total_wrong_word = total_wrong_types
 
-    for wrongTypes in wrongType_model:
-        total_wrong_punctuation += wrongTypes.wrong_punctuation
-        total_wrong_order += wrongTypes.wrong_order
-        total_wrong_letter += wrongTypes.wrong_letter
-        total_wrong_block += wrongTypes.wrong_block
-        total_wrong_word += wrongTypes.wrong_word
-    
     values = {
         'wrong_punctuation': total_wrong_punctuation, 'wrong_order': total_wrong_order, 
         'wrong_letter': total_wrong_letter, 'wrong_block': total_wrong_block, 
@@ -147,30 +152,31 @@ async def find_weak_types_in_season(user_id, season, db):
 
 
 def calculate_each_type(wrongType_model):
-    total_wrong_punctuation, total_wrong_order, total_wrong_letter, total_wrong_block, total_wrong_word = 0, 0, 0, 0, 0
-
+    total_wrong_types = [0, 0, 0, 0, 0]
+    
     for wrongTypes in wrongType_model:
-        total_wrong_punctuation += wrongTypes.wrong_punctuation
-        total_wrong_order += wrongTypes.wrong_order
-        total_wrong_letter += wrongTypes.wrong_letter
-        total_wrong_block += wrongTypes.wrong_block
-        total_wrong_word += wrongTypes.wrong_word
+        total_wrong_types[0] += wrongTypes.wrong_punctuation
+        total_wrong_types[1] += wrongTypes.wrong_order
+        total_wrong_types[2] += wrongTypes.wrong_letter
+        total_wrong_types[3] += wrongTypes.wrong_block
+        total_wrong_types[4] += wrongTypes.wrong_word
 
-    return total_wrong_punctuation, total_wrong_order, total_wrong_letter, total_wrong_block, total_wrong_word
+    return total_wrong_types
 
-
+# Check that the user can access to the group
 async def process_user_access(user, user_id, db):
     validate_super_user_role(user)
     await find_student_exception(user_id, db)
-    result = await db.execute(select(Users).filter(Users.id == user_id))
-    user_team_id = result.scalars().first()
+    # result = await db.execute(select(Users).filter(Users.id == user_id))
+    # user_team_id = result.scalars().first()
+    user_team_id = await fetch_user_id(user_id, db)
 
     std_team_id = user_team_id.team_id
     group_list = await fetch_group_list(user.get("id"), db)
     
     if group_list:
         validate_student_group_access(group_list, std_team_id)
-    else:
+    else: # Parent and Child relationship
         result = await db.execute(select(Users).options(joinedload(Users.student_teachers)).filter(Users.id == user.get('id')))
         students = result.scalars().first()
         children = [{"id": students.id, "name": students.name} for students in students.student_teachers]
@@ -181,7 +187,16 @@ async def process_user_access(user, user_id, db):
         if not isGroup:
             raise HTTPException(status_code=403, detail="해당 학생에 접근할 수 없습니다.")
 
+
 # *No test*
+"""
+This query returns one document that meets the following conditions:
+
+Document whose userid field matches user_id.
+The document where the problem field exists.
+One of the most recent documents, sorted in order of the latest.
+
+"""
 async def fetch_logs_from_elasticsearch(user_id: int):
     query = {
         "query": {
@@ -200,21 +215,18 @@ async def fetch_logs_from_elasticsearch(user_id: int):
         "size": 1
     }
 
-    # Elasticsearch에서 비동기 쿼리 실행
     from app.src.problem.router import es
     return await es.search(index="logstash-logs-*", body=query)
 
 def extract_problem_and_answer_from_message(message: str):
     if not message:
         return
-        # raise HTTPException(status_code=404, detail="Message field not found in the log")
     
-    # 정규 표현식을 사용하여 problem과 answer 추출
+    # Use regular expressions to extract 'problem' and 'answer'
     match = re.search(r'problem=(.*?),answer=(.*?)(?: - |\])', message)
     if not match:
         return
-        # raise HTTPException(status_code=404, detail="Problem and answer fields not found in the message")
-
+    
     problem = match.group(1).strip()
     answer = match.group(2).strip()
     return problem, answer
@@ -223,15 +235,14 @@ async def get_latest_log(user_id: int):
     response = await fetch_logs_from_elasticsearch(user_id)
 
     if response["hits"]["total"]["value"] == 0:
-        return 
-        # raise HTTPException(status_code=404, detail="Log not found") 
+        return  
 
-    # 가장 최근의 로그 추출
+    # extract the most recent log
     latest_log = response["hits"]["hits"][0]["_source"]
-    
-    # message 필드를 파싱하여 problem과 answer 추출
     message = latest_log.get("message")
+
     problem, answer = extract_problem_and_answer_from_message(message)
 
     return LogResponse(problem=problem, answer=answer)
+
 # *No test*

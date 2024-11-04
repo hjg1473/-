@@ -8,6 +8,7 @@ class Room:
         self.room_id = room_id
         self.host_id = host_id
         self.room_max = room_max
+        self.participants_ack: Dict[str, bool] = {} # 게임 시작 전 참여자 응답 확인용
         self.InGame = False
         self.participants: Dict[str, int] = {} # 참여자 리스트 -> 딕셔너리 (개인 점수 계산용)
         self.participants_bonus: Dict[str, List] = {} # 참여자 문제 정답 배열 딕셔너리 (보너스 점수 계산용)
