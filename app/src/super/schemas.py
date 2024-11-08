@@ -42,7 +42,6 @@ class GroupName(BaseModel):
 class GroupId(BaseModel):
     group_id: int
 
-
 class UserStep(BaseModel):
     user_id: int
 
