@@ -1,6 +1,8 @@
 import 'package:block_english/screens/SuperScreens/super_monitor_group_screen.dart';
+import 'package:block_english/utils/text_style.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:lottie/lottie.dart';
 
 class GroupButton extends StatelessWidget {
   const GroupButton({
@@ -18,9 +20,8 @@ class GroupButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    double height = 72;
-    double padding = 12;
-    double area = height - padding * 2;
+    double height = 72.r;
+    double padding = 16.r;
 
     return FilledButton(
       onPressed: () {
@@ -34,8 +35,8 @@ class GroupButton extends StatelessWidget {
                     )));
       },
       style: FilledButton.styleFrom(
-        backgroundColor: const Color(0xFFEAEAEA),
-        minimumSize: Size(334, height),
+        backgroundColor: Colors.white,
+        minimumSize: Size(334.r, height),
         padding: EdgeInsets.all(padding),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(10).r,
@@ -45,21 +46,11 @@ class GroupButton extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Container(
-            height: area,
-            width: area,
-            decoration: BoxDecoration(
-              color: const Color(0xFFD9D9D9),
-              borderRadius: BorderRadius.circular(5).r,
-            ),
-            child: Center(
-              child: Text(
-                id.toString(),
-                style: const TextStyle(
-                  color: Color(0xFFC2C2C2),
-                  fontSize: 30,
-                ),
-              ),
+          ClipOval(
+            child: Lottie.asset(
+              'assets/lottie/motion_19.json',
+              width: 40.r,
+              height: 40.r,
             ),
           ),
           SizedBox(
@@ -73,34 +64,37 @@ class GroupButton extends StatelessWidget {
                 children: [
                   Text(
                     name,
-                    style: TextStyle(
-                      fontSize: 16.sp,
+                    style: textStyle16.copyWith(
                       color: Colors.black,
                     ),
                   ),
                   SizedBox(width: 8.r),
-                  Icon(Icons.person_rounded,
-                      color: const Color(0xFF838383), size: 13.r),
-                  Text(' $studentNum명',
-                      style: TextStyle(
-                        color: const Color(0xFF9D9D9D),
-                        fontSize: 12.sp,
-                      )),
+                  Icon(
+                    Icons.person_rounded,
+                    color: const Color(0xFF838383),
+                    size: 16.r,
+                  ),
+                  Text(
+                    ' $studentNum명',
+                    style: textStyle11.copyWith(
+                      color: const Color(0xFF9D9D9D),
+                    ),
+                  ),
                 ],
               ),
               detail != ''
                   ? Text(
                       detail,
-                      style: TextStyle(
-                        color: const Color(0xFF9D9D9D),
-                        fontSize: 13.sp,
-                      ),
+                      style: textStyle14,
                     )
                   : const SizedBox(),
             ],
           ),
           const Spacer(),
-          const Icon(Icons.arrow_forward_ios_rounded, color: Color(0xFFA0A0A0)),
+          const Icon(
+            Icons.arrow_forward_ios_rounded,
+            color: Colors.black,
+          ),
         ],
       ),
     );

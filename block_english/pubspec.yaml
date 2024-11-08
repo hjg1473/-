@@ -29,6 +29,8 @@ environment:
 # versions available, run `flutter pub outdated`.
 dependencies:
   animated_custom_dropdown: ^3.1.1
+  dropdown_button2: ^2.3.9
+  cool_dropdown: ^2.1.1
   flutter_secure_storage: ^9.2.2
   dio: ^5.5.0+1
   riverpod: ^2.5.1

@@ -240,6 +240,7 @@ class _SuperMonitorScreenState extends ConsumerState<SuperMonitorScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: const Color(0xFFF6E7FF),
       body: Padding(
         padding: const EdgeInsets.only(
           top: 32,
@@ -278,35 +279,23 @@ class _SuperMonitorScreenState extends ConsumerState<SuperMonitorScreen> {
                     isSearching
                         ? const SizedBox()
                         : IconButton(
-                            icon: const Icon(
-                              Icons.search_rounded,
-                              color: Colors.white,
-                            ),
-                            style: IconButton.styleFrom(
-                              minimumSize: Size(
-                                48.r,
-                                48.r,
-                              ),
-                              padding: EdgeInsets.zero,
-                              backgroundColor: Colors.grey[700],
-                            ),
+                            padding: EdgeInsets.zero,
                             onPressed: onSearchPressed,
+                            icon: SvgPicture.asset(
+                              'assets/buttons/search_button.svg',
+                              width: 48.r,
+                              height: 48.r,
+                            ),
                           ),
                     SizedBox(width: 20.r),
                     IconButton(
-                      icon: const Icon(
-                        Icons.person_add_alt_1_rounded,
-                        color: Colors.white,
-                      ),
-                      style: IconButton.styleFrom(
-                        minimumSize: Size(
-                          48.r,
-                          48.r,
-                        ),
-                        padding: EdgeInsets.zero,
-                        backgroundColor: Colors.grey[700],
-                      ),
+                      padding: EdgeInsets.zero,
                       onPressed: addButtonPressed,
+                      icon: SvgPicture.asset(
+                        'assets/buttons/add_student_button.svg',
+                        width: 48.r,
+                        height: 48.r,
+                      ),
                     ),
                   ],
                 ),

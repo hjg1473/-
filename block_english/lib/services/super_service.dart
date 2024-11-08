@@ -1,3 +1,5 @@
+import 'package:block_english/models/MonitoringModel/group_monitoring_model.dart';
+import 'package:block_english/models/MonitoringModel/user_summary_model.dart';
 import 'package:block_english/models/model.dart';
 import 'package:block_english/utils/constants.dart';
 import 'package:block_english/utils/dio.dart';
@@ -207,6 +209,36 @@ class SuperService {
   //   );
   // }
 
+  Future<Either<FailureModel, UserSummaryModel>> postUserMonitoringSummary(
+    int userId,
+    int season,
+  ) async {
+    try {
+      final dio = _ref.watch(dioProvider);
+      final response = await dio.post(
+        '/$_super/user_monitoring_summary',
+        options: Options(
+          headers: {
+            'accept': 'application/json',
+            TOKENVALIDATE: 'true',
+            'Content-Type': 'application/json',
+          },
+        ),
+        data: {
+          'user_id': userId,
+          'season': season,
+        },
+      );
+
+      return Right(UserSummaryModel.fromJson(response.data));
+    } on DioException catch (e) {
+      return Left(FailureModel(
+        statusCode: e.response?.statusCode ?? 0,
+        detail: e.response?.data['detail'],
+      ));
+    }
+  }
+
   Future<Either<FailureModel, List<StudyInfoModel>>>
       postUserMonitoringStudyRate(
     int userId,
@@ -292,6 +324,33 @@ class SuperService {
       );
 
       return Right(StudyTimeModel.fromJson(response.data));
+    } on DioException catch (e) {
+      return Left(FailureModel(
+        statusCode: e.response?.statusCode ?? 0,
+        detail: e.response?.data['detail'],
+      ));
+    }
+  }
+
+  Future<Either<FailureModel, GroupMonitoringModel>> postGroupMonitoring(
+      int groupId) async {
+    try {
+      final dio = _ref.watch(dioProvider);
+      final response = await dio.post(
+        '/$_super/group_monitoring',
+        options: Options(
+          headers: {
+            'accept': 'application/json',
+            TOKENVALIDATE: 'true',
+            'Content-Type': 'application/json',
+          },
+        ),
+        data: {
+          'group_id': groupId,
+        },
+      );
+
+      return Right(GroupMonitoringModel.fromJson(response.data));
     } on DioException catch (e) {
       return Left(FailureModel(
         statusCode: e.response?.statusCode ?? 0,

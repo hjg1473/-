@@ -5,8 +5,8 @@ def check_room_exception(room):
     if not room:  # 방이 없으면
         raise HTTPException(status_code=404, detail="Not found")
 
-def room_exception2():
-    return HTTPException(status_code=403, detail="인원을 줄일 수 없습니다.")
+# def room_exception2():
+#     return HTTPException(status_code=403, detail="인원을 줄일 수 없습니다.")
 
 def check_participant_in_room(participant_id, room_participants):
     if participant_id not in room_participants:  # 방에 참여자가 없으면

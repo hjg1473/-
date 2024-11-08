@@ -34,7 +34,7 @@ class TempUserProblem:
         self.totalIncorrectBlock = totalIncorrectBlock
         self.totalIncorrectWords = totalIncorrectWords
         self.totalIncorrectOrder = totalIncorrectOrder
-        self.problem_incorrect_count: Dict[int, int] = {} # 문제 리스트 -> 딕셔너리 (횟수 계산용)
+        self.problem_incorrect_count: Dict[int, int] = {} # for frequency calculations
         self.solved_season: int
         self.solved_level: int
         self.solved_step: int
