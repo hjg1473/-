@@ -1,6 +1,7 @@
 from student.schemas import *
 from student.service import *
 import re
+from app.src.models import WrongType
 
 
 def calculate_accuracy_rates(correct_data: TableData, incorrect_data: TableData, released_model):
