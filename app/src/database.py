@@ -1,6 +1,6 @@
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import sessionmaker
-from src.config import settings
+from config import settings
 
 SQLALCHEMY_DATABASE_URL = 'mysql+aiomysql://{username}:{password}@{host}/{name}'.format(
     username=settings.DB_USERNAME,

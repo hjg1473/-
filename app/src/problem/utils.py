@@ -20,6 +20,7 @@ def parse_sentence(sentence:str):
         else:
             parsed.append(word)
 
+    # handle "a dog" and "A dog" case: two words in one block
     if 'dog' in parsed:
         dog_index = parsed.index('dog')
         if dog_index > 0 and parsed[dog_index -1] in ['a', 'A']:
@@ -46,35 +47,10 @@ def check_answer(problem:list, response:list):
     isAnswer = False
     if problem == response:
         isAnswer = True
-
-    pLen = len(problem)
-    rLen = len(response)
-
-    expResponse = response.copy()
-    if rLen < pLen:
-        expResponse += [''] * (pLen - rLen)
-    
-    erLen = len(expResponse)
-    problem_copy = problem.copy()
-
-    # starts with all Red.
-    false_check = ['Red'] * erLen
-
-    # check green -- correct answer. If one word is already checked, than it will never be checked again.
-    for i in range(pLen):
-        if problem[i] == expResponse[i]:
-            false_check[i] = 'Green'
-            problem_copy[i] = 0
-    
-    # check yellow -- 
-    for i in expResponse:
-        if i in problem_copy:
-            false_check[expResponse.index(i)] = 'Yellow'
-            problem_copy[problem_copy.index(i)] = 0
-
-    return isAnswer, false_check
+    return isAnswer
 
 
+# check whether punctuation is wrong
 def punctuation_filter(problem:str, response:str):
     punc_wrong = 0
     r_parse = parse_sentence(response)
@@ -84,7 +60,6 @@ def punctuation_filter(problem:str, response:str):
     for item in p_parse:
         if item in punctuations:
             p_puncs.append(item)
-    # 두 케이스 중복되는거 해결해야됨?
     # 없어야 하는데 있는 구두점
     punc_list = []
     for item in r_parse:
@@ -116,6 +91,7 @@ def punctuation_filter(problem:str, response:str):
     return punc_wrong, filteredP, filteredR
 
 
+# check whether letter is wrong
 def lettercase_filter(problem:str, response:str):
     letter_wrong = 0
     low_p = problem.lower()

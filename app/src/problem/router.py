@@ -375,7 +375,7 @@ async def user_solve_problem(user: user_dependency, db: db_dependency, backgroun
     answer_word_list = parse_sentence(correct_answer)
     user_string = ' '.join(user_word_list)
 
-    isAnswer, false_location = check_answer(answer_word_list, user_word_list)
+    isAnswer = check_answer(answer_word_list, user_word_list)
 
     tempUserProblem = TempUserProblems.get(user.get("id"))
     # init

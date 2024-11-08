@@ -104,23 +104,9 @@ async def create_wrong_type(season:int, level:int, studyinfo_id:int, db):
     await db.commit()
 
 async def calculate_wrongs(problem_parse:list, response_parse:list, db=db_dependency):
-    problem = combine_sentence(problem_parse)
-
-    # 0. response의 단어들이 블록에 있는 단어인지 검사    
-    popList = []
-    for item in response_parse:
-        result = await db.execute(select(Words).filter(Words.words == item))
-        word_model = result.scalars().first()
-
-        if word_model is None:
-            popList.append(item)
-        
-    for item in popList:
-        response_parse.remove(item)
-        
-    if not response_parse:
-        return 0,0,0,0,0
+    
     response = combine_sentence(response_parse)
+    problem = combine_sentence(problem_parse)
     # v1: 대소문자 filter 거친 문장 --> 대소문자 맞는 걸로 바뀜
     # v2: 구두점 filter 거친 문장   --> 구두점 사라짐
     # v3: 블록 filter 거친 문장     --> 틀린 블록은 삭제됨
@@ -138,20 +124,20 @@ async def calculate_wrongs(problem_parse:list, response_parse:list, db=db_depend
     r_len_v2 = len(response_v2_split)
     p_len_v2 = len(problem_v2_split)
 
+
+    all_words = set()
+    all_words.update(response_v2_split)
+    all_words.update(problem_v2_split)
+
+    result = await db.execute(select(Words).filter(Words.words.in_(all_words)))
+    word_models = result.scalars().all()
+
+    word_to_block_id = {word.words: word.block_id for word in word_models}
+
     # problem 블록 id 리스트
-    problem_block = []
-    for item in problem_v2_split:
-        result = await db.execute(select(Words).filter(Words.words == item))
-        word_model = result.scalars().first()
-        problem_block.append(word_model.block_id)
-
+    problem_block = [word_to_block_id.get(item) for item in problem_v2_split]
     # response 블록 id 리스트
-    response_block = []
-    for item in response_v2_split:
-        result = await db.execute(select(Words).filter(Words.words == item))
-        word_model = result.scalars().first()
-        response_block.append(word_model.block_id)
-
+    response_block = [word_to_block_id.get(item) for item in response_v2_split]
 
     block_wrong += max(r_len_v2 - p_len_v2, p_len_v2-r_len_v2)
     response_v3_split = response_v2_split.copy()
@@ -164,7 +150,6 @@ async def calculate_wrongs(problem_parse:list, response_parse:list, db=db_depend
             block_wrong += 1
             response_v3_split.remove(response_v2_split[i])
 
-    # return {"problem_v2":problem_v2_split, "response_v1":response_v1, "r_v2":response_v2, "r_v3":response_v3_split, "letter":letter_wrong, "punc":punc_wrong, "block":block_wrong}
     word_wrong = 0
     order_wrong = 0
     # 4. 블록이 맞은 것 중, 단어가 틀렸는지 and 순서가 틀렸는지
