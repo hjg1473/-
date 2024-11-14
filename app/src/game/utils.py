@@ -1,11 +1,22 @@
 import random
 
 
-def create_pin_number():
-    min = 0
-    max = 999999
-    return '{:06d}'.format(random.randint(min, max))
+generated_pins = set()
 
+def create_pin_number():
+    min_val = 0
+    max_val = 999999
+    
+    while True:
+        pin = '{:06d}'.format(random.randint(min_val, max_val))
+        
+        if pin not in generated_pins:
+            generated_pins.add(pin)
+            return pin
+
+def release_pin_number(pin):
+    generated_pins.discard(pin) 
+    
 # Example for list_problems_correct_cnt 
 """
 test_ox_dict = {

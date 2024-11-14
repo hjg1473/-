@@ -4,9 +4,9 @@ from fastapi.responses import JSONResponse
 import models
 # import easyocr
 from paddleocr import PaddleOCR
-import models, database
+from src import models, database
 # from src.cache import load_word_to_color
-from exceptions import add_exception_handler
+from src.exceptions import add_exception_handler
 from auth import router as auth_router
 from problem import router as problem_router
 from game import router as game_router
@@ -26,9 +26,9 @@ async def init_db():
     async with database.engine.begin() as conn:
         await conn.run_sync(models.Base.metadata.create_all)
 
-ocr = PaddleOCR(det_model_dir= "/home/martinjgk/OCR_models/det",rec_model_dir = "/home/martinjgk/OCR_models/rec",\
+ocr = PaddleOCR(det_model_dir= "/root/OCR_models/det",rec_model_dir = "/root/OCR_models/rec",\
                 det_db_thresh=0.1, det_db_box_thresh = 0.1,det_db_score_mode = "fast",det_db_unclip_ratio = 1.7, lang='en',\
-                rec_char_dict_path = "/home/martinjgk/OCR_models/block_en_dict.txt",dorp_box=0.3)
+                rec_char_dict_path = "/root/OCR_models/block_en_dict.txt",dorp_box=0.3)
 
 # 데이터베이스에서 데이터를 가져와 캐시에 저장하는 함수
 async def fetch_initial_data():

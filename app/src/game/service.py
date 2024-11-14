@@ -8,6 +8,7 @@ from app.src.models import Problems
 from game.constants import PROBLEM_OFFSET, PROBLEM_COUNT, GAME_POINT
 from game.schemas import rooms, roomProblem, ProblemSelectionCriteria, room_settings, ConnectionManager
 from game.exceptions import check_room_capacity, check_unregistered_participant
+from game.utils import release_pin_number
 
 manager = ConnectionManager()
 
@@ -110,7 +111,7 @@ async def check_non_ack_participants_after_delay(room_id):
                 }, participant_ws)
     return
 
-async def send_problems_all_participants(message, start_index, final_problems, room_id):
+async def send_problems_all_participants(message, start_index, final_problems, room_id, duration):
     # No more problem
     if isinstance(final_problems, str):
         for participant_id, participant_ws in manager.active_connections[room_id].items():
@@ -126,11 +127,19 @@ async def send_problems_all_participants(message, start_index, final_problems, r
     # Send message to all participants
     for participant_id, participant_ws in manager.active_connections[room_id].items():
         if participant_id != room.host_id:  # Do not send to host.
-            await manager.send_personal_message({
-                "message": message,
-                "problems": problems
-                # "problems": json.dumps(problems, ensure_ascii=False) # 한글 디코딩
-            }, participant_ws)
+            if message == "GameStart":
+                await manager.send_personal_message({
+                    "message": message,
+                    "duration": duration,
+                    "problems": problems
+                    # "problems": json.dumps(problems, ensure_ascii=False) # 한글 디코딩
+                }, participant_ws)
+            else:
+                await manager.send_personal_message({
+                    "message": message,
+                    "problems": problems
+                    # "problems": json.dumps(problems, ensure_ascii=False) # 한글 디코딩
+                }, participant_ws)
 
             
 async def validate_room(room, websocket):
@@ -157,11 +166,12 @@ async def setup_connection(client_id, room, room_id, websocket):
 
 async def handle_message(message_data, client_id, room_id, name, db):
     message_text = message_data.get("message")
-    level, difficulty, season, problemNumber = (
+    level, difficulty, season, problemNumber, duration = (
         message_data.get("level"),
         message_data.get("difficulty"),
         message_data.get("season"),
-        message_data.get("problemNumber")
+        message_data.get("problemNumber"),
+        message_data.get("duration")
     )
 
     room = rooms[room_id]
@@ -176,7 +186,7 @@ async def handle_message(message_data, client_id, room_id, name, db):
         reset_ack(room)
     elif message_text == "GameStart" and client_id == room.host_id:
         """Send questions to students"""
-        await start_game(room_id, level, difficulty, season, db)
+        await start_game(room_id, level, difficulty, season, duration, db)
     elif message_text == "MoreProblems":
         """If one of the students has solved all the sent questions with 5 left, 
             the teacher asks for additional questions."""
@@ -184,11 +194,13 @@ async def handle_message(message_data, client_id, room_id, name, db):
     else:
         await broadcast_message(room_id, client_id, message_text, name)
 
-    if all_ack_received(room):
+    # 로컬에선 되는데 ?
+    if all_ack_received(room) and room.InitCountDown:
         await trigger_countdown(room_id)
+        room.InitCountDown = False
 
 
-async def start_game(room_id, level, difficulty, season, db):
+async def start_game(room_id, level, difficulty, season, duration, db):
     room_settings[room_id] = {"level": level, "difficulty": difficulty, "season": season}
     criteria = ProblemSelectionCriteria(season, level, difficulty)
     problems = await select_random_problems(criteria, db, room_id)
@@ -197,7 +209,7 @@ async def start_game(room_id, level, difficulty, season, db):
     # Block participation in Game 
     room = rooms.get(room_id)
     room.InGame = True 
-    await send_problems_all_participants("GameStart", 0, problems, room_id)
+    await send_problems_all_participants("GameStart", 0, problems, room_id, duration)
     asyncio.create_task(check_non_ack_participants_after_delay(room_id))
 
 
@@ -215,7 +227,7 @@ async def add_more_problems(room_id, problemNumber, db):
     start_index = len(roomProblem[room_id])
 
     if start_index - (problemNumber or 0) <= 5:
-        await send_problems_all_participants("MoreProblems", start_index, problems, room_id)
+        await send_problems_all_participants("MoreProblems", start_index, problems, room_id, -1)
 
 
 async def broadcast_message(room_id, client_id, message_text, name):
@@ -225,7 +237,6 @@ async def broadcast_message(room_id, client_id, message_text, name):
                 {"client_id": client_id, "message": message_text, "name": name},
                 participant_ws
             )
-
 
 async def trigger_countdown(room_id):
     room = rooms[room_id]
@@ -247,6 +258,7 @@ async def handle_disconnect(client_id, room_id, room, name):
         del room.participants_nickname[client_id]
     
     if client_id == room.host_id:
+        release_pin_number(room_id)
         del rooms[room_id]
         clear_used_problems_in_room(room_id)
 

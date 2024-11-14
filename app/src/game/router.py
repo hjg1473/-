@@ -7,7 +7,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(
 from fastapi import File, Form, UploadFile, WebSocket, WebSocketDisconnect
 from game.schemas import Room, CreateRoomRequest, JoinRoomRequest, GetStudentScoreRequest, GetGameAgainRequest, ConnectionManager, rooms, roomProblem, ProblemSelectionCriteria, room_settings
 from game.utils import create_pin_number
-from game.exceptions import check_room_exception, check_participant_in_room, check_host_single_room, check_room_existence, check_duplicate_participant, check_room_capacity, check_unregistered_participant, check_room_in_progress, room_exception2
+from game.exceptions import check_room_exception, check_participant_in_room, check_host_single_room, check_room_existence, check_duplicate_participant, check_room_capacity, check_unregistered_participant, check_room_in_progress
 from game.dependencies import db_dependency, user_dependency
 from game.service import *
 from game.constants import GAME_POINT, MAX_STUDENT
