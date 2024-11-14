@@ -25,7 +25,7 @@ async def request_pin(user: user_dependency, db: db_dependency):
     validate_super_user_role(user)
     redis_client = await aioredis.create_redis_pool('redis://localhost')
     # Create pin number.
-    pin = create_pin_number()
+    pin = await create_pin_number()
     await redis_client.setex(f"{pin}", 180, user.get('id')) # 180 seconds
     redis_client.close()
     await redis_client.wait_closed()
@@ -38,7 +38,7 @@ async def request_pin(group: GroupId, user: user_dependency, db: db_dependency):
     await validate_group_access(user.get("id"), group.group_id, db)
     redis_client = await aioredis.create_redis_pool('redis://localhost')
     # Create pin number
-    pin = create_pin_number()
+    pin = await create_pin_number()
     # Combine GroupID and UserID with ','. 
     await redis_client.setex(f"{pin}", 180, str(group.group_id) + "," + str(user.get('id'))) # 180 seconds
     redis_client.close()
@@ -123,17 +123,23 @@ async def read_group_info(group_id:int, user:user_dependency, db:db_dependency):
     await validate_group_access(user.get("id"), group_id, db)
     await find_group_exception(group_id, db)
     # group_model = await fetch_group_id(group_id, db)
-    result3 = await db.execute(select(ReleasedGroup).filter(ReleasedGroup.owner_id == group_id))
-    target_season = result3.scalars().all()
-    return target_season
+    result = await db.execute(select(ReleasedGroup).filter(ReleasedGroup.owner_id == group_id))
+    target_season = result.scalars().all()
+
+    # Remove `id` and `owner_id` from each dictionary
+    filtered_data = [
+        {k: v for k, v in entry.__dict__.items() if k not in ["id", "owner_id"]}
+        for entry in target_season
+    ]
+    return filtered_data
 
 # Unlock group level, step.
 @router.put("/group/{group_id}/problems/unlock", status_code= status.HTTP_200_OK)
 async def unlock_step_level(group_id: int, type:str, season:int, level:int, step:int, user:user_dependency, db:db_dependency):
     validate_super_user_role(user)
     await validate_group_access(user.get("id"), group_id, db)
-    result3 = await db.execute(select(ReleasedGroup).filter(ReleasedGroup.owner_id == group_id, ReleasedGroup.released_season == season))
-    target_season = result3.scalars().all()
+    result = await db.execute(select(ReleasedGroup).filter(ReleasedGroup.owner_id == group_id, ReleasedGroup.released_season == season))
+    target_season = result.scalars().all()
     # Check Group's season.
     if not target_season:
         target_season = await create_group_released(group_id, season, db)

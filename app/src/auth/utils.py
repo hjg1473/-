@@ -1,4 +1,4 @@
-import asyncio
+import aioredis
 import sys, os
 import random
 
@@ -13,10 +13,15 @@ from jose import jwt, JWTError
 
 bcrypt_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
-def create_pin_number():
-    min = 0
-    max = 999999
-    return '{:06d}'.format(random.randint(min, max))
+
+async def create_pin_number():
+    min_val = 0
+    max_val = 999999
+    redis_client = await aioredis.create_redis_pool('redis://localhost')
+    while True:
+        pin = '{:06d}'.format(random.randint(min_val, max_val))
+        if not await redis_client.exists(pin):
+            return pin 
 
 def get_password_hash(password):
     return bcrypt_context.hash(password)

@@ -83,6 +83,10 @@ async def study_end(mode_str: str, user: user_dependency, db: db_dependency,
     if mode_str == 'group':
         isGroup = 1
 
+    # It works even without this logger code. I don't know why. is it a dream?
+    logger = logger_setup.get_logger(user.get("id"))
+    logger.info("--- studyEnd ---")
+
     result = await db.execute(select(StudyInfo).options(joinedload(StudyInfo.correct_problems))
                               .options(joinedload(StudyInfo.incorrect_problems))
                               .filter(StudyInfo.owner_id == user.get("id")))
@@ -375,7 +379,7 @@ async def user_solve_problem(user: user_dependency, db: db_dependency, backgroun
     answer_word_list = parse_sentence(correct_answer)
     user_string = ' '.join(user_word_list)
 
-    isAnswer = check_answer(answer_word_list, user_word_list)
+    isAnswer, false_location = check_answer(answer_word_list, user_word_list)
 
     tempUserProblem = TempUserProblems.get(user.get("id"))
     # init

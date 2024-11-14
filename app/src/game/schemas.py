@@ -10,6 +10,7 @@ class Room:
         self.room_max = room_max
         self.participants_ack: Dict[str, bool] = {} # Check participants' responses before the game starts
         self.InGame = False
+        self.InitCountDown = True
         self.participants: Dict[str, int] = {} # For calculating personal scores
         self.participants_bonus: Dict[str, List] = {} # For bonus points calculation
         self.participants_nickname: Dict[str, str] = {} # Nickname is the name shown to the host
