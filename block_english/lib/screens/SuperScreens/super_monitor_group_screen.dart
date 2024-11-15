@@ -1,4 +1,3 @@
-import 'package:animated_custom_dropdown/custom_dropdown.dart';
 import 'package:block_english/models/MonitoringModel/group_monitoring_model.dart';
 import 'package:block_english/models/MonitoringModel/user_summary_model.dart';
 import 'package:block_english/models/model.dart';
@@ -11,6 +10,7 @@ import 'package:block_english/utils/text_style.dart';
 import 'package:block_english/widgets/ChartWidget/pie_chart_widget.dart';
 import 'package:block_english/widgets/GroupWidget/group_progress_dropdown.dart';
 import 'package:block_english/widgets/GroupWidget/student_in_group_button.dart';
+import 'package:block_english/widgets/cool_drop_down_button.dart';
 import 'package:cool_dropdown/cool_dropdown.dart';
 import 'package:cool_dropdown/models/cool_dropdown_item.dart';
 import 'package:flutter/material.dart';
@@ -18,27 +18,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
-const String group = '/';
-const String individual = '/individual';
-
 double horizontalPadding = 64.r;
 double topPadding = 32.r;
 double bottomPadding = 24.r;
-
-class CustomRoute<T> extends MaterialPageRoute<T> {
-  CustomRoute({required super.builder});
-
-  @override
-  Widget buildTransitions(BuildContext context, Animation<double> animation,
-      Animation<double> secondaryAnimation, Widget child) {
-    return SlideTransition(
-      position:
-          Tween<Offset>(begin: const Offset(0, 0), end: const Offset(0, 0))
-              .animate(animation),
-      child: child,
-    );
-  }
-}
 
 class MonitorGroupScreen extends ConsumerStatefulWidget {
   const MonitorGroupScreen({
@@ -57,7 +39,6 @@ class MonitorGroupScreen extends ConsumerStatefulWidget {
 }
 
 class _MonitorGroupScreenState extends ConsumerState<MonitorGroupScreen> {
-  final _navigatorKey = GlobalKey<NavigatorState>();
   int currentPage = 1;
   bool isTogglePressed = false;
 
@@ -120,14 +101,6 @@ class _MonitorGroupScreenState extends ConsumerState<MonitorGroupScreen> {
                   setState(() {
                     isTogglePressed = !isTogglePressed;
                   });
-
-                  WidgetsBinding.instance.addPostFrameCallback((_) {
-                    _navigatorKey.currentState!.pop();
-                    Future.delayed(const Duration(milliseconds: 300), () {
-                      _navigatorKey.currentState!
-                          .pushNamed(isTogglePressed ? individual : group);
-                    });
-                  });
                 },
                 highlightColor: Colors.transparent,
                 icon: Image.asset(
@@ -165,31 +138,17 @@ class _MonitorGroupScreenState extends ConsumerState<MonitorGroupScreen> {
             ),
           ),
           Positioned(
-            bottom: 24.r,
+            left: 64.r,
+            bottom: 25.r,
             child: SizedBox(
-              width: 1.sw,
+              width: 684.r,
               height: 250.r,
-              child: Navigator(
-                key: _navigatorKey,
-                initialRoute: group,
-                onGenerateRoute: (settings) {
-                  return CustomRoute(
-                    builder: (context) {
-                      switch (settings.name) {
-                        case group:
-                          return Group(groupId: widget.groupId);
-                        case individual:
-                          return Individual(
-                            groupId: widget.groupId,
-                            groupName: widget.groupName,
-                          );
-                        default:
-                          return Group(groupId: widget.groupId);
-                      }
-                    },
-                  );
-                },
-              ),
+              child: isTogglePressed
+                  ? Individual(
+                      groupId: widget.groupId,
+                      groupName: widget.groupName,
+                    )
+                  : Group(groupId: widget.groupId),
             ),
           ),
         ],
@@ -212,6 +171,14 @@ class Group extends ConsumerStatefulWidget {
 
 class _GroupState extends ConsumerState<Group> {
   List<String> seasonList = ['시즌 1', '시즌 2'];
+  List<String> difficultyList = ['Basic', 'Expert'];
+  List<String> stepList = [
+    'Step 1',
+    'Step 2',
+    'Step 3',
+    'Step 4',
+    'Step 5',
+  ];
   List<CoolDropdownItem<String>> seasonDropdownItems = [];
   final seasonDropdownController = DropdownController<String>();
 
@@ -228,7 +195,7 @@ class _GroupState extends ConsumerState<Group> {
     waitForData();
   }
 
-  waitForData() async {
+  void waitForData() async {
     final response = await ref
         .watch(superServiceProvider)
         .postGroupMonitoring(widget.groupId);
@@ -275,6 +242,30 @@ class _GroupState extends ConsumerState<Group> {
     }
   }
 
+  void updateProgress(int season, int level, int difficulty, int step) async {
+    final response = await ref.watch(superServiceProvider).putGroupLevelUnlock(
+          widget.groupId,
+          difficulty == 1 ? 'ai' : 'normal',
+          season + 1,
+          level + 1,
+          step + 1,
+        );
+
+    response.fold((failure) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('${failure.statusCode} : ${failure.detail}'),
+        ),
+      );
+    }, (data) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('진도가 업데이트 되었습니다.'),
+        ),
+      );
+    });
+  }
+
   @override
   void initState() {
     super.initState();
@@ -288,14 +279,6 @@ class _GroupState extends ConsumerState<Group> {
 
   @override
   Widget build(BuildContext context) {
-    List<String> difficultyList = ['Basic', 'Expert'];
-    List<String> stepList = [
-      'Step 1',
-      'Step 2',
-      'Step 3',
-      'Step 4',
-      'Step 5',
-    ];
     int season = 0;
     int level = 0;
     int difficulty = 0;
@@ -310,7 +293,7 @@ class _GroupState extends ConsumerState<Group> {
               // group progress
               Positioned(
                 top: 0,
-                left: 64.r,
+                left: 0.r,
                 child: Container(
                   width: 253.r,
                   height: 134.r,
@@ -325,15 +308,40 @@ class _GroupState extends ConsumerState<Group> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        '우리 반 진도',
-                        style: textStyle11,
+                      Row(
+                        children: [
+                          Text(
+                            '우리 반 진도',
+                            style: textStyle11,
+                          ),
+                          const Spacer(),
+                          GestureDetector(
+                            onTap: () {
+                              updateProgress(season, level, difficulty, step);
+                            },
+                            child: Container(
+                              padding: EdgeInsets.symmetric(
+                                horizontal: 5.r,
+                                vertical: 0.r,
+                              ),
+                              decoration: BoxDecoration(
+                                color: primaryPurple[200],
+                                borderRadius: BorderRadius.circular(8).r,
+                              ),
+                              child: Icon(
+                                Icons.check,
+                                color: Colors.white,
+                                size: 16.r,
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
-                      const Spacer(),
+                      SizedBox(height: 7.r),
                       Row(
                         children: [
                           SizedBox(
-                            width: 92.r,
+                            width: 91.r,
                             height: 40.r,
                             child: GroupProgressDropdown(
                               itemList: seasonList,
@@ -391,7 +399,7 @@ class _GroupState extends ConsumerState<Group> {
               // group size
               Positioned(
                 top: 150.r,
-                left: 64.r,
+                left: 0,
                 child: Container(
                   width: 253.r,
                   height: 42.r,
@@ -421,7 +429,7 @@ class _GroupState extends ConsumerState<Group> {
               // group creation date
               Positioned(
                 bottom: 0,
-                left: 64.r,
+                left: 0,
                 child: Container(
                   width: 253.r,
                   height: 42.r,
@@ -451,7 +459,7 @@ class _GroupState extends ConsumerState<Group> {
               // correct rate
               Positioned(
                 top: 0,
-                left: 333.r,
+                left: 269.r,
                 child: Container(
                   width: 247.r,
                   height: 250.r,
@@ -489,7 +497,7 @@ class _GroupState extends ConsumerState<Group> {
               ),
               Positioned(
                 top: 77.r,
-                right: 327.r,
+                right: 263.r,
                 child: SvgPicture.asset(
                   'assets/images/connecting_line.svg',
                   width: 35.r,
@@ -497,7 +505,7 @@ class _GroupState extends ConsumerState<Group> {
               ),
               Positioned(
                 top: 67.5.r,
-                right: 242.r,
+                right: 178.r,
                 child: Container(
                   width: 79.r,
                   height: 26.r,
@@ -517,7 +525,7 @@ class _GroupState extends ConsumerState<Group> {
               ),
               Positioned(
                 top: 102.r,
-                right: 251.r,
+                right: 187.r,
                 child: Text(
                   '${correctRate[bestLevel].toInt()}%',
                   style: textStyle14,
@@ -525,8 +533,8 @@ class _GroupState extends ConsumerState<Group> {
               ),
               // best level
               Positioned(
-                top: 54.r,
-                right: 64.r,
+                top: 47.r,
+                right: 0,
                 child: Container(
                   width: 153.r,
                   height: 118.r,
@@ -583,7 +591,7 @@ class _GroupState extends ConsumerState<Group> {
               // weakest part
               Positioned(
                 bottom: 0,
-                right: 64.r,
+                right: 0,
                 child: Container(
                   width: 153.r,
                   height: 70.r,
@@ -624,10 +632,10 @@ class _GroupState extends ConsumerState<Group> {
               // select season for statics
               Positioned(
                 top: 0,
-                right: 64.r,
-                child: CoolDropdown<String>(
-                  dropdownList: seasonDropdownItems,
+                right: 0,
+                child: CoolDropDownButton(
                   controller: seasonDropdownController,
+                  dropdownList: seasonDropdownItems,
                   defaultItem: seasonDropdownItems[seasonForStatics],
                   onChange: (value) async {
                     if (seasonDropdownController.isError) {
@@ -635,38 +643,11 @@ class _GroupState extends ConsumerState<Group> {
                     }
                     seasonForStatics = seasonList.indexOf(value);
                   },
-                  resultOptions: ResultOptions(
-                    padding: const EdgeInsets.symmetric(horizontal: 15).r,
-                    width: 153.r,
-                    height: 36.r,
-                    icon: SizedBox(
-                      width: 13.31.r,
-                      height: 10.r,
-                      child: const CustomPaint(
-                        painter: DropdownArrowPainter(color: Colors.black),
-                      ),
-                    ),
-                    render: ResultRender.all,
-                    isMarquee: false,
-                  ),
-                  dropdownOptions: DropdownOptions(
-                    top: 0,
-                    width: 153.r,
-                    borderSide: const BorderSide(width: 0, color: Colors.white),
-                    padding: const EdgeInsets.symmetric(horizontal: 15).r,
-                    align: DropdownAlign.center,
-                    animationType: DropdownAnimationType.size,
-                  ),
-                  dropdownTriangleOptions: const DropdownTriangleOptions(
-                    width: 0,
-                    height: 0,
-                  ),
-                  dropdownItemOptions: DropdownItemOptions(
-                    isMarquee: true,
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    render: DropdownItemRender.all,
-                    height: 36.r,
-                  ),
+                  width: 153.r,
+                  height: 36.r,
+                  backgroundColor: Colors.white,
+                  primaryColor: primaryPurple[500]!,
+                  textStyle: textStyle14,
                 ),
               ),
             ],
@@ -695,6 +676,8 @@ class _IndividualState extends ConsumerState<Individual> {
   bool isLoading = true;
 
   List<String> seasonList = ['시즌 1', '시즌 2'];
+  List<CoolDropdownItem<String>> seasonDropdownItems = [];
+  final seasonDropdownController = DropdownController<String>();
   int seasonForStatics = 0;
   int selectedStudent = 0;
   List<double> correctRate = [0, 0, 0];
@@ -728,6 +711,12 @@ class _IndividualState extends ConsumerState<Individual> {
   void initState() {
     // TODO: implement initState
     super.initState();
+    for (var i = 0; i < seasonList.length; i++) {
+      seasonDropdownItems.add(CoolDropdownItem<String>(
+        label: seasonList[i],
+        value: seasonList[i],
+      ));
+    }
   }
 
   void getSummary() async {
@@ -788,7 +777,7 @@ class _IndividualState extends ConsumerState<Individual> {
                     children: [
                       // students list
                       Positioned(
-                        left: 64.r,
+                        left: 0,
                         top: 0,
                         child: SizedBox(
                           width: 140.r,
@@ -817,7 +806,7 @@ class _IndividualState extends ConsumerState<Individual> {
                       // learning analysis
                       Positioned(
                         top: 0,
-                        left: 220.r,
+                        left: 156.r,
                         child: Container(
                           width: 346.r,
                           height: 250.r,
@@ -977,8 +966,9 @@ class _IndividualState extends ConsumerState<Individual> {
                                   width: 15.r,
                                   height: 24.r,
                                   child: IconButton(
-                                    onPressed: () {
-                                      Navigator.of(context, rootNavigator: true)
+                                    onPressed: () async {
+                                      final result = await Navigator.of(context,
+                                              rootNavigator: true)
                                           .push(
                                         MaterialPageRoute(
                                           builder: (context) =>
@@ -992,6 +982,11 @@ class _IndividualState extends ConsumerState<Individual> {
                                           ),
                                         ),
                                       );
+                                      if (result == true) {
+                                        setState(() {
+                                          isLoading = true;
+                                        });
+                                      }
                                     },
                                     icon: Icon(
                                       Icons.arrow_forward_ios_rounded,
@@ -1013,51 +1008,28 @@ class _IndividualState extends ConsumerState<Individual> {
                       // select season for statics
                       Positioned(
                         top: 0,
-                        right: 64.r,
-                        child: Container(
+                        right: 0,
+                        child: CoolDropDownButton(
+                          controller: seasonDropdownController,
+                          dropdownList: seasonDropdownItems,
+                          defaultItem: seasonDropdownItems[seasonForStatics],
+                          onChange: (value) async {
+                            if (seasonDropdownController.isError) {
+                              await seasonDropdownController.resetError();
+                            }
+                            seasonForStatics = seasonList.indexOf(value);
+                          },
                           width: 166.r,
-                          height: 46.r,
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(8).r,
-                          ),
-                          child: SizedBox(
-                            width: 166.r,
-                            height: 36.r,
-                            child: CustomDropdown(
-                              closedHeaderPadding: const EdgeInsets.symmetric(
-                                      horizontal: 15, vertical: 10)
-                                  .r,
-                              expandedHeaderPadding: const EdgeInsets.symmetric(
-                                      horizontal: 15, vertical: 10)
-                                  .r,
-                              listItemPadding: EdgeInsets.symmetric(
-                                  horizontal: 15.r, vertical: 10.r),
-                              decoration: CustomDropdownDecoration(
-                                closedBorderRadius: BorderRadius.circular(8).r,
-                                expandedBorderRadius:
-                                    BorderRadius.circular(8).r,
-                                headerStyle:
-                                    textStyle14.copyWith(fontSize: 13.sp),
-                                listItemStyle:
-                                    textStyle14.copyWith(fontSize: 13.sp),
-                              ),
-                              initialItem: seasonList[seasonForStatics],
-                              items: seasonList,
-                              onChanged: (value) {
-                                seasonForStatics = seasonList.indexOf(value!);
-                                setState(() {
-                                  getSummary();
-                                });
-                              },
-                            ),
-                          ),
+                          height: 40.r,
+                          backgroundColor: Colors.white,
+                          primaryColor: primaryPurple[500]!,
+                          textStyle: textStyle14,
                         ),
                       ),
                       // study time
                       Positioned(
-                        top: 54.r,
-                        right: 64.r,
+                        top: 52.r,
+                        right: 0,
                         child: Container(
                           width: 166.r,
                           height: 46.r,
@@ -1150,7 +1122,7 @@ class _IndividualState extends ConsumerState<Individual> {
                       // incorrect
                       Positioned(
                         bottom: 0,
-                        right: 64.r,
+                        right: 0,
                         child: Container(
                           width: 166.r,
                           height: 142.r,
