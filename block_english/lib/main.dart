@@ -3,6 +3,8 @@ import 'package:block_english/screens/AuthScreens/reg_pw_question_screen.dart';
 import 'package:block_english/screens/AuthScreens/reg_select_role_screen.dart';
 import 'package:block_english/screens/AuthScreens/reg_get_info_screen.dart';
 import 'package:block_english/screens/AuthScreens/reg_super_type_screen.dart';
+import 'package:block_english/screens/StudentScreens/GameScreens/student_game_enter_screen.dart';
+import 'package:block_english/screens/StudentScreens/GameScreens/student_game_init_screen.dart';
 import 'package:block_english/screens/StudentScreens/student_add_super_screen.dart';
 import 'package:block_english/screens/StudentScreens/student_available_season_screen.dart';
 import 'package:block_english/screens/SuperScreens/GameScreens/super_game_init_screen.dart';
@@ -83,6 +85,9 @@ class MyApp extends StatelessWidget {
           '/super_group_create_screen': (context) =>
               const SuperGroupCreateScreen(),
           '/parent_add_child_screen': (context) => const ParentAddChildScreen(),
+          '/stud_game_init_screen': (context) => const StudentGameInitScreen(),
+          '/stud_game_enter_screen': (context) =>
+              const StudentGameEnterScreen(),
           '/super_game_init_screen': (context) => const SuperGameInitScreen(),
           '/super_game_setting_screen': (context) =>
               const SuperGameSettingScreen(),

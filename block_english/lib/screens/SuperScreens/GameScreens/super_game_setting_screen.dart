@@ -421,6 +421,7 @@ class _SuperGameSettingScreenState
                   "level": level,
                   "season": season,
                   "difficulty": difficulty,
+                  "duration": 300,
                 });
                 debugPrint(jsonString);
                 _channel.sink.add(jsonString);
