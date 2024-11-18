@@ -1,35 +1,39 @@
 import logging
-import logging.handlers
-import time
 
+class CustomFormatter(logging.Formatter):
+    def format(self, record):
+        if not hasattr(record, 'user'):
+            record.user = 'anonymous'  # 기본값 설정
+        return super().format(record)
 
 class LoggerSetup:
 
     def __init__(self) -> None:
-        self.logger = logging.getLogger('')
+        self.logger = logging.getLogger('main_logger')
         self.setup_logging()
 
     def setup_logging(self):
         if self.logger.hasHandlers():
             self.logger.handlers.clear()
-        # add log format
+
         LOG_FORMAT = "%(asctime)s - %(name)s - %(levelname)s - %(message)s - [user: %(user)s]"
-        logging.basicConfig(level=logging.INFO, format=LOG_FORMAT)
+        formatter = CustomFormatter(LOG_FORMAT)
 
-        #configure formmater for logger
-        formatter = logging.Formatter(LOG_FORMAT)
-
-        # configure console handler
-        console= logging.StreamHandler()
+        # Configure console handler
+        console = logging.StreamHandler()
         console.setFormatter(formatter)
 
-        # configure TimeRotatingFileHandler
+        # Configure TimeRotatingFileHandler
         log_file = "src/logs/fastapi-efk.log"
-        file = logging.handlers.TimedRotatingFileHandler(filename=log_file, when="midnight", backupCount=5)
+        file = logging.handlers.TimedRotatingFileHandler(
+            filename=log_file, when="midnight", backupCount=5
+        )
         file.setFormatter(formatter)
 
-        # add handlers
+        # Add handlers
         self.logger.addHandler(console)
         self.logger.addHandler(file)
-    def get_logger(self, user):
-        return logging.LoggerAdapter(self.logger, {'user': user})
+        self.logger.setLevel(logging.INFO)
+
+    def get_logger(self, user=None):
+        return logging.LoggerAdapter(self.logger, {'user': user or 'anonymous'})

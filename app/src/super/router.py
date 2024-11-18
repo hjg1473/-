@@ -400,6 +400,8 @@ async def read_group_monitoring(group: GroupId, user: user_dependency, db: db_de
         if value in values:
             values[value] += 1
     largest_variable = max(values, key=values.get)
+    if len(set(values.values())) == 1:
+        largest_variable = '' 
 
     # END : Same Process with read_user_weak_parts_top3
 
@@ -415,7 +417,7 @@ async def read_group_monitoring(group: GroupId, user: user_dependency, db: db_de
     student_ids = [student.id for student in students]
 
     # BEGIN : Same Process with read_user_studyinfo
-
+    information = []
     for user_id in student_ids:
         released_models = await fetch_released_user(user_id, db)
 
