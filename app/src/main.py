@@ -21,7 +21,8 @@ from app.src.models import Words, Blocks
 app = FastAPI()
 
 add_exception_handler(app)
-# 데이터베이스 초기화 함수
+
+
 async def init_db():
     async with database.engine.begin() as conn:
         await conn.run_sync(models.Base.metadata.create_all)
@@ -30,7 +31,7 @@ ocr = PaddleOCR(det_model_dir= "/root/OCR_models/det",rec_model_dir = "/root/OCR
                 det_db_thresh=0.1, det_db_box_thresh = 0.1,det_db_score_mode = "fast",det_db_unclip_ratio = 1.7, lang='en',\
                 rec_char_dict_path = "/root/OCR_models/block_en_dict.txt",dorp_box=0.3)
 
-# 데이터베이스에서 데이터를 가져와 캐시에 저장하는 함수
+
 async def fetch_initial_data():
     async with AsyncSession(database.engine) as session:
         result = await session.execute(select(Words, Blocks).join(Blocks, Words.block_id == Blocks.id)) 

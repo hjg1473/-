@@ -121,7 +121,7 @@ async def participant_action(
                         "score": room.participants[participant_id]}
 
     await manager.send_personal_message(response_message, participant_websocket)
-    return {"detail": "정답입니다." if answer_status == "correct" else "오답입니다."}
+    return {"ocr_result": user_string}
 
 
 # Create Game Room
