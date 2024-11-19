@@ -22,11 +22,7 @@ class StudentGameWaitingScreen extends ConsumerStatefulWidget {
 
 class _StudentGameWaitingScreenState
     extends ConsumerState<StudentGameWaitingScreen> {
-  bool _channelInitialized = false;
-  late WebSocketChannel _channel;
-  bool _gameStarted = false;
   int _countdown = 0;
-  int duration = 0;
   Timer? _countdownTimer;
   double _waitingTextTopPosition = 0.3.sh;
   double _countdownTopPosition = -0.2.sh;
@@ -38,50 +34,54 @@ class _StudentGameWaitingScreenState
     super.initState();
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _channel = WebSocketChannel.connect(
-        Uri.parse(
-            '$BASEWSURL/${widget.pinCode}/${ref.watch(statusProvider).username}'),
-      );
-      _channel.stream.listen((message) {
-        final decodedMessage = jsonDecode(message) as Map<String, dynamic>;
-
-        for (final val in decodedMessage.entries) {
-          debugPrint('key: ${val.key}, value: ${val.value}');
-        }
-        if (decodedMessage.containsKey('message')) {
-          if (decodedMessage['message'] == 'startCountDown') {
-            debugPrint('startCountDown');
-            setState(() {
-              _gameStarted = true;
-              _startCountdown();
-            });
-          } else if (decodedMessage['message'] == 'GameStart') {
-            setState(() {
-              duration = decodedMessage['duration'];
-            });
-          }
-        }
-        if (decodedMessage.containsKey('problems')) {
-          for (final problem in decodedMessage['problems']) {
-            ref.watch(gameProvider).problems[problem['problem_id']] =
-                problem['koreaProblem'];
-          }
-
-          final jsonString = jsonEncode({
-            "message": "Ack",
-          });
-          debugPrint(jsonString);
-          _channel.sink.add(jsonString);
-        }
-      }, onError: (error) {
-        debugPrint('[WS:ERROR] $error');
-      }, onDone: () {
-        debugPrint('[WS:DISCONNECT]');
-      });
-      setState(() {
-        _channelInitialized = true;
-      });
+      ref.watch(gameProvider).initStudentSocket(
+          widget.pinCode, ref.watch(statusProvider).username);
     });
+    // WidgetsBinding.instance.addPostFrameCallback((_) {
+    //   _channel = WebSocketChannel.connect(
+    //     Uri.parse(
+    //         '$BASEWSURL/${widget.pinCode}/${ref.watch(statusProvider).username}'),
+    //   );
+    //   _channel.stream.listen((message) {
+    //     final decodedMessage = jsonDecode(message) as Map<String, dynamic>;
+
+    //     for (final val in decodedMessage.entries) {
+    //       debugPrint('key: ${val.key}, value: ${val.value}');
+    //     }
+    //     if (decodedMessage.containsKey('message')) {
+    //       if (decodedMessage['message'] == 'startCountDown') {
+    //         debugPrint('startCountDown');
+    //         setState(() {
+    //           _gameStarted = true;
+    //           _startCountdown();
+    //         });
+    //       } else if (decodedMessage['message'] == 'GameStart') {
+    //         setState(() {
+    //           duration = decodedMessage['duration'];
+    //         });
+    //       }
+    //     }
+    //     if (decodedMessage.containsKey('problems')) {
+    //       for (final problem in decodedMessage['problems']) {
+    //         ref.watch(gameProvider).problems[problem['problem_id']] =
+    //             problem['koreaProblem'];
+    //       }
+
+    //       final jsonString = jsonEncode({
+    //         "message": "Ack",
+    //       });
+    //       debugPrint(jsonString);
+    //       _channel.sink.add(jsonString);
+    //     }
+    //   }, onError: (error) {
+    //     debugPrint('[WS:ERROR] $error');
+    //   }, onDone: () {
+    //     debugPrint('[WS:DISCONNECT]');
+    //   });
+    //   setState(() {
+    //     _channelInitialized = true;
+    //   });
+    // });
   }
 
   void _startCountdown() {
@@ -107,9 +107,8 @@ class _StudentGameWaitingScreenState
   void _navigateToNextScreen() {
     Navigator.of(context).pushReplacement(
       MaterialPageRoute(
-        builder: (context) => StudentGameCameraScreen(
+        builder: (context) => const StudentGameCameraScreen(
           problemIndex: 0,
-          duration: duration,
         ),
       ),
     );
@@ -118,12 +117,13 @@ class _StudentGameWaitingScreenState
   @override
   void dispose() {
     _countdownTimer?.cancel();
-    _channel.sink.close();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    if (ref.watch(gameProvider).gameStarted) _startCountdown();
+
     return Scaffold(
       backgroundColor: const Color(0xFFFFE0EB),
       body: SizedBox(
@@ -140,7 +140,9 @@ class _StudentGameWaitingScreenState
                 duration: const Duration(milliseconds: 500),
                 opacity: _opacity,
                 child: Text(
-                  _channelInitialized ? '모두가 들어올 때까지 기다려주세요!' : '접속중입니다.',
+                  ref.watch(gameProvider).channelInitialized
+                      ? '모두가 들어올 때까지 기다려주세요!'
+                      : '접속중입니다.',
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     color: const Color(0xFFFF43B4),
@@ -151,7 +153,7 @@ class _StudentGameWaitingScreenState
               ),
             ),
             // Countdown text with falling effect
-            if (_gameStarted)
+            if (ref.watch(gameProvider).gameStarted)
               AnimatedPositioned(
                 duration: const Duration(milliseconds: 500),
                 top: _countdownTopPosition,

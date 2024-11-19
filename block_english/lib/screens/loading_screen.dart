@@ -17,7 +17,7 @@ class _LoadingScreenState extends ConsumerState<LoadingScreen> {
     final result = await ref.watch(authServiceProvider).postAuthAccess();
 
     result.fold((failure) {
-      debugPrint('sdfd');
+      debugPrint('cc');
       Navigator.of(context).pushNamedAndRemoveUntil(
         '/login_screen',
         (Route<dynamic> route) => false,

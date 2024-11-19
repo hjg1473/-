@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:block_english/models/ProblemModel/problems_model.dart';
+import 'package:block_english/screens/StudentScreens/GameScreens/student_game_result_screen.dart';
 import 'package:block_english/screens/StudentScreens/wait_ocr_screen.dart';
 import 'package:block_english/utils/camera.dart';
 import 'package:block_english/utils/game.dart';
@@ -14,11 +15,9 @@ class StudentGameCameraScreen extends ConsumerStatefulWidget {
   const StudentGameCameraScreen({
     super.key,
     required this.problemIndex,
-    required this.duration,
   });
 
   final int problemIndex;
-  final int duration;
 
   @override
   ConsumerState<StudentGameCameraScreen> createState() =>
@@ -46,16 +45,12 @@ class _StudentGameCameraScreenState
 
       if (!mounted) return;
 
-      // Navigator.of(context).push(MaterialPageRoute(
-      //     builder: (context) => WaitOcrScreen(
-      //           level: widget.level,
-      //           step: widget.step,
-      //           problemsModel: widget.problemsModel,
-      //           currentProblem: widget.currentProblem,
-      //           totalNumber: widget.totalNumber,
-      //           correctNumber: widget.correctNumber,
-      //           xFile: xFile,
-      //         )));
+      Navigator.of(context).push(MaterialPageRoute(
+        builder: (context) => StudentGameResultScreen(
+          problemIndex: widget.problemIndex,
+          xFile: xFile,
+        ),
+      ));
     } on Exception catch (e) {
       // TODO: error handling
       debugPrint('[CAMERA]: _takePicture $e');
@@ -67,7 +62,7 @@ class _StudentGameCameraScreenState
   @override
   void initState() {
     super.initState();
-    duration = widget.duration;
+    duration = ref.watch(gameProvider).duration;
     controller = CameraController(
       Camera.cameras[0],
       ResolutionPreset.high,
