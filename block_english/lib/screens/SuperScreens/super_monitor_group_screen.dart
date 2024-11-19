@@ -208,6 +208,9 @@ class _GroupState extends ConsumerState<Group> {
       );
     }, (data) {
       groupDetail = data;
+      if (groupDetail!.studyInfo.isEmpty) {
+        return;
+      }
       StudyInfoModel last = groupDetail!.studyInfo.last;
       for (int i = 0; i < last.releasedLevel! + 1; i++) {
         correctRate[i] = (last.correctRateNormal![i] + last.correctRateAI![i]);
@@ -288,370 +291,376 @@ class _GroupState extends ConsumerState<Group> {
 
     return isLoading
         ? const Center(child: CircularProgressIndicator())
-        : Stack(
-            children: [
-              // group progress
-              Positioned(
-                top: 0,
-                left: 0.r,
-                child: Container(
-                  width: 253.r,
-                  height: 134.r,
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(8).r,
-                  ),
-                  padding: EdgeInsets.symmetric(
-                    horizontal: 16.r,
-                    vertical: 12.r,
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
+        : groupDetail!.studyInfo.isEmpty
+            ? const Center(child: Text('관리 중인 학생이 존재하지 않습니다'))
+            : Stack(
+                children: [
+                  // group progress
+                  Positioned(
+                    top: 0,
+                    left: 0.r,
+                    child: Container(
+                      width: 253.r,
+                      height: 134.r,
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(8).r,
+                      ),
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 16.r,
+                        vertical: 12.r,
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
-                            '우리 반 진도',
-                            style: textStyle11,
+                          Row(
+                            children: [
+                              Text(
+                                '우리 반 진도',
+                                style: textStyle11,
+                              ),
+                              const Spacer(),
+                              GestureDetector(
+                                onTap: () {
+                                  updateProgress(
+                                      season, level, difficulty, step);
+                                },
+                                child: Container(
+                                  padding: EdgeInsets.symmetric(
+                                    horizontal: 5.r,
+                                    vertical: 0.r,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: primaryPurple[200],
+                                    borderRadius: BorderRadius.circular(8).r,
+                                  ),
+                                  child: Icon(
+                                    Icons.check,
+                                    color: Colors.white,
+                                    size: 16.r,
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
-                          const Spacer(),
-                          GestureDetector(
-                            onTap: () {
-                              updateProgress(season, level, difficulty, step);
-                            },
-                            child: Container(
-                              padding: EdgeInsets.symmetric(
-                                horizontal: 5.r,
-                                vertical: 0.r,
+                          SizedBox(height: 7.r),
+                          Row(
+                            children: [
+                              SizedBox(
+                                width: 91.r,
+                                height: 40.r,
+                                child: GroupProgressDropdown(
+                                  itemList: seasonList,
+                                  initialItem: seasonList[season],
+                                  onChanged: (value) {
+                                    season = seasonList.indexOf(value!);
+                                  },
+                                ),
                               ),
-                              decoration: BoxDecoration(
-                                color: primaryPurple[200],
-                                borderRadius: BorderRadius.circular(8).r,
+                              SizedBox(width: 8.r),
+                              SizedBox(
+                                width: 113.r,
+                                height: 40.r,
+                                child: GroupProgressDropdown(
+                                  itemList: levelList,
+                                  initialItem: levelList[level],
+                                  onChanged: (value) {
+                                    level = levelList.indexOf(value!);
+                                  },
+                                ),
                               ),
-                              child: Icon(
-                                Icons.check,
-                                color: Colors.white,
-                                size: 16.r,
+                            ],
+                          ),
+                          SizedBox(height: 6.r),
+                          Row(
+                            children: [
+                              SizedBox(
+                                width: 92.r,
+                                height: 40.r,
+                                child: GroupProgressDropdown(
+                                    itemList: difficultyList,
+                                    initialItem: difficultyList[difficulty],
+                                    onChanged: (value) {
+                                      difficulty =
+                                          difficultyList.indexOf(value!);
+                                    }),
                               ),
-                            ),
+                              SizedBox(width: 8.r),
+                              SizedBox(
+                                width: 100.r,
+                                height: 40.r,
+                                child: GroupProgressDropdown(
+                                  itemList: stepList,
+                                  initialItem: stepList[step],
+                                  onChanged: (value) {
+                                    step = stepList.indexOf(value!);
+                                  },
+                                ),
+                              ),
+                            ],
                           ),
                         ],
                       ),
-                      SizedBox(height: 7.r),
-                      Row(
-                        children: [
-                          SizedBox(
-                            width: 91.r,
-                            height: 40.r,
-                            child: GroupProgressDropdown(
-                              itemList: seasonList,
-                              initialItem: seasonList[season],
-                              onChanged: (value) {
-                                season = seasonList.indexOf(value!);
-                              },
-                            ),
-                          ),
-                          SizedBox(width: 8.r),
-                          SizedBox(
-                            width: 113.r,
-                            height: 40.r,
-                            child: GroupProgressDropdown(
-                              itemList: levelList,
-                              initialItem: levelList[level],
-                              onChanged: (value) {
-                                level = levelList.indexOf(value!);
-                              },
-                            ),
-                          ),
-                        ],
-                      ),
-                      SizedBox(height: 6.r),
-                      Row(
-                        children: [
-                          SizedBox(
-                            width: 92.r,
-                            height: 40.r,
-                            child: GroupProgressDropdown(
-                                itemList: difficultyList,
-                                initialItem: difficultyList[difficulty],
-                                onChanged: (value) {
-                                  difficulty = difficultyList.indexOf(value!);
-                                }),
-                          ),
-                          SizedBox(width: 8.r),
-                          SizedBox(
-                            width: 100.r,
-                            height: 40.r,
-                            child: GroupProgressDropdown(
-                              itemList: stepList,
-                              initialItem: stepList[step],
-                              onChanged: (value) {
-                                step = stepList.indexOf(value!);
-                              },
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              // group size
-              Positioned(
-                top: 150.r,
-                left: 0,
-                child: Container(
-                  width: 253.r,
-                  height: 42.r,
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(8).r,
-                  ),
-                  padding: EdgeInsets.symmetric(
-                    horizontal: 24.r,
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      Text(
-                        '우리 반 인원',
-                        style: textStyle11,
-                      ),
-                      Text(
-                        '${groupDetail?.peoples}명',
-                        style: textStyle18,
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              // group creation date
-              Positioned(
-                bottom: 0,
-                left: 0,
-                child: Container(
-                  width: 253.r,
-                  height: 42.r,
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(8).r,
-                  ),
-                  padding: EdgeInsets.symmetric(
-                    horizontal: 24.r,
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      Text(
-                        '우리 반 생성일',
-                        style: textStyle11,
-                      ),
-                      Text(
-                        groupDetail != null ? '20${groupDetail?.created}' : '',
-                        style: textStyle18,
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              // correct rate
-              Positioned(
-                top: 0,
-                left: 269.r,
-                child: Container(
-                  width: 247.r,
-                  height: 250.r,
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(8).r,
-                  ),
-                  padding: EdgeInsets.symmetric(
-                    horizontal: 23.r,
-                    vertical: 23.r,
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      PieChartWidget(
-                        width: 111.86.r,
-                        height: 111.86.r,
-                        data: correctRate[bestLevel] == 0
-                            ? [100, 0, 0]
-                            : correctRate,
-                      ),
-                      SizedBox(height: 17.r),
-                      Text(
-                        '이 문제를 잘했어요!',
-                        style: textStyle18,
-                      ),
-                      SizedBox(height: 9.r),
-                      Text(
-                        '우리 반은 ${levelList[bestLevel]}에서 정답률이\n가장 높아요.',
-                        style: textStyle14,
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              Positioned(
-                top: 77.r,
-                right: 263.r,
-                child: SvgPicture.asset(
-                  'assets/images/connecting_line.svg',
-                  width: 35.r,
-                ),
-              ),
-              Positioned(
-                top: 67.5.r,
-                right: 178.r,
-                child: Container(
-                  width: 79.r,
-                  height: 26.r,
-                  decoration: BoxDecoration(
-                    color: primaryPurple[500],
-                    borderRadius: BorderRadius.circular(20).r,
-                  ),
-                  child: Center(
-                    child: Text(
-                      correctRate[bestLevel] == 0
-                          ? '기록 없음'
-                          : levelList[bestLevel],
-                      style: textStyle14.copyWith(color: Colors.white),
                     ),
                   ),
-                ),
-              ),
-              Positioned(
-                top: 102.r,
-                right: 187.r,
-                child: Text(
-                  '${correctRate[bestLevel].toInt()}%',
-                  style: textStyle14,
-                ),
-              ),
-              // best level
-              Positioned(
-                top: 47.r,
-                right: 0,
-                child: Container(
-                  width: 153.r,
-                  height: 118.r,
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(8).r,
+                  // group size
+                  Positioned(
+                    top: 150.r,
+                    left: 0,
+                    child: Container(
+                      width: 253.r,
+                      height: 42.r,
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(8).r,
+                      ),
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 24.r,
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Text(
+                            '우리 반 인원',
+                            style: textStyle11,
+                          ),
+                          Text(
+                            '${groupDetail?.peoples}명',
+                            style: textStyle18,
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
-                  padding: EdgeInsets.symmetric(
-                    horizontal: 21.r,
-                    vertical: 13.5.r,
+                  // group creation date
+                  Positioned(
+                    bottom: 0,
+                    left: 0,
+                    child: Container(
+                      width: 253.r,
+                      height: 42.r,
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(8).r,
+                      ),
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 24.r,
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Text(
+                            '우리 반 생성일',
+                            style: textStyle11,
+                          ),
+                          Text(
+                            groupDetail != null
+                                ? '20${groupDetail?.created}'
+                                : '',
+                            style: textStyle18,
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Basic BEST',
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 10.sp,
-                          color: const Color(0xFF878787),
+                  // correct rate
+                  Positioned(
+                    top: 0,
+                    left: 269.r,
+                    child: Container(
+                      width: 247.r,
+                      height: 250.r,
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(8).r,
+                      ),
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 23.r,
+                        vertical: 23.r,
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          PieChartWidget(
+                            width: 111.86.r,
+                            height: 111.86.r,
+                            data: correctRate[bestLevel] == 0
+                                ? [100, 0, 0]
+                                : correctRate,
+                          ),
+                          SizedBox(height: 17.r),
+                          Text(
+                            '이 문제를 잘했어요!',
+                            style: textStyle18,
+                          ),
+                          SizedBox(height: 9.r),
+                          Text(
+                            '우리 반은 ${levelList[bestLevel]}에서 정답률이\n가장 높아요.',
+                            style: textStyle14,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  Positioned(
+                    top: 77.r,
+                    right: 263.r,
+                    child: SvgPicture.asset(
+                      'assets/images/connecting_line.svg',
+                      width: 35.r,
+                    ),
+                  ),
+                  Positioned(
+                    top: 67.5.r,
+                    right: 178.r,
+                    child: Container(
+                      width: 79.r,
+                      height: 26.r,
+                      decoration: BoxDecoration(
+                        color: primaryPurple[500],
+                        borderRadius: BorderRadius.circular(20).r,
+                      ),
+                      child: Center(
+                        child: Text(
+                          correctRate[bestLevel] == 0
+                              ? '기록 없음'
+                              : levelList[bestLevel],
+                          style: textStyle14.copyWith(color: Colors.white),
                         ),
                       ),
-                      const Spacer(flex: 5),
-                      Text(
-                        basicBest == -1 ? '데이터 없음' : levelList[basicBest],
-                        style: TextStyle(
-                          fontWeight: FontWeight.w800,
-                          fontSize: 17.sp,
-                          color: primaryPurple[500],
-                        ),
-                      ),
-                      const Spacer(flex: 12),
-                      Text(
-                        'Expert BEST',
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 10.sp,
-                          color: const Color(0xFF878787),
-                        ),
-                      ),
-                      const Spacer(flex: 5),
-                      Text(
-                        expertBest == -1 ? '데이터 없음' : levelList[expertBest],
-                        style: TextStyle(
-                          fontWeight: FontWeight.w800,
-                          fontSize: 17.sp,
-                          color: primaryPurple[500],
-                        ),
-                      ),
-                    ],
+                    ),
                   ),
-                ),
-              ),
-              // weakest part
-              Positioned(
-                bottom: 0,
-                right: 0,
-                child: Container(
-                  width: 153.r,
-                  height: 70.r,
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(8).r,
+                  Positioned(
+                    top: 102.r,
+                    right: 187.r,
+                    child: Text(
+                      '${correctRate[bestLevel].toInt()}%',
+                      style: textStyle14,
+                    ),
                   ),
-                  padding: EdgeInsets.symmetric(
-                    horizontal: 21.r,
-                    vertical: 14.r,
-                  ),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        '가장 약한 부분은?',
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 10.sp,
-                          color: const Color(0xFF878787),
-                        ),
+                  // best level
+                  Positioned(
+                    top: 47.r,
+                    right: 0,
+                    child: Container(
+                      width: 153.r,
+                      height: 118.r,
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(8).r,
                       ),
-                      Text(
-                        groupDetail != null
-                            ? '${wrongToString(groupDetail!.weakest)} 오류'
-                            : '데이터 없음',
-                        style: TextStyle(
-                          fontWeight: FontWeight.w800,
-                          fontSize: 17.sp,
-                          color: primaryPurple[500],
-                        ),
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 21.r,
+                        vertical: 13.5.r,
                       ),
-                    ],
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Basic BEST',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 10.sp,
+                              color: const Color(0xFF878787),
+                            ),
+                          ),
+                          const Spacer(flex: 5),
+                          Text(
+                            basicBest == -1 ? '데이터 없음' : levelList[basicBest],
+                            style: TextStyle(
+                              fontWeight: FontWeight.w800,
+                              fontSize: 17.sp,
+                              color: primaryPurple[500],
+                            ),
+                          ),
+                          const Spacer(flex: 12),
+                          Text(
+                            'Expert BEST',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 10.sp,
+                              color: const Color(0xFF878787),
+                            ),
+                          ),
+                          const Spacer(flex: 5),
+                          Text(
+                            expertBest == -1 ? '데이터 없음' : levelList[expertBest],
+                            style: TextStyle(
+                              fontWeight: FontWeight.w800,
+                              fontSize: 17.sp,
+                              color: primaryPurple[500],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
-                ),
-              ),
-              // select season for statics
-              Positioned(
-                top: 0,
-                right: 0,
-                child: CoolDropDownButton(
-                  controller: seasonDropdownController,
-                  dropdownList: seasonDropdownItems,
-                  defaultItem: seasonDropdownItems[seasonForStatics],
-                  onChange: (value) async {
-                    if (seasonDropdownController.isError) {
-                      await seasonDropdownController.resetError();
-                    }
-                    seasonForStatics = seasonList.indexOf(value);
-                  },
-                  width: 153.r,
-                  height: 36.r,
-                  backgroundColor: Colors.white,
-                  primaryColor: primaryPurple[500]!,
-                  textStyle: textStyle14,
-                ),
-              ),
-            ],
-          );
+                  // weakest part
+                  Positioned(
+                    bottom: 0,
+                    right: 0,
+                    child: Container(
+                      width: 153.r,
+                      height: 70.r,
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(8).r,
+                      ),
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 21.r,
+                        vertical: 14.r,
+                      ),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            '가장 약한 부분은?',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 10.sp,
+                              color: const Color(0xFF878787),
+                            ),
+                          ),
+                          Text(
+                            groupDetail != null
+                                ? '${wrongToString(groupDetail!.weakest)} 오류'
+                                : '데이터 없음',
+                            style: TextStyle(
+                              fontWeight: FontWeight.w800,
+                              fontSize: 17.sp,
+                              color: primaryPurple[500],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  // select season for statics
+                  Positioned(
+                    top: 0,
+                    right: 0,
+                    child: CoolDropDownButton(
+                      controller: seasonDropdownController,
+                      dropdownList: seasonDropdownItems,
+                      defaultItem: seasonDropdownItems[seasonForStatics],
+                      onChange: (value) async {
+                        if (seasonDropdownController.isError) {
+                          await seasonDropdownController.resetError();
+                        }
+                        seasonForStatics = seasonList.indexOf(value);
+                      },
+                      width: 153.r,
+                      height: 36.r,
+                      backgroundColor: Colors.white,
+                      primaryColor: primaryPurple[500]!,
+                      textStyle: textStyle14,
+                    ),
+                  ),
+                ],
+              );
   }
 }
 
@@ -695,10 +704,17 @@ class _IndividualState extends ConsumerState<Individual> {
       },
       (studentList) {
         students = studentList;
+        if (students.isEmpty) {
+          if (mounted) {
+            setState(() {
+              isLoading = false;
+            });
+          }
+        } else {
+          getSummary();
+        }
       },
     );
-
-    getSummary();
   }
 
   @override

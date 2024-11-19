@@ -83,11 +83,6 @@ class MyApp extends StatelessWidget {
           '/super_monitor_screen': (context) => const SuperMonitorScreen(),
           '/super_group_create_screen': (context) =>
               const SuperGroupCreateScreen(),
-          '/super_group_monitor_screen': (context) => const MonitorGroupScreen(
-                groupId: 1,
-                groupName: '그루비룸',
-                detailText: 'groovyroom',
-              ),
           '/parent_add_child_screen': (context) => const ParentAddChildScreen(),
           '/super_game_code_screen': (context) => const SuperGameCodeScreen(),
           '/super_game_screen': (context) => const SuperGameScreen(),

@@ -1,5 +1,6 @@
 import 'package:block_english/models/MonitoringModel/study_info_model.dart';
 import 'package:block_english/models/model.dart';
+import 'package:block_english/services/student_service.dart';
 import 'package:block_english/utils/color.dart';
 import 'package:block_english/utils/text_style.dart';
 import 'package:block_english/widgets/ChartWidget/bar_chart_widget.dart';
@@ -361,7 +362,7 @@ class _MonitorStudentScreenState extends ConsumerState<MonitorStudentScreen> {
                           alignment: Alignment.centerLeft,
                         ),
                         child: Text(
-                          '학습자 관리',
+                          widget.studentId == -1 ? '기타 관리' : '학습자 관리',
                           style: TextStyle(
                             fontSize: 14.sp,
                             fontWeight: FontWeight.bold,
@@ -433,9 +434,13 @@ class _LearningAnalysisState extends ConsumerState<LearningAnalysis> {
   int expertBest = -1;
 
   waitForData() async {
-    final response = await ref
-        .watch(superServiceProvider)
-        .postUserMonitoringStudyRate(widget.userId, widget.season);
+    final response = widget.userId == -1
+        ? await ref
+            .watch(studentServiceProvider)
+            .getMonitoringCorrectRate(widget.season)
+        : await ref
+            .watch(superServiceProvider)
+            .postUserMonitoringStudyRate(widget.userId, widget.season);
 
     response.fold((failure) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -740,9 +745,13 @@ class _IncorrectState extends ConsumerState<Incorrect> {
   List<double> chartData = [0, 0, 0, 0, 0];
 
   waitForData() async {
-    final response = await ref
-        .watch(superServiceProvider)
-        .postUserMonitoringIncorrect(widget.userId, widget.season);
+    final response = widget.userId == -1
+        ? await ref
+            .watch(studentServiceProvider)
+            .getMonitoringIncorrect(widget.season)
+        : await ref
+            .watch(superServiceProvider)
+            .postUserMonitoringIncorrect(widget.userId, widget.season);
 
     response.fold((failure) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -1033,9 +1042,11 @@ class _ManageStudentState extends ConsumerState<ManageStudent> {
 
   waitForData() async {
     isLoading = true;
-    final response = await ref
-        .watch(superServiceProvider)
-        .postUserMonitoringEtc(widget.userId, widget.season);
+    final response = widget.userId == -1
+        ? await ref.watch(studentServiceProvider).getMonitoringEtc()
+        : await ref
+            .watch(superServiceProvider)
+            .postUserMonitoringEtc(widget.userId, widget.season);
 
     response.fold((failure) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -1141,7 +1152,8 @@ class _ManageStudentState extends ConsumerState<ManageStudent> {
                 Align(
                   alignment: Alignment.topCenter,
                   child: Padding(
-                    padding: const EdgeInsets.only(top: 123).r,
+                    padding:
+                        EdgeInsets.only(top: widget.userId == -1 ? 140 : 123).r,
                     child: Lottie.asset(
                       width: 334.r,
                       //height: 166.r,
@@ -1149,13 +1161,15 @@ class _ManageStudentState extends ConsumerState<ManageStudent> {
                     ),
                   ),
                 ),
-                Align(
-                  alignment: Alignment.bottomCenter,
-                  child: SquareButton(
-                    text: '학습자 삭제',
-                    onPressed: widget.onDeletePressed,
-                  ),
-                ),
+                widget.userId == -1
+                    ? const SizedBox()
+                    : Align(
+                        alignment: Alignment.bottomCenter,
+                        child: SquareButton(
+                          text: '학습자 삭제',
+                          onPressed: widget.onDeletePressed,
+                        ),
+                      ),
               ],
             ),
     );

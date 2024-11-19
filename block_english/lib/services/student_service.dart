@@ -177,4 +177,85 @@ class StudentService {
       ));
     }
   }
+
+  Future<Either<FailureModel, List<StudyInfoModel>>> getMonitoringCorrectRate(
+    int season,
+  ) async {
+    try {
+      final dio = _ref.watch(dioProvider);
+      final response = await dio.get(
+        '/$_student/monitoring_correct_rate',
+        options: Options(
+          headers: {
+            'accept': 'application/json',
+            TOKENVALIDATE: 'true',
+            'Content-Type': 'application/json',
+          },
+        ),
+        queryParameters: {
+          'season': season,
+        },
+      );
+      debugPrint(response.data.toString());
+      return Right((response.data['seasons'] as List).map((e) {
+        return StudyInfoModel.fromJson(e);
+      }).toList());
+    } on DioException catch (e) {
+      return Left(FailureModel(
+        statusCode: e.response?.statusCode ?? 0,
+        detail: e.response?.data['detail'],
+      ));
+    }
+  }
+
+  Future<Either<FailureModel, IncorrectModel>> getMonitoringIncorrect(
+    int season,
+  ) async {
+    try {
+      final dio = _ref.watch(dioProvider);
+      final response = await dio.get(
+        '/$_student/monitoring_incorrect',
+        options: Options(
+          headers: {
+            'accept': 'application/json',
+            TOKENVALIDATE: 'true',
+            'Content-Type': 'application/json',
+          },
+        ),
+        queryParameters: {
+          'season': season,
+        },
+      );
+
+      return Right(IncorrectModel.fromJson(response.data));
+    } on DioException catch (e) {
+      return Left(FailureModel(
+        statusCode: e.response?.statusCode ?? 0,
+        detail: e.response?.data['detail'],
+      ));
+    }
+  }
+
+  Future<Either<FailureModel, StudyTimeModel>> getMonitoringEtc() async {
+    try {
+      final dio = _ref.watch(dioProvider);
+      final response = await dio.get(
+        '/$_student/monitoring_etc',
+        options: Options(
+          headers: {
+            'accept': 'application/json',
+            TOKENVALIDATE: 'true',
+            'Content-Type': 'application/json',
+          },
+        ),
+      );
+
+      return Right(StudyTimeModel.fromJson(response.data));
+    } on DioException catch (e) {
+      return Left(FailureModel(
+        statusCode: e.response?.statusCode ?? 0,
+        detail: e.response?.data['detail'],
+      ));
+    }
+  }
 }

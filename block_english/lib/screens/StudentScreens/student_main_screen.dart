@@ -1,3 +1,4 @@
+import 'package:block_english/screens/SuperScreens/super_monitor_student_screen.dart';
 import 'package:block_english/utils/constants.dart';
 import 'package:block_english/utils/status.dart';
 import 'package:flutter/material.dart';
@@ -33,7 +34,6 @@ class StudentMainScreen extends ConsumerWidget {
                         Text(
                           '${ref.watch(statusProvider).name}님,',
                           style: TextStyle(
-                            fontFamily: 'Pretendard',
                             fontSize: 15.sp,
                             fontWeight: FontWeight.w600,
                           ),
@@ -41,7 +41,6 @@ class StudentMainScreen extends ConsumerWidget {
                         Text(
                           '반가워요.',
                           style: TextStyle(
-                            fontFamily: 'Pretendard',
                             fontSize: 15.sp,
                             fontWeight: FontWeight.w500,
                             color: const Color(0x88000000),
@@ -144,7 +143,17 @@ class StudentMainScreen extends ConsumerWidget {
                 ),
                 IconButton(
                   padding: EdgeInsets.zero,
-                  onPressed: () {},
+                  onPressed: () =>
+                      Navigator.of(context, rootNavigator: true).push(
+                    MaterialPageRoute(
+                      builder: (context) => MonitorStudentScreen(
+                        studentId: -1,
+                        studentName: ref.watch(statusProvider).name,
+                        groupName: ref.watch(statusProvider).groupName ?? '',
+                        initialPage: 1,
+                      ),
+                    ),
+                  ),
                   icon: SvgPicture.asset('assets/cards/student_main_3.svg',
                       width: 205.r, height: 207.r),
                 ),
