@@ -397,7 +397,7 @@ class _GroupState extends ConsumerState<Group> {
                           Row(
                             children: [
                               SizedBox(
-                                width: 91.r,
+                                width: 100.r,
                                 height: 40.r,
                                 child: GroupProgressDropdown(
                                   itemList: seasonList,
@@ -409,7 +409,7 @@ class _GroupState extends ConsumerState<Group> {
                               ),
                               SizedBox(width: 8.r),
                               SizedBox(
-                                width: 100.r,
+                                width: 113.r,
                                 height: 40.r,
                                 child: GroupProgressDropdown(
                                   itemList: groupDetail!
@@ -554,14 +554,14 @@ class _GroupState extends ConsumerState<Group> {
                                 ? [100, 0, 0]
                                 : correctRate,
                           ),
-                          SizedBox(height: 17.r),
+                          const Spacer(flex: 2),
                           Text(
                             '이 문제를 잘했어요!',
                             style: textStyle18,
                           ),
-                          SizedBox(height: 9.r),
+                          const Spacer(flex: 1),
                           Text(
-                            '우리 반은 ${levelList[bestLevel]}에서 정답률이\n가장 높아요.',
+                            '우리 반은 ${levelList[bestLevel]}에서 정답률이 가장 높아요.',
                             style: textStyle14,
                           ),
                         ],
@@ -674,7 +674,7 @@ class _GroupState extends ConsumerState<Group> {
                       ),
                       padding: EdgeInsets.symmetric(
                         horizontal: 21.r,
-                        vertical: 14.r,
+                        vertical: 13.r,
                       ),
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
@@ -1152,12 +1152,12 @@ class _IndividualState extends ConsumerState<Individual> {
                                 top: 7.r,
                                 left: 62.r,
                                 child: SizedBox(
-                                  width: 56.r,
+                                  width: 60.r,
                                   child: Text(
                                     '${summary.totalStudyTime}시간',
                                     textAlign: TextAlign.center,
                                     style: textStyle14.copyWith(
-                                      fontSize: 13.sp,
+                                      fontSize: 12.sp,
                                     ),
                                   ),
                                 ),
@@ -1166,13 +1166,13 @@ class _IndividualState extends ConsumerState<Individual> {
                                 bottom: 7.r,
                                 left: 62.r,
                                 child: SizedBox(
-                                  width: 56.r,
+                                  width: 60.r,
                                   child: Text(
                                     '총 학습 시간',
                                     textAlign: TextAlign.center,
                                     style: TextStyle(
                                       fontWeight: FontWeight.bold,
-                                      fontSize: 10.sp,
+                                      fontSize: 9.sp,
                                       color: const Color(0xFFB2B2B2),
                                     ),
                                   ),
