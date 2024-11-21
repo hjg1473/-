@@ -186,3 +186,17 @@ async def update_group_level_and_step(group_id, season, level, type, step, db):
     releasedGroup_model.released_step = step
     db.add(releasedGroup_model)
     await db.commit()
+
+async def get_level_steps_info(season: int, problem_type: str, db: db_dependency):
+    result = await db.execute(select(Problems)
+                              .filter(Problems.type == problem_type, Problems.season == season))
+    problem_model = result.scalars().all()
+    
+    problems_by_level = {}
+    for problem in problem_model:
+        if problem.level not in problems_by_level:
+            problems_by_level[problem.level] = set()
+        problems_by_level[problem.level].add(problem.step)
+
+    levels_info = [{'level_name': level, 'steps': list(steps)} for level, steps in problems_by_level.items()]
+    return levels_info

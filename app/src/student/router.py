@@ -29,31 +29,38 @@ async def user_season_info(user: user_dependency, db:db_dependency):
     seasons = [item.released_season for item in released_model]
     return {"seasons" : seasons}
 
-# Receive the season selected by the student and update the user_season information.
 @router.put("/update_season", status_code=status.HTTP_200_OK)
 async def update_user_season(season: SeasonList, user: user_dependency, db: db_dependency):
     user_credentials_exception(user)
     student_role_exception(user.get('user_role'))
 
     released_model = await fetch_user_released(user.get('id'), db)
-    # List {id, season, level, step, owner_id} 
     seasons = [item.released_season for item in released_model]
 
     # Delete seasons not selected
-    difference = list(set(seasons) - set(season.season))
-    for sz in difference:
-        await db.execute(delete(Released).filter(Released.owner_id == user.get('id')).filter(Released.released_season == sz))
-    await db.commit()
-    # Add the newly selected season
-    difference = list(set(season.season) - set(seasons))
-    for sz in difference:
-        released = Released(
-            owner_id=user.get('id'), released_season=sz,
-            released_level=0, released_step=0
+    difference_to_delete = list(set(seasons) - set(season.season))
+    if difference_to_delete:
+        await db.execute(
+            delete(Released)
+            .filter(Released.owner_id == user.get('id'))
+            .filter(Released.released_season.in_(difference_to_delete))
         )
-        db.add(released)
+    
+    # Add the newly selected season
+    difference_to_add = list(set(season.season) - set(seasons))
+    if difference_to_add:
+        new_released = [
+            Released(
+                owner_id=user.get('id'), released_season=sz,
+                released_level=0, released_step=0
+            )
+            for sz in difference_to_add
+        ]
+        db.add_all(new_released)
+    
     await db.commit()
     return {'detail': '수정되었습니다.'}
+
 
 # Receive pinnumber. join group or add parent
 @router.post("/pin/enter", status_code = status.HTTP_200_OK)

@@ -5,7 +5,6 @@ from sqlalchemy.ext.declarative import declarative_base
 
 Base = declarative_base()
 
-# 중간 테이블 정의
 correct_problem_table = Table('correct_problem', Base.metadata,
     Column('study_info_id', Integer, ForeignKey('studyInfo.id')),
     Column('problem_id', Integer, ForeignKey('problems.id')),

@@ -82,8 +82,8 @@ async def check_answer(room, participant_id, pnum, user_string, answer):
 async def check_non_ack_participants_after_delay(room_id):
     room = rooms.get(room_id)
     isMissing_key = False
-    # Execute after waiting 5 seconds
-    await asyncio.sleep(5)
+    # Execute after waiting 10 seconds
+    await asyncio.sleep(10)
 
     missing_keys = set(room.participants.keys()) - set(room.participants_ack.keys())
     if missing_keys:
