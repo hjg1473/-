@@ -108,7 +108,7 @@ async def participant_action(
     participant_websocket = room.participants_websockets.get(participant_id)
 
     if not room.host_websocket:
-        raise check_room_exception(room)
+        check_room_exception(room)
     
     answer = roomProblem[room_id][pnum]
     from app.src.problem.router import ocr
