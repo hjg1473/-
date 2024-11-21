@@ -55,8 +55,8 @@ class SuperMainScreen extends ConsumerWidget {
                     width: 11.r,
                   ),
                   GestureDetector(
-                    onTap: () =>
-                        Navigator.of(context).pushNamed('/setting_screen'),
+                    onTap: () => Navigator.of(context)
+                        .pushNamed('/super_profile_screen'),
                     child: ClipOval(
                       child: Lottie.asset(
                         width: 48.r,

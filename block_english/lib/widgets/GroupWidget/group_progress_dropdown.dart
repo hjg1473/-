@@ -10,24 +10,22 @@ class GroupProgressDropdown extends StatelessWidget {
     required this.itemList,
     required this.initialItem,
     required this.onChanged,
+    this.enabled = true,
   });
 
   final List<String> itemList;
   final String initialItem;
   final Function(String?) onChanged;
+  final bool enabled;
 
   @override
   Widget build(BuildContext context) {
     return CustomDropdown(
-      itemsScrollController: ScrollController(
-        initialScrollOffset: 20,
-        keepScrollOffset: true,
-      ),
       closedHeaderPadding:
           const EdgeInsets.symmetric(horizontal: 8, vertical: 8).r,
       expandedHeaderPadding:
           const EdgeInsets.symmetric(horizontal: 8, vertical: 8).r,
-      listItemPadding: EdgeInsets.symmetric(horizontal: 8.r, vertical: 7.r),
+      listItemPadding: EdgeInsets.symmetric(horizontal: 8.r, vertical: 8.r),
       decoration: CustomDropdownDecoration(
         closedFillColor: primaryPurple[100],
         expandedFillColor: primaryPurple[100],
@@ -36,8 +34,16 @@ class GroupProgressDropdown extends StatelessWidget {
         hintStyle: textStyle16,
         headerStyle: textStyle16,
         listItemStyle: textStyle16,
-        listItemDecoration: const ListItemDecoration(
-          selectedColor: Colors.white,
+        overlayScrollbarDecoration: ScrollbarThemeData(
+          thumbVisibility: WidgetStateProperty.all(false),
+          trackVisibility: WidgetStateProperty.all(false),
+          interactive: false,
+          crossAxisMargin: 100,
+          mainAxisMargin: 100,
+          thumbColor: WidgetStateProperty.all(Colors.red),
+          trackColor: WidgetStateProperty.all(Colors.green),
+          trackBorderColor: WidgetStateProperty.all(Colors.blue),
+          minThumbLength: 200,
         ),
       ),
       initialItem: initialItem,

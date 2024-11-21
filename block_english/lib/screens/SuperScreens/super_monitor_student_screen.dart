@@ -428,12 +428,13 @@ class LearningAnalysis extends ConsumerStatefulWidget {
 class _LearningAnalysisState extends ConsumerState<LearningAnalysis> {
   bool isLoading = true;
   List<StudyInfoModel> studyInfo = [];
-  List<double> correctRate = [0, 0, 0];
+  List<double> correctRate = [];
   int bestLevel = -1;
   int basicBest = -1;
   int expertBest = -1;
 
   waitForData() async {
+    debugPrint('waiting for data');
     final response = widget.userId == -1
         ? await ref
             .watch(studentServiceProvider)
@@ -454,12 +455,14 @@ class _LearningAnalysisState extends ConsumerState<LearningAnalysis> {
         return;
       }
       StudyInfoModel last = studyInfo.last;
+      correctRate.clear();
       for (int i = 0; i < last.releasedLevel! + 1; i++) {
-        correctRate[i] = last.correctRateNormal![i] + last.correctRateAI![i];
+        correctRate.add(last.correctRateNormal![i] + last.correctRateAI![i]);
         if (bestLevel == -1 || correctRate[i] > correctRate[bestLevel]) {
           bestLevel = i;
         }
       }
+      debugPrint(correctRate.toString());
 
       for (int i = 0; i < 3; i++) {
         double basicBestCorrectRate = 0;
@@ -482,8 +485,24 @@ class _LearningAnalysisState extends ConsumerState<LearningAnalysis> {
   }
 
   @override
-  Widget build(BuildContext context) {
+  void didChangeDependencies() {
+    // TODO: implement didChangeDependencies
+    super.didChangeDependencies();
     waitForData();
+  }
+
+  @override
+  void didUpdateWidget(covariant LearningAnalysis oldWidget) {
+    // TODO: implement didUpdateWidget
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.season != widget.season) {
+      isLoading = true;
+      waitForData();
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return Container(
       color: const Color(0xFFECECEC),
       child: Padding(
@@ -778,8 +797,24 @@ class _IncorrectState extends ConsumerState<Incorrect> {
   }
 
   @override
-  Widget build(BuildContext context) {
+  void didChangeDependencies() {
+    // TODO: implement didChangeDependencies
+    super.didChangeDependencies();
     waitForData();
+  }
+
+  @override
+  void didUpdateWidget(covariant Incorrect oldWidget) {
+    // TODO: implement didUpdateWidget
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.season != widget.season) {
+      isLoading = true;
+      waitForData();
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return Container(
       color: const Color(0xFFECECEC),
       child: Padding(

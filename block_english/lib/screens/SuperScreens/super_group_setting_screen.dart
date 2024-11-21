@@ -2,6 +2,8 @@ import 'dart:async';
 
 import 'package:block_english/screens/SuperScreens/super_monitor_group_screen.dart';
 import 'package:block_english/services/super_service.dart';
+import 'package:block_english/utils/color.dart';
+import 'package:block_english/utils/text_style.dart';
 import 'package:block_english/widgets/GroupWidget/pin_code_widget.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -59,10 +61,12 @@ class _GroupSettingScreenState extends ConsumerState<GroupSettingScreen>
     _groupNameController.dispose();
     _detailController.dispose();
     _btnController.close();
+    _ticker?.dispose();
     super.dispose();
   }
 
   onSavePressed() async {
+    debugPrint('onSavePressed');
     final result = await ref.watch(superServiceProvider).putGroupUpdate(
           groupId,
           _groupNameController.text,
@@ -71,6 +75,7 @@ class _GroupSettingScreenState extends ConsumerState<GroupSettingScreen>
 
     result.fold((failure) {
       //TODO: error handling
+      debugPrint('[SUPER_GROUP_SETTING_SCREEN] onSavePressed error: $failure');
     }, (response) {
       //TODO: show success dialog
       savedName = _groupNameController.text;
@@ -122,9 +127,24 @@ class _GroupSettingScreenState extends ConsumerState<GroupSettingScreen>
     });
   }
 
+  onDeletePressed() async {
+    debugPrint(widget.groupId.toString());
+    final result =
+        await ref.watch(superServiceProvider).deleteRemoveGroup(widget.groupId);
+
+    result.fold((failure) {
+      debugPrint('[SUPER_GROUP_SETTING_SCREEN] onDeletePressed error');
+    }, (success) {
+      Navigator.of(context).pop(true);
+      Navigator.of(context)
+          .popUntil(ModalRoute.withName('/super_monitor_screen'));
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: const Color(0xFFF6E7FF),
       body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.symmetric(
@@ -181,10 +201,22 @@ class _GroupSettingScreenState extends ConsumerState<GroupSettingScreen>
                       ],
                     ),
                   ),
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: GestureDetector(
+                      onTap: onDeletePressed,
+                      child: Text(
+                        '그룹 삭제하기',
+                        style: textStyle14.copyWith(
+                          color: const Color(0xFF373737),
+                        ),
+                      ),
+                    ),
+                  ),
                 ],
               ),
               SizedBox(
-                height: 14.r,
+                height: 12.r,
               ),
               SizedBox(
                 width: 684.r,
@@ -195,10 +227,10 @@ class _GroupSettingScreenState extends ConsumerState<GroupSettingScreen>
                       width: 312.r,
                       height: 258.r,
                       decoration: BoxDecoration(
-                        color: const Color(0xFFDFDFDF),
+                        color: Colors.white,
                         borderRadius: BorderRadius.circular(8.0).r,
                       ),
-                      padding: const EdgeInsets.all(16).r,
+                      padding: const EdgeInsets.all(15).r,
                       child: Column(
                         children: [
                           SizedBox(
@@ -210,30 +242,14 @@ class _GroupSettingScreenState extends ConsumerState<GroupSettingScreen>
                               children: [
                                 Text(
                                   '그룹명 변경',
-                                  style: TextStyle(
-                                    fontSize: 18.sp,
-                                    fontWeight: FontWeight.w800,
-                                  ),
+                                  style: textStyle16,
                                 ),
-                                Container(
+                                SizedBox(
                                   width: 280.r,
                                   height: 48.r,
-                                  decoration: BoxDecoration(
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: Colors.grey.withOpacity(0.5),
-                                        spreadRadius: 1,
-                                        blurRadius: 7,
-                                        offset: const Offset(0, 0),
-                                      ),
-                                    ],
-                                  ),
                                   child: TextField(
                                     controller: _groupNameController,
-                                    style: TextStyle(
-                                      fontSize: 16.sp,
-                                      fontWeight: FontWeight.w700,
-                                    ),
+                                    style: textStyle16,
                                     decoration: InputDecoration(
                                       border: OutlineInputBorder(
                                         borderSide: BorderSide.none,
@@ -244,17 +260,17 @@ class _GroupSettingScreenState extends ConsumerState<GroupSettingScreen>
                                       hintStyle: TextStyle(
                                         fontSize: 16.sp,
                                         fontWeight: FontWeight.w700,
-                                        color: const Color(0xFFD6D6D6),
+                                        color: Colors.grey,
                                       ),
                                       filled: true,
-                                      fillColor: Colors.white,
+                                      fillColor: const Color(0xFFF0F0F0),
                                     ),
                                   ),
                                 ),
                               ],
                             ),
                           ),
-                          SizedBox(height: 16.r),
+                          SizedBox(height: 12.r),
                           SizedBox(
                             width: 280.r,
                             height: 78.r,
@@ -264,30 +280,14 @@ class _GroupSettingScreenState extends ConsumerState<GroupSettingScreen>
                               children: [
                                 Text(
                                   '상세 정보',
-                                  style: TextStyle(
-                                    fontSize: 18.sp,
-                                    fontWeight: FontWeight.w800,
-                                  ),
+                                  style: textStyle16,
                                 ),
-                                Container(
+                                SizedBox(
                                   width: 280.r,
                                   height: 48.r,
-                                  decoration: BoxDecoration(
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: Colors.grey.withOpacity(0.5),
-                                        spreadRadius: 1,
-                                        blurRadius: 7,
-                                        offset: const Offset(0, 0),
-                                      ),
-                                    ],
-                                  ),
                                   child: TextField(
                                     controller: _detailController,
-                                    style: TextStyle(
-                                      fontSize: 16.sp,
-                                      fontWeight: FontWeight.w700,
-                                    ),
+                                    style: textStyle16,
                                     decoration: InputDecoration(
                                       border: OutlineInputBorder(
                                         borderSide: BorderSide.none,
@@ -298,10 +298,10 @@ class _GroupSettingScreenState extends ConsumerState<GroupSettingScreen>
                                       hintStyle: TextStyle(
                                         fontSize: 16.sp,
                                         fontWeight: FontWeight.w700,
-                                        color: const Color(0xFFD6D6D6),
+                                        color: Colors.grey,
                                       ),
                                       filled: true,
-                                      fillColor: Colors.white,
+                                      fillColor: const Color(0xFFF0F0F0),
                                     ),
                                   ),
                                 ),
@@ -316,16 +316,14 @@ class _GroupSettingScreenState extends ConsumerState<GroupSettingScreen>
                             child: Container(
                               alignment: Alignment.center,
                               width: 280.r,
-                              height: 38.r,
+                              height: 44.r,
                               decoration: BoxDecoration(
-                                color: const Color(0xFF4A4949),
+                                color: primaryPurple[500],
                                 borderRadius: BorderRadius.circular(8.0).r,
                               ),
                               child: Text(
                                 '저장하기',
-                                style: TextStyle(
-                                  fontSize: 18.sp,
-                                  fontWeight: FontWeight.w800,
+                                style: textStyle16.copyWith(
                                   color: Colors.white,
                                 ),
                               ),
@@ -341,7 +339,7 @@ class _GroupSettingScreenState extends ConsumerState<GroupSettingScreen>
                       width: 352.r,
                       height: 258.r,
                       decoration: BoxDecoration(
-                        color: const Color(0xFFDFDFDF),
+                        color: Colors.white,
                         borderRadius: BorderRadius.circular(8.0).r,
                       ),
                       padding: const EdgeInsets.symmetric(
@@ -361,29 +359,17 @@ class _GroupSettingScreenState extends ConsumerState<GroupSettingScreen>
                             child: Container(
                               alignment: Alignment.center,
                               width: 320.r,
-                              height: 38.r,
+                              height: 44.r,
                               decoration: BoxDecoration(
-                                color: pinCodeExist && !pinCodeExpired
-                                    ? Colors.grey[200]
-                                    : Colors.white,
+                                color: Colors.black,
                                 borderRadius: BorderRadius.circular(8.0).r,
-                                boxShadow: [
-                                  if (pinCodeExpired || !pinCodeExist)
-                                    BoxShadow(
-                                      color: Colors.grey.withOpacity(0.5),
-                                      spreadRadius: 1,
-                                      blurRadius: 7,
-                                      offset: const Offset(0, 0),
-                                    ),
-                                ],
                               ),
                               child: Text(
                                 pinCodeExist && pinCodeExpired
                                     ? 'PIN 코드 재생성하기 '
                                     : 'PIN 코드 생성하기',
-                                style: TextStyle(
-                                  fontSize: 16.sp,
-                                  fontWeight: FontWeight.w700,
+                                style: textStyle16.copyWith(
+                                  color: Colors.white,
                                 ),
                               ),
                             ),

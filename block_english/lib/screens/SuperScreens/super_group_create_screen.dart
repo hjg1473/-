@@ -60,6 +60,7 @@ class _SuperGroupCreateScreenState
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: const Color(0xFFF6E7FF),
       body: Stack(
         children: [
           Padding(
@@ -130,19 +131,9 @@ class _SuperGroupCreateScreenState
                       SizedBox(
                         height: 10.r,
                       ),
-                      Container(
+                      SizedBox(
                         width: 326.r,
                         height: 48.r,
-                        decoration: BoxDecoration(
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.grey.withOpacity(0.5),
-                              spreadRadius: 1,
-                              blurRadius: 7,
-                              offset: const Offset(0, 0),
-                            ),
-                          ],
-                        ),
                         child: TextField(
                           controller: _groupNameController,
                           decoration: InputDecoration(
@@ -177,19 +168,9 @@ class _SuperGroupCreateScreenState
                       SizedBox(
                         height: 10.r,
                       ),
-                      Container(
+                      SizedBox(
                         width: 326.r,
                         height: 48.r,
-                        decoration: BoxDecoration(
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.grey.withOpacity(0.5),
-                              spreadRadius: 1,
-                              blurRadius: 7,
-                              offset: const Offset(0, 0),
-                            ),
-                          ],
-                        ),
                         child: TextField(
                           controller: _detailController,
                           decoration: InputDecoration(

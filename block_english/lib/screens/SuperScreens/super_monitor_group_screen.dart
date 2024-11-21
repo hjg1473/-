@@ -1,4 +1,5 @@
 import 'package:block_english/models/MonitoringModel/group_monitoring_model.dart';
+import 'package:block_english/models/MonitoringModel/group_progress_model.dart';
 import 'package:block_english/models/MonitoringModel/user_summary_model.dart';
 import 'package:block_english/models/model.dart';
 import 'package:block_english/screens/SuperScreens/super_group_setting_screen.dart';
@@ -41,119 +42,156 @@ class MonitorGroupScreen extends ConsumerStatefulWidget {
 class _MonitorGroupScreenState extends ConsumerState<MonitorGroupScreen> {
   int currentPage = 1;
   bool isTogglePressed = false;
+  bool isLoading = true;
+  GroupProgressModel? groupProgress;
+
+  void waitForProgress() async {
+    final response =
+        await ref.watch(superServiceProvider).getGroupInfo(widget.groupId);
+
+    response.fold((failure) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('${failure.statusCode} : ${failure.detail}'),
+        ),
+      );
+    }, (data) {
+      groupProgress = data;
+      if (mounted) {
+        setState(() {
+          isLoading = false;
+        });
+      }
+    });
+  }
+
+  @override
+  void didChangeDependencies() {
+    // TODO: implement didChangeDependencies
+    super.didChangeDependencies();
+    waitForProgress();
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.purple[50],
-      body: Stack(
-        children: [
-          Positioned(
-            top: 32.r,
-            left: 64.r,
-            child: IconButton(
-              padding: EdgeInsets.zero,
-              onPressed: () => Navigator.of(context).pushNamedAndRemoveUntil(
-                '/super_monitor_screen',
-                ModalRoute.withName('/super_main_screen'),
-              ),
-              icon: SvgPicture.asset(
-                'assets/buttons/round_back_button.svg',
-                width: 48.r,
-                height: 48.r,
-              ),
-            ),
-          ),
-          Align(
-            alignment: Alignment.topCenter,
-            child: Padding(
-              padding: EdgeInsets.only(top: 27.r),
-              child: SizedBox(
-                height: 55.r,
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Text(
-                      widget.groupName,
-                      style: textStyle22,
+    return isLoading
+        ? const Center(child: CircularProgressIndicator())
+        : Scaffold(
+            backgroundColor: Colors.purple[50],
+            body: Stack(
+              children: [
+                Positioned(
+                  top: 32.r,
+                  left: 64.r,
+                  child: IconButton(
+                    padding: EdgeInsets.zero,
+                    onPressed: () =>
+                        Navigator.of(context).pushNamedAndRemoveUntil(
+                      '/super_monitor_screen',
+                      ModalRoute.withName('/super_main_screen'),
                     ),
-                    if (widget.detailText.isNotEmpty)
-                      Text(
-                        widget.detailText,
-                        style: textStyle14.copyWith(
-                          color: const Color(0xFF888888),
-                        ),
-                      )
-                  ],
+                    icon: SvgPicture.asset(
+                      'assets/buttons/round_back_button.svg',
+                      width: 48.r,
+                      height: 48.r,
+                    ),
+                  ),
                 ),
-              ),
-            ),
-          ),
-          Positioned(
-            top: 40.r,
-            right: 128.r,
-            child: SizedBox(
-              width: 123.r,
-              height: 32.r,
-              child: IconButton(
-                onPressed: () {
-                  setState(() {
-                    isTogglePressed = !isTogglePressed;
-                  });
-                },
-                highlightColor: Colors.transparent,
-                icon: Image.asset(
-                    isTogglePressed
-                        ? 'assets/buttons/group_toggle_on_button.png'
-                        : 'assets/buttons/group_toggle_off_button.png',
+                Align(
+                  alignment: Alignment.topCenter,
+                  child: Padding(
+                    padding: EdgeInsets.only(top: 27.r),
+                    child: SizedBox(
+                      height: 55.r,
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Text(
+                            widget.groupName,
+                            style: textStyle22,
+                          ),
+                          if (widget.detailText.isNotEmpty)
+                            Text(
+                              widget.detailText,
+                              style: textStyle14.copyWith(
+                                color: const Color(0xFF888888),
+                              ),
+                            )
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+                Positioned(
+                  top: 40.r,
+                  right: 128.r,
+                  child: SizedBox(
                     width: 123.r,
-                    height: 32.r),
-                style: ButtonStyle(
-                  padding: WidgetStateProperty.all(EdgeInsets.zero),
+                    height: 32.r,
+                    child: IconButton(
+                      onPressed: () {
+                        if (mounted) {
+                          setState(() {
+                            isTogglePressed = !isTogglePressed;
+                          });
+                        }
+                      },
+                      highlightColor: Colors.transparent,
+                      icon: Image.asset(
+                          isTogglePressed
+                              ? 'assets/buttons/group_toggle_on_button.png'
+                              : 'assets/buttons/group_toggle_off_button.png',
+                          width: 123.r,
+                          height: 32.r),
+                      style: ButtonStyle(
+                        padding: WidgetStateProperty.all(EdgeInsets.zero),
+                      ),
+                    ),
+                  ),
                 ),
-              ),
+                Positioned(
+                  top: 32.r,
+                  right: 64.r,
+                  child: IconButton(
+                    padding: EdgeInsets.zero,
+                    onPressed: () {
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => GroupSettingScreen(
+                                    groupName: widget.groupName,
+                                    detailText: widget.detailText,
+                                    groupId: widget.groupId,
+                                  )));
+                    },
+                    icon: SvgPicture.asset(
+                      'assets/buttons/round_setting_button.svg',
+                      width: 48.r,
+                      height: 48.r,
+                    ),
+                  ),
+                ),
+                Positioned(
+                  left: 64.r,
+                  bottom: 25.r,
+                  child: SizedBox(
+                    width: 684.r,
+                    height: 250.r,
+                    child: isTogglePressed
+                        ? Individual(
+                            groupId: widget.groupId,
+                            groupName: widget.groupName,
+                            info: groupProgress ?? GroupProgressModel(),
+                          )
+                        : Group(
+                            groupId: widget.groupId,
+                            info: groupProgress ?? GroupProgressModel()),
+                  ),
+                ),
+              ],
             ),
-          ),
-          Positioned(
-            top: 32.r,
-            right: 64.r,
-            child: IconButton(
-              padding: EdgeInsets.zero,
-              onPressed: () {
-                Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => GroupSettingScreen(
-                              groupName: widget.groupName,
-                              detailText: widget.detailText,
-                              groupId: widget.groupId,
-                            )));
-              },
-              icon: SvgPicture.asset(
-                'assets/buttons/round_setting_button.svg',
-                width: 48.r,
-                height: 48.r,
-              ),
-            ),
-          ),
-          Positioned(
-            left: 64.r,
-            bottom: 25.r,
-            child: SizedBox(
-              width: 684.r,
-              height: 250.r,
-              child: isTogglePressed
-                  ? Individual(
-                      groupId: widget.groupId,
-                      groupName: widget.groupName,
-                    )
-                  : Group(groupId: widget.groupId),
-            ),
-          ),
-        ],
-      ),
-    );
+          );
   }
 }
 
@@ -161,9 +199,11 @@ class Group extends ConsumerStatefulWidget {
   const Group({
     super.key,
     required this.groupId,
+    required this.info,
   });
 
   final int groupId;
+  final GroupProgressModel info;
 
   @override
   ConsumerState<Group> createState() => _GroupState();
@@ -188,6 +228,11 @@ class _GroupState extends ConsumerState<Group> {
   int bestLevel = -1;
   int basicBest = -1;
   int expertBest = -1;
+  int seasonForStatics = 0;
+
+  int season = 0;
+  int level = 0;
+  int step = 0;
 
   @override
   void didChangeDependencies() {
@@ -196,6 +241,11 @@ class _GroupState extends ConsumerState<Group> {
   }
 
   void waitForData() async {
+    if (mounted) {
+      setState(() {
+        isLoading = true;
+      });
+    }
     final response = await ref
         .watch(superServiceProvider)
         .postGroupMonitoring(widget.groupId);
@@ -211,6 +261,7 @@ class _GroupState extends ConsumerState<Group> {
       if (groupDetail!.studyInfo.isEmpty) {
         return;
       }
+      debugPrint(groupDetail!.studyInfo[0].stepList.toString());
       StudyInfoModel last = groupDetail!.studyInfo.last;
       for (int i = 0; i < last.releasedLevel! + 1; i++) {
         correctRate[i] = (last.correctRateNormal![i] + last.correctRateAI![i]);
@@ -248,9 +299,9 @@ class _GroupState extends ConsumerState<Group> {
   void updateProgress(int season, int level, int difficulty, int step) async {
     final response = await ref.watch(superServiceProvider).putGroupLevelUnlock(
           widget.groupId,
-          difficulty == 1 ? 'ai' : 'normal',
+          'normal',
           season + 1,
-          level + 1,
+          level,
           step + 1,
         );
 
@@ -272,7 +323,11 @@ class _GroupState extends ConsumerState<Group> {
   @override
   void initState() {
     super.initState();
-    for (var i = 0; i < seasonList.length; i++) {
+    season = widget.info.releasedSeason - 1;
+    level = widget.info.releasedLevel;
+    step = widget.info.releasedStep;
+
+    for (var i = 0; i < season + 1; i++) {
       seasonDropdownItems.add(CoolDropdownItem<String>(
         label: seasonList[i],
         value: seasonList[i],
@@ -282,13 +337,6 @@ class _GroupState extends ConsumerState<Group> {
 
   @override
   Widget build(BuildContext context) {
-    int season = 0;
-    int level = 0;
-    int difficulty = 0;
-    int step = 0;
-
-    int seasonForStatics = 0;
-
     return isLoading
         ? const Center(child: CircularProgressIndicator())
         : groupDetail!.studyInfo.isEmpty
@@ -308,7 +356,7 @@ class _GroupState extends ConsumerState<Group> {
                       ),
                       padding: EdgeInsets.symmetric(
                         horizontal: 16.r,
-                        vertical: 12.r,
+                        vertical: 10.r,
                       ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -322,8 +370,7 @@ class _GroupState extends ConsumerState<Group> {
                               const Spacer(),
                               GestureDetector(
                                 onTap: () {
-                                  updateProgress(
-                                      season, level, difficulty, step);
+                                  updateProgress(season, level, 0, step);
                                 },
                                 child: Container(
                                   padding: EdgeInsets.symmetric(
@@ -359,13 +406,17 @@ class _GroupState extends ConsumerState<Group> {
                               ),
                               SizedBox(width: 8.r),
                               SizedBox(
-                                width: 113.r,
+                                width: 100.r,
                                 height: 40.r,
                                 child: GroupProgressDropdown(
-                                  itemList: levelList,
-                                  initialItem: levelList[level],
+                                  itemList: groupDetail!
+                                      .studyInfo[season].stepList![level],
+                                  initialItem: groupDetail!
+                                      .studyInfo[season].stepList![level][step],
                                   onChanged: (value) {
-                                    level = levelList.indexOf(value!);
+                                    step = groupDetail!
+                                        .studyInfo[season].stepList![level]
+                                        .indexOf(value!);
                                   },
                                 ),
                               ),
@@ -373,27 +424,37 @@ class _GroupState extends ConsumerState<Group> {
                           ),
                           SizedBox(height: 6.r),
                           Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
+                              // Padding(
+                              //   padding: EdgeInsets.only(top: 3.3.r, bottom: 0),
+                              //   child: Container(
+                              //     width: 91.r,
+                              //     height: 38.6.r,
+                              //     padding: EdgeInsets.symmetric(
+                              //       horizontal: 8.r,
+                              //       vertical: 8.r,
+                              //     ),
+                              //     decoration: BoxDecoration(
+                              //       color: primaryPurple[100],
+                              //       borderRadius: BorderRadius.circular(8).r,
+                              //     ),
+                              //     child: Text('Basic', style: textStyle16),
+                              //   ),
+                              // ),
+                              // SizedBox(width: 8.r),
                               SizedBox(
-                                width: 92.r,
+                                width: 113.r,
                                 height: 40.r,
                                 child: GroupProgressDropdown(
-                                    itemList: difficultyList,
-                                    initialItem: difficultyList[difficulty],
-                                    onChanged: (value) {
-                                      difficulty =
-                                          difficultyList.indexOf(value!);
-                                    }),
-                              ),
-                              SizedBox(width: 8.r),
-                              SizedBox(
-                                width: 100.r,
-                                height: 40.r,
-                                child: GroupProgressDropdown(
-                                  itemList: stepList,
-                                  initialItem: stepList[step],
+                                  itemList: levelList,
+                                  initialItem: levelList[level],
                                   onChanged: (value) {
-                                    step = stepList.indexOf(value!);
+                                    if (mounted) {
+                                      setState(() {
+                                        level = levelList.indexOf(value!);
+                                      });
+                                    }
                                   },
                                 ),
                               ),
@@ -650,7 +711,11 @@ class _GroupState extends ConsumerState<Group> {
                         if (seasonDropdownController.isError) {
                           await seasonDropdownController.resetError();
                         }
-                        seasonForStatics = seasonList.indexOf(value);
+                        if (seasonForStatics != value) {
+                          seasonForStatics = seasonList.indexOf(value);
+                          seasonDropdownController.close();
+                          waitForData();
+                        }
                       },
                       width: 153.r,
                       height: 36.r,
@@ -669,10 +734,12 @@ class Individual extends ConsumerStatefulWidget {
     super.key,
     required this.groupId,
     required this.groupName,
+    required this.info,
   });
 
   final int groupId;
   final String groupName;
+  final GroupProgressModel info;
 
   @override
   ConsumerState<Individual> createState() => _IndividualState();
@@ -688,6 +755,7 @@ class _IndividualState extends ConsumerState<Individual> {
   List<CoolDropdownItem<String>> seasonDropdownItems = [];
   final seasonDropdownController = DropdownController<String>();
   int seasonForStatics = 0;
+  int season = 0;
   int selectedStudent = 0;
   List<double> correctRate = [0, 0, 0];
   int bestLevel = -1;
@@ -695,6 +763,11 @@ class _IndividualState extends ConsumerState<Individual> {
   int expertBest = -1;
 
   void waitForStudents() async {
+    if (mounted) {
+      setState(() {
+        isLoading = true;
+      });
+    }
     var response =
         await ref.watch(superServiceProvider).getStudentInGroup(widget.groupId);
 
@@ -727,7 +800,9 @@ class _IndividualState extends ConsumerState<Individual> {
   void initState() {
     // TODO: implement initState
     super.initState();
-    for (var i = 0; i < seasonList.length; i++) {
+    season = widget.info.releasedSeason - 1;
+
+    for (var i = 0; i < season + 1; i++) {
       seasonDropdownItems.add(CoolDropdownItem<String>(
         label: seasonList[i],
         value: seasonList[i],
@@ -807,10 +882,12 @@ class _IndividualState extends ConsumerState<Individual> {
                                 name: student.name,
                                 isSelected: selectedStudent == index,
                                 onPressed: () {
-                                  setState(() {
-                                    selectedStudent = index;
-                                    getSummary();
-                                  });
+                                  if (mounted) {
+                                    setState(() {
+                                      selectedStudent = index;
+                                      getSummary();
+                                    });
+                                  }
                                 },
                               );
                             },
@@ -999,9 +1076,11 @@ class _IndividualState extends ConsumerState<Individual> {
                                         ),
                                       );
                                       if (result == true) {
-                                        setState(() {
-                                          isLoading = true;
-                                        });
+                                        if (mounted) {
+                                          setState(() {
+                                            isLoading = true;
+                                          });
+                                        }
                                       }
                                     },
                                     icon: Icon(
@@ -1033,7 +1112,11 @@ class _IndividualState extends ConsumerState<Individual> {
                             if (seasonDropdownController.isError) {
                               await seasonDropdownController.resetError();
                             }
-                            seasonForStatics = seasonList.indexOf(value);
+                            if (seasonForStatics != value) {
+                              seasonForStatics = seasonList.indexOf(value);
+                              seasonDropdownController.close();
+                              waitForStudents();
+                            }
                           },
                           width: 166.r,
                           height: 40.r,

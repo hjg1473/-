@@ -1,4 +1,3 @@
-import 'package:block_english/services/student_service.dart';
 import 'package:block_english/utils/status.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -26,13 +25,13 @@ class CustomRoute<T> extends MaterialPageRoute<T> {
   }
 }
 
-class SettingScreen extends ConsumerStatefulWidget {
-  const SettingScreen({super.key});
+class SuperProfileScreen extends ConsumerStatefulWidget {
+  const SuperProfileScreen({super.key});
   @override
-  ConsumerState<SettingScreen> createState() => _SettingScreenState();
+  ConsumerState<SuperProfileScreen> createState() => _SuperProfileScreenState();
 }
 
-class _SettingScreenState extends ConsumerState<SettingScreen> {
+class _SuperProfileScreenState extends ConsumerState<SuperProfileScreen> {
   final _navigatorKey = GlobalKey<NavigatorState>();
   int currentPage = 1;
   Color? unselectedFontColor = const Color(0xFF76B73D);

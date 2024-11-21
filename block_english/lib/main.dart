@@ -6,7 +6,7 @@ import 'package:block_english/screens/AuthScreens/reg_super_type_screen.dart';
 import 'package:block_english/screens/StudentScreens/student_add_super_screen.dart';
 import 'package:block_english/screens/StudentScreens/student_available_season_screen.dart';
 import 'package:block_english/screens/SuperScreens/parent_add_child_screen.dart';
-import 'package:block_english/screens/SuperScreens/super_monitor_group_screen.dart';
+import 'package:block_english/screens/SuperScreens/super_profile_screen.dart';
 import 'package:block_english/screens/UserScreens/user_change_password_screen.dart';
 import 'package:block_english/screens/StudentScreens/student_main_screen.dart';
 import 'package:block_english/screens/StudentScreens/student_mode_select_screen.dart';
@@ -20,7 +20,6 @@ import 'package:block_english/screens/SuperScreens/super_main_screen.dart';
 import 'package:block_english/screens/SuperScreens/super_monitor_screen.dart';
 import 'package:block_english/screens/UserScreens/user_manage_account_screen.dart';
 import 'package:block_english/screens/loading_screen.dart';
-import 'package:block_english/screens/setting_screen.dart';
 import 'package:block_english/utils/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -86,7 +85,7 @@ class MyApp extends StatelessWidget {
           '/parent_add_child_screen': (context) => const ParentAddChildScreen(),
           '/super_game_code_screen': (context) => const SuperGameCodeScreen(),
           '/super_game_screen': (context) => const SuperGameScreen(),
-          '/setting_screen': (context) => const SettingScreen(),
+          '/super_profile_screen': (context) => const SuperProfileScreen(),
         },
       ),
     );
