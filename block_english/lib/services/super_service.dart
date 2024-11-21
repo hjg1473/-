@@ -1,4 +1,5 @@
 import 'package:block_english/models/MonitoringModel/group_monitoring_model.dart';
+import 'package:block_english/models/MonitoringModel/group_progress_model.dart';
 import 'package:block_english/models/MonitoringModel/user_summary_model.dart';
 import 'package:block_english/models/model.dart';
 import 'package:block_english/utils/constants.dart';
@@ -199,15 +200,110 @@ class SuperService {
     }
   }
 
-  // Future<Either<FailureModel, Response>> putRemoveStudentInGroup(
-  //     int studentId) async {
-  //   final dio = _ref.watch(dioProvider);
+  Future<Either<FailureModel, Response>> deleteRemoveGroup(
+    int groupId,
+  ) async {
+    try {
+      final dio = _ref.watch(dioProvider);
+      final response = await dio.delete(
+        '/$_super/$_group/remove_group/$groupId',
+        options: Options(
+          headers: {
+            'accept': 'application/json',
+            TOKENVALIDATE: 'true',
+          },
+        ),
+      );
 
-  //   final response = await dio.get(
-  //     '/$_super/$_group/$_remove/${studentId.toString()}',
+      return Right(response);
+    } on DioException catch (e) {
+      return Left(FailureModel(
+        statusCode: e.response?.statusCode ?? 0,
+        detail: e.response?.data['detail'],
+      ));
+    }
+  }
 
-  //   );
-  // }
+  Future<Either<FailureModel, Response>> putRemoveStudentInGroup(
+    int studentId,
+  ) async {
+    try {
+      final dio = _ref.watch(dioProvider);
+      final response = await dio.put(
+        '/$_super/$_group/remove_student/$studentId',
+        options: Options(
+          headers: {
+            'accept': 'application/json',
+            TOKENVALIDATE: 'true',
+          },
+        ),
+      );
+      return Right(response);
+    } on DioException catch (e) {
+      return Left(FailureModel(
+        statusCode: e.response?.statusCode ?? 0,
+        detail: e.response?.data['detail'],
+      ));
+    }
+  }
+
+  Future<Either<FailureModel, GroupProgressModel>> getGroupInfo(
+    int groupId,
+  ) async {
+    try {
+      final dio = _ref.watch(dioProvider);
+      final response = await dio.get(
+        '/$_super/$_group/$groupId/info',
+        options: Options(
+          headers: {
+            'accept': 'application/json',
+            TOKENVALIDATE: 'true',
+          },
+        ),
+      );
+
+      return Right(GroupProgressModel.fromJson(response.data));
+    } on DioException catch (e) {
+      return Left(FailureModel(
+        statusCode: e.response?.statusCode ?? 0,
+        detail: e.response?.data['detail'],
+      ));
+    }
+  }
+
+  Future<Either<FailureModel, Response>> putGroupLevelUnlock(
+    int groupId,
+    String type,
+    int season,
+    int level,
+    int step,
+  ) async {
+    try {
+      final dio = _ref.watch(dioProvider);
+      final response = await dio.put(
+        '/$_super/$_group/$groupId/problems/unlock',
+        options: Options(
+          headers: {
+            'accept': 'application/json',
+            TOKENVALIDATE: 'true',
+          },
+        ),
+        queryParameters: {
+          'type': type,
+          'season': season,
+          'level': level,
+          'step': step,
+        },
+      );
+
+      return Right(response);
+    } on DioException catch (e) {
+      return Left(FailureModel(
+        statusCode: e.response?.statusCode ?? 0,
+        detail: e.response?.data['detail'],
+      ));
+    }
+  }
 
   Future<Either<FailureModel, UserSummaryModel>> postUserMonitoringSummary(
     int userId,

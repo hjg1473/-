@@ -19,25 +19,28 @@ class GroupProgressDropdown extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return CustomDropdown(
-      itemsScrollController: ScrollController(
-        initialScrollOffset: 0,
-        keepScrollOffset: true,
-      ),
       closedHeaderPadding:
-          const EdgeInsets.symmetric(horizontal: 8, vertical: 10).r,
+          const EdgeInsets.symmetric(horizontal: 8, vertical: 8).r,
       expandedHeaderPadding:
-          const EdgeInsets.symmetric(horizontal: 8, vertical: 10).r,
-      listItemPadding: EdgeInsets.symmetric(horizontal: 8.r, vertical: 10.r),
+          const EdgeInsets.symmetric(horizontal: 8, vertical: 8).r,
+      listItemPadding: EdgeInsets.symmetric(horizontal: 8.r, vertical: 8.r),
       decoration: CustomDropdownDecoration(
         closedFillColor: primaryPurple[100],
         expandedFillColor: primaryPurple[100],
         closedBorderRadius: BorderRadius.circular(8).r,
         expandedBorderRadius: BorderRadius.circular(8).r,
-        hintStyle: textStyle14,
-        headerStyle: textStyle14,
-        listItemStyle: textStyle14,
-        listItemDecoration: const ListItemDecoration(
-          selectedColor: Colors.white,
+        hintStyle: textStyle16,
+        headerStyle: textStyle16,
+        listItemStyle: textStyle16,
+        overlayScrollbarDecoration: ScrollbarThemeData(
+          thumbVisibility: WidgetStateProperty.all(false),
+          trackVisibility: WidgetStateProperty.all(false),
+          interactive: false,
+          crossAxisMargin: 100,
+          mainAxisMargin: 100,
+          thumbColor: WidgetStateProperty.all(Colors.red),
+          trackColor: WidgetStateProperty.all(Colors.green),
+          trackBorderColor: WidgetStateProperty.all(Colors.blue),
         ),
       ),
       initialItem: initialItem,

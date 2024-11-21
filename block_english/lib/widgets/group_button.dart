@@ -11,91 +11,95 @@ class GroupButton extends StatelessWidget {
     required this.id,
     required this.studentNum,
     this.detail = '',
+    required this.onPressed,
   });
 
   final String name;
   final int id;
   final int studentNum;
   final String detail;
+  final Function() onPressed;
 
   @override
   Widget build(BuildContext context) {
     double height = 72.r;
-    double padding = 16.r;
-
+    double horizontalPadding = 16.r;
+    double verticalPadding = 13.r;
+    debugPrint(
+        'name: $name, id: $id, studentNum: $studentNum, detail: $detail');
     return FilledButton(
-      onPressed: () {
-        Navigator.push(
-            context,
-            MaterialPageRoute(
-                builder: (context) => MonitorGroupScreen(
-                      groupName: name,
-                      detailText: detail,
-                      groupId: id,
-                    )));
-      },
+      onPressed: onPressed,
       style: FilledButton.styleFrom(
         backgroundColor: Colors.white,
         minimumSize: Size(334.r, height),
-        padding: EdgeInsets.all(padding),
+        padding: EdgeInsets.symmetric(
+          horizontal: horizontalPadding,
+          vertical: verticalPadding,
+        ),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(10).r,
         ),
       ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.start,
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          ClipOval(
-            child: Lottie.asset(
-              'assets/lottie/motion_19.json',
-              width: 40.r,
-              height: 40.r,
-            ),
-          ),
-          SizedBox(
-            width: 15.r,
-          ),
-          Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Text(
-                    name,
-                    style: textStyle16.copyWith(
-                      color: Colors.black,
-                    ),
-                  ),
-                  SizedBox(width: 8.r),
-                  Icon(
-                    Icons.person_rounded,
-                    color: const Color(0xFF838383),
-                    size: 16.r,
-                  ),
-                  Text(
-                    ' $studentNum명',
-                    style: textStyle11.copyWith(
-                      color: const Color(0xFF9D9D9D),
-                    ),
-                  ),
-                ],
+      child: SizedBox(
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            ClipOval(
+              child: Lottie.asset(
+                'assets/lottie/motion_19.json',
+                width: 40.r,
+                height: 40.r,
               ),
-              detail != ''
-                  ? Text(
-                      detail,
-                      style: textStyle14,
-                    )
-                  : const SizedBox(),
-            ],
-          ),
-          const Spacer(),
-          const Icon(
-            Icons.arrow_forward_ios_rounded,
-            color: Colors.black,
-          ),
-        ],
+            ),
+            SizedBox(
+              width: 16.r,
+            ),
+            Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                SizedBox(
+                  child: Row(
+                    children: [
+                      Text(
+                        name,
+                        style: textStyle16.copyWith(
+                          color: Colors.black,
+                        ),
+                      ),
+                      SizedBox(width: 8.r),
+                      Icon(
+                        Icons.person_rounded,
+                        color: const Color(0xFF838383),
+                        size: 16.r,
+                      ),
+                      Text(
+                        ' $studentNum명',
+                        style: textStyle11.copyWith(
+                          color: const Color(0xFF9D9D9D),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                detail != ''
+                    ? Text(
+                        detail,
+                        style: textStyle14.copyWith(
+                          color: const Color(0xFF9D9D9D),
+                        ),
+                      )
+                    : const SizedBox(),
+              ],
+            ),
+            const Spacer(),
+            const Icon(
+              Icons.arrow_forward_ios_rounded,
+              color: Colors.black,
+            ),
+          ],
+        ),
       ),
     );
   }

@@ -1,5 +1,5 @@
-import 'package:animated_custom_dropdown/custom_dropdown.dart';
 import 'package:block_english/models/MonitoringModel/group_monitoring_model.dart';
+import 'package:block_english/models/MonitoringModel/group_progress_model.dart';
 import 'package:block_english/models/MonitoringModel/user_summary_model.dart';
 import 'package:block_english/models/model.dart';
 import 'package:block_english/screens/SuperScreens/super_group_setting_screen.dart';
@@ -11,6 +11,7 @@ import 'package:block_english/utils/text_style.dart';
 import 'package:block_english/widgets/ChartWidget/pie_chart_widget.dart';
 import 'package:block_english/widgets/GroupWidget/group_progress_dropdown.dart';
 import 'package:block_english/widgets/GroupWidget/student_in_group_button.dart';
+import 'package:block_english/widgets/cool_drop_down_button.dart';
 import 'package:cool_dropdown/cool_dropdown.dart';
 import 'package:cool_dropdown/models/cool_dropdown_item.dart';
 import 'package:flutter/material.dart';
@@ -18,27 +19,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
-const String group = '/';
-const String individual = '/individual';
-
 double horizontalPadding = 64.r;
 double topPadding = 32.r;
 double bottomPadding = 24.r;
-
-class CustomRoute<T> extends MaterialPageRoute<T> {
-  CustomRoute({required super.builder});
-
-  @override
-  Widget buildTransitions(BuildContext context, Animation<double> animation,
-      Animation<double> secondaryAnimation, Widget child) {
-    return SlideTransition(
-      position:
-          Tween<Offset>(begin: const Offset(0, 0), end: const Offset(0, 0))
-              .animate(animation),
-      child: child,
-    );
-  }
-}
 
 class MonitorGroupScreen extends ConsumerStatefulWidget {
   const MonitorGroupScreen({
@@ -46,155 +29,172 @@ class MonitorGroupScreen extends ConsumerStatefulWidget {
     required this.groupName,
     required this.detailText,
     required this.groupId,
+    required this.onRefreshed,
   });
 
   final String groupName;
   final String detailText;
   final int groupId;
+  final Function onRefreshed;
 
   @override
   ConsumerState<MonitorGroupScreen> createState() => _MonitorGroupScreenState();
 }
 
 class _MonitorGroupScreenState extends ConsumerState<MonitorGroupScreen> {
-  final _navigatorKey = GlobalKey<NavigatorState>();
   int currentPage = 1;
   bool isTogglePressed = false;
+  bool isLoading = true;
+  GroupProgressModel? groupProgress;
+
+  void waitForProgress() async {
+    final response =
+        await ref.watch(superServiceProvider).getGroupInfo(widget.groupId);
+
+    response.fold((failure) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('${failure.statusCode} : ${failure.detail}'),
+        ),
+      );
+    }, (data) {
+      groupProgress = data;
+      if (mounted) {
+        setState(() {
+          isLoading = false;
+        });
+      }
+    });
+  }
+
+  @override
+  void didChangeDependencies() {
+    // TODO: implement didChangeDependencies
+    super.didChangeDependencies();
+    waitForProgress();
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.purple[50],
-      body: Stack(
-        children: [
-          Positioned(
-            top: 32.r,
-            left: 64.r,
-            child: IconButton(
-              padding: EdgeInsets.zero,
-              onPressed: () => Navigator.of(context).pushNamedAndRemoveUntil(
-                '/super_monitor_screen',
-                ModalRoute.withName('/super_main_screen'),
-              ),
-              icon: SvgPicture.asset(
-                'assets/buttons/round_back_button.svg',
-                width: 48.r,
-                height: 48.r,
-              ),
-            ),
-          ),
-          Align(
-            alignment: Alignment.topCenter,
-            child: Padding(
-              padding: EdgeInsets.only(top: 27.r),
-              child: SizedBox(
-                height: 55.r,
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Text(
-                      widget.groupName,
-                      style: textStyle22,
+    return isLoading
+        ? const Center(child: CircularProgressIndicator())
+        : Scaffold(
+            backgroundColor: Colors.purple[50],
+            body: Stack(
+              children: [
+                Positioned(
+                  top: 32.r,
+                  left: 64.r,
+                  child: IconButton(
+                    padding: EdgeInsets.zero,
+                    onPressed: () =>
+                        Navigator.of(context).pushNamedAndRemoveUntil(
+                      '/super_monitor_screen',
+                      ModalRoute.withName('/super_main_screen'),
                     ),
-                    if (widget.detailText.isNotEmpty)
-                      Text(
-                        widget.detailText,
-                        style: textStyle14.copyWith(
-                          color: const Color(0xFF888888),
-                        ),
-                      )
-                  ],
+                    icon: SvgPicture.asset(
+                      'assets/buttons/round_back_button.svg',
+                      width: 48.r,
+                      height: 48.r,
+                    ),
+                  ),
                 ),
-              ),
-            ),
-          ),
-          Positioned(
-            top: 40.r,
-            right: 128.r,
-            child: SizedBox(
-              width: 123.r,
-              height: 32.r,
-              child: IconButton(
-                onPressed: () {
-                  setState(() {
-                    isTogglePressed = !isTogglePressed;
-                  });
-
-                  WidgetsBinding.instance.addPostFrameCallback((_) {
-                    _navigatorKey.currentState!.pop();
-                    Future.delayed(const Duration(milliseconds: 300), () {
-                      _navigatorKey.currentState!
-                          .pushNamed(isTogglePressed ? individual : group);
-                    });
-                  });
-                },
-                highlightColor: Colors.transparent,
-                icon: Image.asset(
-                    isTogglePressed
-                        ? 'assets/buttons/group_toggle_on_button.png'
-                        : 'assets/buttons/group_toggle_off_button.png',
+                Align(
+                  alignment: Alignment.topCenter,
+                  child: Padding(
+                    padding: EdgeInsets.only(top: 27.r),
+                    child: SizedBox(
+                      height: 55.r,
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Text(
+                            widget.groupName,
+                            style: textStyle22,
+                          ),
+                          if (widget.detailText.isNotEmpty)
+                            Text(
+                              widget.detailText,
+                              style: textStyle14.copyWith(
+                                color: const Color(0xFF888888),
+                              ),
+                            )
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+                Positioned(
+                  top: 40.r,
+                  right: 128.r,
+                  child: SizedBox(
                     width: 123.r,
-                    height: 32.r),
-                style: ButtonStyle(
-                  padding: WidgetStateProperty.all(EdgeInsets.zero),
+                    height: 32.r,
+                    child: IconButton(
+                      onPressed: () {
+                        if (mounted) {
+                          setState(() {
+                            isTogglePressed = !isTogglePressed;
+                          });
+                        }
+                      },
+                      highlightColor: Colors.transparent,
+                      icon: Image.asset(
+                          isTogglePressed
+                              ? 'assets/buttons/group_toggle_on_button.png'
+                              : 'assets/buttons/group_toggle_off_button.png',
+                          width: 123.r,
+                          height: 32.r),
+                      style: ButtonStyle(
+                        padding: WidgetStateProperty.all(EdgeInsets.zero),
+                      ),
+                    ),
+                  ),
                 ),
-              ),
-            ),
-          ),
-          Positioned(
-            top: 32.r,
-            right: 64.r,
-            child: IconButton(
-              padding: EdgeInsets.zero,
-              onPressed: () {
-                Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => GroupSettingScreen(
-                              groupName: widget.groupName,
-                              detailText: widget.detailText,
-                              groupId: widget.groupId,
-                            )));
-              },
-              icon: SvgPicture.asset(
-                'assets/buttons/round_setting_button.svg',
-                width: 48.r,
-                height: 48.r,
-              ),
-            ),
-          ),
-          Positioned(
-            bottom: 24.r,
-            child: SizedBox(
-              width: 1.sw,
-              height: 250.r,
-              child: Navigator(
-                key: _navigatorKey,
-                initialRoute: group,
-                onGenerateRoute: (settings) {
-                  return CustomRoute(
-                    builder: (context) {
-                      switch (settings.name) {
-                        case group:
-                          return Group(groupId: widget.groupId);
-                        case individual:
-                          return Individual(
+                Positioned(
+                  top: 32.r,
+                  right: 64.r,
+                  child: IconButton(
+                    padding: EdgeInsets.zero,
+                    onPressed: () {
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => GroupSettingScreen(
+                                    groupName: widget.groupName,
+                                    detailText: widget.detailText,
+                                    groupId: widget.groupId,
+                                    onRefreshed: widget.onRefreshed,
+                                  )));
+                    },
+                    icon: SvgPicture.asset(
+                      'assets/buttons/round_setting_button.svg',
+                      width: 48.r,
+                      height: 48.r,
+                    ),
+                  ),
+                ),
+                Positioned(
+                  left: 64.r,
+                  bottom: 25.r,
+                  child: SizedBox(
+                    width: 684.r,
+                    height: 250.r,
+                    child: isTogglePressed
+                        ? Individual(
                             groupId: widget.groupId,
                             groupName: widget.groupName,
-                          );
-                        default:
-                          return Group(groupId: widget.groupId);
-                      }
-                    },
-                  );
-                },
-              ),
+                            info: groupProgress ?? GroupProgressModel(),
+                          )
+                        : Group(
+                            groupId: widget.groupId,
+                            info: groupProgress ?? GroupProgressModel()),
+                  ),
+                ),
+              ],
             ),
-          ),
-        ],
-      ),
-    );
+          );
   }
 }
 
@@ -202,9 +202,11 @@ class Group extends ConsumerStatefulWidget {
   const Group({
     super.key,
     required this.groupId,
+    required this.info,
   });
 
   final int groupId;
+  final GroupProgressModel info;
 
   @override
   ConsumerState<Group> createState() => _GroupState();
@@ -212,6 +214,14 @@ class Group extends ConsumerStatefulWidget {
 
 class _GroupState extends ConsumerState<Group> {
   List<String> seasonList = ['시즌 1', '시즌 2'];
+  List<String> difficultyList = ['Basic', 'Expert'];
+  List<String> stepList = [
+    'Step 1',
+    'Step 2',
+    'Step 3',
+    'Step 4',
+    'Step 5',
+  ];
   List<CoolDropdownItem<String>> seasonDropdownItems = [];
   final seasonDropdownController = DropdownController<String>();
 
@@ -221,6 +231,11 @@ class _GroupState extends ConsumerState<Group> {
   int bestLevel = -1;
   int basicBest = -1;
   int expertBest = -1;
+  int seasonForStatics = 0;
+
+  int season = 0;
+  int level = 0;
+  int step = 0;
 
   @override
   void didChangeDependencies() {
@@ -228,7 +243,12 @@ class _GroupState extends ConsumerState<Group> {
     waitForData();
   }
 
-  waitForData() async {
+  void waitForData() async {
+    if (mounted) {
+      setState(() {
+        isLoading = true;
+      });
+    }
     final response = await ref
         .watch(superServiceProvider)
         .postGroupMonitoring(widget.groupId);
@@ -241,6 +261,10 @@ class _GroupState extends ConsumerState<Group> {
       );
     }, (data) {
       groupDetail = data;
+      if (groupDetail!.studyInfo.isEmpty) {
+        return;
+      }
+      debugPrint(groupDetail!.studyInfo[0].stepList.toString());
       StudyInfoModel last = groupDetail!.studyInfo.last;
       for (int i = 0; i < last.releasedLevel! + 1; i++) {
         correctRate[i] = (last.correctRateNormal![i] + last.correctRateAI![i]);
@@ -275,10 +299,38 @@ class _GroupState extends ConsumerState<Group> {
     }
   }
 
+  void updateProgress(int season, int level, int difficulty, int step) async {
+    final response = await ref.watch(superServiceProvider).putGroupLevelUnlock(
+          widget.groupId,
+          'normal',
+          season + 1,
+          level,
+          step,
+        );
+
+    response.fold((failure) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('${failure.statusCode} : ${failure.detail}'),
+        ),
+      );
+    }, (data) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('진도가 업데이트 되었습니다.'),
+        ),
+      );
+    });
+  }
+
   @override
   void initState() {
     super.initState();
-    for (var i = 0; i < seasonList.length; i++) {
+    season = widget.info.releasedSeason - 1;
+    level = widget.info.releasedLevel;
+    step = widget.info.releasedStep;
+
+    for (var i = 0; i < season + 1; i++) {
       seasonDropdownItems.add(CoolDropdownItem<String>(
         label: seasonList[i],
         value: seasonList[i],
@@ -288,389 +340,395 @@ class _GroupState extends ConsumerState<Group> {
 
   @override
   Widget build(BuildContext context) {
-    List<String> difficultyList = ['Basic', 'Expert'];
-    List<String> stepList = [
-      'Step 1',
-      'Step 2',
-      'Step 3',
-      'Step 4',
-      'Step 5',
-    ];
-    int season = 0;
-    int level = 0;
-    int difficulty = 0;
-    int step = 0;
-
-    int seasonForStatics = 0;
-
     return isLoading
         ? const Center(child: CircularProgressIndicator())
-        : Stack(
-            children: [
-              // group progress
-              Positioned(
-                top: 0,
-                left: 64.r,
-                child: Container(
-                  width: 253.r,
-                  height: 134.r,
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(8).r,
-                  ),
-                  padding: EdgeInsets.symmetric(
-                    horizontal: 16.r,
-                    vertical: 12.r,
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        '우리 반 진도',
-                        style: textStyle11,
-                      ),
-                      const Spacer(),
-                      Row(
-                        children: [
-                          SizedBox(
-                            width: 92.r,
-                            height: 40.r,
-                            child: GroupProgressDropdown(
-                              itemList: seasonList,
-                              initialItem: seasonList[season],
-                              onChanged: (value) {
-                                season = seasonList.indexOf(value!);
-                              },
-                            ),
-                          ),
-                          SizedBox(width: 8.r),
-                          SizedBox(
-                            width: 113.r,
-                            height: 40.r,
-                            child: GroupProgressDropdown(
-                              itemList: levelList,
-                              initialItem: levelList[level],
-                              onChanged: (value) {
-                                level = levelList.indexOf(value!);
-                              },
-                            ),
-                          ),
-                        ],
-                      ),
-                      SizedBox(height: 6.r),
-                      Row(
-                        children: [
-                          SizedBox(
-                            width: 92.r,
-                            height: 40.r,
-                            child: GroupProgressDropdown(
-                                itemList: difficultyList,
-                                initialItem: difficultyList[difficulty],
-                                onChanged: (value) {
-                                  difficulty = difficultyList.indexOf(value!);
-                                }),
-                          ),
-                          SizedBox(width: 8.r),
-                          SizedBox(
-                            width: 100.r,
-                            height: 40.r,
-                            child: GroupProgressDropdown(
-                              itemList: stepList,
-                              initialItem: stepList[step],
-                              onChanged: (value) {
-                                step = stepList.indexOf(value!);
-                              },
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              // group size
-              Positioned(
-                top: 150.r,
-                left: 64.r,
-                child: Container(
-                  width: 253.r,
-                  height: 42.r,
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(8).r,
-                  ),
-                  padding: EdgeInsets.symmetric(
-                    horizontal: 24.r,
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      Text(
-                        '우리 반 인원',
-                        style: textStyle11,
-                      ),
-                      Text(
-                        '${groupDetail?.peoples}명',
-                        style: textStyle18,
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              // group creation date
-              Positioned(
-                bottom: 0,
-                left: 64.r,
-                child: Container(
-                  width: 253.r,
-                  height: 42.r,
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(8).r,
-                  ),
-                  padding: EdgeInsets.symmetric(
-                    horizontal: 24.r,
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      Text(
-                        '우리 반 생성일',
-                        style: textStyle11,
-                      ),
-                      Text(
-                        groupDetail != null ? '20${groupDetail?.created}' : '',
-                        style: textStyle18,
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              // correct rate
-              Positioned(
-                top: 0,
-                left: 333.r,
-                child: Container(
-                  width: 247.r,
-                  height: 250.r,
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(8).r,
-                  ),
-                  padding: EdgeInsets.symmetric(
-                    horizontal: 23.r,
-                    vertical: 23.r,
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      PieChartWidget(
-                        width: 111.86.r,
-                        height: 111.86.r,
-                        data: correctRate[bestLevel] == 0
-                            ? [100, 0, 0]
-                            : correctRate,
-                      ),
-                      SizedBox(height: 17.r),
-                      Text(
-                        '이 문제를 잘했어요!',
-                        style: textStyle18,
-                      ),
-                      SizedBox(height: 9.r),
-                      Text(
-                        '우리 반은 ${levelList[bestLevel]}에서 정답률이\n가장 높아요.',
-                        style: textStyle14,
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              Positioned(
-                top: 77.r,
-                right: 327.r,
-                child: SvgPicture.asset(
-                  'assets/images/connecting_line.svg',
-                  width: 35.r,
-                ),
-              ),
-              Positioned(
-                top: 67.5.r,
-                right: 242.r,
-                child: Container(
-                  width: 79.r,
-                  height: 26.r,
-                  decoration: BoxDecoration(
-                    color: primaryPurple[500],
-                    borderRadius: BorderRadius.circular(20).r,
-                  ),
-                  child: Center(
-                    child: Text(
-                      correctRate[bestLevel] == 0
-                          ? '기록 없음'
-                          : levelList[bestLevel],
-                      style: textStyle14.copyWith(color: Colors.white),
-                    ),
-                  ),
-                ),
-              ),
-              Positioned(
-                top: 102.r,
-                right: 251.r,
-                child: Text(
-                  '${correctRate[bestLevel].toInt()}%',
-                  style: textStyle14,
-                ),
-              ),
-              // best level
-              Positioned(
-                top: 54.r,
-                right: 64.r,
-                child: Container(
-                  width: 153.r,
-                  height: 118.r,
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(8).r,
-                  ),
-                  padding: EdgeInsets.symmetric(
-                    horizontal: 21.r,
-                    vertical: 13.5.r,
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Basic BEST',
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 10.sp,
-                          color: const Color(0xFF878787),
-                        ),
-                      ),
-                      const Spacer(flex: 5),
-                      Text(
-                        basicBest == -1 ? '데이터 없음' : levelList[basicBest],
-                        style: TextStyle(
-                          fontWeight: FontWeight.w800,
-                          fontSize: 17.sp,
-                          color: primaryPurple[500],
-                        ),
-                      ),
-                      const Spacer(flex: 12),
-                      Text(
-                        'Expert BEST',
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 10.sp,
-                          color: const Color(0xFF878787),
-                        ),
-                      ),
-                      const Spacer(flex: 5),
-                      Text(
-                        expertBest == -1 ? '데이터 없음' : levelList[expertBest],
-                        style: TextStyle(
-                          fontWeight: FontWeight.w800,
-                          fontSize: 17.sp,
-                          color: primaryPurple[500],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              // weakest part
-              Positioned(
-                bottom: 0,
-                right: 64.r,
-                child: Container(
-                  width: 153.r,
-                  height: 70.r,
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(8).r,
-                  ),
-                  padding: EdgeInsets.symmetric(
-                    horizontal: 21.r,
-                    vertical: 14.r,
-                  ),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        '가장 약한 부분은?',
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 10.sp,
-                          color: const Color(0xFF878787),
-                        ),
-                      ),
-                      Text(
-                        groupDetail != null
-                            ? '${wrongToString(groupDetail!.weakest)} 오류'
-                            : '데이터 없음',
-                        style: TextStyle(
-                          fontWeight: FontWeight.w800,
-                          fontSize: 17.sp,
-                          color: primaryPurple[500],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              // select season for statics
-              Positioned(
-                top: 0,
-                right: 64.r,
-                child: CoolDropdown<String>(
-                  dropdownList: seasonDropdownItems,
-                  controller: seasonDropdownController,
-                  defaultItem: seasonDropdownItems[seasonForStatics],
-                  onChange: (value) async {
-                    if (seasonDropdownController.isError) {
-                      await seasonDropdownController.resetError();
-                    }
-                    seasonForStatics = seasonList.indexOf(value);
-                  },
-                  resultOptions: ResultOptions(
-                    padding: const EdgeInsets.symmetric(horizontal: 15).r,
-                    width: 153.r,
-                    height: 36.r,
-                    icon: SizedBox(
-                      width: 13.31.r,
-                      height: 10.r,
-                      child: const CustomPaint(
-                        painter: DropdownArrowPainter(color: Colors.black),
-                      ),
-                    ),
-                    render: ResultRender.all,
-                    isMarquee: false,
-                  ),
-                  dropdownOptions: DropdownOptions(
+        : groupDetail!.studyInfo.isEmpty
+            ? const Center(child: Text('관리 중인 학생이 존재하지 않습니다'))
+            : Stack(
+                children: [
+                  // group progress
+                  Positioned(
                     top: 0,
-                    width: 153.r,
-                    borderSide: const BorderSide(width: 0, color: Colors.white),
-                    padding: const EdgeInsets.symmetric(horizontal: 15).r,
-                    align: DropdownAlign.center,
-                    animationType: DropdownAnimationType.size,
+                    left: 0.r,
+                    child: Container(
+                      width: 253.r,
+                      height: 134.r,
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(8).r,
+                      ),
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 16.r,
+                        vertical: 10.r,
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Text(
+                                '우리 반 진도',
+                                style: textStyle11,
+                              ),
+                              const Spacer(),
+                              GestureDetector(
+                                onTap: () {
+                                  updateProgress(season, level, 0, step);
+                                },
+                                child: Container(
+                                  padding: EdgeInsets.symmetric(
+                                    horizontal: 5.r,
+                                    vertical: 0.r,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: primaryPurple[200],
+                                    borderRadius: BorderRadius.circular(8).r,
+                                  ),
+                                  child: Icon(
+                                    Icons.check,
+                                    color: Colors.white,
+                                    size: 16.r,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          SizedBox(height: 7.r),
+                          Row(
+                            children: [
+                              SizedBox(
+                                width: 91.r,
+                                height: 40.r,
+                                child: GroupProgressDropdown(
+                                  itemList: seasonList,
+                                  initialItem: seasonList[season],
+                                  onChanged: (value) {
+                                    season = seasonList.indexOf(value!);
+                                  },
+                                ),
+                              ),
+                              SizedBox(width: 8.r),
+                              SizedBox(
+                                width: 100.r,
+                                height: 40.r,
+                                child: GroupProgressDropdown(
+                                  itemList: groupDetail!
+                                      .studyInfo[season].stepList![level],
+                                  initialItem: groupDetail!
+                                      .studyInfo[season].stepList![level][step],
+                                  onChanged: (value) {
+                                    step = groupDetail!
+                                        .studyInfo[season].stepList![level]
+                                        .indexOf(value!);
+                                  },
+                                ),
+                              ),
+                            ],
+                          ),
+                          SizedBox(height: 6.r),
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              // Padding(
+                              //   padding: EdgeInsets.only(top: 3.3.r, bottom: 0),
+                              //   child: Container(
+                              //     width: 91.r,
+                              //     height: 38.6.r,
+                              //     padding: EdgeInsets.symmetric(
+                              //       horizontal: 8.r,
+                              //       vertical: 8.r,
+                              //     ),
+                              //     decoration: BoxDecoration(
+                              //       color: primaryPurple[100],
+                              //       borderRadius: BorderRadius.circular(8).r,
+                              //     ),
+                              //     child: Text('Basic', style: textStyle16),
+                              //   ),
+                              // ),
+                              // SizedBox(width: 8.r),
+                              SizedBox(
+                                width: 113.r,
+                                height: 40.r,
+                                child: GroupProgressDropdown(
+                                  itemList: levelList,
+                                  initialItem: levelList[level],
+                                  onChanged: (value) {
+                                    if (mounted) {
+                                      setState(() {
+                                        level = levelList.indexOf(value!);
+                                      });
+                                    }
+                                  },
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
-                  dropdownTriangleOptions: const DropdownTriangleOptions(
-                    width: 0,
-                    height: 0,
+                  // group size
+                  Positioned(
+                    top: 150.r,
+                    left: 0,
+                    child: Container(
+                      width: 253.r,
+                      height: 42.r,
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(8).r,
+                      ),
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 24.r,
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Text(
+                            '우리 반 인원',
+                            style: textStyle11,
+                          ),
+                          Text(
+                            '${groupDetail?.peoples}명',
+                            style: textStyle18,
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
-                  dropdownItemOptions: DropdownItemOptions(
-                    isMarquee: true,
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    render: DropdownItemRender.all,
-                    height: 36.r,
+                  // group creation date
+                  Positioned(
+                    bottom: 0,
+                    left: 0,
+                    child: Container(
+                      width: 253.r,
+                      height: 42.r,
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(8).r,
+                      ),
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 24.r,
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Text(
+                            '우리 반 생성일',
+                            style: textStyle11,
+                          ),
+                          Text(
+                            groupDetail != null
+                                ? '20${groupDetail?.created}'
+                                : '',
+                            style: textStyle18,
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
-                ),
-              ),
-            ],
-          );
+                  // correct rate
+                  Positioned(
+                    top: 0,
+                    left: 269.r,
+                    child: Container(
+                      width: 247.r,
+                      height: 250.r,
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(8).r,
+                      ),
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 23.r,
+                        vertical: 23.r,
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          PieChartWidget(
+                            width: 111.86.r,
+                            height: 111.86.r,
+                            data: correctRate[bestLevel] == 0
+                                ? [100, 0, 0]
+                                : correctRate,
+                          ),
+                          SizedBox(height: 17.r),
+                          Text(
+                            '이 문제를 잘했어요!',
+                            style: textStyle18,
+                          ),
+                          SizedBox(height: 9.r),
+                          Text(
+                            '우리 반은 ${levelList[bestLevel]}에서 정답률이\n가장 높아요.',
+                            style: textStyle14,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  Positioned(
+                    top: 77.r,
+                    right: 263.r,
+                    child: SvgPicture.asset(
+                      'assets/images/connecting_line.svg',
+                      width: 35.r,
+                    ),
+                  ),
+                  Positioned(
+                    top: 67.5.r,
+                    right: 178.r,
+                    child: Container(
+                      width: 79.r,
+                      height: 26.r,
+                      decoration: BoxDecoration(
+                        color: primaryPurple[500],
+                        borderRadius: BorderRadius.circular(20).r,
+                      ),
+                      child: Center(
+                        child: Text(
+                          correctRate[bestLevel] == 0
+                              ? '기록 없음'
+                              : levelList[bestLevel],
+                          style: textStyle14.copyWith(color: Colors.white),
+                        ),
+                      ),
+                    ),
+                  ),
+                  Positioned(
+                    top: 102.r,
+                    right: 187.r,
+                    child: Text(
+                      '${correctRate[bestLevel].toInt()}%',
+                      style: textStyle14,
+                    ),
+                  ),
+                  // best level
+                  Positioned(
+                    top: 47.r,
+                    right: 0,
+                    child: Container(
+                      width: 153.r,
+                      height: 118.r,
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(8).r,
+                      ),
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 21.r,
+                        vertical: 13.5.r,
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Basic BEST',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 10.sp,
+                              color: const Color(0xFF878787),
+                            ),
+                          ),
+                          const Spacer(flex: 5),
+                          Text(
+                            basicBest == -1 ? '데이터 없음' : levelList[basicBest],
+                            style: TextStyle(
+                              fontWeight: FontWeight.w800,
+                              fontSize: 17.sp,
+                              color: primaryPurple[500],
+                            ),
+                          ),
+                          const Spacer(flex: 12),
+                          Text(
+                            'Expert BEST',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 10.sp,
+                              color: const Color(0xFF878787),
+                            ),
+                          ),
+                          const Spacer(flex: 5),
+                          Text(
+                            expertBest == -1 ? '데이터 없음' : levelList[expertBest],
+                            style: TextStyle(
+                              fontWeight: FontWeight.w800,
+                              fontSize: 17.sp,
+                              color: primaryPurple[500],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  // weakest part
+                  Positioned(
+                    bottom: 0,
+                    right: 0,
+                    child: Container(
+                      width: 153.r,
+                      height: 70.r,
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(8).r,
+                      ),
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 21.r,
+                        vertical: 14.r,
+                      ),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            '가장 약한 부분은?',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 10.sp,
+                              color: const Color(0xFF878787),
+                            ),
+                          ),
+                          Text(
+                            groupDetail != null
+                                ? '${wrongToString(groupDetail!.weakest)} 오류'
+                                : '데이터 없음',
+                            style: TextStyle(
+                              fontWeight: FontWeight.w800,
+                              fontSize: 17.sp,
+                              color: primaryPurple[500],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  // select season for statics
+                  Positioned(
+                    top: 0,
+                    right: 0,
+                    child: CoolDropDownButton(
+                      controller: seasonDropdownController,
+                      dropdownList: seasonDropdownItems,
+                      defaultItem: seasonDropdownItems[seasonForStatics],
+                      onChange: (value) async {
+                        if (seasonDropdownController.isError) {
+                          await seasonDropdownController.resetError();
+                        }
+                        if (seasonForStatics != value) {
+                          seasonForStatics = seasonList.indexOf(value);
+                          seasonDropdownController.close();
+                          waitForData();
+                        }
+                      },
+                      width: 153.r,
+                      height: 36.r,
+                      backgroundColor: Colors.white,
+                      primaryColor: primaryPurple[500]!,
+                      textStyle: textStyle14,
+                    ),
+                  ),
+                ],
+              );
   }
 }
 
@@ -679,10 +737,12 @@ class Individual extends ConsumerStatefulWidget {
     super.key,
     required this.groupId,
     required this.groupName,
+    required this.info,
   });
 
   final int groupId;
   final String groupName;
+  final GroupProgressModel info;
 
   @override
   ConsumerState<Individual> createState() => _IndividualState();
@@ -695,7 +755,10 @@ class _IndividualState extends ConsumerState<Individual> {
   bool isLoading = true;
 
   List<String> seasonList = ['시즌 1', '시즌 2'];
+  List<CoolDropdownItem<String>> seasonDropdownItems = [];
+  final seasonDropdownController = DropdownController<String>();
   int seasonForStatics = 0;
+  int season = 0;
   int selectedStudent = 0;
   List<double> correctRate = [0, 0, 0];
   int bestLevel = -1;
@@ -703,6 +766,11 @@ class _IndividualState extends ConsumerState<Individual> {
   int expertBest = -1;
 
   void waitForStudents() async {
+    if (mounted) {
+      setState(() {
+        isLoading = true;
+      });
+    }
     var response =
         await ref.watch(superServiceProvider).getStudentInGroup(widget.groupId);
 
@@ -712,10 +780,17 @@ class _IndividualState extends ConsumerState<Individual> {
       },
       (studentList) {
         students = studentList;
+        if (students.isEmpty) {
+          if (mounted) {
+            setState(() {
+              isLoading = false;
+            });
+          }
+        } else {
+          getSummary();
+        }
       },
     );
-
-    getSummary();
   }
 
   @override
@@ -728,6 +803,14 @@ class _IndividualState extends ConsumerState<Individual> {
   void initState() {
     // TODO: implement initState
     super.initState();
+    season = widget.info.releasedSeason - 1;
+
+    for (var i = 0; i < season + 1; i++) {
+      seasonDropdownItems.add(CoolDropdownItem<String>(
+        label: seasonList[i],
+        value: seasonList[i],
+      ));
+    }
   }
 
   void getSummary() async {
@@ -788,7 +871,7 @@ class _IndividualState extends ConsumerState<Individual> {
                     children: [
                       // students list
                       Positioned(
-                        left: 64.r,
+                        left: 0,
                         top: 0,
                         child: SizedBox(
                           width: 140.r,
@@ -802,10 +885,12 @@ class _IndividualState extends ConsumerState<Individual> {
                                 name: student.name,
                                 isSelected: selectedStudent == index,
                                 onPressed: () {
-                                  setState(() {
-                                    selectedStudent = index;
-                                    getSummary();
-                                  });
+                                  if (mounted) {
+                                    setState(() {
+                                      selectedStudent = index;
+                                      getSummary();
+                                    });
+                                  }
                                 },
                               );
                             },
@@ -817,7 +902,7 @@ class _IndividualState extends ConsumerState<Individual> {
                       // learning analysis
                       Positioned(
                         top: 0,
-                        left: 220.r,
+                        left: 156.r,
                         child: Container(
                           width: 346.r,
                           height: 250.r,
@@ -977,8 +1062,9 @@ class _IndividualState extends ConsumerState<Individual> {
                                   width: 15.r,
                                   height: 24.r,
                                   child: IconButton(
-                                    onPressed: () {
-                                      Navigator.of(context, rootNavigator: true)
+                                    onPressed: () async {
+                                      final result = await Navigator.of(context,
+                                              rootNavigator: true)
                                           .push(
                                         MaterialPageRoute(
                                           builder: (context) =>
@@ -992,6 +1078,11 @@ class _IndividualState extends ConsumerState<Individual> {
                                           ),
                                         ),
                                       );
+                                      if (result != null) {
+                                        if (mounted) {
+                                          setState(() {});
+                                        }
+                                      }
                                     },
                                     icon: Icon(
                                       Icons.arrow_forward_ios_rounded,
@@ -1013,51 +1104,32 @@ class _IndividualState extends ConsumerState<Individual> {
                       // select season for statics
                       Positioned(
                         top: 0,
-                        right: 64.r,
-                        child: Container(
+                        right: 0,
+                        child: CoolDropDownButton(
+                          controller: seasonDropdownController,
+                          dropdownList: seasonDropdownItems,
+                          defaultItem: seasonDropdownItems[seasonForStatics],
+                          onChange: (value) async {
+                            if (seasonDropdownController.isError) {
+                              await seasonDropdownController.resetError();
+                            }
+                            if (seasonForStatics != value) {
+                              seasonForStatics = seasonList.indexOf(value);
+                              seasonDropdownController.close();
+                              waitForStudents();
+                            }
+                          },
                           width: 166.r,
-                          height: 46.r,
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(8).r,
-                          ),
-                          child: SizedBox(
-                            width: 166.r,
-                            height: 36.r,
-                            child: CustomDropdown(
-                              closedHeaderPadding: const EdgeInsets.symmetric(
-                                      horizontal: 15, vertical: 10)
-                                  .r,
-                              expandedHeaderPadding: const EdgeInsets.symmetric(
-                                      horizontal: 15, vertical: 10)
-                                  .r,
-                              listItemPadding: EdgeInsets.symmetric(
-                                  horizontal: 15.r, vertical: 10.r),
-                              decoration: CustomDropdownDecoration(
-                                closedBorderRadius: BorderRadius.circular(8).r,
-                                expandedBorderRadius:
-                                    BorderRadius.circular(8).r,
-                                headerStyle:
-                                    textStyle14.copyWith(fontSize: 13.sp),
-                                listItemStyle:
-                                    textStyle14.copyWith(fontSize: 13.sp),
-                              ),
-                              initialItem: seasonList[seasonForStatics],
-                              items: seasonList,
-                              onChanged: (value) {
-                                seasonForStatics = seasonList.indexOf(value!);
-                                setState(() {
-                                  getSummary();
-                                });
-                              },
-                            ),
-                          ),
+                          height: 40.r,
+                          backgroundColor: Colors.white,
+                          primaryColor: primaryPurple[500]!,
+                          textStyle: textStyle14,
                         ),
                       ),
                       // study time
                       Positioned(
-                        top: 54.r,
-                        right: 64.r,
+                        top: 52.r,
+                        right: 0,
                         child: Container(
                           width: 166.r,
                           height: 46.r,
@@ -1150,7 +1222,7 @@ class _IndividualState extends ConsumerState<Individual> {
                       // incorrect
                       Positioned(
                         bottom: 0,
-                        right: 64.r,
+                        right: 0,
                         child: Container(
                           width: 166.r,
                           height: 142.r,

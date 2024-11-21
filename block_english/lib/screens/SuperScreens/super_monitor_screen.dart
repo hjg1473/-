@@ -1,4 +1,5 @@
 import 'package:block_english/models/model.dart';
+import 'package:block_english/screens/SuperScreens/super_monitor_group_screen.dart';
 import 'package:block_english/services/super_service.dart';
 import 'package:block_english/utils/status.dart';
 import 'package:block_english/widgets/group_button.dart';
@@ -7,7 +8,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:wolt_modal_sheet/wolt_modal_sheet.dart';
 
 class SuperMonitorScreen extends ConsumerStatefulWidget {
   const SuperMonitorScreen({super.key});
@@ -28,116 +28,22 @@ class _SuperMonitorScreenState extends ConsumerState<SuperMonitorScreen> {
   bool bottomSheet = false;
   bool isSearching = false;
 
-  SliverWoltModalSheetPage addPage(
-      BuildContext modalSheetContext, TextTheme textTheme) {
-    return WoltModalSheetPage(
-      hasSabGradient: false,
-      backgroundColor: Colors.white,
-      topBarTitle: Column(
-        children: [
-          const Spacer(flex: 3),
-          Text(
-            '추가하기',
-            style: TextStyle(
-              color: Colors.black,
-              fontSize: 14.sp,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-          const Spacer(flex: 1),
-        ],
-      ),
-      isTopBarLayerAlwaysVisible: true,
-      child: Padding(
-        padding: EdgeInsets.symmetric(horizontal: 20.r, vertical: 30.r),
-        child: Column(
-          children: [
-            ElevatedButton.icon(
-                style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.all(20).r,
-                  backgroundColor: const Color(0xFF4A4949),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10).r,
-                  ),
-                  iconColor: const Color(0xFFC2C2C2),
-                  elevation: 0,
-                ),
-                icon: const Icon(Icons.local_library_rounded),
-                label: Row(
-                  children: [
-                    SizedBox(width: 20.r),
-                    Text(
-                      '새로운 그룹 만들기',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 16.r,
-                      ),
-                    ),
-                  ],
-                ),
-                onPressed: () async {
-                  final createResult = await Navigator.of(context)
-                      .pushNamed('/super_group_create_screen');
-                  if (createResult == true) {
-                    setState(() {});
-                  }
-                }),
-            SizedBox(height: 10.r),
-            ElevatedButton.icon(
-                style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.all(20).r,
-                  backgroundColor: const Color(0xFFD9D9D9),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10).r,
-                  ),
-                  iconColor: const Color(0xFF989898),
-                  elevation: 0,
-                ),
-                icon: const Icon(Icons.group_rounded),
-                label: Row(
-                  children: [
-                    SizedBox(width: 20.r),
-                    Text(
-                      '모니터링 학습자 추가하기',
-                      style: TextStyle(
-                        color: Colors.black,
-                        fontSize: 16.r,
-                      ),
-                    ),
-                  ],
-                ),
-                onPressed: () {
-                  debugPrint('모니터링 학습자 추가하기');
-                }),
-          ],
-        ),
-      ),
-    );
-  }
-
   void addButtonPressed() {
     if (role == 'parent') {
       Navigator.of(context).pushNamed('/parent_add_child_screen');
     } else {
-      WoltModalSheet.show<void>(
-          context: context,
-          pageListBuilder: (modalSheetContext) {
-            return [
-              addPage(modalSheetContext, Theme.of(modalSheetContext).textTheme),
-            ];
-          },
-          modalTypeBuilder: (context) {
-            final size = MediaQuery.sizeOf(context).width;
-            if (size < 768) {
-              return const WoltBottomSheetType();
-            } else {
-              return const WoltDialogType();
-            }
-          },
-          onModalDismissedWithBarrierTap: () {
-            debugPrint('Closed modal sheet with barrier tap');
-            Navigator.of(context).pop();
-          });
+      Navigator.of(context)
+          .pushNamed('/super_group_create_screen')
+          .then((result) {
+        if (result == true) {
+          if (mounted) {
+            setState(() {
+              isLoading = true;
+            });
+          }
+          didChangeDependencies();
+        }
+      });
     }
   }
 
@@ -228,6 +134,15 @@ class _SuperMonitorScreenState extends ConsumerState<SuperMonitorScreen> {
       if (contains) return true;
     }
     return false;
+  }
+
+  void onRefreshed() {
+    if (mounted) {
+      setState(() {
+        isLoading = true;
+      });
+      didChangeDependencies();
+    }
   }
 
   @override
@@ -425,6 +340,26 @@ class _SuperMonitorScreenState extends ConsumerState<SuperMonitorScreen> {
                                       id: group.id,
                                       detail: group.detail,
                                       studentNum: group.count,
+                                      onPressed: () async {
+                                        final result = await Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                                builder: (context) =>
+                                                    MonitorGroupScreen(
+                                                      groupName: group.name,
+                                                      detailText: group.detail,
+                                                      groupId: group.id,
+                                                      onRefreshed: onRefreshed,
+                                                    )));
+                                        if (result == true) {
+                                          if (mounted) {
+                                            setState(() {
+                                              isLoading = true;
+                                            });
+                                          }
+                                          didChangeDependencies();
+                                        }
+                                      },
                                     );
                                   }
                                 },

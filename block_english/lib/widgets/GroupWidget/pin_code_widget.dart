@@ -1,3 +1,5 @@
+import 'package:block_english/utils/color.dart';
+import 'package:block_english/utils/text_style.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -52,14 +54,6 @@ class _PinCodeWidgetState extends ConsumerState<PinCodeWidget>
       ).r,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(8.0).r,
-        boxShadow: <BoxShadow>[
-          BoxShadow(
-            color: Colors.grey.withOpacity(0.5),
-            spreadRadius: 1,
-            blurRadius: 7,
-            offset: const Offset(0, 0),
-          ),
-        ],
         color: Colors.white,
       ),
       width: 320.r,
@@ -68,33 +62,26 @@ class _PinCodeWidgetState extends ConsumerState<PinCodeWidget>
         children: [
           SizedBox(
             width: 288.r,
-            height: 36.r,
             child: Column(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 Text(
                   '모니터링 학습자 추가 핀코드',
-                  style: TextStyle(
-                    fontSize: 14.sp,
-                    fontWeight: FontWeight.w700,
-                  ),
+                  style: textStyle18,
                 ),
                 Text(
                   '학습자는 학습자 추가 핀코드를 입력해주세요',
-                  style: TextStyle(
-                    color: const Color(0xFFC2C2C2),
-                    fontSize: 11.sp,
-                    fontWeight: FontWeight.w700,
+                  style: textStyle14.copyWith(
+                    color: const Color(0xFF808080),
                   ),
                 ),
               ],
             ),
           ),
-          const Spacer(),
+          SizedBox(height: 32.r),
           SizedBox(
             width: 288.r,
-            height: 100.r,
             child: Column(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -105,6 +92,7 @@ class _PinCodeWidgetState extends ConsumerState<PinCodeWidget>
                       PinBlock(pin: pin)
                   ],
                 ),
+                SizedBox(height: 10.r),
                 Text(
                   _formatDuration(),
                   style: TextStyle(
@@ -113,27 +101,27 @@ class _PinCodeWidgetState extends ConsumerState<PinCodeWidget>
                     fontWeight: FontWeight.w700,
                   ),
                 ),
-                SizedBox(
-                  width: double.infinity,
-                  height: 38,
-                  child: ElevatedButton(
-                    onPressed: widget.onButtonClicked,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color.fromARGB(255, 65, 65, 65),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12.0),
-                      ),
-                    ),
-                    child: Text(
-                      '닫기',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 18.sp,
-                        fontWeight: FontWeight.w800,
-                      ),
-                    ),
-                  ),
-                ),
+                // SizedBox(
+                //   width: double.infinity,
+                //   height: 38,
+                //   child: ElevatedButton(
+                //     onPressed: widget.onButtonClicked,
+                //     style: ElevatedButton.styleFrom(
+                //       backgroundColor: const Color.fromARGB(255, 65, 65, 65),
+                //       shape: RoundedRectangleBorder(
+                //         borderRadius: BorderRadius.circular(12.0),
+                //       ),
+                //     ),
+                //     child: Text(
+                //       '닫기',
+                //       style: TextStyle(
+                //         color: Colors.white,
+                //         fontSize: 18.sp,
+                //         fontWeight: FontWeight.w800,
+                //       ),
+                //     ),
+                //   ),
+                // ),
               ],
             ),
           ),
@@ -154,17 +142,18 @@ class PinBlock extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 2).r,
       child: Container(
         alignment: Alignment.center,
-        width: 28.r,
-        height: 36.r,
+        width: 36.r,
+        height: 44.r,
         decoration: BoxDecoration(
-          color: const Color(0xFFD9D9D9),
+          color: primaryPurple[100],
           borderRadius: BorderRadius.circular(4).r,
         ),
         child: Text(
           pin,
           style: TextStyle(
-            fontSize: 22.sp,
+            fontSize: 32.sp,
             fontWeight: FontWeight.w800,
+            color: primaryPurple[700],
           ),
         ),
       ),

@@ -8,7 +8,7 @@ import 'package:block_english/screens/StudentScreens/student_available_season_sc
 import 'package:block_english/screens/SuperScreens/GameScreens/super_game_init_screen.dart';
 import 'package:block_english/screens/SuperScreens/GameScreens/super_game_setting_screen.dart';
 import 'package:block_english/screens/SuperScreens/parent_add_child_screen.dart';
-import 'package:block_english/screens/SuperScreens/super_monitor_group_screen.dart';
+import 'package:block_english/screens/SuperScreens/super_profile_screen.dart';
 import 'package:block_english/screens/UserScreens/user_change_password_screen.dart';
 import 'package:block_english/screens/StudentScreens/student_main_screen.dart';
 import 'package:block_english/screens/StudentScreens/student_mode_select_screen.dart';
@@ -20,7 +20,6 @@ import 'package:block_english/screens/SuperScreens/super_main_screen.dart';
 import 'package:block_english/screens/SuperScreens/super_monitor_screen.dart';
 import 'package:block_english/screens/UserScreens/user_manage_account_screen.dart';
 import 'package:block_english/screens/loading_screen.dart';
-import 'package:block_english/screens/setting_screen.dart';
 import 'package:block_english/utils/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -83,16 +82,11 @@ class MyApp extends StatelessWidget {
           '/super_monitor_screen': (context) => const SuperMonitorScreen(),
           '/super_group_create_screen': (context) =>
               const SuperGroupCreateScreen(),
-          '/super_group_monitor_screen': (context) => const MonitorGroupScreen(
-                groupId: 1,
-                groupName: '그루비룸',
-                detailText: 'groovyroom',
-              ),
           '/parent_add_child_screen': (context) => const ParentAddChildScreen(),
           '/super_game_init_screen': (context) => const SuperGameInitScreen(),
           '/super_game_setting_screen': (context) =>
               const SuperGameSettingScreen(),
-          '/setting_screen': (context) => const SettingScreen(),
+          '/super_profile_screen': (context) => const SuperProfileScreen(),
         },
       ),
     );

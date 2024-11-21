@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:lottie/lottie.dart';
 
 class SuperMainScreen extends ConsumerWidget {
   const SuperMainScreen({super.key});
@@ -54,13 +55,12 @@ class SuperMainScreen extends ConsumerWidget {
                     width: 11.r,
                   ),
                   GestureDetector(
-                    onTap: () =>
-                        Navigator.of(context).pushNamed('/setting_screen'),
+                    onTap: () => Navigator.of(context)
+                        .pushNamed('/super_profile_screen'),
                     child: ClipOval(
-                      child: Container(
-                        color: Colors.amber,
+                      child: Lottie.asset(
                         width: 48.r,
-                        height: 48.r,
+                        'assets/lottie/motion_19.json',
                       ),
                     ),
                   )

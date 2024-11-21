@@ -118,13 +118,13 @@ class BarChartWidgetState extends State<BarChartWidget> {
       List.generate(3, (i) {
         switch (i) {
           case 0:
-            return makeGroupData(0, 100 - data[i],
+            return makeGroupData(0, data.isEmpty ? 0 : 100 - data[i],
                 isTouched: i == touchedIndex);
           case 1:
-            return makeGroupData(1, 100 - data[i],
+            return makeGroupData(1, data.length < 2 ? 0 : 100 - data[i],
                 isTouched: i == touchedIndex);
           case 2:
-            return makeGroupData(2, 100 - data[i],
+            return makeGroupData(2, data.length < 3 ? 0 : 100 - data[i],
                 isTouched: i == touchedIndex);
           default:
             return throw Error();

@@ -1,12 +1,16 @@
 import 'package:block_english/models/MonitoringModel/study_info_model.dart';
 import 'package:block_english/models/model.dart';
+import 'package:block_english/services/student_service.dart';
 import 'package:block_english/utils/color.dart';
 import 'package:block_english/utils/text_style.dart';
 import 'package:block_english/widgets/ChartWidget/bar_chart_widget.dart';
 import 'package:block_english/services/super_service.dart';
 import 'package:block_english/utils/constants.dart';
 import 'package:block_english/widgets/ChartWidget/pie_chart_widget.dart';
+import 'package:block_english/widgets/cool_drop_down_button.dart';
 import 'package:block_english/widgets/square_button.dart';
+import 'package:cool_dropdown/controllers/dropdown_controller.dart';
+import 'package:cool_dropdown/models/cool_dropdown_item.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -32,7 +36,7 @@ class CustomRoute<T> extends MaterialPageRoute<T> {
   }
 }
 
-class MonitorStudentScreen extends StatefulWidget {
+class MonitorStudentScreen extends ConsumerStatefulWidget {
   const MonitorStudentScreen({
     super.key,
     required this.studentName,
@@ -47,11 +51,15 @@ class MonitorStudentScreen extends StatefulWidget {
   final int initialPage;
 
   @override
-  State<MonitorStudentScreen> createState() => _MonitorStudentScreenState();
+  ConsumerState<MonitorStudentScreen> createState() =>
+      _MonitorStudentScreenState();
 }
 
-class _MonitorStudentScreenState extends State<MonitorStudentScreen> {
-  final _navigatorKey = GlobalKey<NavigatorState>();
+class _MonitorStudentScreenState extends ConsumerState<MonitorStudentScreen> {
+  List<String> seasonList = ['시즌 1', '시즌 2'];
+  List<CoolDropdownItem<String>> seasonDropdownItems = [];
+  final seasonDropdownController = DropdownController<String>();
+  int seasonForStatics = 0;
   int currentPage = 1;
   Color? unselectedFontColor = const Color(0xFF8A8A8A);
   Color? selectedFontColor = Colors.white;
@@ -59,9 +67,30 @@ class _MonitorStudentScreenState extends State<MonitorStudentScreen> {
   Color? selectedBackgroundColor = primaryPurple[400];
   Color selectedBorderColor = const Color(0xFFAD3DF1);
 
-  onMenuPressed(String route) {
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _navigatorKey.currentState!.pushReplacementNamed(route);
+  void updateSeason(int season) {
+    setState(() {
+      seasonForStatics = season;
+    });
+  }
+
+  Future<void> deleteStudent() async {
+    final response = await ref
+        .watch(superServiceProvider)
+        .putRemoveStudentInGroup(widget.studentId);
+
+    response.fold((failure) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('${failure.statusCode} : ${failure.detail}'),
+        ),
+      );
+    }, (data) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('삭제되었습니다.'),
+        ),
+      );
+      Navigator.of(context).pop(true);
     });
   }
 
@@ -161,6 +190,9 @@ class _MonitorStudentScreenState extends State<MonitorStudentScreen> {
     // TODO: implement initState
     super.initState();
     currentPage = widget.initialPage;
+    seasonDropdownItems = seasonList
+        .map((e) => CoolDropdownItem<String>(value: e, label: e))
+        .toList();
   }
 
   @override
@@ -171,6 +203,23 @@ class _MonitorStudentScreenState extends State<MonitorStudentScreen> {
         height: 1.sh,
         child: Stack(
           children: [
+            Positioned(
+              left: 139.r,
+              top: 40.r,
+              child: CoolDropDownButton(
+                controller: seasonDropdownController,
+                dropdownList: seasonDropdownItems,
+                defaultItem: seasonDropdownItems[seasonForStatics],
+                onChange: (value) {
+                  updateSeason(seasonList.indexOf(value));
+                },
+                width: 100.45.r,
+                height: 36.r,
+                backgroundColor: Colors.white,
+                primaryColor: primaryPurple[500]!,
+                textStyle: textStyle14,
+              ),
+            ),
             Align(
               alignment: Alignment.topLeft,
               child: Padding(
@@ -212,7 +261,6 @@ class _MonitorStudentScreenState extends State<MonitorStudentScreen> {
                       FilledButton(
                         onPressed: () {
                           if (currentPage != 1) {
-                            onMenuPressed(learning);
                             setState(() {
                               currentPage = 1;
                             });
@@ -251,12 +299,9 @@ class _MonitorStudentScreenState extends State<MonitorStudentScreen> {
                       SizedBox(height: 8.r),
                       FilledButton(
                         onPressed: () {
-                          if (currentPage != 2) {
-                            onMenuPressed(incorrect);
-                            setState(() {
-                              currentPage = 2;
-                            });
-                          }
+                          setState(() {
+                            currentPage = 2;
+                          });
                         },
                         style: FilledButton.styleFrom(
                           minimumSize: Size(185.r, 44.r),
@@ -292,7 +337,6 @@ class _MonitorStudentScreenState extends State<MonitorStudentScreen> {
                       FilledButton(
                         onPressed: () {
                           if (currentPage != 3) {
-                            onMenuPressed(manage);
                             setState(() {
                               currentPage = 3;
                             });
@@ -318,7 +362,7 @@ class _MonitorStudentScreenState extends State<MonitorStudentScreen> {
                           alignment: Alignment.centerLeft,
                         ),
                         child: Text(
-                          '학습자 관리',
+                          widget.studentId == -1 ? '기타 관리' : '학습자 관리',
                           style: TextStyle(
                             fontSize: 14.sp,
                             fontWeight: FontWeight.bold,
@@ -335,53 +379,28 @@ class _MonitorStudentScreenState extends State<MonitorStudentScreen> {
             ),
             Align(
               alignment: Alignment.centerRight,
-              child: Container(
+              child: SizedBox(
                 width: 539.r,
                 height: 1.sh,
-                color: const Color(0xFFECECEC),
-                child: Navigator(
-                  key: _navigatorKey,
-                  initialRoute: () {
-                    if (widget.initialPage == 1) {
-                      return learning;
-                    } else if (widget.initialPage == 2) {
-                      return incorrect;
-                    } else if (widget.initialPage == 3) {
-                      return manage;
-                    } else {
-                      return learning;
-                    }
-                  }(),
-                  onGenerateRoute: (settings) {
-                    return CustomRoute(
-                      builder: (context) {
-                        switch (settings.name) {
-                          case learning:
-                            return LearningAnalysis(
-                              userId: widget.studentId,
-                              userName: widget.studentName,
-                            );
-                          case incorrect:
-                            return Incorrect(
-                                userId: widget.studentId,
-                                userName: widget.studentName);
-                          case manage:
-                            return ManageStudent(
-                              userId: widget.studentId,
-                              onDeletePressed: () {
-                                _showDeleteDialog(context);
-                              },
-                            );
-                          default:
-                            return LearningAnalysis(
-                              userId: widget.studentId,
-                              userName: widget.studentName,
-                            );
-                        }
-                      },
-                    );
-                  },
-                ),
+                child: currentPage == 1
+                    ? LearningAnalysis(
+                        userId: widget.studentId,
+                        userName: widget.studentName,
+                        season: seasonForStatics + 1,
+                      )
+                    : currentPage == 2
+                        ? Incorrect(
+                            userId: widget.studentId,
+                            userName: widget.studentName,
+                            season: seasonForStatics + 1,
+                          )
+                        : ManageStudent(
+                            userId: widget.studentId,
+                            onDeletePressed: () {
+                              _showDeleteDialog(context);
+                            },
+                            season: seasonForStatics + 1,
+                          ),
               ),
             ),
           ],
@@ -392,10 +411,15 @@ class _MonitorStudentScreenState extends State<MonitorStudentScreen> {
 }
 
 class LearningAnalysis extends ConsumerStatefulWidget {
-  const LearningAnalysis(
-      {super.key, required this.userId, required this.userName});
+  const LearningAnalysis({
+    super.key,
+    required this.userId,
+    required this.userName,
+    required this.season,
+  });
   final int userId;
   final String userName;
+  final int season;
 
   @override
   ConsumerState<LearningAnalysis> createState() => _LearningAnalysisState();
@@ -404,21 +428,20 @@ class LearningAnalysis extends ConsumerStatefulWidget {
 class _LearningAnalysisState extends ConsumerState<LearningAnalysis> {
   bool isLoading = true;
   List<StudyInfoModel> studyInfo = [];
-  List<double> correctRate = [0, 0, 0];
+  List<double> correctRate = [];
   int bestLevel = -1;
   int basicBest = -1;
   int expertBest = -1;
 
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    waitForData();
-  }
-
   waitForData() async {
-    final response = await ref
-        .watch(superServiceProvider)
-        .postUserMonitoringStudyRate(widget.userId, 1);
+    debugPrint('waiting for data');
+    final response = widget.userId == -1
+        ? await ref
+            .watch(studentServiceProvider)
+            .getMonitoringCorrectRate(widget.season)
+        : await ref
+            .watch(superServiceProvider)
+            .postUserMonitoringStudyRate(widget.userId, widget.season);
 
     response.fold((failure) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -432,12 +455,14 @@ class _LearningAnalysisState extends ConsumerState<LearningAnalysis> {
         return;
       }
       StudyInfoModel last = studyInfo.last;
+      correctRate.clear();
       for (int i = 0; i < last.releasedLevel! + 1; i++) {
-        correctRate[i] = last.correctRateNormal![i] + last.correctRateAI![i];
+        correctRate.add(last.correctRateNormal![i] + last.correctRateAI![i]);
         if (bestLevel == -1 || correctRate[i] > correctRate[bestLevel]) {
           bestLevel = i;
         }
       }
+      debugPrint(correctRate.toString());
 
       for (int i = 0; i < 3; i++) {
         double basicBestCorrectRate = 0;
@@ -456,6 +481,23 @@ class _LearningAnalysisState extends ConsumerState<LearningAnalysis> {
       setState(() {
         isLoading = false;
       });
+    }
+  }
+
+  @override
+  void didChangeDependencies() {
+    // TODO: implement didChangeDependencies
+    super.didChangeDependencies();
+    waitForData();
+  }
+
+  @override
+  void didUpdateWidget(covariant LearningAnalysis oldWidget) {
+    // TODO: implement didUpdateWidget
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.season != widget.season) {
+      isLoading = true;
+      waitForData();
     }
   }
 
@@ -513,7 +555,9 @@ class _LearningAnalysisState extends ConsumerState<LearningAnalysis> {
                                 crossAxisAlignment: CrossAxisAlignment.center,
                                 children: [
                                   Text(
-                                    '${correctRate[bestLevel].toInt()}%',
+                                    bestLevel == -1
+                                        ? '데이터 없음'
+                                        : '${correctRate[bestLevel].toInt()}%',
                                     style: textStyle14,
                                   ),
                                   SizedBox(width: 8.r),
@@ -526,7 +570,9 @@ class _LearningAnalysisState extends ConsumerState<LearningAnalysis> {
                                     ),
                                     child: Center(
                                       child: Text(
-                                        levelList[bestLevel],
+                                        bestLevel == -1
+                                            ? '데이터 없음'
+                                            : levelList[bestLevel],
                                         style: textStyle14.copyWith(
                                             color: Colors.white),
                                       ),
@@ -547,7 +593,9 @@ class _LearningAnalysisState extends ConsumerState<LearningAnalysis> {
                                   ),
                                   SizedBox(height: 6.r),
                                   Text(
-                                    '지금까지 ${levelList[bestLevel]}에서의\n정답률이 가장 높아요.',
+                                    bestLevel == -1
+                                        ? '기록 없음'
+                                        : '지금까지 ${levelList[bestLevel]}에서의\n정답률이 가장 높아요.',
                                     style: textStyle11,
                                   ),
                                 ],
@@ -699,9 +747,11 @@ class Incorrect extends ConsumerStatefulWidget {
     super.key,
     required this.userId,
     required this.userName,
+    required this.season,
   });
   final int userId;
   final String userName;
+  final int season;
 
   @override
   ConsumerState<Incorrect> createState() => _IncorrectState();
@@ -713,16 +763,14 @@ class _IncorrectState extends ConsumerState<Incorrect> {
   List<MapEntry<String, double>> sortedData = [];
   List<double> chartData = [0, 0, 0, 0, 0];
 
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    waitForData();
-  }
-
   waitForData() async {
-    final response = await ref
-        .watch(superServiceProvider)
-        .postUserMonitoringIncorrect(widget.userId, 1);
+    final response = widget.userId == -1
+        ? await ref
+            .watch(studentServiceProvider)
+            .getMonitoringIncorrect(widget.season)
+        : await ref
+            .watch(superServiceProvider)
+            .postUserMonitoringIncorrect(widget.userId, widget.season);
 
     response.fold((failure) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -745,6 +793,23 @@ class _IncorrectState extends ConsumerState<Incorrect> {
       setState(() {
         isLoading = false;
       });
+    }
+  }
+
+  @override
+  void didChangeDependencies() {
+    // TODO: implement didChangeDependencies
+    super.didChangeDependencies();
+    waitForData();
+  }
+
+  @override
+  void didUpdateWidget(covariant Incorrect oldWidget) {
+    // TODO: implement didUpdateWidget
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.season != widget.season) {
+      isLoading = true;
+      waitForData();
     }
   }
 
@@ -989,9 +1054,11 @@ class ManageStudent extends ConsumerStatefulWidget {
     super.key,
     required this.userId,
     required this.onDeletePressed,
+    required this.season,
   });
   final int userId;
   final VoidCallback onDeletePressed;
+  final int season;
 
   @override
   ConsumerState<ManageStudent> createState() => _ManageStudentState();
@@ -1009,9 +1076,12 @@ class _ManageStudentState extends ConsumerState<ManageStudent> {
   }
 
   waitForData() async {
-    final response = await ref
-        .watch(superServiceProvider)
-        .postUserMonitoringEtc(widget.userId, 1);
+    isLoading = true;
+    final response = widget.userId == -1
+        ? await ref.watch(studentServiceProvider).getMonitoringEtc()
+        : await ref
+            .watch(superServiceProvider)
+            .postUserMonitoringEtc(widget.userId, widget.season);
 
     response.fold((failure) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -1117,7 +1187,8 @@ class _ManageStudentState extends ConsumerState<ManageStudent> {
                 Align(
                   alignment: Alignment.topCenter,
                   child: Padding(
-                    padding: const EdgeInsets.only(top: 123).r,
+                    padding:
+                        EdgeInsets.only(top: widget.userId == -1 ? 140 : 123).r,
                     child: Lottie.asset(
                       width: 334.r,
                       //height: 166.r,
@@ -1125,13 +1196,15 @@ class _ManageStudentState extends ConsumerState<ManageStudent> {
                     ),
                   ),
                 ),
-                Align(
-                  alignment: Alignment.bottomCenter,
-                  child: SquareButton(
-                    text: '학습자 삭제',
-                    onPressed: widget.onDeletePressed,
-                  ),
-                ),
+                widget.userId == -1
+                    ? const SizedBox()
+                    : Align(
+                        alignment: Alignment.bottomCenter,
+                        child: SquareButton(
+                          text: '학습자 삭제',
+                          onPressed: widget.onDeletePressed,
+                        ),
+                      ),
               ],
             ),
     );
