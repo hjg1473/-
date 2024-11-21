@@ -1,4 +1,3 @@
-import 'package:block_english/screens/SuperScreens/super_monitor_group_screen.dart';
 import 'package:block_english/utils/text_style.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -25,8 +24,7 @@ class GroupButton extends StatelessWidget {
     double height = 72.r;
     double horizontalPadding = 16.r;
     double verticalPadding = 13.r;
-    debugPrint(
-        'name: $name, id: $id, studentNum: $studentNum, detail: $detail');
+
     return FilledButton(
       onPressed: onPressed,
       style: FilledButton.styleFrom(
