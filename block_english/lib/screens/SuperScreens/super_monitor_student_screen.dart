@@ -868,177 +868,182 @@ class _IncorrectState extends ConsumerState<Incorrect> {
                         ),
                       ),
                     ),
-                    Positioned(
-                      top: 31.r,
-                      left: 230.r,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Padding(
-                                padding: const EdgeInsets.only(top: 1).r,
-                                child: Container(
-                                  width: 20.r,
-                                  height: 20.r,
-                                  decoration: BoxDecoration(
-                                    color: primaryPink[500],
-                                    borderRadius: BorderRadius.circular(20).r,
-                                  ),
-                                ),
-                              ),
-                              SizedBox(width: 13.r),
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                      '${wrongToString(sortedData[0].key)} 오답 (${(sortedData[0].value * 100).toInt()}%)',
-                                      style: textStyle16.copyWith(
-                                          fontWeight: FontWeight.w800)),
-                                  Text(
-                                    wrongDetailToString(sortedData[0].key),
-                                    style: textStyle11.copyWith(
-                                      color: const Color(0xFF818181),
+                    Align(
+                      alignment: Alignment.centerRight,
+                      // top: 31.r,
+                      // left: 230.r,
+                      child: Padding(
+                        padding: const EdgeInsets.only(left: 230).r,
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Padding(
+                                  padding: const EdgeInsets.only(top: 1).r,
+                                  child: Container(
+                                    width: 20.r,
+                                    height: 20.r,
+                                    decoration: BoxDecoration(
+                                      color: primaryPink[500],
+                                      borderRadius: BorderRadius.circular(20).r,
                                     ),
                                   ),
-                                ],
-                              ),
-                            ],
-                          ),
-                          SizedBox(height: 20.r),
-                          Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Padding(
-                                padding: const EdgeInsets.only(top: 1).r,
-                                child: Container(
-                                  width: 20.r,
-                                  height: 20.r,
-                                  decoration: BoxDecoration(
-                                    color: primaryYellow[500],
-                                    borderRadius: BorderRadius.circular(20).r,
-                                  ),
                                 ),
-                              ),
-                              SizedBox(width: 13.r),
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                      '${wrongToString(sortedData[1].key)} 오답 (${(sortedData[1].value * 100).toInt()}%)',
-                                      style: textStyle16.copyWith(
-                                          fontWeight: FontWeight.w800)),
-                                  Text(
-                                    wrongDetailToString(sortedData[1].key),
-                                    style: textStyle11.copyWith(
-                                      color: const Color(0xFF818181),
+                                SizedBox(width: 13.r),
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                        '${wrongToString(sortedData[0].key)} 오답 (${(sortedData[0].value * 100).toInt()}%)',
+                                        style: textStyle16.copyWith(
+                                            fontWeight: FontWeight.w800)),
+                                    Text(
+                                      wrongDetailToString(sortedData[0].key),
+                                      style: textStyle11.copyWith(
+                                        color: const Color(0xFF818181),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                            SizedBox(height: 20.r),
+                            Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Padding(
+                                  padding: const EdgeInsets.only(top: 1).r,
+                                  child: Container(
+                                    width: 20.r,
+                                    height: 20.r,
+                                    decoration: BoxDecoration(
+                                      color: primaryYellow[500],
+                                      borderRadius: BorderRadius.circular(20).r,
                                     ),
                                   ),
-                                ],
-                              ),
-                            ],
-                          ),
-                          SizedBox(height: 20.r),
-                          Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Padding(
-                                padding: const EdgeInsets.only(top: 1).r,
-                                child: Container(
-                                  width: 20.r,
-                                  height: 20.r,
-                                  decoration: BoxDecoration(
-                                    color: primaryGreen[500],
-                                    borderRadius: BorderRadius.circular(20).r,
-                                  ),
                                 ),
-                              ),
-                              SizedBox(width: 13.r),
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                      '${wrongToString(sortedData[2].key)} 오답 (${(sortedData[2].value * 100).toInt()}%)',
-                                      style: textStyle16.copyWith(
-                                          fontWeight: FontWeight.w800)),
-                                  Text(
-                                    wrongDetailToString(sortedData[2].key),
-                                    style: textStyle11.copyWith(
-                                      color: const Color(0xFF818181),
+                                SizedBox(width: 13.r),
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                        '${wrongToString(sortedData[1].key)} 오답 (${(sortedData[1].value * 100).toInt()}%)',
+                                        style: textStyle16.copyWith(
+                                            fontWeight: FontWeight.w800)),
+                                    Text(
+                                      wrongDetailToString(sortedData[1].key),
+                                      style: textStyle11.copyWith(
+                                        color: const Color(0xFF818181),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                            SizedBox(height: 20.r),
+                            Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Padding(
+                                  padding: const EdgeInsets.only(top: 1).r,
+                                  child: Container(
+                                    width: 20.r,
+                                    height: 20.r,
+                                    decoration: BoxDecoration(
+                                      color: primaryGreen[500],
+                                      borderRadius: BorderRadius.circular(20).r,
                                     ),
                                   ),
-                                ],
-                              ),
-                            ],
-                          ),
-                          SizedBox(height: 20.r),
-                          Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Padding(
-                                padding: const EdgeInsets.only(top: 1).r,
-                                child: Container(
-                                  width: 20.r,
-                                  height: 20.r,
-                                  decoration: BoxDecoration(
-                                    color: primaryBlue[500],
-                                    borderRadius: BorderRadius.circular(20).r,
-                                  ),
                                 ),
-                              ),
-                              SizedBox(width: 13.r),
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                      '${wrongToString(sortedData[3].key)} 오답 (${(sortedData[3].value * 100).toInt()}%)',
-                                      style: textStyle16.copyWith(
-                                          fontWeight: FontWeight.w800)),
-                                  Text(
-                                    wrongDetailToString(sortedData[3].key),
-                                    style: textStyle11.copyWith(
-                                      color: const Color(0xFF818181),
+                                SizedBox(width: 13.r),
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                        '${wrongToString(sortedData[2].key)} 오답 (${(sortedData[2].value * 100).toInt()}%)',
+                                        style: textStyle16.copyWith(
+                                            fontWeight: FontWeight.w800)),
+                                    Text(
+                                      wrongDetailToString(sortedData[2].key),
+                                      style: textStyle11.copyWith(
+                                        color: const Color(0xFF818181),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                            SizedBox(height: 20.r),
+                            Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Padding(
+                                  padding: const EdgeInsets.only(top: 1).r,
+                                  child: Container(
+                                    width: 20.r,
+                                    height: 20.r,
+                                    decoration: BoxDecoration(
+                                      color: primaryBlue[500],
+                                      borderRadius: BorderRadius.circular(20).r,
                                     ),
                                   ),
-                                ],
-                              ),
-                            ],
-                          ),
-                          SizedBox(height: 20.r),
-                          Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Padding(
-                                padding: const EdgeInsets.only(top: 1).r,
-                                child: Container(
-                                  width: 20.r,
-                                  height: 20.r,
-                                  decoration: BoxDecoration(
-                                    color: primaryPurple[500],
-                                    borderRadius: BorderRadius.circular(20).r,
-                                  ),
                                 ),
-                              ),
-                              SizedBox(width: 13.r),
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                      '${wrongToString(sortedData[4].key)} 오답 (${(sortedData[4].value * 100).toInt()}%)',
-                                      style: textStyle16.copyWith(
-                                          fontWeight: FontWeight.w800)),
-                                  Text(
-                                    wrongDetailToString(sortedData[4].key),
-                                    style: textStyle11.copyWith(
-                                      color: const Color(0xFF818181),
+                                SizedBox(width: 13.r),
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                        '${wrongToString(sortedData[3].key)} 오답 (${(sortedData[3].value * 100).toInt()}%)',
+                                        style: textStyle16.copyWith(
+                                            fontWeight: FontWeight.w800)),
+                                    Text(
+                                      wrongDetailToString(sortedData[3].key),
+                                      style: textStyle11.copyWith(
+                                        color: const Color(0xFF818181),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                            SizedBox(height: 20.r),
+                            Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Padding(
+                                  padding: const EdgeInsets.only(top: 1).r,
+                                  child: Container(
+                                    width: 20.r,
+                                    height: 20.r,
+                                    decoration: BoxDecoration(
+                                      color: primaryPurple[500],
+                                      borderRadius: BorderRadius.circular(20).r,
                                     ),
                                   ),
-                                ],
-                              ),
-                            ],
-                          ),
-                        ],
+                                ),
+                                SizedBox(width: 13.r),
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                        '${wrongToString(sortedData[4].key)} 오답 (${(sortedData[4].value * 100).toInt()}%)',
+                                        style: textStyle16.copyWith(
+                                            fontWeight: FontWeight.w800)),
+                                    Text(
+                                      wrongDetailToString(sortedData[4].key),
+                                      style: textStyle11.copyWith(
+                                        color: const Color(0xFF818181),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   ],
@@ -1117,7 +1122,7 @@ class _ManageStudentState extends ConsumerState<ManageStudent> {
                   child: Padding(
                     padding: const EdgeInsets.only(top: 46).r,
                     child: Container(
-                      width: 256.r,
+                      width: 270.r,
                       height: 65.r,
                       decoration: BoxDecoration(
                         color: Colors.white,
