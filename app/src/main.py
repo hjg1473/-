@@ -22,7 +22,6 @@ app = FastAPI()
 
 add_exception_handler(app)
 
-
 async def init_db():
     async with database.engine.begin() as conn:
         await conn.run_sync(models.Base.metadata.create_all)

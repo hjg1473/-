@@ -55,11 +55,31 @@ async def read_group_info(user: user_dependency, db: db_dependency):
 
 
 # Get group managed by the teacher.
-@router.get("/group", status_code = status.HTTP_200_OK)
+@router.get("/group", status_code=status.HTTP_200_OK)
 async def read_group_info(user: user_dependency, db: db_dependency):
     validate_super_user_role(user)
+
+    # Fetch all groups managed by the teacher
     group_list = await fetch_group_list(user.get("id"), db)
-    result = {'groups': [{'id': u.id, 'name': u.name, 'detail': u.detail, 'count': await fetch_user_group_count(u.id, db)} for u in group_list]}
+
+    # Fetch user counts for all groups in a single query
+    group_ids = [group.id for group in group_list]
+    group_user_counts = await db.execute(
+        select(Users.team_id, func.count(Users.id).label("user_count"))
+        .where(Users.team_id.in_(group_ids))
+        .group_by(Users.team_id)
+    )
+
+    # Map group_id to user counts
+    user_count_map = {row.team_id: row.user_count for row in group_user_counts}
+
+    # Build the result
+    result = {
+        'groups': [
+            {'id': group.id, 'name': group.name, 'detail': group.detail, 'count': user_count_map.get(group.id, 0)}
+            for group in group_list
+        ]
+    }
     return result
 
 # Create group managed by the teacher.
@@ -123,19 +143,24 @@ async def read_group_info(group_id:int, user:user_dependency, db:db_dependency):
     await validate_group_access(user.get("id"), group_id, db)
     await find_group_exception(group_id, db)
     # group_model = await fetch_group_id(group_id, db)
-    result = await db.execute(select(ReleasedGroup).filter(ReleasedGroup.owner_id == group_id))
-    target_season = result.scalars().all()
+    result = await db.execute(select(ReleasedGroup).filter(ReleasedGroup.owner_id == group_id).filter(ReleasedGroup.released_type == "normal"))
+    target_season = result.scalars().first()
 
     # Remove `id` and `owner_id` from each dictionary
-    filtered_data = [
-        {k: v for k, v in entry.__dict__.items() if k not in ["id", "owner_id"]}
-        for entry in target_season
-    ]
+    filtered_data = {}
+    if target_season:
+        filtered_data = {
+            "released_level": target_season.released_level,
+            "released_season": target_season.released_season,
+            "released_step": target_season.released_step,
+            "released_type": "normal"
+        }
+
     return filtered_data
 
 # Unlock group level, step.
 @router.put("/group/{group_id}/problems/unlock", status_code= status.HTTP_200_OK)
-async def unlock_step_level(group_id: int, type:str, season:int, level:int, step:int, user:user_dependency, db:db_dependency):
+async def unlock_step_level(group_id: int, season:int, level:int, step:int, user:user_dependency, db:db_dependency):
     validate_super_user_role(user)
     await validate_group_access(user.get("id"), group_id, db)
     result = await db.execute(select(ReleasedGroup).filter(ReleasedGroup.owner_id == group_id, ReleasedGroup.released_season == season))
@@ -146,8 +171,8 @@ async def unlock_step_level(group_id: int, type:str, season:int, level:int, step
 
     # Repeat
     for target in target_season:
-        if target.released_type == type:
-            current_type = type
+        if target.released_type == "normal":
+            current_type = "normal"
             current_level = target.released_level
             current_step = target.released_step
             # If the level you are trying to unlock is lower than your current level, an error will occur.
@@ -312,88 +337,83 @@ async def read_user_id(userStep: UserStep, user: user_dependency, db: db_depende
 
 
 # Group monitoring info ( weakest, studytime, day, recent problem info, weak parts ... )
-@router.post("/group_monitoring", status_code = status.HTTP_200_OK)
+@router.post("/group_monitoring", status_code=status.HTTP_200_OK)
 async def read_group_monitoring(group: GroupId, user: user_dependency, db: db_dependency):
+    # Validate user and group access
     validate_super_user_role(user)
     await validate_group_access(user.get("id"), group.group_id, db)
     await find_group_exception(group.group_id, db)
 
+    # Fetch group and student data
     groups = await fetch_groups(group.group_id, db)
+    student_ids = [
+        student.id
+        for group_data in groups
+        for student in await fetch_user_teamId_group(group_data.id, db)
+    ]
 
-    students = []
-    for g in groups:
-        students_in_group = await fetch_user_teamId_group(g.id, db)
-        students.extend(students_in_group)
-    # Extract only student ID values
-    student_ids = [student.id for student in students]
-
-    # Initialize
-    divided_data_list = []
-    season = []
-    wrong_letter = []
-    wrong_block = []
-    wrong_word = []
-    level = []
-    wrong_punctuation = []
-    wrong_order = []
-    cnt = 0
-
+    # Prepare study information data
+    study_information = []
     for user_id in student_ids:
-        released_model = await fetch_released_user(user_id, db)
-        seasons = [item.released_season for item in released_model]
+        released_models = await fetch_released_user(user_id, db)
+        study_info = await fetch_user_problems(user_id, db)
 
-        study_info = await fetch_studyInfo(user_id, db)
-        temp_result = await db.execute(select(WrongType).filter(WrongType.info_id == study_info.id).filter(WrongType.season.in_(seasons)))
-        wrongType_model = temp_result.scalars().all()
-        # Store data for each wrong problem type
-        for wrongTypes in wrongType_model:
-            season.append(wrongTypes.season)
-            level.append(wrongTypes.level)
-            wrong_punctuation.append(wrongTypes.wrong_punctuation)
-            wrong_letter.append(wrongTypes.wrong_letter)
-            wrong_block.append(wrongTypes.wrong_block)
-            wrong_word.append(wrongTypes.wrong_word)
-            wrong_order.append(wrongTypes.wrong_order)
-            cnt += 1
-    info = {
-        "season":season, "level":level, 
-        "wrong_punctuation":wrong_punctuation, "wrong_letter":wrong_letter, 
-        "wrong_block":wrong_block, "wrong_word":wrong_word, 
-        "wrong_order":wrong_order
-        }
+        if study_info:
+            ic_table_count, ic_table_id, c_table_count, c_table_id = await fetch_count_data(study_info.id, db)
 
-    
-    # Convert incorrect problem type information into a data frame
-    import pandas as pd
-    df = pd.DataFrame(info)
+            correct_data = TableData(c_table_id, c_table_count, study_info.correct_problems)
+            incorrect_data = TableData(ic_table_id, ic_table_count, study_info.incorrect_problems)
 
-    # Sum up the types of incorrect questions by season and level
-    combined_indices = df.groupby(['season', 'level']).sum().reset_index()
-    combined_indices_dict = combined_indices.to_dict(orient="records")
+            for released_model in released_models:
+                normal_rate, ai_rate = calculate_accuracy_rates(correct_data, incorrect_data, released_model)
+                study_information.append({
+                    "season": released_model.released_season,
+                    "correct_rate_normal": normal_rate,
+                    "correct_rate_ai": ai_rate,
+                    "released_level": released_model.released_level,
+                    "released_step": released_model.released_step,
+                    "levels": await get_level_steps_info(released_model.released_season, "normal", db),
+                })
 
-    # BEGIN : Same Process with read_user_weak_parts_top3
+    # Merge duplicated seasons
+    merged_information = {}
+    for item in study_information:
+        season = item["season"]
+        if season not in merged_information:
+            merged_information[season] = {
+                "season": season,
+                "correct_rate_normal": item["correct_rate_normal"],
+                "correct_rate_ai": item["correct_rate_ai"],
+                "released_level": item["released_level"],
+                "released_step": item["released_step"],
+                "levels": item["levels"],
+                "count": 1,
+            }
+        else:
+            merged = merged_information[season]
+            # Sum up rates
+            merged["correct_rate_normal"] = [
+                x + y for x, y in zip(merged["correct_rate_normal"], item["correct_rate_normal"])
+            ]
+            merged["correct_rate_ai"] = [
+                x + y for x, y in zip(merged["correct_rate_ai"], item["correct_rate_ai"])
+            ]
+            merged["count"] += 1
 
-    divided_data_list = []
-    for wrongTypes in combined_indices_dict:
-        total_wrongType = (
-            wrongTypes["wrong_punctuation"]
-            + wrongTypes["wrong_order"]
-            + wrongTypes["wrong_letter"]
-            + wrongTypes["wrong_block"]
-            + wrongTypes["wrong_word"]
-        )
-        
-        # Select the top 3 incorrect problem types
-        wrong_data = {k: v for k, v in wrongTypes.items() if k.startswith("wrong")}
-        
-        top3_wrong = dict(sorted(wrong_data.items(), key=lambda item: item[1], reverse=True)[:3])
-        if total_wrongType != 0:
-            divided_data = {k: f"{v / total_wrongType:.2f}" for k, v in top3_wrong.items()}
-        divided_data["season"] = wrongTypes["season"]
-        divided_data["level"] = wrongTypes["level"]
-        divided_data_list.append(divided_data)
+    # Calculate averages
+    for key, value in merged_information.items():
+        value["correct_rate_normal"] = [
+            x / value["count"] for x in value["correct_rate_normal"]
+        ]
+        value["correct_rate_ai"] = [
+            x / value["count"] for x in value["correct_rate_ai"]
+        ]
+        value.pop("count")  # Remove the count key after averaging
 
-    # Calculate the weakest type in the group
+    # Final result
+    merged_information_list = list(merged_information.values())
+
+    # Weakest part calculation
     values = {'wrong_punctuation': 0, 'wrong_order': 0, 'wrong_letter': 0, 'wrong_block': 0, 'wrong_word': 0}
     for student in student_ids:
         value = await find_weakest_type(student, db)
@@ -401,50 +421,15 @@ async def read_group_monitoring(group: GroupId, user: user_dependency, db: db_de
             values[value] += 1
     largest_variable = max(values, key=values.get)
     if len(set(values.values())) == 1:
-        largest_variable = '' 
+        largest_variable = ''
 
-    # END : Same Process with read_user_weak_parts_top3
-
+    # Group metadata
     result2 = await db.execute(select(Groups).filter(Groups.id == group.group_id))
     groups_create = result2.scalars().first()
-    groups = await fetch_groups(group.group_id, db)
 
-    students = []
-    for g in groups:
-        students_in_group = await fetch_user_teamId_group(g.id, db)
-        students.extend(students_in_group)
-        
-    student_ids = [student.id for student in students]
-
-    # BEGIN : Same Process with read_user_studyinfo
-    information = []
-    for user_id in student_ids:
-        released_models = await fetch_released_user(user_id, db)
-
-        study_info = await fetch_user_problems(user_id, db)
-        if study_info is None:
-            raise http_exception()
-
-        ic_table_count, ic_table_id, c_table_count, c_table_id = await fetch_count_data(study_info.id , db)
-        # Create TableData object
-        correct_data = TableData(c_table_id, c_table_count, study_info.correct_problems)
-        incorrect_data = TableData(ic_table_id, ic_table_count, study_info.incorrect_problems)
-
-        information = []
-        for released_model in released_models:
-            normal_rate, ai_rate = calculate_accuracy_rates(correct_data, incorrect_data, released_model)
-
-            information.append({"season":released_model.released_season,
-                                            "correct_rate_normal":normal_rate,
-                                            "correct_rate_ai":ai_rate,
-                                            "released_level":released_model.released_level,
-                                            "released_step":released_model.released_step
-                                            })
-
-    # END : Same Process with read_user_studyinfo
-    # Do not use 'divided_data_list'
     return {
-        "detail":information,
-        "weakest":f"{largest_variable}", "created":groups_create.created, 
-        "peoples": await fetch_user_group_count(group.group_id, db) 
+        "detail": merged_information_list,
+        "weakest": f"{largest_variable}",
+        "created": groups_create.created,
+        "peoples": await fetch_user_group_count(group.group_id, db),
     }
