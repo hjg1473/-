@@ -10,13 +10,11 @@ class GroupProgressDropdown extends StatelessWidget {
     required this.itemList,
     required this.initialItem,
     required this.onChanged,
-    this.enabled = true,
   });
 
   final List<String> itemList;
   final String initialItem;
   final Function(String?) onChanged;
-  final bool enabled;
 
   @override
   Widget build(BuildContext context) {
@@ -43,7 +41,6 @@ class GroupProgressDropdown extends StatelessWidget {
           thumbColor: WidgetStateProperty.all(Colors.red),
           trackColor: WidgetStateProperty.all(Colors.green),
           trackBorderColor: WidgetStateProperty.all(Colors.blue),
-          minThumbLength: 200,
         ),
       ),
       initialItem: initialItem,

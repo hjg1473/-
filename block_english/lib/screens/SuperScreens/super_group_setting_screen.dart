@@ -18,11 +18,13 @@ class GroupSettingScreen extends ConsumerStatefulWidget {
     required this.groupName,
     required this.detailText,
     required this.groupId,
+    required this.onRefreshed,
   });
 
   final String groupName;
   final String detailText;
   final int groupId;
+  final Function onRefreshed;
 
   @override
   ConsumerState<GroupSettingScreen> createState() => _GroupSettingScreenState();
@@ -75,11 +77,13 @@ class _GroupSettingScreenState extends ConsumerState<GroupSettingScreen>
 
     result.fold((failure) {
       //TODO: error handling
-      debugPrint('[SUPER_GROUP_SETTING_SCREEN] onSavePressed error: $failure');
+      debugPrint(
+          '[SUPER_GROUP_SETTING_SCREEN] onSavePressed error: ${failure.detail}');
     }, (response) {
       //TODO: show success dialog
       savedName = _groupNameController.text;
       savedDetail = _detailController.text;
+      debugPrint('[SUPER_GROUP_SETTING_SCREEN] onSavePressed success');
     });
   }
 
@@ -135,9 +139,10 @@ class _GroupSettingScreenState extends ConsumerState<GroupSettingScreen>
     result.fold((failure) {
       debugPrint('[SUPER_GROUP_SETTING_SCREEN] onDeletePressed error');
     }, (success) {
-      Navigator.of(context).pop(true);
-      Navigator.of(context)
-          .popUntil(ModalRoute.withName('/super_monitor_screen'));
+      Navigator.of(context).popUntil(
+        ModalRoute.withName('/super_monitor_screen'),
+      );
+      widget.onRefreshed();
     });
   }
 
@@ -174,6 +179,7 @@ class _GroupSettingScreenState extends ConsumerState<GroupSettingScreen>
                               groupName: savedName,
                               detailText: savedDetail,
                               groupId: groupId,
+                              onRefreshed: widget.onRefreshed,
                             ),
                           ),
                           ModalRoute.withName('/super_monitor_screen'),

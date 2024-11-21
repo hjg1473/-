@@ -29,11 +29,13 @@ class MonitorGroupScreen extends ConsumerStatefulWidget {
     required this.groupName,
     required this.detailText,
     required this.groupId,
+    required this.onRefreshed,
   });
 
   final String groupName;
   final String detailText;
   final int groupId;
+  final Function onRefreshed;
 
   @override
   ConsumerState<MonitorGroupScreen> createState() => _MonitorGroupScreenState();
@@ -163,6 +165,7 @@ class _MonitorGroupScreenState extends ConsumerState<MonitorGroupScreen> {
                                     groupName: widget.groupName,
                                     detailText: widget.detailText,
                                     groupId: widget.groupId,
+                                    onRefreshed: widget.onRefreshed,
                                   )));
                     },
                     icon: SvgPicture.asset(
@@ -302,7 +305,7 @@ class _GroupState extends ConsumerState<Group> {
           'normal',
           season + 1,
           level,
-          step + 1,
+          step,
         );
 
     response.fold((failure) {
@@ -1075,11 +1078,9 @@ class _IndividualState extends ConsumerState<Individual> {
                                           ),
                                         ),
                                       );
-                                      if (result == true) {
+                                      if (result != null) {
                                         if (mounted) {
-                                          setState(() {
-                                            isLoading = true;
-                                          });
+                                          setState(() {});
                                         }
                                       }
                                     },

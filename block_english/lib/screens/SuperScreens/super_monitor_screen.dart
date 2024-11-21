@@ -1,4 +1,5 @@
 import 'package:block_english/models/model.dart';
+import 'package:block_english/screens/SuperScreens/super_monitor_group_screen.dart';
 import 'package:block_english/services/super_service.dart';
 import 'package:block_english/utils/status.dart';
 import 'package:block_english/widgets/group_button.dart';
@@ -133,6 +134,15 @@ class _SuperMonitorScreenState extends ConsumerState<SuperMonitorScreen> {
       if (contains) return true;
     }
     return false;
+  }
+
+  void onRefreshed() {
+    if (mounted) {
+      setState(() {
+        isLoading = true;
+      });
+      didChangeDependencies();
+    }
   }
 
   @override
@@ -330,6 +340,26 @@ class _SuperMonitorScreenState extends ConsumerState<SuperMonitorScreen> {
                                       id: group.id,
                                       detail: group.detail,
                                       studentNum: group.count,
+                                      onPressed: () async {
+                                        final result = await Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                                builder: (context) =>
+                                                    MonitorGroupScreen(
+                                                      groupName: group.name,
+                                                      detailText: group.detail,
+                                                      groupId: group.id,
+                                                      onRefreshed: onRefreshed,
+                                                    )));
+                                        if (result == true) {
+                                          if (mounted) {
+                                            setState(() {
+                                              isLoading = true;
+                                            });
+                                          }
+                                          didChangeDependencies();
+                                        }
+                                      },
                                     );
                                   }
                                 },

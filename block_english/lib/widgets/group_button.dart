@@ -11,12 +11,14 @@ class GroupButton extends StatelessWidget {
     required this.id,
     required this.studentNum,
     this.detail = '',
+    required this.onPressed,
   });
 
   final String name;
   final int id;
   final int studentNum;
   final String detail;
+  final Function() onPressed;
 
   @override
   Widget build(BuildContext context) {
@@ -26,16 +28,7 @@ class GroupButton extends StatelessWidget {
     debugPrint(
         'name: $name, id: $id, studentNum: $studentNum, detail: $detail');
     return FilledButton(
-      onPressed: () {
-        Navigator.push(
-            context,
-            MaterialPageRoute(
-                builder: (context) => MonitorGroupScreen(
-                      groupName: name,
-                      detailText: detail,
-                      groupId: id,
-                    )));
-      },
+      onPressed: onPressed,
       style: FilledButton.styleFrom(
         backgroundColor: Colors.white,
         minimumSize: Size(334.r, height),
