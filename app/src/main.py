@@ -2,8 +2,6 @@
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 import models
-# import easyocr
-from paddleocr import PaddleOCR
 from src import models, database
 # from src.cache import load_word_to_color
 from src.exceptions import add_exception_handler
@@ -13,6 +11,7 @@ from game import router as game_router
 from student import router as student_router
 from user import router as user_router
 from super import router as super_router
+from paddleocr.paddleocr import PaddleOCR
 # from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
