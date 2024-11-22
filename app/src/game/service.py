@@ -38,7 +38,7 @@ async def select_random_problems(criteria: ProblemSelectionCriteria, db, room_id
 
     # Return error if no problem exists
     if total_count == 0:
-        return "error"
+        return []
 
     # Random offset setting (set to import as much as PROBLEM_OFFSET)
     random_offset = random.randint(0, max(0, total_count - PROBLEM_OFFSET))
@@ -126,20 +126,20 @@ async def send_problems_all_participants(message, start_index, final_problems, r
         roomProblem[room_id][pnum] = problem.englishProblem 
     # Send message to all participants
     for participant_id, participant_ws in manager.active_connections[room_id].items():
-        if participant_id != room.host_id:  # Do not send to host.
-            if message == "GameStart":
-                await manager.send_personal_message({
-                    "message": message,
-                    "duration": duration,
-                    "problems": problems
-                    # "problems": json.dumps(problems, ensure_ascii=False) # 한글 디코딩
-                }, participant_ws)
-            else:
-                await manager.send_personal_message({
-                    "message": message,
-                    "problems": problems
-                    # "problems": json.dumps(problems, ensure_ascii=False) # 한글 디코딩
-                }, participant_ws)
+        # if participant_id != room.host_id:  # Do not send to host.
+        if message == "GameStart":
+            await manager.send_personal_message({
+                "message": message,
+                "duration": duration,
+                "problems": problems
+                # "problems": json.dumps(problems, ensure_ascii=False) # 한글 디코딩
+            }, participant_ws)
+        else:
+            await manager.send_personal_message({
+                "message": message,
+                "problems": problems
+                # "problems": json.dumps(problems, ensure_ascii=False) # 한글 디코딩
+            }, participant_ws)
 
             
 async def validate_room(room, websocket):
