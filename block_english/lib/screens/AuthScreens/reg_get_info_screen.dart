@@ -88,7 +88,7 @@ class _RegStudentScreenState extends ConsumerState<RegGetInfoScreen> {
       });
     } else {
       setState(() {
-        if (password.length < 7) {
+        if (password.length < 8) {
           passwordError = '비밀번호는 8자 이상이어야 합니다';
         } else {
           passwordError = '';

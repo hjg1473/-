@@ -1,3 +1,4 @@
+import 'package:block_english/screens/SuperScreens/GameScreens/super_game_end_screen.dart';
 import 'package:block_english/utils/game.dart';
 import 'package:block_english/widgets/square_button.dart';
 import 'package:flutter/cupertino.dart';
@@ -11,14 +12,7 @@ import 'package:web_socket_channel/web_socket_channel.dart';
 class SuperGameMainScreen extends ConsumerStatefulWidget {
   const SuperGameMainScreen({
     super.key,
-    required this.players,
-    required this.pinNumber,
-    required this.channel,
   });
-
-  final Map<String, String> players;
-  final String pinNumber;
-  final WebSocketChannel channel;
 
   @override
   ConsumerState<SuperGameMainScreen> createState() =>
@@ -37,6 +31,15 @@ class _SuperGameMainScreenState extends ConsumerState<SuperGameMainScreen> {
 
   @override
   Widget build(BuildContext context) {
+    if (ref.watch(gameNotifierProvider).remainingTime == 0) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        Navigator.of(context).pushReplacement(MaterialPageRoute(
+          builder: (context) => const SuperGameEndScreen(),
+        ));
+      });
+    }
+    final players = ref.watch(gameNotifierProvider).players;
+
     return Scaffold(
       backgroundColor: const Color(0xFFE7FFD1),
       body: SizedBox(
@@ -63,22 +66,46 @@ class _SuperGameMainScreenState extends ConsumerState<SuperGameMainScreen> {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Container(
-                            alignment: Alignment.center,
-                            width: 60.r,
-                            height: 48.r,
-                            decoration: BoxDecoration(
-                              color: Colors.black,
-                              borderRadius: BorderRadius.circular(8.0).r,
-                            ),
-                            child: Text(
-                              '${index + 1}',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.w800,
-                                fontSize: 24.sp,
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Container(
+                                alignment: Alignment.center,
+                                width: 60.r,
+                                height: 48.r,
+                                decoration: BoxDecoration(
+                                  color: Colors.black,
+                                  borderRadius: BorderRadius.circular(8.0).r,
+                                ),
+                                child: Text(
+                                  '${index + 1}',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.w800,
+                                    fontSize: 24.sp,
+                                  ),
+                                ),
                               ),
-                            ),
+                              IntrinsicWidth(
+                                child: Container(
+                                  alignment: Alignment.center,
+                                  height: 48.r,
+                                  padding: const EdgeInsets.all(8.0).r,
+                                  decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    borderRadius: BorderRadius.circular(8.0).r,
+                                  ),
+                                  child: Text(
+                                    '${ref.watch(gameNotifierProvider).remainingTime ~/ 60}:${(ref.watch(gameNotifierProvider).remainingTime % 60).toString().padLeft(2, '0')}',
+                                    style: TextStyle(
+                                      color: Colors.black,
+                                      fontWeight: FontWeight.w800,
+                                      fontSize: 24.sp,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
                           Container(
                             alignment: Alignment.center,
@@ -89,7 +116,10 @@ class _SuperGameMainScreenState extends ConsumerState<SuperGameMainScreen> {
                               borderRadius: BorderRadius.circular(8.0).r,
                             ),
                             child: Text(
-                              '${ref.watch(gameProvider).problems[ref.watch(gameProvider).problems.keys.elementAt(index)]}',
+                              ref
+                                  .watch(gameNotifierProvider)
+                                  .problems[index]
+                                  .value,
                               style: TextStyle(
                                 color: const Color(0xFF7C7C7C),
                                 fontWeight: FontWeight.w800,
@@ -126,7 +156,7 @@ class _SuperGameMainScreenState extends ConsumerState<SuperGameMainScreen> {
                                     onPressed: () {
                                       if (index <
                                           ref
-                                                  .watch(gameProvider)
+                                                  .watch(gameNotifierProvider)
                                                   .problems
                                                   .length -
                                               1) {
@@ -178,7 +208,7 @@ class _SuperGameMainScreenState extends ConsumerState<SuperGameMainScreen> {
                                   width: 16.r,
                                 ),
                                 Text(
-                                  '${widget.players.length}명 중 $done명 완료',
+                                  '${players.length}명 중 $done명 완료',
                                   style: TextStyle(
                                     fontWeight: FontWeight.w700,
                                     fontSize: 11.sp,
@@ -210,7 +240,7 @@ class _SuperGameMainScreenState extends ConsumerState<SuperGameMainScreen> {
                                         CrossAxisAlignment.center,
                                     children: [
                                       Text(
-                                        widget.players.values.elementAt(index),
+                                        players.values.elementAt(index),
                                         style: const TextStyle(
                                           fontSize: 18,
                                           fontWeight: FontWeight.w800,
@@ -237,7 +267,7 @@ class _SuperGameMainScreenState extends ConsumerState<SuperGameMainScreen> {
                                   height: 8.r,
                                 );
                               },
-                              itemCount: widget.players.length,
+                              itemCount: players.length,
                             ),
                           ),
                         ],
@@ -248,7 +278,7 @@ class _SuperGameMainScreenState extends ConsumerState<SuperGameMainScreen> {
               ),
             ),
             SquareButton(
-              text: '게임 시작하기',
+              text: '종료하기',
               onPressed: () {},
             ),
           ],

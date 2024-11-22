@@ -131,7 +131,7 @@ class StudentMainScreen extends ConsumerWidget {
                 IconButton(
                   padding: EdgeInsets.zero,
                   onPressed: () =>
-                      Navigator.of(context).pushNamed('/setting_screen'),
+                      Navigator.of(context).pushNamed('/stud_game_init_screen'),
                   icon: SvgPicture.asset(
                     'assets/cards/student_main_2.svg',
                     width: 205.r,

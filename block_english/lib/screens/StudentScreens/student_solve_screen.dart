@@ -181,9 +181,9 @@ class _StudentSolveScreenState extends ConsumerState<StudentSolveScreen> {
                                 ),
                               ),
                               Positioned(
-                                left: (((220 / (widget.totalNumber)) *
-                                            widget.correctNumber) -
-                                        (61 / 2))
+                                left: ((220 / (widget.totalNumber)) *
+                                            widget.correctNumber -
+                                        30)
                                     .r,
                                 child: SizedBox(
                                   width: 61.r,
