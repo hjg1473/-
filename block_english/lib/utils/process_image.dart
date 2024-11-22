@@ -22,7 +22,8 @@ class ProcessImage {
     //   height: cropHeight,
     // );
 
-    final png = img.encodePng(image);
+    final rotatedImage = img.copyRotate(image, angle: 180);
+    final png = img.encodePng(rotatedImage);
     return png;
   }
 }

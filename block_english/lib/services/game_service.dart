@@ -4,6 +4,7 @@ import 'dart:typed_data';
 import 'package:block_english/models/GameModel/game_group_model.dart';
 import 'package:block_english/models/GameModel/game_room_model.dart';
 import 'package:block_english/models/GameModel/game_student_solve_model.dart';
+import 'package:block_english/models/GameModel/game_super_student_score.dart';
 import 'package:block_english/models/model.dart';
 import 'package:block_english/utils/constants.dart';
 import 'package:block_english/utils/dio.dart';
@@ -32,6 +33,8 @@ class GameService {
   final String _solve = 'student_solve';
   final String _pnum = 'pnum';
   final String _file = 'file';
+  final String _super = 'super';
+  final String _studentScore = 'student_score';
 
   late final GameServiceRef _ref;
 
@@ -132,6 +135,24 @@ class GameService {
         }),
       );
       return Right(GameStudentSolveModel.fromJson(response.data));
+    } on DioException catch (e) {
+      return Left(FailureModel(
+        statusCode: e.response?.statusCode ?? 0,
+        detail: e.response?.data['detail'] ?? "",
+      ));
+    }
+  }
+
+  Future<Either<FailureModel, GameSuperStudentScore>> postGameSuperStudentScore(
+      String pincode) async {
+    final dio = _ref.watch(dioProvider);
+
+    try {
+      final response = await dio.post('/$_game/$_super/$_studentScore', data: {
+        _roomID: pincode,
+      });
+
+      return Right(GameSuperStudentScore.fromJson(response.data));
     } on DioException catch (e) {
       return Left(FailureModel(
         statusCode: e.response?.statusCode ?? 0,

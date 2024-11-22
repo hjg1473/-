@@ -1,7 +1,6 @@
 import 'dart:async';
-import 'package:block_english/models/ProblemModel/problems_model.dart';
+import 'package:block_english/screens/StudentScreens/GameScreens/student_game_end_screen.dart';
 import 'package:block_english/screens/StudentScreens/GameScreens/student_game_result_screen.dart';
-import 'package:block_english/screens/StudentScreens/wait_ocr_screen.dart';
 import 'package:block_english/utils/camera.dart';
 import 'package:block_english/utils/game.dart';
 import 'package:camera/camera.dart';
@@ -29,8 +28,9 @@ class _StudentGameCameraScreenState
     with SingleTickerProviderStateMixin {
   late CameraController controller;
   late StreamController<bool> _btnController;
-  late AnimationController _animationController;
   int duration = 0;
+  int remainingTime = 0;
+  int totalDuration = 0;
 
   Future<void> _takePicture() async {
     if (!controller.value.isInitialized) {
@@ -62,7 +62,6 @@ class _StudentGameCameraScreenState
   @override
   void initState() {
     super.initState();
-    duration = ref.watch(gameProvider).duration;
     controller = CameraController(
       Camera.cameras[0],
       ResolutionPreset.high,
@@ -88,23 +87,34 @@ class _StudentGameCameraScreenState
     });
     _btnController = StreamController<bool>();
 
-    // 타이머 애니메이션 컨트롤러 초기화
-    _animationController = AnimationController(
-      vsync: this,
-      duration: Duration(seconds: duration),
-    )..forward();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (widget.problemIndex % 5 == 0 &&
+          !ref.watch(gameNotifierProvider).noMoreProblem) {
+        ref.read(gameNotifierProvider.notifier).sendMoreProblemMeesage();
+      }
+    });
   }
 
   @override
   void dispose() {
     controller.dispose();
     _btnController.close();
-    _animationController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    if (ref.watch(gameNotifierProvider).remainingTime == 0) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        Navigator.of(context).pushAndRemoveUntil(
+          MaterialPageRoute(
+            builder: (context) => const StudentGameEndScreen(),
+          ),
+          ModalRoute.withName('/stud_main_screen'),
+        );
+      });
+    }
+
     return Scaffold(
       backgroundColor: Colors.black,
       body: Stack(
@@ -193,57 +203,67 @@ class _StudentGameCameraScreenState
                   child: SizedBox(
                     width: 220.r,
                     height: 24.r,
-                    child: AnimatedBuilder(
-                      animation: _animationController,
-                      builder: (context, child) {
-                        return Stack(
-                          alignment: Alignment.centerLeft,
-                          clipBehavior: Clip.none,
-                          children: [
-                            Container(
-                              width: 220.r,
-                              height: 24.r,
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(45).r,
-                              ),
-                            ),
-                            Container(
-                              width: (220 * _animationController.value).r,
-                              height: 24.r,
-                              decoration: BoxDecoration(
-                                color: const Color(0xFFFFA3C2),
-                                borderRadius: BorderRadius.circular(45).r,
-                              ),
-                            ),
-                            Positioned(
-                              left: ((220 * _animationController.value) -
-                                      (61 / 2))
-                                  .r,
-                              child: SizedBox(
-                                width: 61.r,
-                                height: 32.r,
-                                child: Stack(
-                                  alignment: Alignment.center,
-                                  children: [
-                                    SvgPicture.asset(
-                                      'assets/progressbar/progress_block.svg',
-                                    ),
-                                    Text(
-                                      '시간',
-                                      style: TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 14.sp,
-                                        fontWeight: FontWeight.w700,
-                                      ),
-                                    ),
-                                  ],
+                    child: Stack(
+                      alignment: Alignment.centerLeft,
+                      clipBehavior: Clip.none,
+                      children: [
+                        Container(
+                          width: 220.r,
+                          height: 24.r,
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(45).r,
+                          ),
+                        ),
+                        Container(
+                          width: (220 *
+                                  (1 -
+                                      ref
+                                              .watch(gameNotifierProvider)
+                                              .remainingTime /
+                                          ref
+                                              .watch(gameNotifierProvider)
+                                              .duration))
+                              .r,
+                          height: 24.r,
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFFFA3C2),
+                            borderRadius: BorderRadius.circular(45).r,
+                          ),
+                        ),
+                        Positioned(
+                          left: (220 *
+                                      (1 -
+                                          ref
+                                                  .watch(gameNotifierProvider)
+                                                  .remainingTime /
+                                              ref
+                                                  .watch(gameNotifierProvider)
+                                                  .duration) -
+                                  30)
+                              .r,
+                          child: SizedBox(
+                            width: 61.r,
+                            height: 32.r,
+                            child: Stack(
+                              alignment: Alignment.center,
+                              children: [
+                                SvgPicture.asset(
+                                  'assets/progressbar/progress_block.svg',
                                 ),
-                              ),
+                                Text(
+                                  "${ref.watch(gameNotifierProvider).remainingTime ~/ 60}:${(ref.watch(gameNotifierProvider).remainingTime % 60).toString().padLeft(2, '0')}",
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 14.sp,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                              ],
                             ),
-                          ],
-                        );
-                      },
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ),
@@ -297,10 +317,9 @@ class _StudentGameCameraScreenState
                                 child: Center(
                                   child: Text(
                                     ref
-                                        .watch(gameProvider)
-                                        .problems
-                                        .values
-                                        .toList()[widget.problemIndex],
+                                        .watch(gameNotifierProvider)
+                                        .problems[widget.problemIndex]
+                                        .value,
                                     style: TextStyle(
                                       fontSize: 22.sp,
                                       fontWeight: FontWeight.w800,

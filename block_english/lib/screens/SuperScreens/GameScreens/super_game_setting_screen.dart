@@ -10,7 +10,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:web_socket_channel/web_socket_channel.dart';
 
 class SuperGameSettingScreen extends ConsumerStatefulWidget {
   const SuperGameSettingScreen({super.key});
@@ -22,9 +21,7 @@ class SuperGameSettingScreen extends ConsumerStatefulWidget {
 
 class _SuperGameSettingScreenState
     extends ConsumerState<SuperGameSettingScreen> {
-  Map<String, String> players = {};
   String pinNumber = '';
-  late WebSocketChannel _channel;
 
   final _seasonList = [
     '시즌1',
@@ -34,10 +31,16 @@ class _SuperGameSettingScreenState
     'Level 2',
     'Level 3',
   ];
+  final _durationList = [
+    '1분',
+    '5분',
+    '10분',
+  ];
 
   int season = 1;
   int level = 1;
   int difficulty = 1;
+  int duration = 0;
 
   getPinNumber() async {
     final response = await ref.watch(gameServiceProvider).postGameCreate();
@@ -49,46 +52,26 @@ class _SuperGameSettingScreenState
       },
       (gameRoomModel) {
         debugPrint('[PINNUMBER] ${gameRoomModel.pinNumber}');
-        pinNumber = gameRoomModel.pinNumber;
+        setState(() {
+          pinNumber = gameRoomModel.pinNumber;
+        });
+
         debugPrint(
             '[URI] $BASEWSURL/$pinNumber/${ref.watch(statusProvider).username}');
-        _channel = WebSocketChannel.connect(
-          Uri.parse(
-              '$BASEWSURL/$pinNumber/${ref.watch(statusProvider).username}'),
-        );
-        _channel.stream.listen((message) {
-          final decodedMessage = jsonDecode(message) as Map<String, dynamic>;
 
-          for (final val in decodedMessage.entries) {
-            debugPrint('key: ${val.key}, value: ${val.value}');
-          }
-          if (decodedMessage.containsKey('participant_name')) {
-            players[decodedMessage['participant_id']] =
-                (decodedMessage['participant_name'] ?? 'UNKNOWN');
-            setState(() {});
-          } else if (decodedMessage.containsKey('problems')) {
-            for (final problem in decodedMessage['problems']) {
-              ref.watch(gameProvider).problems[problem['problem_id']] =
-                  problem['koreaProblem'];
-            }
-            Navigator.of(context).push(
-              MaterialPageRoute(
-                builder: (context) => SuperGameMainScreen(
-                  players: players,
-                  pinNumber: pinNumber,
-                  channel: _channel,
-                ),
-              ),
-            );
-          }
-        }, onError: (error) {
-          debugPrint('[WS:ERROR] $error');
-        }, onDone: () {
-          debugPrint('[WS:DISCONNECT]');
-        });
+        ref
+            .read(gameNotifierProvider.notifier)
+            .initSuperSocket(pinNumber, ref.watch(statusProvider).username);
       },
     );
-    setState(() {});
+  }
+
+  _navigateToNextScreen() {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => const SuperGameMainScreen(),
+      ),
+    );
   }
 
   @override
@@ -103,12 +86,19 @@ class _SuperGameSettingScreenState
   @override
   void dispose() {
     // TODO: implement dispose
-    _channel.sink.close();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    final players =
+        ref.watch(gameNotifierProvider.select((state) => state.players));
+
+    if (ref.watch(gameNotifierProvider.select((state) => state.gameStarted))) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _navigateToNextScreen();
+      });
+    }
     return Scaffold(
       backgroundColor: const Color(0xFFC6FEFF),
       body: SizedBox(
@@ -219,12 +209,17 @@ class _SuperGameSettingScreenState
                                     closedFillColor: const Color(0xFFC6FEFF),
                                     expandedFillColor: const Color(0xFFC6FEFF),
                                   ),
-                                  items: const [
-                                    '1분',
-                                    '5분',
-                                    '10분',
-                                  ],
-                                  onChanged: (val) {},
+                                  items: _durationList,
+                                  onChanged: (val) {
+                                    final index = _durationList.indexOf(val!);
+                                    if (index == 0) {
+                                      duration = 60;
+                                    } else if (index == 1) {
+                                      duration = 300;
+                                    } else if (index == 2) {
+                                      duration = 600;
+                                    }
+                                  },
                                 ),
                               )
                             ],
@@ -416,15 +411,10 @@ class _SuperGameSettingScreenState
             SquareButton(
               text: '게임 시작하기',
               onPressed: () {
-                final jsonString = jsonEncode({
-                  "message": "GameStart",
-                  "level": level,
-                  "season": season,
-                  "difficulty": difficulty,
-                  "duration": 300,
-                });
-                debugPrint(jsonString);
-                _channel.sink.add(jsonString);
+                //TODO: 설정 안했을 때 에러창
+                ref
+                    .read(gameNotifierProvider.notifier)
+                    .sendGameStartMessage(level, season, difficulty, duration);
               },
             ),
           ],

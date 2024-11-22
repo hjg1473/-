@@ -1,8 +1,10 @@
-import 'dart:async';
-import 'package:block_english/models/ProblemModel/problems_model.dart';
-import 'package:block_english/screens/StudentScreens/wait_ocr_screen.dart';
-import 'package:block_english/utils/camera.dart';
+import 'package:block_english/screens/StudentScreens/GameScreens/student_game_camera_screen.dart';
+import 'package:block_english/screens/StudentScreens/GameScreens/student_game_end_screen.dart';
+import 'package:block_english/services/game_service.dart';
 import 'package:block_english/utils/game.dart';
+import 'package:block_english/utils/process_image.dart';
+import 'package:block_english/utils/status.dart';
+import 'package:block_english/widgets/square_button.dart';
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -26,15 +28,55 @@ class StudentGameResultScreen extends ConsumerStatefulWidget {
 }
 
 class _StudentGameResultScreenState
-    extends ConsumerState<StudentGameResultScreen>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _animationController;
+    extends ConsumerState<StudentGameResultScreen> {
   int duration = 0;
+
+  String ocrResult = "";
+
+  waitOcr() async {
+    final png = await ProcessImage.cropImage(widget.xFile);
+
+    final result = await ref.watch(gameServiceProvider).postGameSolve(
+          ref.watch(gameNotifierProvider).pinCode,
+          ref.watch(statusProvider).username,
+          widget.problemIndex,
+          png,
+        );
+
+    result.fold(
+      (failure) {
+        // TODO: error handling
+      },
+      (problemOcrModel) {
+        setState(() {
+          ocrResult = problemOcrModel.ocrResult;
+        });
+        debugPrint("[GAME OCRRESULT] $ocrResult");
+      },
+    );
+  }
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      waitOcr();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
+    if (ref.watch(gameNotifierProvider).remainingTime == 0) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        Navigator.of(context).pushReplacement(MaterialPageRoute(
+          builder: (context) => const StudentGameEndScreen(),
+        ));
+      });
+    }
+
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: const Color(0xFFF5FFEC),
       body: Stack(
         children: [
           Padding(
@@ -72,57 +114,67 @@ class _StudentGameResultScreenState
                   child: SizedBox(
                     width: 220.r,
                     height: 24.r,
-                    child: AnimatedBuilder(
-                      animation: _animationController,
-                      builder: (context, child) {
-                        return Stack(
-                          alignment: Alignment.centerLeft,
-                          clipBehavior: Clip.none,
-                          children: [
-                            Container(
-                              width: 220.r,
-                              height: 24.r,
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(45).r,
-                              ),
-                            ),
-                            Container(
-                              width: (220 * _animationController.value).r,
-                              height: 24.r,
-                              decoration: BoxDecoration(
-                                color: const Color(0xFFFFA3C2),
-                                borderRadius: BorderRadius.circular(45).r,
-                              ),
-                            ),
-                            Positioned(
-                              left: ((220 * _animationController.value) -
-                                      (61 / 2))
-                                  .r,
-                              child: SizedBox(
-                                width: 61.r,
-                                height: 32.r,
-                                child: Stack(
-                                  alignment: Alignment.center,
-                                  children: [
-                                    SvgPicture.asset(
-                                      'assets/progressbar/progress_block.svg',
-                                    ),
-                                    Text(
-                                      '시간',
-                                      style: TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 14.sp,
-                                        fontWeight: FontWeight.w700,
-                                      ),
-                                    ),
-                                  ],
+                    child: Stack(
+                      alignment: Alignment.centerLeft,
+                      clipBehavior: Clip.none,
+                      children: [
+                        Container(
+                          width: 220.r,
+                          height: 24.r,
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(45).r,
+                          ),
+                        ),
+                        Container(
+                          width: (220 *
+                                  (1 -
+                                      ref
+                                              .watch(gameNotifierProvider)
+                                              .remainingTime /
+                                          ref
+                                              .watch(gameNotifierProvider)
+                                              .duration))
+                              .r,
+                          height: 24.r,
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFFFA3C2),
+                            borderRadius: BorderRadius.circular(45).r,
+                          ),
+                        ),
+                        Positioned(
+                          left: (220 *
+                                      (1 -
+                                          ref
+                                                  .watch(gameNotifierProvider)
+                                                  .remainingTime /
+                                              ref
+                                                  .watch(gameNotifierProvider)
+                                                  .duration) -
+                                  30)
+                              .r,
+                          child: SizedBox(
+                            width: 61.r,
+                            height: 32.r,
+                            child: Stack(
+                              alignment: Alignment.center,
+                              children: [
+                                SvgPicture.asset(
+                                  'assets/progressbar/progress_block.svg',
                                 ),
-                              ),
+                                Text(
+                                  "${ref.watch(gameNotifierProvider).remainingTime ~/ 60}:${(ref.watch(gameNotifierProvider).remainingTime % 60).toString().padLeft(2, '0')}",
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 14.sp,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                              ],
                             ),
-                          ],
-                        );
-                      },
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ),
@@ -132,29 +184,50 @@ class _StudentGameResultScreenState
                       horizontal: 16,
                     ).r,
                     child: IntrinsicWidth(
-                      child: Container(
-                        alignment: Alignment.center,
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 14,
-                          vertical: 6,
-                        ).r,
-                        height: 40.r,
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFFF6699),
-                          borderRadius: BorderRadius.circular(4).r,
-                        ),
-                        child: Text(
-                          'asdfdsa',
-                          style: TextStyle(
-                            fontSize: 18.sp,
-                            fontWeight: FontWeight.w800,
-                          ),
-                        ),
-                      ),
+                      child: ocrResult == ""
+                          ? const CircularProgressIndicator()
+                          : Container(
+                              alignment: Alignment.center,
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 14,
+                                vertical: 6,
+                              ).r,
+                              height: 40.r,
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFFF6699),
+                                borderRadius: BorderRadius.circular(4).r,
+                              ),
+                              child: Text(
+                                ocrResult,
+                                style: TextStyle(
+                                  fontSize: 18.sp,
+                                  fontWeight: FontWeight.w800,
+                                ),
+                              ),
+                            ),
                     ),
                   ),
                 ),
               ],
+            ),
+          ),
+          Align(
+            alignment: Alignment.bottomCenter,
+            child: SquareButton(
+              text: '제출하기',
+              icon: const Icon(Icons.camera_alt_rounded),
+              onPressed: () {
+                if (widget.problemIndex ==
+                    ref.watch(gameNotifierProvider).problems.length) {
+                  ref.watch(gameNotifierProvider.notifier).stopCountdown();
+                }
+
+                Navigator.of(context).push(MaterialPageRoute(
+                  builder: (context) => StudentGameCameraScreen(
+                    problemIndex: 1 + widget.problemIndex,
+                  ),
+                ));
+              },
             ),
           ),
         ],

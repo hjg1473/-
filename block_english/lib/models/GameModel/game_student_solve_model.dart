@@ -1,5 +1,5 @@
 class GameStudentSolveModel {
-  bool ocrResult;
+  String ocrResult;
 
   GameStudentSolveModel.fromJson(Map<String, dynamic> json)
       : ocrResult = json['ocr_result'];

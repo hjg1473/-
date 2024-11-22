@@ -27,6 +27,7 @@ class _StudentGameWaitingScreenState
   double _waitingTextTopPosition = 0.3.sh;
   double _countdownTopPosition = -0.2.sh;
   double _opacity = 1.0;
+  bool _countdownStarted = false;
 
   @override
   void initState() {
@@ -34,57 +35,14 @@ class _StudentGameWaitingScreenState
     super.initState();
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref.watch(gameProvider).initStudentSocket(
+      ref.read(gameNotifierProvider.notifier).initStudentSocket(
           widget.pinCode, ref.watch(statusProvider).username);
     });
-    // WidgetsBinding.instance.addPostFrameCallback((_) {
-    //   _channel = WebSocketChannel.connect(
-    //     Uri.parse(
-    //         '$BASEWSURL/${widget.pinCode}/${ref.watch(statusProvider).username}'),
-    //   );
-    //   _channel.stream.listen((message) {
-    //     final decodedMessage = jsonDecode(message) as Map<String, dynamic>;
-
-    //     for (final val in decodedMessage.entries) {
-    //       debugPrint('key: ${val.key}, value: ${val.value}');
-    //     }
-    //     if (decodedMessage.containsKey('message')) {
-    //       if (decodedMessage['message'] == 'startCountDown') {
-    //         debugPrint('startCountDown');
-    //         setState(() {
-    //           _gameStarted = true;
-    //           _startCountdown();
-    //         });
-    //       } else if (decodedMessage['message'] == 'GameStart') {
-    //         setState(() {
-    //           duration = decodedMessage['duration'];
-    //         });
-    //       }
-    //     }
-    //     if (decodedMessage.containsKey('problems')) {
-    //       for (final problem in decodedMessage['problems']) {
-    //         ref.watch(gameProvider).problems[problem['problem_id']] =
-    //             problem['koreaProblem'];
-    //       }
-
-    //       final jsonString = jsonEncode({
-    //         "message": "Ack",
-    //       });
-    //       debugPrint(jsonString);
-    //       _channel.sink.add(jsonString);
-    //     }
-    //   }, onError: (error) {
-    //     debugPrint('[WS:ERROR] $error');
-    //   }, onDone: () {
-    //     debugPrint('[WS:DISCONNECT]');
-    //   });
-    //   setState(() {
-    //     _channelInitialized = true;
-    //   });
-    // });
   }
 
   void _startCountdown() {
+    _countdownStarted = true;
+    debugPrint('[_startCoundDown] called');
     setState(() {
       _waitingTextTopPosition = 0.5.sh; // Move waiting text down
       _opacity = 0.0; // Fade out waiting text
@@ -99,6 +57,8 @@ class _StudentGameWaitingScreenState
         });
       } else {
         _countdownTimer?.cancel();
+
+        ref.read(gameNotifierProvider.notifier).startCountdown();
         _navigateToNextScreen();
       }
     });
@@ -122,7 +82,9 @@ class _StudentGameWaitingScreenState
 
   @override
   Widget build(BuildContext context) {
-    if (ref.watch(gameProvider).gameStarted) _startCountdown();
+    final gameState = ref.watch(gameNotifierProvider);
+
+    if (gameState.gameStarted && !_countdownStarted) _startCountdown();
 
     return Scaffold(
       backgroundColor: const Color(0xFFFFE0EB),
@@ -130,7 +92,6 @@ class _StudentGameWaitingScreenState
         height: 1.sh,
         child: Stack(
           children: [
-            // Waiting text with slide-down animation
             AnimatedPositioned(
               duration: const Duration(milliseconds: 500),
               top: _waitingTextTopPosition,
@@ -140,7 +101,7 @@ class _StudentGameWaitingScreenState
                 duration: const Duration(milliseconds: 500),
                 opacity: _opacity,
                 child: Text(
-                  ref.watch(gameProvider).channelInitialized
+                  gameState.channelInitialized
                       ? '모두가 들어올 때까지 기다려주세요!'
                       : '접속중입니다.',
                   textAlign: TextAlign.center,
@@ -152,8 +113,7 @@ class _StudentGameWaitingScreenState
                 ),
               ),
             ),
-            // Countdown text with falling effect
-            if (ref.watch(gameProvider).gameStarted)
+            if (gameState.gameStarted)
               AnimatedPositioned(
                 duration: const Duration(milliseconds: 500),
                 top: _countdownTopPosition,
@@ -169,7 +129,6 @@ class _StudentGameWaitingScreenState
                   ),
                 ),
               ),
-            //TODO: add motion_13
           ],
         ),
       ),
