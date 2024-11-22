@@ -43,6 +43,10 @@ class GetStudentScoreRequest(BaseModel):
 class GetGameAgainRequest(BaseModel):
     room_id: str
 
+class ParticipantResultRequest(BaseModel):
+    room_id: str
+    participant_id: str
+
 class ParticipantSolveRequest(BaseModel):
     room_id: str
     participant_id: str

@@ -5,7 +5,7 @@ import sys
 import json
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))))
 from fastapi import File, Form, UploadFile, WebSocket, WebSocketDisconnect
-from game.schemas import Room, CreateRoomRequest, JoinRoomRequest, GetStudentScoreRequest, GetGameAgainRequest, ConnectionManager, rooms, roomProblem, ProblemSelectionCriteria, room_settings
+from game.schemas import Room, CreateRoomRequest, JoinRoomRequest, GetStudentScoreRequest, GetGameAgainRequest, ConnectionManager, rooms, roomProblem, ProblemSelectionCriteria, room_settings, ParticipantResultRequest
 from game.utils import create_pin_number
 from game.exceptions import check_room_exception, check_participant_in_room, check_host_single_room, check_room_existence, check_duplicate_participant, check_room_capacity, check_unregistered_participant, check_room_in_progress
 from game.dependencies import db_dependency, user_dependency
@@ -93,6 +93,16 @@ async def get_student_score(request: GetStudentScoreRequest):
     check_room_exception(room)
     sorted_rank = dict(sorted(room.participants.items(), key=lambda item: item[1], reverse=True))
     return sorted_rank
+
+# Requests all scores of participants (sorted in descending order)
+@router.post("/student_score")
+async def get_student_score(request: ParticipantResultRequest):
+    room = rooms.get(request.room_id)
+    # check_room_exception(room)
+    sorted_rank = dict(sorted(room.participants.items(), key=lambda item: item[1], reverse=True))
+    participant_answer_list = room.participants_bonus[request.participant_id]
+    count_of_ones = participant_answer_list.count(1)
+    return { "rank": sorted_rank, "count": count_of_ones }
 
 # When a student solves a problem
 @router.post("/student_solve")
