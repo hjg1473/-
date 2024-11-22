@@ -65,8 +65,17 @@ class _ParentAddChildScreenState extends ConsumerState<ParentAddChildScreen>
   }
 
   @override
+  void dispose() {
+    // TODO: implement dispose
+    _ticker?.dispose();
+
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: const Color(0xFFF6E7FF),
       body: Padding(
         padding: const EdgeInsets.only(
           left: 64,
@@ -101,26 +110,23 @@ class _ParentAddChildScreenState extends ConsumerState<ParentAddChildScreen>
             ),
             Positioned(
               top: 62.r,
-              left: 166.r,
+              left: 141.r,
               child: Container(
-                width: 352.r,
-                height: 257.r,
+                width: 403.r,
+                height: 242.r,
                 decoration: BoxDecoration(
-                  color: const Color(0xFFDFDFDF),
+                  color: Colors.white,
                   borderRadius: BorderRadius.circular(8.r),
                 ),
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 12,
-                ).r,
+                padding: const EdgeInsets.fromLTRB(20, 16, 20, 0).r,
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     FilledButton(
                       onPressed: onPinGeneratePressed,
                       style: FilledButton.styleFrom(
-                        minimumSize: Size(320.r, 38.r),
-                        backgroundColor: Colors.white,
+                        minimumSize: Size(363.r, 44.r),
+                        backgroundColor: Colors.black,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(7).r,
                         ),
@@ -130,7 +136,7 @@ class _ParentAddChildScreenState extends ConsumerState<ParentAddChildScreen>
                         style: TextStyle(
                           fontSize: 16.sp,
                           fontWeight: FontWeight.bold,
-                          color: Colors.black,
+                          color: Colors.white,
                         ),
                       ),
                     ),
