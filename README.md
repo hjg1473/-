@@ -106,3 +106,122 @@ This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md
 * Hat tip to anyone whose code was used
 * Inspiration
 * etc
+
+---
+## 아키텍처
+
+### 디렉터리 구조
+```bash
+app
+├── alembic/
+├── src
+│   ├── auth
+│   │   ├── router.py
+│   │   ├── schemas.py  # pydantic models
+│   │   ├── models.py  # db models
+│   │   ├── dependencies.py
+│   │   ├── config.py  # local configs
+│   │   ├── constants.py
+│   │   ├── exceptions.py
+│   │   ├── service.py
+│   │   └── utils.py
+│   ├── aws
+│   │   ├── client.py  # client model for external service communication
+│   │   ├── schemas.py
+│   │   ├── config.py
+│   │   ├── constants.py
+│   │   ├── exceptions.py
+│   │   └── utils.py
+│   ├── game
+│   │   ├── router.py
+│   │   ├── schemas.py  # pydantic models
+│   │   ├── models.py  # db models
+│   │   ├── dependencies.py
+│   │   ├── config.py  # local configs
+│   │   ├── constants.py
+│   │   ├── exceptions.py
+│   │   ├── service.py
+│   │   └── utils.py
+│   ├── problem
+│   │   ├── router.py
+│   │   ├── schemas.py  # pydantic models
+│   │   ├── models.py  # db models
+│   │   ├── dependencies.py
+│   │   ├── config.py  # local configs
+│   │   ├── constants.py
+│   │   ├── exceptions.py
+│   │   ├── service.py
+│   │   └── utils.py
+│   ├── student
+│   │   ├── router.py
+│   │   ├── schemas.py  # pydantic models
+│   │   ├── models.py  # db models
+│   │   ├── dependencies.py
+│   │   ├── config.py  # local configs
+│   │   ├── constants.py
+│   │   ├── exceptions.py
+│   │   ├── service.py
+│   │   └── utils.py
+│   ├── super
+│   │   ├── router.py
+│   │   ├── schemas.py  # pydantic models
+│   │   ├── models.py  # db models
+│   │   ├── dependencies.py
+│   │   ├── config.py  # local configs
+│   │   ├── constants.py
+│   │   ├── exceptions.py
+│   │   ├── service.py
+│   │   └── utils.py
+│   ├── user
+│   │   ├── router.py
+│   │   ├── schemas.py  # pydantic models
+│   │   ├── models.py  # db models
+│   │   ├── dependencies.py
+│   │   ├── config.py  # local configs
+│   │   ├── constants.py
+│   │   ├── exceptions.py
+│   │   ├── service.py
+│   │   └── utils.py
+│   ├── posts
+│   │   ├── router.py
+│   │   ├── schemas.py
+│   │   ├── models.py
+│   │   ├── dependencies.py
+│   │   ├── constants.py
+│   │   ├── exceptions.py
+│   │   ├── service.py
+│   │   └── utils.py
+│   ├── paddleocr/
+│   ├── logs/
+│   ├── config.py  # global configs
+│   ├── models.py  # global models
+│   ├── logging_setup.py
+│   ├── cache.py  
+│   ├── exceptions.py  # global exceptions
+│   ├── pagination.py  # global module e.g. pagination
+│   ├── database.py  # db connection related stuff
+│   └── main.py
+├── templates/
+│   └── index.html
+├── requirements
+│   ├── base.txt
+│   ├── dev.txt
+│   └── prod.txt
+├── elasticsearch/config
+│   └── elasticsearch.yml
+├── kibana/config
+│   └── kibana.yml
+├── logstash/pipeline
+│   └── logstash.conf
+├── nginx
+│   └── nginx.conf
+├── ocr_models
+│   └── model file 2.zip
+├── requirements.txt
+├── docker-compose.yml
+├── dockerfile
+├── .env
+├── .gitignore
+├── logging.ini
+└── alembic.ini
+```
