@@ -16,6 +16,10 @@
 |   [@hjg1473](https://github.com/hjg1473)   |    [@이름](https://github.com/)  | [@이름](https://github.com/)  |    [@이름](https://github.com/)  | [@이름](https://github.com/)  | 
 | 성균관대학교 소프트웨어학과 20학번 | 성균관대학교 소프트웨어학과  | 성균관대학교 소프트웨어학과  | 성균관대학교 소프트웨어학과  | 성균관대학교 소프트웨어학과  |
 
+## 프로젝트 소개
+
+해당 프로젝트는 빅드림 기업의 블록 잉글리시 교육 프로세스를 어플리케이션화 하고, 더욱 확장성 높은 서비스를 제공하는 것이 목표입니다. 
+
 ## Getting Started
 
 These instructions will get you a copy of the project up and running on your local machine for development and testing purposes. See deployment for notes on how to deploy the project on a live system.
