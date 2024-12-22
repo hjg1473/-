@@ -1,7 +1,4 @@
-<div align="center">
-<img width="329" alt="image" src="썸네일">
-</div>
-
+![빅드림_S-TOP_썸네일](https://github.com/user-attachments/assets/f74683bf-1dd8-410e-a838-75fe8e067f0f)
 
 # Block English v1.0
 
