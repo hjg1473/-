@@ -48,19 +48,20 @@ Give examples
 ```
 
 ### Installing
-
-A step by step series of examples that tell you how to get a development env running
-
-Say what the step will be
-
-```
-Give the example
+``` bash
+$ git clone https://github.com/
 ```
 
-And repeat
-
+#### Backend
 ```
-until finished
+$ cd app
+$ cd src
+$ uvicorn main:app --reload
+```
+
+#### Frontend
+```
+
 ```
 
 End with an example of getting some data out of the system or using it for a little demo
