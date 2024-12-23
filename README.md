@@ -61,19 +61,19 @@ $ docker-compose up --build
 
 ## 주요 기능
 
-### 회원 관련 기능
+### :white_check_mark: 회원 관련 기능
 - 로그인 / 회원가입 / 회원 정보 수정
 - JWT 사용
 
-### 문제 관련 기능
+### :white_check_mark: 문제 관련 기능
 - paddleOCR 을 사용해 블럭 인식
 - 틀린 문제 유형 판단 알고리즘 구현
 
-### 모니터링 관련 기능
+### :white_check_mark: 모니터링 관련 기능
 - DB 데이터를 전처리 후 제공
 - ELK 스택을 이용해 사용자 로그 기록
 
-### 게임 기능 
+### :white_check_mark: 게임 기능 
 - WebSocket을 통해 실시간 서비스 구현
 - 랜덤 선택된 문제를 통해 진행
 
