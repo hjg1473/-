@@ -18,7 +18,7 @@
 
 ## 프로젝트 소개
 
-해당 프로젝트는 빅드림 기업의 블록 잉글리시 교육 프로세스를 어플리케이션화 하고, 더욱 확장성 높은 서비스를 제공하는 것이 목표입니다. 
+해당 프로젝트는 빅드림 기업에서 요구한 어플리케이션을 개발하는 것입니다. 해당 어플리케이션은 문제를 제시하고, 학습자가 블록 잉글리시 교구를 통해 정답을 맞추면, 사진을 인식하여 피드백을 주는 프로세스로 구성되어 있습니다. 이를 기반으로한 간단한 게임 기능도 포함되어 있습니다. 또한, 관리자 역할이 존재하여 학습자들을 모니터링할 수 있는 서비스를 제공합니다. 
 
 ### 사용한 프레임워크
 
@@ -35,17 +35,13 @@
 ![Flutter](https://img.shields.io/badge/Flutter-02569B?style=for-the-badge&logo=Flutter&logoColor=white)
 
 
-## Getting Started
-
-These instructions will get you a copy of the project up and running on your local machine for development and testing purposes. See deployment for notes on how to deploy the project on a live system.
+## 시작 가이드
 
 ### Prerequisites
 
-What things you need to install the software and how to install them
-
-```
-Give examples
-```
+- Ubuntu 22.04 
+- docker
+- docker-compose
 
 ### Installing
 ``` bash
@@ -55,8 +51,7 @@ $ git clone https://github.com/
 #### Backend
 ```
 $ cd app
-$ cd src
-$ uvicorn main:app --reload
+$ docker-compose up --build
 ```
 
 #### Frontend
@@ -64,48 +59,15 @@ $ uvicorn main:app --reload
 
 ```
 
-End with an example of getting some data out of the system or using it for a little demo
+## 주요 기능
 
-## Running the tests
+### 회원 관련 기능
 
-Explain how to run the automated tests for this system
+### 문제 관련 기능
 
-### Break down into end to end tests
+### 모니터링 관련 기능
 
-Explain what these tests test and why
-
-```
-Give an example
-```
-
-### And coding style tests
-
-Explain what these tests test and why
-
-```
-Give an example
-```
-
-## Deployment
-
-Add additional notes about how to deploy this on a live system
-
-## Built With
-
-* [Dropwizard](http://www.dropwizard.io/1.0.2/docs/) - The web framework used
-* [Maven](https://maven.apache.org/) - Dependency Management
-* [ROME](https://rometools.github.io/rome/) - Used to generate RSS Feeds
-* 
-
-## License
-
-This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details
-
-## Acknowledgments
-
-* Hat tip to anyone whose code was used
-* Inspiration
-* etc
+### 게임 기능 
 
 ---
 ## 아키텍처
@@ -115,7 +77,7 @@ This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md
 app
 ├── alembic/
 ├── src
-│   ├── auth
+│   ├── auth : 로그인 / 회원가입 관련 api
 │   │   ├── router.py
 │   │   ├── schemas.py  # pydantic models
 │   │   ├── models.py  # db models
@@ -132,7 +94,7 @@ app
 │   │   ├── constants.py
 │   │   ├── exceptions.py
 │   │   └── utils.py
-│   ├── game
+│   ├── game : 게임 관련 api
 │   │   ├── router.py
 │   │   ├── schemas.py  # pydantic models
 │   │   ├── models.py  # db models
@@ -142,7 +104,7 @@ app
 │   │   ├── exceptions.py
 │   │   ├── service.py
 │   │   └── utils.py
-│   ├── problem
+│   ├── problem : 문제 관련 api
 │   │   ├── router.py
 │   │   ├── schemas.py  # pydantic models
 │   │   ├── models.py  # db models
@@ -152,7 +114,7 @@ app
 │   │   ├── exceptions.py
 │   │   ├── service.py
 │   │   └── utils.py
-│   ├── student
+│   ├── student : 학생 관련 api
 │   │   ├── router.py
 │   │   ├── schemas.py  # pydantic models
 │   │   ├── models.py  # db models
@@ -162,7 +124,7 @@ app
 │   │   ├── exceptions.py
 │   │   ├── service.py
 │   │   └── utils.py
-│   ├── super
+│   ├── super : 관리자 관련 api
 │   │   ├── router.py
 │   │   ├── schemas.py  # pydantic models
 │   │   ├── models.py  # db models
@@ -172,7 +134,7 @@ app
 │   │   ├── exceptions.py
 │   │   ├── service.py
 │   │   └── utils.py
-│   ├── user
+│   ├── user : 회원 관련 api
 │   │   ├── router.py
 │   │   ├── schemas.py  # pydantic models
 │   │   ├── models.py  # db models
