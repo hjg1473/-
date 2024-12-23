@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
 import 'package:block_english/utils/constants.dart';
-import 'package:dartz/dartz.dart';
 import 'package:flutter/material.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';

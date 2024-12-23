@@ -7,7 +7,6 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:web_socket_channel/web_socket_channel.dart';
 
 class SuperGameMainScreen extends ConsumerStatefulWidget {
   const SuperGameMainScreen({

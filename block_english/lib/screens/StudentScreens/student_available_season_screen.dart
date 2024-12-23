@@ -48,10 +48,10 @@ class _StudentAvailableSeasonScreenState
       (success) {
         //TODO: set season1 status
         ref.watch(statusProvider).setAvailableSeason(seasons);
-        ref.watch(statusProvider).setStudentStatus(
-              Season.SEASON1,
-              ReleaseStatus(0, 0),
-            );
+        // ref.watch(statusProvider).setStudentStatus(
+        //       Season.SEASON1,
+        //       ReleaseStatus(0, 0),
+        //     );
         if (mounted) {
           Navigator.of(context).pushNamedAndRemoveUntil(
             '/stud_mode_select_screen',

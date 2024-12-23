@@ -5,6 +5,7 @@ import 'package:block_english/utils/process_image.dart';
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:lottie/lottie.dart';
 
 class WaitOcrScreen extends ConsumerStatefulWidget {
@@ -72,7 +73,15 @@ class _WaitOcrScreenState extends ConsumerState<WaitOcrScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Lottie.asset('assets/lottie/motion_29.json'),
+      body: SizedBox(
+        width: 1.sw,
+        height: 1.sh,
+        child: Lottie.asset(
+          'assets/lottie/motion_29.json',
+          width: 1.sw,
+          height: 1.sh,
+        ),
+      ),
     );
   }
 }

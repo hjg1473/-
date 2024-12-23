@@ -1,9 +1,5 @@
 import 'package:block_english/screens/StudentScreens/GameScreens/student_game_waiting_screen.dart';
 import 'package:block_english/services/game_service.dart';
-import 'package:block_english/services/student_service.dart';
-import 'package:block_english/utils/constants.dart';
-import 'package:block_english/utils/game.dart';
-import 'package:block_english/utils/status.dart';
 import 'package:block_english/widgets/square_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -11,7 +7,6 @@ import 'package:flutter_pin_code_fields/flutter_pin_code_fields.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:web_socket_channel/web_socket_channel.dart';
 
 class StudentGameEnterScreen extends ConsumerStatefulWidget {
   const StudentGameEnterScreen({

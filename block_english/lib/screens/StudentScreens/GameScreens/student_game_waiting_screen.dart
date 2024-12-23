@@ -1,15 +1,11 @@
 import 'dart:async';
-import 'dart:convert';
 
 import 'package:block_english/screens/StudentScreens/GameScreens/student_game_camera_screen.dart';
-import 'package:block_english/utils/constants.dart';
 import 'package:block_english/utils/game.dart';
 import 'package:block_english/utils/status.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:flutter_svg/flutter_svg.dart';
-import 'package:web_socket_channel/web_socket_channel.dart';
 
 class StudentGameWaitingScreen extends ConsumerStatefulWidget {
   const StudentGameWaitingScreen({super.key, required this.pinCode});
