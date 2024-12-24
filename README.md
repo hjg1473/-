@@ -42,6 +42,9 @@
 - Ubuntu 22.04 
 - docker
 - docker-compose
+- Flutter
+- Android Studio
+- XCode
 
 ### Installing
 ``` bash
