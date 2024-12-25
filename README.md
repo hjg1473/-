@@ -7,13 +7,12 @@
 > 2024 성균관대 산학협력 프로젝트<br>
 > 개발기간: 2024.04~2024.12
 
-
 ## 개발 인원 소개
 
-|      함장건       |          (이름)         |       민경호         |          (이름)         |       우연서         |                                                                                                                  
+|      함장건       |          김진규         |       민경호         |          박현진         |       우연서         |                                                                                                                  
 | :------------------------------------------------------------------------------: | :---------------------------------------------------------------------------------------------------------------------------------------------------: | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------: |  :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------: |  :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------: | 
-|   <img width="160px" src="https://github.com/hjg1473.png" />    |                      <img width="160px" src="프사" />    |                   <img width="160px" src="https://github.com/aiden890.png"/>   |                       <img width="160px" src="프사" />    |                   <img width="160px" src="https://github.com/pilot-saving.png"/>   |
-|   [@hjg1473](https://github.com/hjg1473)   |    [@이름](https://github.com/)  | [@aiden890](https://github.com/aiden890)  |    [@이름](https://github.com/)  | [@pilot-saving](https://github.com/pilot-saving)  | 
+|   <img width="160px" src="https://github.com/hjg1473.png" />    |                      <img width="160px" src="https://github.com/martinjgk.png" />    |                   <img width="160px" src="https://github.com/aiden890.png"/>   |                       <img width="160px" src="https://github.com/parkjin21004.png" />    |                   <img width="160px" src="https://github.com/pilot-saving.png"/>   |
+|   [@hjg1473](https://github.com/hjg1473)   |    [@martinjgk](https://github.com/martinjgk)  | [@aiden890](https://github.com/aiden890)  |    [@parkjin21004](https://github.com/parkjin21004)  | [@pilot-saving](https://github.com/pilot-saving)  | 
 | 성균관대학교 소프트웨어학과 20학번 | 성균관대학교 소프트웨어학과  | 성균관대학교 소프트웨어학과 22학번  | 성균관대학교 소프트웨어학과  | 성균관대학교 소프트웨어학과 22학번 |
 
 ## 프로젝트 소개
@@ -48,7 +47,7 @@
 
 ### Installing
 ``` bash
-$ git clone https://github.com/
+$ git clone https://github.com/hjg1473/Vic-Dream
 ```
 
 #### Backend
